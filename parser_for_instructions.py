@@ -1,8 +1,142 @@
+from enum import Enum, auto
+import copy
+
+
+class Type(Enum):
+    unknown = auto()
+    global_id_x = auto()
+    global_id_y = auto()
+    global_id_z = auto()
+    work_group_id_x = auto()
+    work_group_id_y = auto()
+    work_group_id_z = auto()
+    work_item_id_x = auto()
+    work_item_id_y = auto()
+    work_item_id_z = auto()
+    global_offset_x = auto()
+    global_offset_y = auto()
+    global_offset_z = auto()
+    arguments_pointer = auto()
+    work_group_id_x_local_size = auto()
+    work_group_id_y_local_size = auto()
+    work_group_id_z_local_size = auto()
+    work_group_id_x_local_size_offset = auto()
+    work_group_id_y_local_size_offset = auto()
+    work_group_id_z_local_size_offset = auto()
+    param_global_id_x = auto()
+    param_global_id_y = auto()
+    param_global_id_z = auto()
+    param = auto()
+    # param1 = auto()
+    # param2 = auto()
+    # param3 = auto()
+    # param4 = auto()
+    # param5 = auto()
+    int32 = auto()
+
+
+class Register:
+    def __init__(self, val, type_of_elem):
+        self.val = val
+        self.type: Type = type_of_elem
+
+
+class State:
+    def __init__(self):
+        self.registers = \
+            {
+                "s0": None,
+                "s1": None,
+                "s2": None,
+                "s3": None,
+                "s4": None,
+                "s5": None,
+                "s6": None,
+                "s7": None,
+                "s8": None,
+                "v0": None,
+                "v1": None,
+                "v2": None,
+                "v3": None,
+                "v4": None,
+                "v5": None,
+                "pc": None,
+                "scc": None,
+                "vcc": None,
+                "exec": None
+            }
+
+    def find_first_last_num_to_from(self, to_registers, from_registers):
+        left_board_from = from_registers.find("[")
+        last_to = 0
+        first_to = 0
+        first_from = 0
+        name_of_register = ""
+        name_of_from = ""
+        num_of_registers = 0
+        if left_board_from != -1:
+            separation_from = from_registers.index(":")
+            right_board_from = from_registers.index("]")
+            first_from = int(from_registers[(left_board_from + 1):separation_from])
+            last_from = int(from_registers[(separation_from + 1):right_board_from])
+            num_of_registers = last_from - first_from + 1
+            name_of_from = from_registers[:left_board_from]
+            from_registers = name_of_from + str(first_from)
+        else:
+            num_of_registers = 1
+        left_board_to = to_registers.find("[")
+        if left_board_to != -1:
+            separation_to = to_registers.index(":")
+            right_board_to = to_registers.index("]")
+            first_to = int(to_registers[(left_board_to + 1):separation_to])
+            last_to = int(to_registers[(separation_to + 1):right_board_to])
+            name_of_register = to_registers[:left_board_from]
+            to_registers = name_of_register + str(first_to)
+        return first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from
+
+    def upload(self, to_registers, from_registers, offset, parameter_of_kernel):
+        first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
+            = self.find_first_last_num_to_from(to_registers, from_registers)
+        if self.registers[from_registers].type == Type.arguments_pointer:
+            if offset == "0x0":
+                self.registers[to_registers] = Register("get_global_offset(0)", Type.global_offset_x)
+                self.registers[name_of_register + str(first_to + 1)] = Register("get_global_offset(0)",
+                                                                                Type.global_offset_x)
+                if num_of_registers > 2:
+                    self.registers[name_of_register + str(last_to - 1)] = Register("get_global_offset(1)",
+                                                                                   Type.global_offset_y)
+                    self.registers[name_of_register + str(last_to)] = Register("get_global_offset(1)",
+                                                                               Type.global_offset_y)
+            if offset == "0x8":
+                self.registers[to_registers] = Register("get_global_offset(1)", Type.global_offset_y)
+                self.registers[name_of_register + str(first_to + 1)] = Register("get_global_offset(1)",
+                                                                                Type.global_offset_y)
+                if num_of_registers > 2:
+                    self.registers[name_of_register + str(last_to - 1)] = Register("get_global_offset(2)",
+                                                                                   Type.global_offset_z)
+                    self.registers[name_of_register + str(last_to)] = Register("get_global_offset(2)",
+                                                                               Type.global_offset_z)
+            if offset == "0x10":
+                self.registers[to_registers] = Register("get_global_offset(2)", Type.global_offset_z)
+                self.registers[name_of_register + str(first_to + 1)] = Register("get_global_offset(2)",
+                                                                                Type.global_offset_z)
+            if offset == "0x30":
+                val_of_register = parameter_of_kernel["param0"]
+                self.registers[to_registers] = Register(val_of_register, Type.param)
+                if num_of_registers > 1:
+                    self.registers[name_of_register + str(last_to)] = Register(val_of_register, Type.param)
+            if offset == "0x38":
+                val_of_register = parameter_of_kernel["param1"]
+                self.registers[to_registers] = Register(val_of_register, Type.param)
+                if num_of_registers > 1:
+                    self.registers[name_of_register + str(last_to)] = Register(val_of_register, Type.param)
+
+
 class Node:
-    def __init__(self, instruction):
+    def __init__(self, instruction, state):
         self.instruction = instruction
         self.children = []
-        self.state = None
+        self.state = state
 
     def add_child(self, child):
         self.children.append(child)
@@ -26,26 +160,75 @@ class Decompiler:
         self.number_of_v = 0
         self.number_of_vm = 0
         self.number_of_p = 0
+        self.initial_state = State()
+        self.sgprsnum = 0
+        self.vgprsnum = 0
+        self.params = {}
+
+    def process_config(self, set_of_config):
+        dimentions = set_of_config[0][6:]
+        if len(dimentions) > 0:
+            self.initial_state.registers["s6"] = Register("s6", Type.work_group_id_x)
+            self.initial_state.registers["v0"] = Register("v0", Type.work_item_id_x)
+        if len(dimentions) > 1:
+            self.initial_state.registers["s7"] = Register("s7", Type.work_group_id_y)
+            self.initial_state.registers["v1"] = Register("v1", Type.work_item_id_y)
+        if len(dimentions) > 2:
+            self.initial_state.registers["s8"] = Register("s8", Type.work_group_id_z)
+            self.initial_state.registers["v2"] = Register("v2", Type.work_item_id_z)
+
+        self.sgprsnum = int(set_of_config[2][10:])
+        self.vgprsnum = int(set_of_config[3][10:])
+        self.initial_state.registers["s4"] = Register("s4", Type.arguments_pointer)
+        self.initial_state.registers["s5"] = Register("s5", Type.arguments_pointer)
+        parameters = set_of_config[17:]
+        num_of_param = 0
+        for param in parameters:
+            set_of_param = param.strip().replace(',', ' ').split()
+            self.params["param" + str(num_of_param)] = set_of_param[1]
+            num_of_param += 1
 
     def process_src(self, f):
-        with open('program.txt', 'r') as file:
-            set_of_instructions = file.read().splitlines()
-        last_node = Node("")  # root
+        with open('program_1.txt', 'r') as file:
+            body_of_file = file.read().splitlines()
+        flag_config = False
+        flag_instructions = False
+        set_of_instructions = []
+        set_of_config = []
+        for row in body_of_file:
+            row = row.strip()
+            if row == ".config":
+                flag_config = True
+                flag_instructions = False
+            elif row == ".text":
+                flag_instructions = True
+            elif flag_instructions:
+                set_of_instructions.append(row)
+            elif flag_config:
+                set_of_config.append(row)
+            else:
+                continue
+
+        self.process_config(set_of_config)
+        last_node = Node("", self.initial_state)  # root
+        last_node_state = self.initial_state
         self.cfg = last_node
         for row in set_of_instructions:
             # instruction = row.strip().replace(',', ' ').split()
-            curr_node = self.make_cfg_node(row)
+
+            curr_node = self.make_cfg_node(row, last_node_state, f)
+            last_node_state = copy.deepcopy(curr_node.state)
             last_node.add_child(curr_node)
             last_node = curr_node
         curr_node = self.cfg
         while curr_node.children:
-            self.to_openCL(curr_node.children[0], f)
+            self.to_openCL(curr_node.children[0], f, False)
             curr_node = curr_node.children[0]
 
-    def make_cfg_node(self, instruction):
-        return Node(instruction)
+    def make_cfg_node(self, instruction, last_node_state, f):
+        return self.to_openCL(Node(instruction, last_node_state), f, True)
 
-    def to_openCL(self, node, f):
+    def to_openCL(self, node, f, flag_of_status):
         tab = "    "
         instruction = node.instruction.strip().replace(',', ' ').split()
         operation = instruction[0]
@@ -175,7 +358,16 @@ class Decompiler:
                     vaddr = instruction[1]
                     vdata = instruction[2]
                     inst_offset = "0" if len(instruction) < 4 else instruction[3]
-                    f.write("*(uint*)(" + vaddr + " + " + inst_offset + ") = " + vdata + "\n")  # нужен ли номер...
+                    first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
+                        = node.state.find_first_last_num_to_from(vaddr, vdata)
+                    if flag_of_status:
+                        while first_to != last_to:
+                            to_now = name_of_register + str(first_to)
+                            first_to += 1
+                            node.state.registers[to_now] = Register(vdata, node.state.registers[from_registers].type)
+                        return node
+                    f.write("*(uint*)(" + vaddr + " + " + inst_offset + ") = " + node.state.registers[name_of_register + str(first_to)].val + "\n")
+                    # f.write("*(uint*)(" + vaddr + " + " + inst_offset + ") = " + vdata + "\n")  # нужен ли номер...
 
                 elif suffix == "dwordx4":
                     vaddr = instruction[1]
@@ -226,8 +418,21 @@ class Decompiler:
                     sdst = instruction[1]
                     ssrc0 = instruction[2]
                     ssrc1 = instruction[3]
+                    new_val = "(ulong)" + ssrc0 + " + (ulong)" + ssrc1
+                    if flag_of_status:
+                        if node.state.registers[ssrc0].type == Type.work_group_id_x_local_size \
+                                and node.state.registers[ssrc1].type == Type.global_offset_x:
+                            node.state.registers[sdst] = Register(new_val, Type.work_group_id_x_local_size_offset)
+                        elif node.state.registers[ssrc0].type == Type.work_group_id_y_local_size \
+                                and node.state.registers[ssrc1].type == Type.global_offset_y:
+                            node.state.registers[sdst] = Register(new_val, Type.work_group_id_y_local_size_offset)
+                        elif node.state.registers[ssrc0].type == Type.work_group_id_z_local_size \
+                                and node.state.registers[ssrc1].type == Type.global_offset_z:
+                            node.state.registers[sdst] = Register(new_val, Type.work_group_id_z_local_size_offset)
+                        return node
+
                     temp = "temp" + str(self.number_of_temp)
-                    f.write("ulong " + temp + " = (ulong)" + ssrc0 + " + (ulong)" + ssrc1 + "\n")
+                    f.write("ulong " + temp + " = " + new_val + "\n")
                     f.write(sdst + " = " + temp + "\n")
                     f.write("scc = " + temp + " >> 32\n")
                     self.number_of_temp += 1
@@ -349,7 +554,9 @@ class Decompiler:
                     f.write(sdst + " = scc ? " + ssrc0 + " : " + ssrc1 + "\n")
 
             elif root == 'endpgm':
-                f.write("END Programm\n")
+                if flag_of_status:
+                    return node
+                f.write("END Program\n")
             # здесь должна будет быть закрывающаяся скобка
             elif root == 'getpc':
                 if suffix == 'b64':
@@ -367,7 +574,13 @@ class Decompiler:
                     sdata = instruction[1]
                     sbase = instruction[2]
                     offset = instruction[3]
-                    f.write(sdata + " = *(ulong*)(smem + (" + offset + " & ~3))\n")  # smem??? как и dc..
+                    first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
+                        = node.state.find_first_last_num_to_from(sdata, sbase)
+                    if flag_of_status:
+                        node.state.upload(sdata, sbase, offset, self.params)
+                        return node
+                    f.write(sdata + " = " + node.state.registers[to_registers].val + "\n")
+                    # f.write(sdata + " = *(ulong*)(smem + (" + offset + " & ~3))\n")  # smem??? как и dc..
 
                 elif suffix == 'dwordx4' or suffix == 'dwordx8':
                     sdata = instruction[1]
@@ -381,13 +594,37 @@ class Decompiler:
                     sdst = instruction[1]
                     ssrc0 = instruction[2]
                     ssrc1 = instruction[3]
-                    f.write(sdst + " = " + ssrc0 + " << (" + ssrc1 + " & " + str(int(suffix[1:]) - 1) + ")\n")
+                    if flag_of_status:
+                        if node.state.registers[ssrc0].type == Type.work_group_id_x:
+                            node.state.registers[sdst] = Register(ssrc0 + " * " + str(pow(2, int(ssrc1))),
+                                                                  Type.work_group_id_x_local_size)
+                            node.state.registers["scc"] = Register(sdst + "!= 0", Type.int32)
+                            return node
+                        elif node.state.registers[ssrc0].type == Type.work_group_id_y:
+                            node.state.registers[sdst] = Register(ssrc0 + " * " + str(pow(2, int(ssrc1))),
+                                                                  Type.work_group_id_y_local_size)
+                            node.state.registers["scc"].type = Register(sdst + "!= 0", Type.int32)
+                            return node
+                        elif node.state.registers[ssrc0].type == Type.work_group_id_z:
+                            node.state.registers[sdst] = Register(ssrc0 + " * " + str(pow(2, int(ssrc1))),
+                                                                  Type.work_group_id_z_local_size)
+                            node.state.registers["scc"] = Register(sdst + "!= 0", Type.int32)
+                            return node
+                        return node
+                    f.write(sdst + " = " + node.state.registers[sdst].val + "\n")
+                    # f.write(sdst + " = " + ssrc0 + " << (" + ssrc1 + " & " + str(int(suffix[1:]) - 1) + ")\n")
                     f.write("scc = " + sdst + " != 0\n")
 
             elif root == 'mov':
                 if suffix == 'b32' or suffix == 'b64':
                     sdst = instruction[1]
                     ssrc0 = instruction[2]
+                    if flag_of_status:
+                        if node.state.registers.get(ssrc0) is not None:
+                            node.state.registers[sdst] = Register(ssrc0, node.state.registers[ssrc0].type)
+                        else:
+                            node.state.registers[sdst] = Register(ssrc0, Type.int32)
+                        return node
                     f.write(sdst + " = " + ssrc0 + "\n")
 
             elif root == 'movk':
@@ -483,6 +720,8 @@ class Decompiler:
                     f.write("pc = " + ssrc0 + "\n")
 
             elif root == 'waitcnt':
+                if flag_of_status:
+                    return node
                 f.write("Not resolve yet. Maybe you lose.\n")
 
         elif prefix == 'v':
@@ -495,9 +734,29 @@ class Decompiler:
                     sdst = instruction[2]
                     src0 = instruction[3]
                     src1 = instruction[4]
+                    new_val = "(ulong)" + src0 + " + (ulong)" + src1
+                    if flag_of_status:
+                        if node.state.registers[src0].type == Type.work_group_id_x_local_size_offset and \
+                                node.state.registers[src1].type == Type.work_item_id_x:
+                            node.state.registers[vdst] = Register("get_global_id(0)", Type.global_id_x)
+                        elif node.state.registers[src0].type == Type.work_group_id_y_local_size_offset and \
+                                node.state.registers[src1].type == Type.work_item_id_y:
+                            node.state.registers[vdst] = Register("get_global_id(1)", Type.global_id_y)
+                        elif node.state.registers[src0].type == Type.work_group_id_z_local_size_offset and \
+                                node.state.registers[src1].type == Type.work_item_id_z:
+                            node.state.registers[vdst] = Register("get_global_id(2)", Type.global_id_z)
+                        elif node.state.registers[src0].type == Type.param \
+                                and node.state.registers[src1].type == Type.global_id_x:
+                            node.state.registers[vdst] = \
+                                Register(node.state.registers[src0].val + "[get_global_id(0)]",
+                                         Type.param_global_id_x)
+
+                        # не хватает описания sdst
+                        return node
+                    new_val = node.state.registers[vdst].val
                     temp = "temp" + str(self.number_of_temp)
                     mask = "mask" + str(self.number_of_mask)
-                    f.write("ulong " + temp + " = (ulong)" + src0 + " + (ulong)" + src1 + "\n")
+                    f.write("ulong " + temp + " = " + new_val + "\n")
                     f.write(vdst + " = clamp ? min(" + temp + ", 0xffffffff) : " + temp + "\n")
                     f.write(sdst + " = 0\n")
                     f.write("ulong " + mask + " = (1ULL << laneid)\n")
@@ -519,12 +778,18 @@ class Decompiler:
                     src0 = instruction[3]
                     src1 = instruction[4]
                     ssrc2 = instruction[5]
+                    new_val = " = (ulong)" + src0 + " + (ulong)" + src1
+                    if flag_of_status:
+                        if node.state.registers[src0].type == Type.param and node.state.registers[src1].type == Type.global_id_x:
+                            node.state.registers[vdst] = Register(node.state.registers[src0].val + "[get_global_id(0)]", Type.param_global_id_x)
+                        return node
+                    new_val = node.state.registers[vdst].val
                     temp = "temp" + str(self.number_of_temp)
                     mask = "mask" + str(self.number_of_mask)
                     cc = "cc" + str(self.number_of_cc)
                     f.write("ulong " + mask + " = (1ULL << laneid)\n")
-                    f.write("uchar " + cc + "((" + ssrc2 + " & " + mask + ") ? 1 : 0)\n")
-                    f.write("ulong " + temp + " = (ulong)" + src0 + " + (ulong)" + src1 + " + " + cc + "\n")
+                    f.write("uchar " + cc + " = ((" + ssrc2 + " & " + mask + ") ? 1 : 0)\n")
+                    f.write("ulong " + temp + " = " + new_val + " + " + cc + "\n")
                     f.write(sdst + " = 0\n")
                     f.write(vdst + " = clamp ? min(" + temp + ", 0xffffffff) : " + temp + "\n")
                     f.write(sdst + " = (" + sdst + " & ~" + mask + ") | ((" + temp + " >> 32) ? " + mask + " : 0)\n")
@@ -707,7 +972,21 @@ class Decompiler:
                     vdst = instruction[1]
                     src0 = instruction[2]
                     src1 = instruction[3]
-                    f.write(vdst + " = " + src1 + " << (" + src0 + " & 63)\n")
+                    first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
+                        = node.state.find_first_last_num_to_from(vdst, src1)
+                    if flag_of_status:
+                        to_registers_1 = name_of_register + str(last_to)
+                        from_registers_1 = name_of_from + str(first_from + 1)
+                        if node.state.registers[from_registers].type == Type.global_id_x \
+                                and node.state.registers[name_of_register + str(first_from + 1)].val == "0":
+                            node.state.registers[to_registers] = \
+                                Register(from_registers + " * " + str(pow(2, int(src0))), Type.global_id_x)
+                            node.state.registers[to_registers_1] = \
+                                Register(from_registers_1 + " * " + str(pow(2, int(src0))), Type.global_id_x)
+                        # нет описания под y и z
+                        return node
+                    f.write(vdst + " = " + node.state.registers[to_registers].val + "\n") #понять, что хочу выводить
+                    #f.write(vdst + " = " + src1 + " << (" + src0 + " & 63)\n")
 
             elif root == "lshrrev":
                 if suffix == "b64":
@@ -734,17 +1013,26 @@ class Decompiler:
                 if suffix == "b32":
                     vdst = instruction[1]
                     src0 = instruction[2]
-                    f.write(vdst + " = " + src0 + "\n")
+                    if flag_of_status:
+                        if node.state.registers.get(src0) is not None:
+                            node.state.registers[vdst] = \
+                                Register(src0, node.state.registers[src0].type)
+                        else:
+                            node.state.registers[vdst] = Register(src0, Type.int32)
+                        return node
+                    f.write(vdst + " = " + node.state.registers[vdst].val + "\n")
+                    # f.write(vdst + " = " + src0 + "\n")
         else:
             f.write("Not resolve yet. Maybe you lose.\n")
     # нет таких инструкций
 
 
 def main():
-    f = open('OpenCL.txt', 'w')
+    f = open('OpenCL_1.txt', 'w')
     decompiler = Decompiler()
     decompiler.process_src(f)
     f.close()
+
 
 if __name__ == "__main__":
     main()
