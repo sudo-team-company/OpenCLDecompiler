@@ -1,0 +1,30 @@
+s0 = s6 * 64
+scc = s0 != 0
+v2 = 0xface
+s[2:3] = get_global_offset(0)
+s[4:5] = data
+Not resolve yet. Maybe you lose.
+ulong temp0 = (ulong)s0 + (ulong)s2
+s0 = temp0
+scc = temp0 >> 32
+ulong temp1 = get_global_id(0)
+v0 = clamp ? min(temp1, 0xffffffff) : temp1
+vcc = 0
+ulong mask0 = (1ULL << laneid)
+vcc = (vcc & ~mask0) | ((temp1 >> 32) ? mask0 : 0
+v1 = 0
+v[0:1] = v0 * 4
+ulong temp2 = data[get_global_id(0)]
+v0 = clamp ? min(temp2, 0xffffffff) : temp2
+vcc = 0
+ulong mask1 = (1ULL << laneid)
+vcc = (vcc & ~mask1) | ((temp2 >> 32) ? mask1 : 0
+v3 = s5
+ulong mask2 = (1ULL << laneid)
+uchar cc0 = ((vcc & mask2) ? 1 : 0)
+ulong temp3 = s5[get_global_id(0)] + cc0
+vcc = 0
+v1 = clamp ? min(temp3, 0xffffffff) : temp3
+vcc = (vcc & ~mask2) | ((temp3 >> 32) ? mask2 : 0)
+*(uint*)(v[0:1] + 0) = v2
+END Program

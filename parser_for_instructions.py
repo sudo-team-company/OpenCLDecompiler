@@ -189,7 +189,7 @@ class Decompiler:
             num_of_param += 1
 
     def process_src(self, f):
-        with open('program_1.txt', 'r') as file:
+        with open('experiments\\program_1.asm', 'r') as file:
             body_of_file = file.read().splitlines()
         flag_config = False
         flag_instructions = False
@@ -1028,7 +1028,7 @@ class Decompiler:
 
 
 def main():
-    f = open('OpenCL_1.txt', 'w')
+    f = open('experiments\\OpenCL_1.txt', 'w')
     decompiler = Decompiler()
     decompiler.process_src(f)
     f.close()
