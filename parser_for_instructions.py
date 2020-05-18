@@ -176,7 +176,7 @@ class Decompiler:
         self.vgprsnum = 0
         self.params = {}
 
-    def process_config(self, set_of_config):
+    def process_config(self, set_of_config, f, name_of_program):
         dimentions = set_of_config[0][6:]
         if len(dimentions) > 0:
             self.initial_state.registers["s6"] = Register("s6", Type.work_group_id_x, Integrity.integer)
@@ -188,16 +188,34 @@ class Decompiler:
             self.initial_state.registers["s8"] = Register("s8", Type.work_group_id_z, Integrity.integer)
             self.initial_state.registers["v2"] = Register("v2", Type.work_item_id_z, Integrity.integer)
 
+        size_of_work_groups = set_of_config[1].replace(',', ' ').split()
+        f.write("__kernel __attribute__((reqd_work_group_size(" + size_of_work_groups[1] + ", " + size_of_work_groups[2] + ", " + size_of_work_groups[3] + ")))\n")
         self.sgprsnum = int(set_of_config[2][10:])
         self.vgprsnum = int(set_of_config[3][10:])
         self.initial_state.registers["s4"] = Register("s4", Type.arguments_pointer, Integrity.low_part)
         self.initial_state.registers["s5"] = Register("s5", Type.arguments_pointer, Integrity.high_part)
         parameters = set_of_config[17:]
+        f.write("void " + name_of_program + "(")
         num_of_param = 0
+        flag_start = False
         for param in parameters:
+            if not flag_start:
+                flag_start = True
+            else:
+                f.write(", ")
             set_of_param = param.strip().replace(',', ' ').split()
+            name_param = set_of_param[1]
+            type_param = set_of_param[3]
+            flag_param = ""
+            if len(set_of_param) > 4:
+                flag_param = "__" + set_of_param[4] + " "
             self.params["param" + str(num_of_param)] = set_of_param[1]
+            if type_param[-1] == "*":
+                name_param = "*" + name_param
+                type_param = type_param[:-1]
+            f.write(flag_param + type_param + " " + name_param)
             num_of_param += 1
+        f.write(")\n")
 
     def process_src(self, f):
         with open('experiments\\train.asm', 'r') as file:
@@ -206,8 +224,11 @@ class Decompiler:
         flag_instructions = False
         set_of_instructions = []
         set_of_config = []
+        name_of_program = ""
         for row in body_of_file:
             row = row.strip()
+            if row.find(".kernel ") != -1:
+                name_of_program = row.split()[1]
             if row == ".config":
                 flag_config = True
                 flag_instructions = False
@@ -220,7 +241,7 @@ class Decompiler:
             else:
                 continue
 
-        self.process_config(set_of_config)
+        self.process_config(set_of_config, f, name_of_program)
         last_node = Node("", self.initial_state)  # root
         last_node_state = self.initial_state
         self.cfg = last_node
@@ -386,7 +407,7 @@ class Decompiler:
                     if inst_offset != "0":
                         f.write("*(uint*)(" + prev_node.state.registers[to_registers].val + " + " + inst_offset + ") = " + node.state.registers[name_of_register + str(first_to)].val + "\n")
                     else:
-                        f.write(tab + "*(uint*)(" + prev_node.state.registers[to_registers].val + ") = " + node.state.registers[name_of_register + str(first_to)].val + "\n")
+                        f.write(tab + prev_node.state.registers[to_registers].val + " = " + node.state.registers[name_of_register + str(first_to)].val + "\n")
                     # f.write("*(uint*)(" + vaddr + " + " + inst_offset + ") = " + vdata + "\n")  # нужен ли номер...
 
                 elif suffix == "dwordx4":

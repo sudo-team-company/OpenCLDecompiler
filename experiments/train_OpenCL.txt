@@ -1,3 +1,5 @@
+__kernel __attribute__((reqd_work_group_size(8, 8, 1)))
+void copy3_new(int x, __global int *data)
 {
-    *(uint*)(data[get_global_id(0) - get_global_offset(0)]) = get_global_id(2) + get_global_id(1)
+    data[get_global_id(0) - get_global_offset(0)] = get_global_id(1)
 }
