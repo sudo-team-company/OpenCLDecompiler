@@ -56,6 +56,9 @@ class State:
                 "s6": None,
                 "s7": None,
                 "s8": None,
+                "s9": None,
+                "s10": None,
+                "s11": None,
                 "v0": None,
                 "v1": None,
                 "v2": None,
@@ -104,7 +107,7 @@ class State:
                 self.registers[to_registers] = Register("get_global_offset(0)", Type.global_offset_x, Integrity.integer)
                 self.registers[name_of_register + str(first_to + 1)] = Register("get_global_offset(0)",
                                                                                 Type.global_offset_x, Integrity.integer)
-                if num_of_registers > 2:
+                if last_to - first_to > 1:
                     self.registers[name_of_register + str(last_to - 1)] = \
                         Register("get_global_offset(1)", Type.global_offset_y, Integrity.integer)
                     self.registers[name_of_register + str(last_to)] = \
@@ -113,7 +116,7 @@ class State:
                 self.registers[to_registers] = Register("get_global_offset(1)", Type.global_offset_y, Integrity.integer)
                 self.registers[name_of_register + str(first_to + 1)] = \
                     Register("get_global_offset(1)", Type.global_offset_y, Integrity.integer)
-                if num_of_registers > 2:
+                if last_to - first_to > 1:
                     self.registers[name_of_register + str(last_to - 1)] = \
                         Register("get_global_offset(2)", Type.global_offset_z, Integrity.integer)
                     self.registers[name_of_register + str(last_to)] = \
@@ -197,7 +200,7 @@ class Decompiler:
             num_of_param += 1
 
     def process_src(self, f):
-        with open('experiments\\program_1.asm', 'r') as file:
+        with open('experiments\\train.asm', 'r') as file:
             body_of_file = file.read().splitlines()
         flag_config = False
         flag_instructions = False
@@ -229,6 +232,7 @@ class Decompiler:
             last_node.add_child(curr_node)
             last_node = curr_node
         curr_node = self.cfg
+        f.write("{\n")
         while curr_node.children:
             self.to_openCL(curr_node.children[0], f, False, curr_node)
             curr_node = curr_node.children[0]
@@ -379,7 +383,10 @@ class Decompiler:
                             node.state.registers[to_now] = \
                                 Register(node.state.registers[vdata].val, node.state.registers[from_registers].type, Integrity.high_part)
                         return node
-                    f.write("*(uint*)(" + prev_node.state.registers[to_registers].val + " + " + inst_offset + ") = " + node.state.registers[name_of_register + str(first_to)].val + "\n")
+                    if inst_offset != "0":
+                        f.write("*(uint*)(" + prev_node.state.registers[to_registers].val + " + " + inst_offset + ") = " + node.state.registers[name_of_register + str(first_to)].val + "\n")
+                    else:
+                        f.write(tab + "*(uint*)(" + prev_node.state.registers[to_registers].val + ") = " + node.state.registers[name_of_register + str(first_to)].val + "\n")
                     # f.write("*(uint*)(" + vaddr + " + " + inst_offset + ") = " + vdata + "\n")  # нужен ли номер...
 
                 elif suffix == "dwordx4":
@@ -572,7 +579,7 @@ class Decompiler:
             elif root == 'endpgm':
                 if flag_of_status:
                     return node
-                f.write("END Program\n")
+                f.write("}\n")
             # здесь должна будет быть закрывающаяся скобка
             elif root == 'getpc':
                 if suffix == 'b64':
@@ -584,7 +591,12 @@ class Decompiler:
                     sdata = instruction[1]
                     sbase = instruction[2]
                     offset = instruction[3]
-                    f.write(sdata + " = *(uint*)(smem + (" + offset + " & ~3))\n")
+                    first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
+                        = node.state.find_first_last_num_to_from(sdata, sbase)
+                    if flag_of_status:
+                        node.state.upload(sdata, sbase, offset, self.params)
+                        return node
+                    # f.write(sdata + " = *(uint*)(smem + (" + offset + " & ~3))\n")
 
                 elif suffix == 'dwordx2':
                     sdata = instruction[1]
@@ -602,8 +614,13 @@ class Decompiler:
                     sdata = instruction[1]
                     sbase = instruction[2]
                     offset = instruction[3]
-                    f.write("for (short i = 0; i < " + suffix[-1] + "; i++)\n")
-                    f.write(tab + sdata + " = *(uint*)(smem + i * 4 + (" + offset + " & ~3))\n")
+                    first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
+                        = node.state.find_first_last_num_to_from(sdata, sbase)
+                    if flag_of_status:
+                        node.state.upload(sdata, sbase, offset, self.params)
+                        return node
+                    # f.write("for (short i = 0; i < " + suffix[-1] + "; i++)\n")
+                    # f.write(tab + sdata + " = *(uint*)(smem + i * 4 + (" + offset + " & ~3))\n")
 
             elif root == 'lshl':
                 if suffix == 'b32' or suffix == 'b64':
@@ -765,12 +782,21 @@ class Decompiler:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = Register("get_global_id(2)", Type.global_id_z, new_integrity)
                         elif node.state.registers[src0].type == Type.param \
-                                and node.state.registers[src1].type == Type.global_id_x:
+                                and node.state.registers[src1].type in [Type.global_id_x, Type.global_id_y, Type.global_id_z, Type.unknown]:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = \
-                                Register(node.state.registers[src0].val + "[get_global_id(0)]",
+                                Register(node.state.registers[src0].val + "[" + node.state.registers[src1].val + "]",
                                          Type.param_global_id_x, new_integrity)
-
+                        elif node.state.registers[src0].type == Type.global_id_y and node.state.registers[src1].type == Type.global_id_z\
+                                or node.state.registers[src0].type == Type.global_id_z and node.state.registers[src1].type == Type.global_id_y:
+                            new_integrity = node.state.registers[src1].integrity
+                            node.state.registers[vdst] = \
+                                Register(node.state.registers[src0].val + " + " + node.state.registers[src1].val,
+                                         Type.unknown, new_integrity)
+                        elif node.state.registers[src0].type == Type.work_group_id_x_local_size and node.state.registers[src1].type == Type.work_item_id_x:
+                            new_integrity = node.state.registers[src1].integrity
+                            node.state.registers[vdst] = \
+                                Register("get_global_id(0) - get_global_offset(0)", Type.unknown, new_integrity)
                         # не хватает описания sdst
                         return node
                     # if node.state.registers[vdst].integrity == Integrity.integer:
@@ -805,20 +831,20 @@ class Decompiler:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = Register(node.state.registers[src0].val + "[get_global_id(0)]", Type.param_global_id_x, new_integrity)
                         return node
-                    if node.state.registers[vdst].integrity == Integrity.integer:
-                        new_val = node.state.registers[vdst].val
-                        temp = "temp" + str(self.number_of_temp)
-                        mask = "mask" + str(self.number_of_mask)
-                        cc = "cc" + str(self.number_of_cc)
-                        f.write("ulong " + mask + " = (1ULL << laneid)\n")
-                        f.write("uchar " + cc + " = ((" + ssrc2 + " & " + mask + ") ? 1 : 0)\n")
-                        f.write("ulong " + temp + " = " + new_val + " + " + cc + "\n")
-                        f.write(sdst + " = 0\n")
-                        f.write(vdst + " = clamp ? min(" + temp + ", 0xffffffff) : " + temp + "\n")
-                        f.write(sdst + " = (" + sdst + " & ~" + mask + ") | ((" + temp + " >> 32) ? " + mask + " : 0)\n")
-                        self.number_of_temp += 1
-                        self.number_of_mask += 1
-                        self.number_of_mask += 1
+                    # if node.state.registers[vdst].integrity == Integrity.integer:
+                    #     new_val = node.state.registers[vdst].val
+                    #     temp = "temp" + str(self.number_of_temp)
+                    #     mask = "mask" + str(self.number_of_mask)
+                    #     cc = "cc" + str(self.number_of_cc)
+                    #     f.write("ulong " + mask + " = (1ULL << laneid)\n")
+                    #     f.write("uchar " + cc + " = ((" + ssrc2 + " & " + mask + ") ? 1 : 0)\n")
+                    #     f.write("ulong " + temp + " = " + new_val + " + " + cc + "\n")
+                    #     f.write(sdst + " = 0\n")
+                    #     f.write(vdst + " = clamp ? min(" + temp + ", 0xffffffff) : " + temp + "\n")
+                    #     f.write(sdst + " = (" + sdst + " & ~" + mask + ") | ((" + temp + " >> 32) ? " + mask + " : 0)\n")
+                    #     self.number_of_temp += 1
+                    #     self.number_of_mask += 1
+                    #     self.number_of_mask += 1
 
             elif root == "alignbit":
                 if suffix == "b32":
@@ -1002,10 +1028,16 @@ class Decompiler:
                         from_registers_1 = name_of_from + str(first_from + 1)
                         if node.state.registers[from_registers].type == Type.global_id_x \
                                 and node.state.registers[name_of_register + str(first_from + 1)].val == "0":
+                            # node.state.registers[to_registers] = \
+                            #     Register(from_registers + " * " + str(pow(2, int(src0))), Type.global_id_x, Integrity.low_part)
+                            # node.state.registers[to_registers_1] = \
+                            #     Register(from_registers_1 + " * " + str(pow(2, int(src0))), Type.global_id_x, Integrity.high_part)
                             node.state.registers[to_registers] = \
-                                Register(from_registers + " * " + str(pow(2, int(src0))), Type.global_id_x, Integrity.low_part)
+                                Register(node.state.registers[from_registers].val, Type.global_id_x,
+                                         Integrity.low_part)
                             node.state.registers[to_registers_1] = \
-                                Register(from_registers_1 + " * " + str(pow(2, int(src0))), Type.global_id_x, Integrity.high_part)
+                                Register(node.state.registers[from_registers_1].val, Type.global_id_x,
+                                         Integrity.high_part)
                         # нет описания под y и z
                         return node
                     #f.write(vdst + " = " + node.state.registers[to_registers].val + " + " + node.state.registers[name_of_register + str(last_to)].val + "\n") #понять, что хочу выводить
@@ -1039,7 +1071,7 @@ class Decompiler:
                     if flag_of_status:
                         if node.state.registers.get(src0) is not None:
                             node.state.registers[vdst] = \
-                                Register(src0, node.state.registers[src0].type, Integrity.integer)
+                                Register(node.state.registers[src0].val, node.state.registers[src0].type, Integrity.integer)
                         else:
                             node.state.registers[vdst] = Register(src0, Type.int32, Integrity.integer)
                         return node
@@ -1051,7 +1083,7 @@ class Decompiler:
 
 
 def main():
-    f = open('experiments\\OpenCL_2.txt', 'w')
+    f = open('experiments\\train_OpenCL.txt', 'w')
     decompiler = Decompiler()
     decompiler.process_src(f)
     f.close()

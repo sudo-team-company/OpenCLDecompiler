@@ -1,0 +1,3 @@
+{
+    *(uint*)(data[get_global_id(0) - get_global_offset(0)]) = get_global_id(2) + get_global_id(1)
+}
