@@ -180,13 +180,13 @@ class Decompiler:
         dimentions = set_of_config[0][6:]
         if len(dimentions) > 0:
             self.initial_state.registers["s6"] = Register("s6", Type.work_group_id_x, Integrity.integer)
-            self.initial_state.registers["v0"] = Register("v0", Type.work_item_id_x, Integrity.integer)
+            self.initial_state.registers["v0"] = Register("get_local_id(0)", Type.work_item_id_x, Integrity.integer)
         if len(dimentions) > 1:
             self.initial_state.registers["s7"] = Register("s7", Type.work_group_id_y, Integrity.integer)
-            self.initial_state.registers["v1"] = Register("v1", Type.work_item_id_y, Integrity.integer)
+            self.initial_state.registers["v1"] = Register("get_local_id(1)", Type.work_item_id_y, Integrity.integer)
         if len(dimentions) > 2:
             self.initial_state.registers["s8"] = Register("s8", Type.work_group_id_z, Integrity.integer)
-            self.initial_state.registers["v2"] = Register("v2", Type.work_item_id_z, Integrity.integer)
+            self.initial_state.registers["v2"] = Register("get_local_id(2)", Type.work_item_id_z, Integrity.integer)
 
         size_of_work_groups = set_of_config[1].replace(',', ' ').split()
         f.write("__kernel __attribute__((reqd_work_group_size(" + size_of_work_groups[1] + ", " + size_of_work_groups[2] + ", " + size_of_work_groups[3] + ")))\n")
@@ -803,7 +803,7 @@ class Decompiler:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = Register("get_global_id(2)", Type.global_id_z, new_integrity)
                         elif node.state.registers[src0].type == Type.param \
-                                and node.state.registers[src1].type in [Type.global_id_x, Type.global_id_y, Type.global_id_z, Type.unknown]:
+                                and node.state.registers[src1].type in [Type.global_id_x, Type.global_id_y, Type.global_id_z, Type.unknown, Type.work_item_id_x, Type.work_item_id_y, Type.work_item_id_z]:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = \
                                 Register(node.state.registers[src0].val + "[" + node.state.registers[src1].val + "]",
@@ -818,6 +818,7 @@ class Decompiler:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = \
                                 Register("get_global_id(0) - get_global_offset(0)", Type.unknown, new_integrity)
+                        #elif node.state.registers[src0].type == Type.param and node.state.registers[src1].type
                         # не хватает описания sdst
                         return node
                     # if node.state.registers[vdst].integrity == Integrity.integer:
@@ -1036,7 +1037,9 @@ class Decompiler:
                     vdst = instruction[1]
                     src0 = instruction[2]
                     src1 = instruction[3]
-                    f.write(vdst + " = " + src1 + " << (" + src0 + " & 31)\n")
+                    if flag_of_status:
+                        return node
+                    #f.write(vdst + " = " + src1 + " << (" + src0 + " & 31)\n")
 
                 elif suffix == "b64":
                     vdst = instruction[1]
