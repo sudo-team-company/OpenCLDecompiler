@@ -27,6 +27,7 @@ class Type(Enum):
     param_global_id_y = auto()
     param_global_id_z = auto()
     param = auto()
+    paramA = auto()
     int32 = auto()
 
 
@@ -127,20 +128,43 @@ class State:
                                                                                 Type.global_offset_z, Integrity.integer)
             if offset == "0x30":
                 val_of_register = parameter_of_kernel["param0"]
-                if num_of_registers > 1:
-                    self.registers[to_registers] = Register(val_of_register, Type.param, Integrity.low_part)
-                    self.registers[name_of_register + str(last_to)] = \
-                        Register(val_of_register, Type.param, Integrity.high_part)
+                if val_of_register[0] == "*":
+                    type_param = Type.paramA
+                    val_of_register = val_of_register[1:]
                 else:
-                    self.registers[to_registers] = Register(val_of_register, Type.param, Integrity.integer)
+                    type_param = Type.param
+                if num_of_registers > 1:
+                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
+                    self.registers[name_of_register + str(last_to)] = \
+                        Register(val_of_register, type_param, Integrity.high_part)
+                else:
+                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
             if offset == "0x38":
                 val_of_register = parameter_of_kernel["param1"]
-                if num_of_registers > 1:
-                    self.registers[to_registers] = Register(val_of_register, Type.param, Integrity.low_part)
-                    self.registers[name_of_register + str(last_to)] = \
-                        Register(val_of_register, Type.param, Integrity.high_part)
+                if val_of_register[0] == "*":
+                    type_param = Type.paramA
+                    val_of_register = val_of_register[1:]
                 else:
-                    self.registers[to_registers] = Register(val_of_register, Type.param, Integrity.integer)
+                    type_param = Type.param
+                if num_of_registers > 1:
+                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
+                    self.registers[name_of_register + str(last_to)] = \
+                        Register(val_of_register, type_param, Integrity.high_part)
+                else:
+                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
+            if offset == "0x40":
+                val_of_register = parameter_of_kernel["param2"]
+                if val_of_register[0] == "*":
+                    type_param = Type.paramA
+                    val_of_register = val_of_register[1:]
+                else:
+                    type_param = Type.param
+                if num_of_registers > 1:
+                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
+                    self.registers[name_of_register + str(last_to)] = \
+                        Register(val_of_register, type_param, Integrity.high_part)
+                else:
+                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
 
 
 class Node:
@@ -209,10 +233,10 @@ class Decompiler:
             flag_param = ""
             if len(set_of_param) > 4:
                 flag_param = "__" + set_of_param[4] + " "
-            self.params["param" + str(num_of_param)] = set_of_param[1]
             if type_param[-1] == "*":
                 name_param = "*" + name_param
                 type_param = type_param[:-1]
+            self.params["param" + str(num_of_param)] = name_param
             f.write(flag_param + type_param + " " + name_param)
             num_of_param += 1
         f.write(")\n")
@@ -260,6 +284,9 @@ class Decompiler:
 
     def make_cfg_node(self, instruction, last_node_state, f):
         return self.to_openCL(Node(instruction, last_node_state), f, True, Node("", last_node_state))
+
+    def make_op(self, node, register1, register2, operation):
+        return node.state.registers[register1].val + operation + node.state.registers[register2].val
 
     def to_openCL(self, node, f, flag_of_status, prev_node):
         tab = "    "
@@ -802,7 +829,7 @@ class Decompiler:
                                 node.state.registers[src1].type == Type.work_item_id_z:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = Register("get_global_id(2)", Type.global_id_z, new_integrity)
-                        elif node.state.registers[src0].type == Type.param \
+                        elif node.state.registers[src0].type == Type.paramA \
                                 and node.state.registers[src1].type in [Type.global_id_x, Type.global_id_y, Type.global_id_z, Type.unknown, Type.work_item_id_x, Type.work_item_id_y, Type.work_item_id_z]:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = \
@@ -818,6 +845,9 @@ class Decompiler:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = \
                                 Register("get_global_id(0) - get_global_offset(0)", Type.unknown, new_integrity)
+                        elif node.state.registers[src0]. type == Type.param or node.state.registers[src1]. type == Type.param:
+                            new_integrity = node.state.registers[src1].integrity
+                            node.state.registers[vdst] = Register(self.make_op(node, src0, src1, " + "), Type.unknown, new_integrity)
                         #elif node.state.registers[src0].type == Type.param and node.state.registers[src1].type
                         # не хватает описания sdst
                         return node
@@ -849,7 +879,7 @@ class Decompiler:
                     ssrc2 = instruction[5]
                     new_val = " = (ulong)" + src0 + " + (ulong)" + src1
                     if flag_of_status:
-                        if node.state.registers[src0].type == Type.param and node.state.registers[src1].type == Type.global_id_x:
+                        if node.state.registers[src0].type == Type.paramA and node.state.registers[src1].type == Type.global_id_x:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = Register(node.state.registers[src0].val + "[get_global_id(0)]", Type.param_global_id_x, new_integrity)
                         return node

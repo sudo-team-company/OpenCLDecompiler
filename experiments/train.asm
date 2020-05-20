@@ -1,11 +1,11 @@
-.kernel copy3_new
+.kernel localVarExample
     .config
         .dims xy
-        .cws 8, 8, 1
+        .cws 16, 16, 1
         .sgprsnum 16
-        .vgprsnum 5
+        .vgprsnum 4
         .floatmode 0xc0
-        .pgmrsrc1 0x00ac0081
+        .pgmrsrc1 0x00ac0080
         .pgmrsrc2 0x0000098c
         .dx10clamp
         .ieeemode
@@ -20,18 +20,22 @@
         .arg x, "int", int
         .arg data, "int*", int*, global,
     .text
-        s_load_dwordx2  s[0:1], s[4:5], 0x8
-        s_load_dwordx2  s[2:3], s[4:5], 0x38
+        s_load_dwordx4  s[0:3], s[4:5], 0x0
         s_waitcnt       lgkmcnt(0)
-        s_lshl_b32      s1, s6, 3
-        v_add_u32       v2, vcc, s1, v0
-        s_lshl_b32      s1, s7, 3
-        s_add_u32       s0, s1, s0
-        v_mov_b32       v3, 0
-        v_lshlrev_b64   v[2:3], 2, v[2:3]
-        v_add_u32       v4, vcc, s0, v1
-        v_add_u32       v0, vcc, s2, v2
-        v_mov_b32       v1, s3
-        v_addc_u32      v1, vcc, v1, v3, vcc
-        flat_store_dword v[0:1], v4
+        s_load_dword    s1, s[4:5], 0x30
+        s_load_dwordx2  s[4:5], s[4:5], 0x38
+        s_lshl_b32      s3, s6, 4
+        s_lshl_b32      s6, s7, 4
+        s_add_u32       s2, s6, s2
+        s_waitcnt       lgkmcnt(0)
+        s_add_u32       s1, s2, s1
+        v_add_u32       v2, vcc, s1, v1
+        s_add_u32       s0, s3, s0
+        v_add_u32       v0, vcc, s0, v0
+        v_mov_b32       v1, 0
+        v_lshlrev_b64   v[0:1], 2, v[0:1]
+        v_add_u32       v0, vcc, s4, v0
+        v_mov_b32       v3, s5
+        v_addc_u32      v1, vcc, v3, v1, vcc
+        flat_store_dword v[0:1], v2
         s_endpgm
