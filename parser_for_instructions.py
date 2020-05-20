@@ -835,17 +835,18 @@ class Decompiler:
                             node.state.registers[vdst] = \
                                 Register(node.state.registers[src0].val + "[" + node.state.registers[src1].val + "]",
                                          Type.param_global_id_x, new_integrity)
-                        elif node.state.registers[src0].type == Type.global_id_y and node.state.registers[src1].type == Type.global_id_z\
-                                or node.state.registers[src0].type == Type.global_id_z and node.state.registers[src1].type == Type.global_id_y:
-                            new_integrity = node.state.registers[src1].integrity
-                            node.state.registers[vdst] = \
-                                Register(node.state.registers[src0].val + " + " + node.state.registers[src1].val,
-                                         Type.unknown, new_integrity)
+                        # elif node.state.registers[src0].type == Type.global_id_y and node.state.registers[src1].type == Type.global_id_z\
+                        #         or node.state.registers[src0].type == Type.global_id_z and node.state.registers[src1].type == Type.global_id_y:
+                        #     new_integrity = node.state.registers[src1].integrity
+                        #     node.state.registers[vdst] = \
+                        #         Register(node.state.registers[src0].val + " + " + node.state.registers[src1].val,
+                        #                  Type.unknown, new_integrity)
                         elif node.state.registers[src0].type == Type.work_group_id_x_local_size and node.state.registers[src1].type == Type.work_item_id_x:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = \
                                 Register("get_global_id(0) - get_global_offset(0)", Type.unknown, new_integrity)
-                        elif node.state.registers[src0]. type == Type.param or node.state.registers[src1]. type == Type.param:
+                        # elif node.state.registers[src0]. type == Type.param or node.state.registers[src1]. type == Type.param:
+                        else:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = Register(self.make_op(node, src0, src1, " + "), Type.unknown, new_integrity)
                         #elif node.state.registers[src0].type == Type.param and node.state.registers[src1].type
@@ -1131,6 +1132,17 @@ class Decompiler:
                         return node
                     #f.write(vdst + " = " + node.state.registers[vdst].val + "\n")
                     # f.write(vdst + " = " + src0 + "\n")
+            elif root == "sub":
+                if suffix == "u32":
+                    vdst = instruction[1]
+                    vcc = instruction[2]
+                    src0 = instruction[3]
+                    src1 = instruction[4]
+                    if flag_of_status:
+                        new_integrity = node.state.registers[src1].integrity
+                        node.state.registers[vdst] = Register(self.make_op(node, src0, src1, " - "), Type.unknown, new_integrity)
+                        return node
+
         else:
             f.write("Not resolve yet. Maybe you lose.\n")
     # нет таких инструкций

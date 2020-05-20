@@ -27,9 +27,9 @@
         s_lshl_b32      s3, s6, 4
         s_lshl_b32      s6, s7, 4
         s_add_u32       s2, s6, s2
+        v_add_u32       v1, vcc, s2, v1
         s_waitcnt       lgkmcnt(0)
-        s_add_u32       s1, s2, s1
-        v_add_u32       v2, vcc, s1, v1
+        v_sub_u32       v2, vcc, s1, v1
         s_add_u32       s0, s3, s0
         v_add_u32       v0, vcc, s0, v0
         v_mov_b32       v1, 0
