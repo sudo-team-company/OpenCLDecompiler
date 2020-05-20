@@ -19,18 +19,21 @@
         .arg _.aqlwrap_pointer, "size_t", long
         .arg x, "int", int
         .arg data, "int*", int*, global,
+        .arg y, "int", int
     .text
         s_load_dwordx4  s[0:3], s[4:5], 0x0
         s_waitcnt       lgkmcnt(0)
         s_load_dword    s1, s[4:5], 0x30
-        s_lshl_b32      s3, s7, 4
+        s_load_dword    s3, s[4:5], 0x40
         s_load_dwordx2  s[4:5], s[4:5], 0x38
         s_lshl_b32      s6, s6, 4
-        s_add_u32       s2, s3, s2
+        s_lshl_b32      s7, s7, 4
+        s_add_u32       s2, s7, s2
         v_add_u32       v1, vcc, s2, v1
-        s_add_u32       s0, s6, s0
         s_waitcnt       lgkmcnt(0)
-        v_mul_lo_u32    v2, v1, s1
+        v_mul_lo_u32    v1, v1, s1
+        v_subrev_u32    v2, vcc, s3, v1
+        s_add_u32       s0, s6, s0
         v_add_u32       v0, vcc, s0, v0
         v_mov_b32       v1, 0
         v_lshlrev_b64   v[0:1], 2, v[0:1]

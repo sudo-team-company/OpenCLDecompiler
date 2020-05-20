@@ -1159,6 +1159,18 @@ class Decompiler:
                         node.state.registers[vdst] = Register(self.make_op(node, src0, src1, " - "), Type.unknown, new_integrity)
                         return node
 
+            elif root == "subrev":
+                if suffix == "u32":
+                    vdst = instruction[1]
+                    vcc = instruction[2]
+                    src0 = instruction[3]
+                    src1 = instruction[4]
+                    if flag_of_status:
+                        new_integrity = node.state.registers[src1].integrity
+                        node.state.registers[vdst] = Register(self.make_op(node, src1, src0, " - "), Type.unknown,
+                                                              new_integrity)
+                        return node
+
         else:
             f.write("Not resolve yet. Maybe you lose.\n")
     # нет таких инструкций
