@@ -296,6 +296,12 @@ class Decompiler:
         prefix = parts_of_operation[0]
         suffix = parts_of_operation[-1]
         root = parts_of_operation[1]
+        if len(parts_of_operation) > 3:
+            for part in parts_of_operation[2:-1]:
+                if part in ["b32", 'b64', "u32", "u64"]: #дописать!
+                    suffix = part + "_" + suffix
+                else:
+                    root = root + "_" + part
         if prefix == "ds":
             if root == "bpermute":
                 if suffix == "b32":
@@ -684,7 +690,7 @@ class Decompiler:
                         elif node.state.registers[ssrc0].type == Type.work_group_id_y:
                             node.state.registers[sdst] = Register(ssrc0 + " * " + str(pow(2, int(ssrc1))),
                                                                   Type.work_group_id_y_local_size, Integrity.integer)
-                            node.state.registers["scc"].type = Register(sdst + "!= 0", Type.int32, Integrity.integer)
+                            node.state.registers["scc"] = Register(sdst + "!= 0", Type.int32, Integrity.integer)
                             return node
                         elif node.state.registers[ssrc0].type == Type.work_group_id_z:
                             node.state.registers[sdst] = Register(ssrc0 + " * " + str(pow(2, int(ssrc1))),
@@ -1118,6 +1124,16 @@ class Decompiler:
                     src0 = instruction[2]
                     src1 = instruction[3]
                     f.write(vdst + " = as_double(" + src0 + ") * as_double(" + src1 + ")\n")
+
+            elif root == "mul_lo":
+                if suffix == "u32":
+                    vdst = instruction[1]
+                    src0 = instruction[2]
+                    src1 = instruction[3]
+                    if flag_of_status:
+                        new_integrity = node.state.registers[src1].integrity
+                        node.state.registers[vdst] = Register(self.make_op(node, src0, src1, " * "), Type.unknown, new_integrity)
+                        return node
 
             elif root == "mov":
                 if suffix == "b32":
