@@ -30,6 +30,7 @@ class Type(Enum):
     param_global_id_z = auto()
     param = auto()
     paramA = auto()
+    program_param = auto()
     int32 = auto()
 
 
@@ -187,6 +188,7 @@ class TypeNode(Enum):
     basic = auto()
     linear = auto()
     ifstatement = auto()
+    ifelsestatement = auto()
 
 
 class Region:
@@ -369,6 +371,22 @@ class Decompiler:
                 region_all.add_child(child)
         return start_region
 
+    def check_if(self, curr_region):
+        if curr_region.type == TypeNode.basic and len(curr_region.children) == 2 \
+                and curr_region.children[1].type == TypeNode.basic \
+                and curr_region.children[0].children[0] == curr_region.children[1]:
+            return True
+        else:
+            return False
+
+    def add_parent_and_child(self, before_r, next_r, region, pred_child, pred_parent):
+        before_r.children.remove(pred_child)
+        before_r.add_child(region)
+        region.add_parent(before_r)
+        next_r.parent.remove(pred_parent)
+        next_r.add_parent(region)
+        region.add_child(next_r)
+
     def process_cfg(self):
         curr_node = self.cfg
         region = Region(TypeNode.linear, curr_node)
@@ -419,24 +437,53 @@ class Decompiler:
             if curr_region not in visited:
                 visited.append(curr_region)
                 if curr_region.type != TypeNode.linear:
-                    if curr_region.type == TypeNode.basic and len(curr_region.children) == 2 \
-                            and curr_region.children[1].type == TypeNode.basic \
-                            and curr_region.children[0].children[0] == curr_region.children[1]:
-                        region = Region(TypeNode.ifstatement, curr_region)
-                        child0 = curr_region.children[0]
-                        child1 = curr_region.children[1]
-                        region.end = child1
-                        visited.append(child1)
-                        visited.append(child0)
-                        before_r = curr_region.parent[0]
-                        before_r.children.remove(curr_region)
-                        before_r.add_child(region)
-                        region.add_parent(before_r)
-                        next_r = child1.children[0]
-                        next_r.parent.remove(child1)
-                        next_r.add_parent(region)
-                        region.add_child(next_r)
-                        start_region = self.union_regions(before_r, region, next_r, start_region)
+
+                    if self.check_if(curr_region):
+                        last_if_region = curr_region.children[1]
+                        if last_if_region.children and last_if_region.children[0].type == TypeNode.linear \
+                                and last_if_region.children[0].start == last_if_region.children[0].end \
+                                and last_if_region.children[0].start.instruction.find("s_andn2") != -1 \
+                                and last_if_region.children[0].children \
+                                and last_if_region.children[0].children[0] != TypeNode.linear \
+                                and self.check_if(last_if_region.children[0].children[0]):
+                            region = Region(TypeNode.ifelsestatement, curr_region)
+                            if_body = curr_region.children[0]
+                            # if isinstance(if_body.start, Node):
+                            last_state_if = if_body.end.state.registers
+                            last_if_region = curr_region.children[1]
+                            and_n2 = last_if_region.children[0]
+                            else_start = and_n2.children[0]
+                            else_body = else_start.children[0]
+                            last_state_else = else_body.end.state.registers
+                            last_else_region = else_start.children[1]
+                            for key in last_state_if:
+                                if last_state_else[key] is not None and last_state_if[key] is not None \
+                                        and last_state_else[key].val == last_state_if[key].val \
+                                        and last_state_else[key].type == last_state_if[key].type \
+                                        and last_state_else[key].integrity == last_state_if[key].integrity:
+                                    last_else_region.start.state.registers[key] = last_state_if[key]
+                            curr_node = last_else_region.start
+                            while curr_node.children:
+                                node = self.to_openCL(Node(curr_node.children[0].instruction, copy.deepcopy(curr_node.state)), True)
+                                curr_node.children[0].state = copy.deepcopy(node.state)
+                                curr_node = curr_node.children[0]
+                            visited.extend([if_body, last_if_region, and_n2, else_start, else_body, last_else_region])
+                            before_r = curr_region.parent[0]
+                            next_r = last_else_region.children[0]
+                            self.add_parent_and_child(before_r, next_r, region, curr_region, last_else_region)
+                            start_region = self.union_regions(before_r, region, next_r, start_region)
+
+                        else:
+                            region = Region(TypeNode.ifstatement, curr_region)
+                            child0 = curr_region.children[0]
+                            child1 = curr_region.children[1]
+                            region.end = child1
+                            visited.append(child1)
+                            visited.append(child0)
+                            before_r = curr_region.parent[0]
+                            next_r = child1.children[0]
+                            self.add_parent_and_child(before_r, next_r, region, curr_region, child1)
+                            start_region = self.union_regions(before_r, region, next_r, start_region)
                         if curr_region.children:
                             for child in curr_region.children:
                                 if child not in [visited]:
@@ -488,6 +535,32 @@ class Decompiler:
             self.to_openCL(region.start.start, False)
             self.output_file.write(") {\n")
             self.make_output(region.start.children[0], '    ')
+            self.output_file.write("}\n")
+        elif region.type == TypeNode.ifelsestatement:
+            self.output_file.write("    int variable\n")
+            self.output_file.write("    if (")
+            self.to_openCL(region.start.start, False)
+            self.output_file.write(") {\n")
+            if_body = region.start.children[0]
+            self.make_output(if_body, '    ')
+            if isinstance(if_body.start, Node) and if_body.end.instruction.find("store") == -1:
+                last_node = if_body.end
+                reg = last_node.instruction.split()[1][:-1]
+                val_of_reg = last_node.state.registers[reg].val
+                self.output_file.write("      variable = " + val_of_reg + "\n")
+                self.initial_state.registers[reg] = Register("variable", Type.program_param, Integrity.integer)
+            self.output_file.write(indent + "    }\n")
+            last_if_region = region.start.children[1]
+            and_n2 = last_if_region.children[0]
+            else_start = and_n2.children[0]
+            else_body = else_start.children[0]
+            last_else_region = else_start.children[1]
+            self.output_file.write("    else {\n")
+            self.make_output(else_body, '    ')
+            if isinstance(else_body.start, Node) and else_body.end.instruction.find("store") == -1:
+                reg = else_body.end.instruction.split()[1][:-1]
+                self.output_file.write("      variable = " + else_body.end.state.registers[reg].val + "\n")
+                self.initial_state.registers[reg] = Register("variable", Type.program_param, Integrity.integer)
             self.output_file.write("    }\n")
 
     def to_openCL(self, node, flag_of_status):
@@ -645,21 +718,27 @@ class Decompiler:
                                 Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
                                          Integrity.integer)
                         else:
-                            node.state.registers[to_registers] = \
-                                Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
-                                         Integrity.low_part)
                             to_now = name_of_register + str(first_to + 1)
-                            node.state.registers[to_now] = \
-                                Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
-                                         Integrity.high_part)
+                            if node.state.registers.get(vdata):
+                                node.state.registers[to_registers] = \
+                                    Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
+                                             Integrity.low_part)
+                                node.state.registers[to_now] = \
+                                    Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
+                                             Integrity.high_part)
+                            else:
+                                return node
                         return node
                     if inst_offset != "0":
                         self.output_file.write(
                             "*(uint*)(" + node.parent[0].state.registers[to_registers].val + " + " + inst_offset + ") = " +
                             node.state.registers[name_of_register + str(first_to)].val + "\n")
                     else:
-                        self.output_file.write(tab + node.parent[0].state.registers[to_registers].val + " = " + node.state.registers[
-                            name_of_register + str(first_to)].val + "\n")
+                        if node.state.registers.get(from_registers):
+                            self.output_file.write(tab + node.parent[0].state.registers[to_registers].val + " = " + node.state.registers[from_registers].val + "\n")
+                        else:
+                            self.output_file.write(
+                                tab + node.parent[0].state.registers[to_registers].val + " = " + self.initial_state.registers[from_registers].val + "\n")
                     # self.output_file.write("*(uint*)(" + vaddr + " + " + inst_offset + ") = " + vdata + "\n")  # нужен ли номер...
 
                 elif suffix == "dwordx4":
@@ -769,8 +848,10 @@ class Decompiler:
                     sdst = instruction[1]
                     ssrc0 = instruction[2]
                     ssrc1 = instruction[3]
-                    self.output_file.write(sdst + " = " + ssrc0 + " & ~" + ssrc1 + "\n")
-                    self.output_file.write("scc = " + sdst + " != 0\n")
+                    if flag_of_status:
+                        return node
+                    # self.output_file.write(sdst + " = " + ssrc0 + " & ~" + ssrc1 + "\n")
+                    # self.output_file.write("scc = " + sdst + " != 0\n")
 
             elif root == 'ashr':
                 if suffix == 'i32':
@@ -957,7 +1038,10 @@ class Decompiler:
                     sdst = instruction[1]
                     ssrc0 = instruction[2]
                     ssrc1 = instruction[3]
-                    self.output_file.write(sdst + " = " + ssrc0 + " * " + ssrc1 + "\n")
+                    if flag_of_status:
+                        node.state.registers[sdst] = Register(self.make_op(node, ssrc0, ssrc1, " * "), Type.unknown, Integrity.integer)
+                        return node
+                    #self.output_file.write(sdst + " = " + ssrc0 + " * " + ssrc1 + "\n")
 
             elif root == 'mulk':
                 if suffix == 'i32':
@@ -1224,7 +1308,10 @@ class Decompiler:
                     sdst = instruction[1]
                     src0 = instruction[2]
                     src1 = instruction[3]
-                    self.output_file.write(sdst + " = (int)" + src0 + " != (int)" + src1 + "\n")
+                    if flag_of_status:
+                        node.state.registers[sdst] = Register(node.state.registers[src0].val + " != " + src1, Type.unknown, Integrity.integer)
+                        return node
+                    # self.output_file.write(sdst + " = (int)" + src0 + " != (int)" + src1 + "\n")
 
                 elif suffix == "u32":
                     sdst = instruction[1]
@@ -1265,7 +1352,12 @@ class Decompiler:
                     src0 = instruction[2]
                     src1 = instruction[3]
                     ssrc2 = instruction[4]
-                    self.output_file.write(vdst + " = " + ssrc2 + " & (1ULL << laneid) ? " + src1 + " : " + src0 + "\n")
+                    name_of_variable = "variable"
+                    if flag_of_status:
+                        node.state.registers[vdst] = Register(name_of_variable, Type.program_param, Integrity.integer)
+                        return node
+                    self.output_file.write(tab + "int " + node.state.registers[vdst].val + " = " + node.state.registers[ssrc2].val + " ? " + node.state.registers[src1].val + " : " + node.parent[0].state.registers[src0].val + "\n")
+                    #self.output_file.write(vdst + " = " + ssrc2 + " & (1ULL << laneid) ? " + src1 + " : " + src0 + "\n")
 
             elif root == "cvt":
                 if suffix == "f32_u32":
