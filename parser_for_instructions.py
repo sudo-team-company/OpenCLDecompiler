@@ -690,8 +690,17 @@ class Decompiler:
                 if suffix == "dword":
                     vdst = instruction[1]
                     vaddr = instruction[2]
-                    inst_offset = instruction[3]
-                    self.output_file.write(vdst + " = *(uint)(" + vaddr + " + " + inst_offset + "\n")
+                    inst_offset = instruction[3] if len(instruction) > 3 else ""
+                    if flag_of_status:
+                        first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
+                            = node.state.find_first_last_num_to_from(vdst, vaddr)
+                        if inst_offset == "":
+                            if first_to == last_to:
+                                node.state.registers[to_registers] = \
+                                    Register(node.state.registers[from_registers].val, node.state.registers[from_registers].type,
+                                             Integrity.integer)
+                        return node
+                    #self.output_file.write(vdst + " = *(uint)(" + vaddr + " + " + inst_offset + "\n")
 
                 elif suffix == "dwordx4":
                     vdst = instruction[1]
@@ -1046,8 +1055,12 @@ class Decompiler:
             elif root == 'mulk':
                 if suffix == 'i32':
                     sdst = instruction[1]
-                    simm16 = instruction[2]
-                    self.output_file.write(sdst + " = " + sdst + " * " + simm16 + "\n")
+                    simm16 = instruction[2][instruction[2].find("x") + 1:]
+                    if flag_of_status:
+                        node.state.registers[sdst] = Register(node.state.registers[sdst].val + " * " + simm16, Type.unknown,
+                                                              Integrity.integer)
+                        return node
+                    #self.output_file.write(sdst + " = " + sdst + " * " + simm16 + "\n")
 
             elif root == 'not':
                 if suffix == 'b64':
