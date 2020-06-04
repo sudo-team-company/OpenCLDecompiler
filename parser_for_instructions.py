@@ -45,7 +45,25 @@ class Register:
         self.val = val
         self.type: Type = type_of_elem
         self.integrity: Integrity = integrity
+        self.version = None
+        self.prev_version = []
 
+    def add_version(self, name_version, num_version):
+        #name_version = version[:version.find("_")]
+        #num_version = version[version.find("_") + 1:]
+        self.version = name_version + "_" + str(num_version + 1)
+
+    def make_prev(self):
+        name_version = self.version[:self.version.find("_")]
+        num_version = self.version[self.version.find("_") + 1:]
+        self.prev_version = [name_version + "_" + str(int(num_version) - 1)]
+
+    def add_prev(self, prev_version):
+        self.prev_version.append(prev_version)
+
+    def update(self, key):
+         self.version = self.version[:self.version.find("_")] + "_" + str(
+            int(self.version[self.version.find("_") + 1:]) + 2)
 
 class State:
     def __init__(self):
@@ -103,32 +121,50 @@ class State:
             to_registers = name_of_register + str(first_to)
         return first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from
 
-    def upload(self, to_registers, from_registers, offset, parameter_of_kernel):
+    def make_version(self, parent, reg):
+        #prev_reg = parent.state.registers
+        #self.registers[reg].add_version(reg + "_0" if prev_reg.get(reg) is None or prev_reg[reg].version is None else prev_reg[reg].version)
+        par = copy.deepcopy(parent)
+        self.registers[reg].add_version(reg, par[reg])
+        parent[reg] += 1
+
+    def upload(self, to_registers, from_registers, offset, parameter_of_kernel, parent):
         first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
             = self.find_first_last_num_to_from(to_registers, from_registers)
+        #prev_regs = parent.state.registers
         if self.registers[from_registers].type == Type.arguments_pointer:
             if offset == "0x0":
                 self.registers[to_registers] = Register("get_global_offset(0)", Type.global_offset_x, Integrity.integer)
+                self.make_version(parent, to_registers)
                 self.registers[name_of_register + str(first_to + 1)] = Register("get_global_offset(0)",
                                                                                 Type.global_offset_x, Integrity.integer)
+                self.make_version(parent, name_of_register + str(first_to + 1))
                 if last_to - first_to > 1:
                     self.registers[name_of_register + str(last_to - 1)] = \
                         Register("get_global_offset(1)", Type.global_offset_y, Integrity.integer)
+                    self.make_version(parent, name_of_register + str(last_to - 1))
                     self.registers[name_of_register + str(last_to)] = \
                         Register("get_global_offset(1)", Type.global_offset_y, Integrity.integer)
+                    self.make_version(parent, name_of_register + str(last_to))
             if offset == "0x8":
                 self.registers[to_registers] = Register("get_global_offset(1)", Type.global_offset_y, Integrity.integer)
+                self.make_version(parent, to_registers)
                 self.registers[name_of_register + str(first_to + 1)] = \
                     Register("get_global_offset(1)", Type.global_offset_y, Integrity.integer)
+                self.make_version(parent, name_of_register + str(first_to + 1))
                 if last_to - first_to > 1:
                     self.registers[name_of_register + str(last_to - 1)] = \
                         Register("get_global_offset(2)", Type.global_offset_z, Integrity.integer)
+                    self.make_version(parent, name_of_register + str(last_to - 1))
                     self.registers[name_of_register + str(last_to)] = \
                         Register("get_global_offset(2)", Type.global_offset_z, Integrity.integer)
+                    self.make_version(parent, name_of_register + str(last_to))
             if offset == "0x10":
                 self.registers[to_registers] = Register("get_global_offset(2)", Type.global_offset_z, Integrity.integer)
+                self.make_version(parent, to_registers)
                 self.registers[name_of_register + str(first_to + 1)] = Register("get_global_offset(2)",
                                                                                 Type.global_offset_z, Integrity.integer)
+                self.make_version(parent, name_of_register + str(first_to + 1))
             if offset == "0x30":
                 val_of_register = parameter_of_kernel["param0"]
                 if val_of_register[0] == "*":
@@ -138,10 +174,13 @@ class State:
                     type_param = Type.param
                 if last_to - first_to >= 1:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
+                    self.make_version(parent, to_registers)
                     self.registers[name_of_register + str(last_to)] = \
                         Register(val_of_register, type_param, Integrity.high_part)
+                    self.make_version(parent, name_of_register + str(last_to))
                 else:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
+                    self.make_version(parent, to_registers)
             if offset == "0x38":
                 val_of_register = parameter_of_kernel["param1"]
                 if val_of_register[0] == "*":
@@ -151,10 +190,13 @@ class State:
                     type_param = Type.param
                 if last_to - first_to >= 1:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
+                    self.make_version(parent, to_registers)
                     self.registers[name_of_register + str(last_to)] = \
                         Register(val_of_register, type_param, Integrity.high_part)
+                    self.make_version(parent, name_of_register + str(last_to))
                 else:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
+                    self.make_version(parent, to_registers)
             if offset == "0x40":
                 val_of_register = parameter_of_kernel["param2"]
                 if val_of_register[0] == "*":
@@ -164,10 +206,13 @@ class State:
                     type_param = Type.param
                 if last_to - first_to >= 1:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
+                    self.make_version(parent, to_registers)
                     self.registers[name_of_register + str(last_to)] = \
                         Register(val_of_register, type_param, Integrity.high_part)
+                    self.make_version(parent, name_of_register + str(last_to))
                 else:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
+                    self.make_version(parent, to_registers)
 
 
 class Node:
@@ -212,7 +257,7 @@ class Decompiler:
         self.cfg = None
         self.improve_cfg = None
         # self.last_node = None
-        self.number_of_temp = 0
+        self.number_of_temp = 0  # версии для ассемблерного кода в случае отсутствия перевода
         self.number_of_shift = 0
         self.number_of_length = 0
         self.number_of_mask = 0
@@ -226,26 +271,67 @@ class Decompiler:
         self.number_of_v = 0
         self.number_of_vm = 0
         self.number_of_p = 0
-        self.initial_state = State()
-        self.sgprsnum = 0
-        self.vgprsnum = 0
+        self.initial_state = State()  # начальное состояние регистров
+        self.sgprsnum = 0  # количество s регистров, используемых системой
+        self.vgprsnum = 0  #  количество v регистров, используемых системой
         self.params = {}
         self.to_node = {}  # метка, с которой начинается блок -> вершина
         self.from_node = {}  # метку, которую ожидает вершина -> вершина ("лист ожидания")
         self.starts_regions = {}  # Node или Region -> Region
         self.ends_regions = {}  # Node или Region -> Region
+        self.label = None
+        self.parents_of_label = []
+        self.flag_of_else = False
+        self.version_wait = None
+        self.variables = {}
+        self.versions = {
+                "s0": 0,
+                "s1":  0,
+                "s2":  0,
+                "s3":  0,
+                "s4":  0,
+                "s5":  0,
+                "s6":  0,
+                "s7":  0,
+                "s8":  0,
+                "s9":  0,
+                "s10": 0,
+                "s11": 0,
+                "v0":  0,
+                "v1":  0,
+                "v2":  0,
+                "v3":  0,
+                "v4":  0,
+                "v5":  0,
+                "pc":  0,
+                "scc": 0,
+                "vcc": 0,
+                "exec": 0
+            }
 
     def process_config(self, set_of_config, name_of_program):
-        dimentions = set_of_config[0][6:]
-        if len(dimentions) > 0:
-            self.initial_state.registers["s6"] = Register("s6", Type.work_group_id_x, Integrity.integer)
+        dimensions = set_of_config[0][6:]
+        if len(dimensions) > 0:
+            self.initial_state.registers["s6"] = Register("get_group_id(0)", Type.work_group_id_x, Integrity.integer)
+            self.initial_state.registers["s6"].add_version("s6", self.versions["s6"])
+            self.versions["s6"] += 1
             self.initial_state.registers["v0"] = Register("get_local_id(0)", Type.work_item_id_x, Integrity.integer)
-        if len(dimentions) > 1:
-            self.initial_state.registers["s7"] = Register("s7", Type.work_group_id_y, Integrity.integer)
+            self.initial_state.registers["v0"].add_version("v0", self.versions["v0"])
+            self.versions["v0"] += 1
+        if len(dimensions) > 1:
+            self.initial_state.registers["s7"] = Register("get_group_id(1)", Type.work_group_id_y, Integrity.integer)
+            self.initial_state.registers["s7"].add_version("s7", self.versions["s7"])
+            self.versions["s7"] += 1
             self.initial_state.registers["v1"] = Register("get_local_id(1)", Type.work_item_id_y, Integrity.integer)
-        if len(dimentions) > 2:
-            self.initial_state.registers["s8"] = Register("s8", Type.work_group_id_z, Integrity.integer)
+            self.initial_state.registers["v1"].add_version("v1", self.versions["v1"])
+            self.versions["v1"] += 1
+        if len(dimensions) > 2:
+            self.initial_state.registers["s8"] = Register("get_group_id(2)", Type.work_group_id_z, Integrity.integer)
+            self.initial_state.registers["s8"].add_version("s8", self.versions["s8"])
+            self.versions["s8"] += 1
             self.initial_state.registers["v2"] = Register("get_local_id(2)", Type.work_item_id_z, Integrity.integer)
+            self.initial_state.registers["v2"].add_version("v2", self.versions["v2"])
+            self.versions["v2"] += 1
 
         size_of_work_groups = set_of_config[1].replace(',', ' ').split()
         self.output_file.write("__kernel __attribute__((reqd_work_group_size(" + size_of_work_groups[1] + ", "
@@ -253,7 +339,11 @@ class Decompiler:
         self.sgprsnum = int(set_of_config[2][10:])
         self.vgprsnum = int(set_of_config[3][10:])
         self.initial_state.registers["s4"] = Register("s4", Type.arguments_pointer, Integrity.low_part)
+        self.initial_state.registers["s4"].add_version("s4", self.versions["s4"])
+        self.versions["s4"] += 1
         self.initial_state.registers["s5"] = Register("s5", Type.arguments_pointer, Integrity.high_part)
+        self.initial_state.registers["s5"].add_version("s5", self.versions["s5"])
+        self.versions["s5"] += 1
         parameters = set_of_config[17:]
         self.output_file.write("void " + name_of_program + "(")
         num_of_param = 0
@@ -306,22 +396,157 @@ class Decompiler:
         last_node_state = self.initial_state
         self.cfg = last_node
         for row in set_of_instructions:
-            # instruction = row.strip().replace(',', ' ').split()
-
-            curr_node = self.make_cfg_node(row, last_node_state)
-            curr_node.add_parent(last_node)
+            instruction = row.strip().replace(',', ' ').split()
+            curr_node = self.make_cfg_node(instruction, last_node_state, last_node)
+            # curr_node.add_parent(last_node)
             last_node_state = copy.deepcopy(curr_node.state)
             last_node.add_child(curr_node)
             last_node = curr_node
+            if instruction[0][0] == ".":
+                self.label = curr_node
+                self.parents_of_label = curr_node.parent
+                self.flag_of_else = True
+            elif instruction[0].find("andn2") != -1 and self.flag_of_else:
+                continue
+            elif instruction[0].find("cbranch") != -1 and self.flag_of_else:
+                self.parents_of_label[0].children.remove(self.label)
+                self.parents_of_label[1].children.remove(self.label)
+                last_node = self.parents_of_label[1]
+                last_node_state = copy.deepcopy(self.parents_of_label[1].state)
+                self.from_node[instruction[1]].remove(curr_node)
+                if self.from_node.get(instruction[1], None) is None:
+                    self.from_node[instruction[1]] = [self.parents_of_label[0]]
+                else:
+                    self.from_node[instruction[1]].append(self.parents_of_label[0])
+                self.flag_of_else = False
+            else:
+                self.flag_of_else = False
+        self.make_version()
         self.process_cfg()
         self.output_file.write("{\n")
+        for key in self.variables.keys():
+            self.output_file.write("    " + self.variables[key] + "\n")
         self.make_output(self.improve_cfg, '')
         # while curr_node.children:
         #     self.to_openCL(curr_node.children[0], False)
         #     curr_node = curr_node.children[0]
 
-    def make_cfg_node(self, instruction, last_node_state):
-        return self.to_openCL(Node(instruction, last_node_state), True)
+    def make_cfg_node(self, instruction, last_node_state, last_node):
+        node = Node(instruction, last_node_state)
+        node.add_parent(last_node)
+        return self.to_openCL(node, True)
+
+    def make_version(self):
+        curr_node = self.cfg
+        visited = [curr_node]
+        q = deque()
+        q.append(curr_node.children[0])
+        while q:
+            curr_node = q.popleft()
+            if curr_node not in visited:
+                visited.append(curr_node)
+                if len(curr_node.parent) == 1:
+                    for child in curr_node.children:
+                        if child not in visited:
+                            q.append(child)
+                else:
+                    if self.version_wait is None:
+                        self.version_wait = curr_node
+                        visited.remove(curr_node)
+                    elif self.version_wait == curr_node:
+                        self.update_versions(curr_node)
+                        for child in curr_node.children:
+                            if child not in visited:
+                                q.append(child)
+        q.append(curr_node)
+        visited = []
+        num_of_variable = 0
+        not_touch = []
+        local_vars = {}
+        while q:
+            curr_node = q.popleft()
+            if curr_node not in visited:
+                visited.append(curr_node)
+                if len(curr_node.instruction) > 1:
+                    for register in curr_node.instruction[1:]:
+                        if curr_node.state.registers.get(register) is not None and register[1] != "[":
+                            variants = []
+                            for l_v in local_vars.keys():
+                                if l_v.find(register) != -1:
+                                    variants.append(l_v)
+                            for reg_version in variants:
+                                if curr_node.state.registers[register].version == reg_version:
+                                    curr_node.state.registers[register].val = local_vars[reg_version]
+                                    curr_node.state.registers[register].version = None
+                                    curr_node.state.registers[register].prev_version = []
+                                    break
+                        else:
+                            reg = register[1: register.find(":")]
+                            if curr_node.state.registers.get(reg) is not None:
+                                not_touch.append(register[register.find(":") + 1: -1])
+                                variants = []
+                                for l_v in local_vars.keys():
+                                    if l_v.find(reg) != -1:
+                                        variants.append(l_v)
+                                for reg_version in variants:
+                                    if curr_node.state.registers[reg].version == reg_version:
+                                        curr_node.state.registers[reg].val = local_vars[reg]
+                                        curr_node.state.registers[reg].version = None
+                                        curr_node.state.registers[reg].prev_version = []
+                if len(curr_node.instruction) > 2:
+                    for register in curr_node.instruction[2:]:
+                        if len(register) > 1 and register[1] != "[":
+                            if curr_node.state.registers.get(register) is not None \
+                                    and len(curr_node.state.registers[register].prev_version) > 1 \
+                                    and curr_node.state.registers[register].version not in not_touch:
+                                versions = curr_node.state.registers[register].prev_version
+                                var = "var" + str(num_of_variable)
+                                num_of_variable += 1
+                                local_vars[curr_node.state.registers[register].version] = var
+                                curr_node.state.registers[register].val = var
+                                for v in versions:
+                                    self.variables[v] = var
+                        else:
+                            reg = register[1: register.find(":")]
+                            #not_touch.append(register[register.find(":") + 1 : -1])
+                            if curr_node.state.registers.get(reg) is not None and len(curr_node.state.registers[reg].prev_version) > 1 \
+                                    and curr_node.state.registers[reg].version not in not_touch:
+                                versions = curr_node.state.registers[reg].prev_version
+                                var = "var" + str(num_of_variable)
+                                num_of_variable += 1
+                                local_vars[curr_node.state.registers[reg].version] = var
+                                curr_node.state.registers[reg].val = var
+                                for v in versions:
+                                    self.variables[v] = var
+                for parent in curr_node.parent:
+                    if parent not in visited:
+                        q.append(parent)
+
+    def update_versions(self, node):
+        diff_regs = {}
+        parent_0 = copy.deepcopy(node.parent[0].state.registers)
+        parent_1 = copy.deepcopy(node.parent[1].state.registers)
+        for key in parent_0.keys():
+            if parent_0.get(key) is not None and parent_1.get(key) is not None and parent_0[key].version != parent_1[key].version and key.find("v") != -1: # val and ver
+                diff_regs[key] = [parent_0[key].version, parent_1[key].version]
+        visited = []
+        q = deque()
+        q.append(node)
+        while q:
+            curr_node = q.popleft()
+            if curr_node not in visited:
+                visited.append(curr_node)
+                for key in diff_regs:
+                    if curr_node.state.registers[key].version == diff_regs[key][1]: #and len(curr_node.state.registers[key].prev_version) > 0:
+                    #if curr_node.state.registers[key].version == diff_regs[key][0][:diff_regs[key][0].find("_")] + "_" + str(int(diff_regs[key][0][diff_regs[key][0].find("_") + 1:]) + 1):
+                        curr_node.state.registers[key].prev_version = diff_regs[key]
+                    # update_version = curr_node.state.registers[key].version
+                    # update_version = update_version[:update_version.find("_")] + "_" + str(int(update_version[update_version.find("_") + 1:]) + 2)
+                    # curr_node.state.registers[key].version = update_version
+                    curr_node.state.registers[key].update(key)
+                for child in curr_node.children:
+                    if child not in visited:
+                        q.append(child)
 
     def make_op(self, node, register1, register2, operation):
         return node.state.registers[register1].val + operation + node.state.registers[register2].val
@@ -374,7 +599,17 @@ class Decompiler:
     def check_if(self, curr_region):
         if curr_region.type == TypeNode.basic and len(curr_region.children) == 2 \
                 and curr_region.children[1].type == TypeNode.basic \
+                and len(curr_region.children[0].children) > 0 \
                 and curr_region.children[0].children[0] == curr_region.children[1]:
+            return True
+        else:
+            return False
+
+    def check_if_else(self, curr_region):
+        if curr_region.type == TypeNode.basic and len(curr_region.children) == 2 \
+                and len(curr_region.children[0].children) > 0 \
+                and len(curr_region.children[1].children) > 0 \
+                and curr_region.children[0].children[0] == curr_region.children[1].children[0]:
             return True
         else:
             return False
@@ -417,7 +652,7 @@ class Decompiler:
                     self.starts_regions[curr_node] = region
                     self.ends_regions[curr_node] = region
                     for c_p in curr_node.parent:
-                        if curr_node in visited:
+                        if c_p in visited:
                             if self.ends_regions.get(c_p) is not None:
                                 parent = self.ends_regions[c_p]
                             else:
@@ -426,8 +661,11 @@ class Decompiler:
                             region.add_parent(parent)
 
                 for child in curr_node.children:
-                    if child not in [visited]:
+                    if child not in visited:
                         q.append(child)
+                    else:
+                        region.add_child(self.starts_regions[child])
+                        self.starts_regions[child].add_parent(region)
         start_region = self.starts_regions[self.cfg]
         visited = []
         q = deque()
@@ -440,53 +678,77 @@ class Decompiler:
 
                     if self.check_if(curr_region):
                         last_if_region = curr_region.children[1]
-                        if last_if_region.children and last_if_region.children[0].type == TypeNode.linear \
-                                and last_if_region.children[0].start == last_if_region.children[0].end \
-                                and last_if_region.children[0].start.instruction.find("s_andn2") != -1 \
-                                and last_if_region.children[0].children \
-                                and last_if_region.children[0].children[0] != TypeNode.linear \
-                                and self.check_if(last_if_region.children[0].children[0]):
-                            region = Region(TypeNode.ifelsestatement, curr_region)
-                            if_body = curr_region.children[0]
-                            # if isinstance(if_body.start, Node):
-                            last_state_if = if_body.end.state.registers
-                            last_if_region = curr_region.children[1]
-                            and_n2 = last_if_region.children[0]
-                            else_start = and_n2.children[0]
-                            else_body = else_start.children[0]
-                            last_state_else = else_body.end.state.registers
-                            last_else_region = else_start.children[1]
-                            for key in last_state_if:
-                                if last_state_else[key] is not None and last_state_if[key] is not None \
-                                        and last_state_else[key].val == last_state_if[key].val \
-                                        and last_state_else[key].type == last_state_if[key].type \
-                                        and last_state_else[key].integrity == last_state_if[key].integrity:
-                                    last_else_region.start.state.registers[key] = last_state_if[key]
-                            curr_node = last_else_region.start
-                            while curr_node.children:
-                                node = self.to_openCL(Node(curr_node.children[0].instruction, copy.deepcopy(curr_node.state)), True)
-                                curr_node.children[0].state = copy.deepcopy(node.state)
-                                curr_node = curr_node.children[0]
-                            visited.extend([if_body, last_if_region, and_n2, else_start, else_body, last_else_region])
-                            before_r = curr_region.parent[0]
-                            next_r = last_else_region.children[0]
-                            self.add_parent_and_child(before_r, next_r, region, curr_region, last_else_region)
-                            start_region = self.union_regions(before_r, region, next_r, start_region)
-
+                        # if last_if_region.children and last_if_region.children[0].type == TypeNode.linear \
+                        #         and last_if_region.children[0].start == last_if_region.children[0].end \
+                        #         and last_if_region.children[0].start.instruction.find("s_andn2") != -1 \
+                        #         and last_if_region.children[0].children \
+                        #         and last_if_region.children[0].children[0] != TypeNode.linear \
+                        #         and self.check_if(last_if_region.children[0].children[0]):
+                        #     region = Region(TypeNode.ifelsestatement, curr_region)
+                        #     if_body = curr_region.children[0]
+                        #     # if isinstance(if_body.start, Node):
+                        #     last_state_if = if_body.end.state.registers
+                        #     last_if_region = curr_region.children[1]
+                        #     and_n2 = last_if_region.children[0]
+                        #     else_start = and_n2.children[0]
+                        #     else_body = else_start.children[0]
+                        #     last_state_else = else_body.end.state.registers
+                        #     last_else_region = else_start.children[1]
+                        #     for key in last_state_if:
+                        #         if last_state_else[key] is not None and last_state_if[key] is not None \
+                        #                 and last_state_else[key].val == last_state_if[key].val \
+                        #                 and last_state_else[key].type == last_state_if[key].type \
+                        #                 and last_state_else[key].integrity == last_state_if[key].integrity:
+                        #             last_else_region.start.state.registers[key] = last_state_if[key]
+                        #     curr_node = last_else_region.start
+                        #     while curr_node.children:
+                        #         node = self.to_openCL(Node(curr_node.children[0].instruction, copy.deepcopy(curr_node.state)), True)
+                        #         curr_node.children[0].state = copy.deepcopy(node.state)
+                        #         curr_node = curr_node.children[0]
+                        #     visited.extend([if_body, last_if_region, and_n2, else_start, else_body, last_else_region])
+                        #     before_r = curr_region.parent[0]
+                        #     next_r = last_else_region.children[0]
+                        #     self.add_parent_and_child(before_r, next_r, region, curr_region, last_else_region)
+                        #     start_region = self.union_regions(before_r, region, next_r, start_region)
+                        #
+                        # else:
+                        region = Region(TypeNode.ifstatement, curr_region)
+                        child0 = curr_region.children[0]
+                        child1 = curr_region.children[1]
+                        region.end = child1
+                        visited.append(child1)
+                        visited.append(child0)
+                        before_r = curr_region.parent[0]
+                        next_r = child1.children[0]
+                        self.add_parent_and_child(before_r, next_r, region, curr_region, region.end)
+                        start_region = self.union_regions(before_r, region, next_r, start_region)
+                        # if curr_region.children:
+                        #     for child in curr_region.children:
+                        if region.children:
+                            for child in region.children:
+                                if child not in visited:
+                                    q.append(child)
                         else:
-                            region = Region(TypeNode.ifstatement, curr_region)
-                            child0 = curr_region.children[0]
-                            child1 = curr_region.children[1]
-                            region.end = child1
-                            visited.append(child1)
-                            visited.append(child0)
-                            before_r = curr_region.parent[0]
-                            next_r = child1.children[0]
-                            self.add_parent_and_child(before_r, next_r, region, curr_region, child1)
-                            start_region = self.union_regions(before_r, region, next_r, start_region)
-                        if curr_region.children:
-                            for child in curr_region.children:
-                                if child not in [visited]:
+                            q = deque()
+                            q.append(start_region)
+                            visited = []
+                    elif self.check_if_else(curr_region):
+                        region = Region(TypeNode.ifelsestatement, curr_region)
+                        child0 = curr_region.children[0]
+                        child1 = curr_region.children[1]
+                        region.end = child0.children[0]
+                        visited.append(child1)
+                        visited.append(child0)
+                        visited.append(region.end)
+                        before_r = curr_region.parent[0]
+                        next_r = region.end.children[0]
+                        self.add_parent_and_child(before_r, next_r, region, curr_region, region.end)
+                        start_region = self.union_regions(before_r, region, next_r, start_region)
+                        # if curr_region.children:
+                        #     for child in curr_region.children:
+                        if region.children:
+                            for child in region.children:
+                                if child not in visited:
                                     q.append(child)
                         else:
                             q = deque()
@@ -495,7 +757,7 @@ class Decompiler:
                     else:
                         if curr_region.children:
                             for child in curr_region.children:
-                                if child not in [visited]:
+                                if child not in visited:
                                     q.append(child)
                         else:
                             q = deque()
@@ -505,7 +767,7 @@ class Decompiler:
                 else:
                     if curr_region.children:
                         for child in curr_region.children:
-                            if child not in [visited]:
+                            if child not in visited:
                                 q.append(child)
                     else:
                         q = deque()
@@ -531,49 +793,68 @@ class Decompiler:
                     reg = reg.children[0]
                     self.make_output(reg, indent)
         elif region.type == TypeNode.ifstatement:
+            for key in self.variables.keys():
+                reg = key[:key.find("_")]
+                if region.start.start.parent[0].state.registers[reg].version == key:
+                    self.output_file.write("    " + self.variables[key] + " = " + region.start.start.parent[0].state.registers[reg].val)
             self.output_file.write("    if (")
             self.to_openCL(region.start.start, False)
-            self.output_file.write(") {\n")
             self.make_output(region.start.children[0], '    ')
+            for key in self.variables.keys():
+                reg = key[:key.find("_")]
+                if region.end.start.state.registers[reg].version == key:
+                    self.output_file.write("    " + self.variables[key] + " = " + region.end.start.state.registers[reg].val)
+            self.output_file.write(") {\n")
             self.output_file.write("}\n")
         elif region.type == TypeNode.ifelsestatement:
-            self.output_file.write("    int variable\n")
+            # self.output_file.write("    int variable\n")
             self.output_file.write("    if (")
             self.to_openCL(region.start.start, False)
             self.output_file.write(") {\n")
             if_body = region.start.children[0]
             self.make_output(if_body, '    ')
-            if isinstance(if_body.start, Node) and if_body.end.instruction.find("store") == -1:
-                last_node = if_body.end
-                reg = last_node.instruction.split()[1][:-1]
-                val_of_reg = last_node.state.registers[reg].val
-                self.output_file.write("      variable = " + val_of_reg + "\n")
-                self.initial_state.registers[reg] = Register("variable", Type.program_param, Integrity.integer)
+            # if isinstance(if_body.start, Node) and if_body.end.instruction.find("store") == -1:
+            #     last_node = if_body.end
+            #     reg = last_node.instruction.split()[1][:-1]
+            #     val_of_reg = last_node.state.registers[reg].val
+            #     self.output_file.write("      variable = " + val_of_reg + "\n")
+            #     self.initial_state.registers[reg] = Register("variable", Type.program_param, Integrity.integer)
+            for key in self.variables.keys():
+                reg = key[:key.find("_")]
+                if region.end.start.parent[1].state.registers[reg].version == key:
+                    self.output_file.write("    " + self.variables[key] + " = " + region.end.start.parent[1].state.registers[reg].val + "\n")
             self.output_file.write(indent + "    }\n")
-            last_if_region = region.start.children[1]
-            and_n2 = last_if_region.children[0]
-            else_start = and_n2.children[0]
-            else_body = else_start.children[0]
-            last_else_region = else_start.children[1]
+            # last_if_region = region.start.children[1]
+            # and_n2 = last_if_region.children[0]
+            # else_start = and_n2.children[0]
+            # else_body = else_start.children[0]
+            # last_else_region = else_start.children[1]
+            else_body = region.start.children[1]
             self.output_file.write("    else {\n")
             self.make_output(else_body, '    ')
-            if isinstance(else_body.start, Node) and else_body.end.instruction.find("store") == -1:
-                reg = else_body.end.instruction.split()[1][:-1]
-                self.output_file.write("      variable = " + else_body.end.state.registers[reg].val + "\n")
-                self.initial_state.registers[reg] = Register("variable", Type.program_param, Integrity.integer)
+            # if isinstance(else_body.start, Node) and else_body.end.instruction.find("store") == -1:
+            #     reg = else_body.end.instruction.split()[1][:-1]
+            #     self.output_file.write("      variable = " + else_body.end.state.registers[reg].val + "\n")
+            #     self.initial_state.registers[reg] = Register("variable", Type.program_param, Integrity.integer)
+            for key in self.variables.keys():
+                reg = key[:key.find("_")]
+                if region.end.start.parent[0].state.registers[reg].version == key:
+                    self.output_file.write("    " + self.variables[key] + " = " + region.end.start.parent[0].state.registers[reg].val + "\n")
             self.output_file.write("    }\n")
 
     def to_openCL(self, node, flag_of_status):
-        if node.instruction[0] == ".":
+        if node.instruction[0][0] == ".":
             if flag_of_status:
-                self.to_node[node.instruction[:-1]] = node
-                if self.from_node.get(node.instruction[:-1]) is not None:
-                    self.from_node[node.instruction[:-1]].add_child(node)
-                    node.add_parent(self.from_node.pop(node.instruction[:-1]))
-                    node.state = node.parent[-1].state
+                self.to_node[node.instruction[0][:-1]] = node
+                if self.from_node.get(node.instruction[0][:-1]) is not None:
+                    for wait_node in self.from_node[node.instruction[0][:-1]]:
+                        wait_node.add_child(node)
+                        node.add_parent(wait_node)
+                        node.state = node.parent[-1].state
                 return node
         tab = "    "
-        instruction = node.instruction.strip().replace(',', ' ').split()
+        instruction = node.instruction
+        #instruction = node.instruction.strip().replace(',', ' ').split()
         operation = instruction[0]
         parts_of_operation = operation.split('_')
         prefix = parts_of_operation[0]
@@ -699,6 +980,7 @@ class Decompiler:
                                 node.state.registers[to_registers] = \
                                     Register(node.state.registers[from_registers].val, node.state.registers[from_registers].type,
                                              Integrity.integer)
+                                node.state.make_version(self.versions, to_registers)
                         return node
                     #self.output_file.write(vdst + " = *(uint)(" + vaddr + " + " + inst_offset + "\n")
 
@@ -726,15 +1008,18 @@ class Decompiler:
                             node.state.registers[to_registers] = \
                                 Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
                                          Integrity.integer)
+                            node.state.make_version(self.versions, to_registers)
                         else:
                             to_now = name_of_register + str(first_to + 1)
                             if node.state.registers.get(vdata):
                                 node.state.registers[to_registers] = \
                                     Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
                                              Integrity.low_part)
+                                node.state.make_version(self.versions, to_registers)
                                 node.state.registers[to_now] = \
                                     Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
                                              Integrity.high_part)
+                                node.state.make_version(self.versions, to_now)
                             else:
                                 return node
                         return node
@@ -813,6 +1098,9 @@ class Decompiler:
                                 and node.state.registers[ssrc1].type == Type.global_offset_z:
                             node.state.registers[sdst] = \
                                 Register(new_val, Type.work_group_id_z_local_size_offset, Integrity.integer)
+                        node.state.make_version(self.versions, sdst)
+                        if sdst in [ssrc0, ssrc1]:
+                            node.state.registers[sdst].make_prev()
                         return node
 
                     # temp = "temp" + str(self.number_of_temp)
@@ -904,7 +1192,10 @@ class Decompiler:
                         node.add_child(self.to_node[reladdr])
                         self.to_node[reladdr].add_parent(node)
                     else:
-                        self.from_node[reladdr] = node
+                        if self.from_node.get(reladdr) is None:
+                            self.from_node[reladdr] = [node]
+                        else:
+                            self.from_node[reladdr].append(node)
                     return node
                 self.output_file.write(node.state.registers["exec"].val)
                 # self.output_file.write("pc = exec == 0 ? " + reladdr + " : pc + 4\n")
@@ -969,7 +1260,7 @@ class Decompiler:
                     first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
                         = node.state.find_first_last_num_to_from(sdata, sbase)
                     if flag_of_status:
-                        node.state.upload(sdata, sbase, offset, self.params)
+                        node.state.upload(sdata, sbase, offset, self.params, self.versions)
                         return node
                     # self.output_file.write(sdata + " = *(uint*)(smem + (" + offset + " & ~3))\n")
 
@@ -980,7 +1271,7 @@ class Decompiler:
                     first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
                         = node.state.find_first_last_num_to_from(sdata, sbase)
                     if flag_of_status:
-                        node.state.upload(sdata, sbase, offset, self.params)
+                        node.state.upload(sdata, sbase, offset, self.params, self.versions)
                         return node
                     # self.output_file.write(sdata + " = " + node.state.registers[to_registers].val + "\n")
                     # self.output_file.write(sdata + " = *(ulong*)(smem + (" + offset + " & ~3))\n")  # smem??? как и dc..
@@ -992,7 +1283,7 @@ class Decompiler:
                     first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
                         = node.state.find_first_last_num_to_from(sdata, sbase)
                     if flag_of_status:
-                        node.state.upload(sdata, sbase, offset, self.params)
+                        node.state.upload(sdata, sbase, offset, self.params, self.versions)
                         return node
                     # self.output_file.write("for (short i = 0; i < " + suffix[-1] + "; i++)\n")
                     # self.output_file.write(tab + sdata + " = *(uint*)(smem + i * 4 + (" + offset + " & ~3))\n")
@@ -1018,6 +1309,9 @@ class Decompiler:
                                                                   Type.work_group_id_z_local_size, Integrity.integer)
                             node.state.registers["scc"] = Register(sdst + "!= 0", Type.int32, Integrity.integer)
                             return node
+                        node.state.make_version(self.versions, sdst)
+                        if sdst in [ssrc0, ssrc1]:
+                            node.state.registers[sdst].make_prev()
                         return node
                     # self.output_file.write(sdst + " = " + node.state.registers[sdst].val + "\n")
                     # self.output_file.write("scc = " + sdst + " != 0\n")
@@ -1033,6 +1327,7 @@ class Decompiler:
                                                                   Integrity.integer)
                         else:
                             node.state.registers[sdst] = Register(ssrc0, Type.int32, Integrity.integer)
+                        node.state.make_version(self.versions, sdst)
                         return node
                     # self.output_file.write(sdst + " = " + ssrc0 + "\n")
 
@@ -1049,6 +1344,9 @@ class Decompiler:
                     ssrc1 = instruction[3]
                     if flag_of_status:
                         node.state.registers[sdst] = Register(self.make_op(node, ssrc0, ssrc1, " * "), Type.unknown, Integrity.integer)
+                        node.state.make_version(self.versions, sdst)
+                        if sdst in [ssrc0, ssrc1]:
+                            node.state.registers[sdst].make_prev()
                         return node
                     #self.output_file.write(sdst + " = " + ssrc0 + " * " + ssrc1 + "\n")
 
@@ -1059,6 +1357,8 @@ class Decompiler:
                     if flag_of_status:
                         node.state.registers[sdst] = Register(node.state.registers[sdst].val + " * " + simm16, Type.unknown,
                                                               Integrity.integer)
+                        node.state.make_version(self.versions, sdst)
+                        node.state.registers[sdst].make_prev()
                         return node
                     #self.output_file.write(sdst + " = " + sdst + " * " + simm16 + "\n")
 
@@ -1168,11 +1468,12 @@ class Decompiler:
                                 node.state.registers[src1].type == Type.work_item_id_z:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = Register("get_global_id(2)", Type.global_id_z, new_integrity)
-                        elif node.state.registers[src0].type == Type.paramA \
-                                and node.state.registers[src1].type in [Type.global_id_x, Type.global_id_y,
-                                                                        Type.global_id_z, Type.unknown,
-                                                                        Type.work_item_id_x, Type.work_item_id_y,
-                                                                        Type.work_item_id_z]:
+                        elif node.state.registers[src0].type == Type.paramA:
+                                # and node.state.registers[src1].type in [Type.global_id_x, Type.global_id_y,
+                                #                                         Type.global_id_z, Type.unknown,
+                                #                                         Type.work_item_id_x, Type.work_item_id_y,
+                                #                                         Type.work_item_id_z, Type.work_group_id_x,
+                                #                                         Type.work_group_id_y, Type.work_group_id_z]:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = \
                                 Register(node.state.registers[src0].val + "[" + node.state.registers[src1].val + "]",
@@ -1192,7 +1493,9 @@ class Decompiler:
                         #         Register(node.state.registers[src0].val + " + " + node.state.registers[src1].val,
                         #                  Type.unknown, new_integrity)
                         elif node.state.registers[src0].type == Type.work_group_id_x_local_size and \
-                                node.state.registers[src1].type == Type.work_item_id_x:
+                                node.state.registers[src1].type == Type.work_item_id_x or \
+                                node.state.registers[src1].type == Type.work_group_id_x_local_size and \
+                                node.state.registers[src0].type == Type.work_item_id_x:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = \
                                 Register("get_global_id(0) - get_global_offset(0)", Type.unknown, new_integrity)
@@ -1201,6 +1504,9 @@ class Decompiler:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = Register(self.make_op(node, src0, src1, " + "), Type.unknown,
                                                                   new_integrity)
+                        node.state.make_version(self.versions, vdst)
+                        if vdst in [src0, src1]:
+                            node.state.registers[vdst].make_prev()
                         # elif node.state.registers[src0].type == Type.param and node.state.registers[src1].type
                         # не хватает описания sdst
                         return node
@@ -1232,11 +1538,14 @@ class Decompiler:
                     ssrc2 = instruction[5]
                     new_val = " = (ulong)" + src0 + " + (ulong)" + src1
                     if flag_of_status:
-                        if node.state.registers[src0].type == Type.paramA and node.state.registers[
-                            src1].type == Type.global_id_x:
+                        if node.state.registers[src0].type == Type.paramA \
+                                and node.state.registers[src1].type == Type.global_id_x:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = Register(node.state.registers[src0].val + "[get_global_id(0)]",
                                                                   Type.param_global_id_x, new_integrity)
+                            node.state.make_version(self.versions, vdst)
+                            if vdst in [src0, src1]:
+                                node.state.registers[vdst].make_prev()
                         return node
                     # if node.state.registers[vdst].integrity == Integrity.integer:
                     #     new_val = node.state.registers[vdst].val
@@ -1299,6 +1608,9 @@ class Decompiler:
                     src1 = instruction[3] if instruction[3][0] != "v" else node.state.registers[instruction[3]].val
                     if flag_of_status:
                         node.state.registers[sdst] = Register(src0 + " == " + src1, Type.unknown, Integrity.integer)
+                        node.state.make_version(self.versions, sdst)
+                        if sdst in [src0, src1]:
+                            node.state.registers[sdst].make_prev()
                         return node
                     #self.output_file.write(sdst + " = (uint)" + src0 + " == (uint)" + src1 + "\n")
 
@@ -1323,6 +1635,9 @@ class Decompiler:
                     src1 = instruction[3]
                     if flag_of_status:
                         node.state.registers[sdst] = Register(node.state.registers[src0].val + " != " + src1, Type.unknown, Integrity.integer)
+                        node.state.make_version(self.versions, sdst)
+                        if sdst in [src0, src1]:
+                            node.state.registers[sdst].make_prev()
                         return node
                     # self.output_file.write(sdst + " = (int)" + src0 + " != (int)" + src1 + "\n")
 
@@ -1368,6 +1683,9 @@ class Decompiler:
                     name_of_variable = "variable"
                     if flag_of_status:
                         node.state.registers[vdst] = Register(name_of_variable, Type.program_param, Integrity.integer)
+                        node.state.make_version(self.version, vdst)
+                        if vdst in [src0, src1]:
+                            node.state.registers[vdst].make_prev()
                         return node
                     self.output_file.write(tab + "int " + node.state.registers[vdst].val + " = " + node.state.registers[ssrc2].val + " ? " + node.state.registers[src1].val + " : " + node.parent[0].state.registers[src0].val + "\n")
                     #self.output_file.write(vdst + " = " + ssrc2 + " & (1ULL << laneid) ? " + src1 + " : " + src0 + "\n")
@@ -1455,9 +1773,15 @@ class Decompiler:
                             node.state.registers[to_registers] = \
                                 Register(node.state.registers[from_registers].val, node.state.registers[from_registers].type,
                                          Integrity.low_part)
+                            node.state.make_version(self.versions, to_registers)
+                            if to_registers == from_registers:
+                                node.state.registers[to_registers].make_prev()
                             node.state.registers[to_registers_1] = \
                                 Register(node.state.registers[from_registers_1].val, node.state.registers[from_registers].type,
                                          Integrity.high_part)
+                            node.state.make_version(self.versions, to_registers_1)
+                            if to_registers_1 == from_registers_1:
+                                node.state.registers[to_registers_1].make_prev()
                         # нет описания под y и z
                         return node
                     # self.output_file.write(vdst + " = " + node.state.registers[to_registers].val + " + " + node.state.registers[name_of_register + str(last_to)].val + "\n") #понять, что хочу выводить
@@ -1493,6 +1817,9 @@ class Decompiler:
                         new_integrity = node.state.registers[src1].integrity
                         node.state.registers[vdst] = Register(self.make_op(node, src0, src1, " * "), Type.unknown,
                                                               new_integrity)
+                        node.state.make_version(self.versions, vdst)
+                        if vdst in [src0, src1]:
+                            node.state.registers[vdst].make_prev()
                         return node
 
             elif root == "mov":
@@ -1506,6 +1833,9 @@ class Decompiler:
                                          Integrity.integer)
                         else:
                             node.state.registers[vdst] = Register(src0, Type.int32, Integrity.integer)
+                        node.state.make_version(self.versions, vdst)
+                        if vdst in [src0]:
+                            node.state.registers[vdst].make_prev()
                         return node
                     # self.output_file.write(vdst + " = " + node.state.registers[vdst].val + "\n")
                     # self.output_file.write(vdst + " = " + src0 + "\n")
@@ -1519,6 +1849,9 @@ class Decompiler:
                         new_integrity = node.state.registers[src1].integrity
                         node.state.registers[vdst] = Register(self.make_op(node, src0, src1, " - "), Type.unknown,
                                                               new_integrity)
+                        node.state.make_version(self.version, vdst)
+                        if vdst in [src0, src1]:
+                            node.state.registers[vdst].make_prev()
                         return node
 
             elif root == "subrev":
@@ -1531,6 +1864,9 @@ class Decompiler:
                         new_integrity = node.state.registers[src1].integrity
                         node.state.registers[vdst] = Register(self.make_op(node, src1, src0, " - "), Type.unknown,
                                                               new_integrity)
+                        node.state.make_version(self.versions, vdst)
+                        if vdst in [src0, src1]:
+                            node.state.registers[vdst].make_prev()
                         return node
 
         else:

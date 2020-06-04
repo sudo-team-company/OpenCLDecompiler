@@ -1,13 +1,16 @@
 __kernel __attribute__((reqd_work_group_size(16, 16, 1)))
 void localVarExample(int x, __global int *data, int y)
 {
-    int variable
+    int *var0
+    int var1
     if (1 == get_global_id(0)) {
-          variable = get_global_id(1) * x - y
+        var0 = &data[get_global_id(0)]
+        var1 = x * get_global_id(1) - y
     }
     else {
-          variable = y * x
+        var0 = &data[get_global_id(0)]
+        var1 = y * x
     }
-    data[get_global_id(0)] = variable
+    *var0 = var1
     data[get_global_id(1)] = x
 }
