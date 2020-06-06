@@ -424,9 +424,10 @@ class Decompiler:
         self.make_version()
         self.process_cfg()
         self.output_file.write("{\n")
-        for key in self.variables.keys():
-            self.output_file.write("    " + self.variables[key] + "\n")
-        self.make_output(self.improve_cfg, '')
+        for var in set(self.variables.values()):
+            self.output_file.write("    " + var + "\n")
+        self.make_output(self.improve_cfg, '    ')
+        self.output_file.write("}\n")
         # while curr_node.children:
         #     self.to_openCL(curr_node.children[0], False)
         #     curr_node = curr_node.children[0]
@@ -481,9 +482,9 @@ class Decompiler:
                                     curr_node.state.registers[register].prev_version = []
                                     break
                         else:
-                            reg = register[1: register.find(":")]
+                            reg = register[0] + register[2: register.find(":")]
                             if curr_node.state.registers.get(reg) is not None:
-                                not_touch.append(register[register.find(":") + 1: -1])
+                                not_touch.append(register[0] + register[register.find(":") + 1: -1])
                                 variants = []
                                 for l_v in local_vars.keys():
                                     if l_v.find(reg) != -1:
@@ -493,39 +494,41 @@ class Decompiler:
                                         curr_node.state.registers[reg].val = local_vars[reg]
                                         curr_node.state.registers[reg].version = None
                                         curr_node.state.registers[reg].prev_version = []
-                if len(curr_node.instruction) > 2:
-                    for register in curr_node.instruction[2:]:
-                        if len(register) > 1 and register[1] != "[":
-                            if curr_node.state.registers.get(register) is not None \
-                                    and len(curr_node.state.registers[register].prev_version) > 1 \
-                                    and curr_node.state.registers[register].version not in not_touch:
-                                versions = curr_node.state.registers[register].prev_version
-                                var = "var" + str(num_of_variable)
-                                num_of_variable += 1
-                                local_vars[curr_node.state.registers[register].version] = var
-                                curr_node.state.registers[register].val = var
-                                for v in versions:
-                                    self.variables[v] = var
-                        else:
-                            reg = register[1: register.find(":")]
-                            #not_touch.append(register[register.find(":") + 1 : -1])
-                            if curr_node.state.registers.get(reg) is not None and len(curr_node.state.registers[reg].prev_version) > 1 \
-                                    and curr_node.state.registers[reg].version not in not_touch:
-                                versions = curr_node.state.registers[reg].prev_version
-                                var = "var" + str(num_of_variable)
-                                num_of_variable += 1
-                                local_vars[curr_node.state.registers[reg].version] = var
-                                curr_node.state.registers[reg].val = var
-                                for v in versions:
-                                    self.variables[v] = var
+                # if len(curr_node.instruction) > 2:
+                    for num_of_reg in list(range(1, len(curr_node.instruction))):
+                        register = curr_node.instruction[num_of_reg]
+                        if (curr_node.instruction[0].find("flat_store") != -1 or num_of_reg > 1) and len(register) > 1:
+                            if register[1] != "[":
+                                if curr_node.state.registers.get(register) is not None \
+                                        and len(curr_node.state.registers[register].prev_version) > 1 \
+                                        and curr_node.state.registers[register].version not in not_touch:
+                                    versions = curr_node.state.registers[register].prev_version
+                                    var = "var" + str(num_of_variable)
+                                    num_of_variable += 1
+                                    local_vars[curr_node.state.registers[register].version] = var
+                                    curr_node.state.registers[register].val = var
+                                    for v in versions:
+                                        self.variables[v] = var
+                            else:
+                                reg = register[0] + register[2: register.find(":")]
+                                #not_touch.append(register[register.find(":") + 1 : -1])
+                                if curr_node.state.registers.get(reg) is not None and len(curr_node.state.registers[reg].prev_version) > 1 \
+                                        and curr_node.state.registers[reg].version not in not_touch:
+                                    versions = curr_node.state.registers[reg].prev_version
+                                    var = "var" + str(num_of_variable)
+                                    num_of_variable += 1
+                                    local_vars[curr_node.state.registers[reg].version] = var
+                                    curr_node.state.registers[reg].val = var
+                                    for v in versions:
+                                        self.variables[v] = var
                 for parent in curr_node.parent:
                     if parent not in visited:
                         q.append(parent)
 
     def update_versions(self, node):
         diff_regs = {}
-        parent_0 = copy.deepcopy(node.parent[0].state.registers)
-        parent_1 = copy.deepcopy(node.parent[1].state.registers)
+        parent_0 = node.parent[0].state.registers
+        parent_1 = node.parent[1].state.registers
         for key in parent_0.keys():
             if parent_0.get(key) is not None and parent_1.get(key) is not None and parent_0[key].version != parent_1[key].version and key.find("v") != -1: # val and ver
                 diff_regs[key] = [parent_0[key].version, parent_1[key].version]
@@ -778,14 +781,17 @@ class Decompiler:
     def make_output(self, region, indent):
         if region.type == TypeNode.linear:
             if isinstance(region.start, Node):
-                self.output_file.write(indent)
                 reg = region.start
                 if region.start == self.cfg:
                     reg = self.cfg.children[0]
                 while reg != region.end:
-                    self.to_openCL(reg, False)  # надо правильно будет переделать OpenCL
+                    new_output = self.to_openCL(reg, False)  # надо правильно будет переделать OpenCL
+                    if new_output != "":
+                        self.output_file.write(indent + new_output)
                     reg = reg.children[0]
-                self.to_openCL(reg, False)
+                new_output = self.to_openCL(reg, False)  # надо правильно будет переделать OpenCL
+                if new_output != "":
+                    self.output_file.write(indent + new_output)
             else:
                 reg = region.start
                 self.make_output(reg, indent)
@@ -796,23 +802,23 @@ class Decompiler:
             for key in self.variables.keys():
                 reg = key[:key.find("_")]
                 if region.start.start.parent[0].state.registers[reg].version == key:
-                    self.output_file.write("    " + self.variables[key] + " = " + region.start.start.parent[0].state.registers[reg].val)
-            self.output_file.write("    if (")
-            self.to_openCL(region.start.start, False)
+                    self.output_file.write(indent + self.variables[key] + " = " + region.start.start.parent[0].state.registers[reg].val)
+            self.output_file.write(indent + "if (")
+            self.output_file.write(self.to_openCL(region.start.start, False))
             self.make_output(region.start.children[0], '    ')
+            self.output_file.write(") {\n")
             for key in self.variables.keys():
                 reg = key[:key.find("_")]
                 if region.end.start.state.registers[reg].version == key:
-                    self.output_file.write("    " + self.variables[key] + " = " + region.end.start.state.registers[reg].val)
-            self.output_file.write(") {\n")
+                    self.output_file.write("        " + self.variables[key] + " = " + region.end.start.state.registers[reg].val)
             self.output_file.write("}\n")
         elif region.type == TypeNode.ifelsestatement:
             # self.output_file.write("    int variable\n")
-            self.output_file.write("    if (")
-            self.to_openCL(region.start.start, False)
+            self.output_file.write(indent + "if (")
+            self.output_file.write(self.to_openCL(region.start.start, False))
             self.output_file.write(") {\n")
             if_body = region.start.children[0]
-            self.make_output(if_body, '    ')
+            self.make_output(if_body, indent + '    ')
             # if isinstance(if_body.start, Node) and if_body.end.instruction.find("store") == -1:
             #     last_node = if_body.end
             #     reg = last_node.instruction.split()[1][:-1]
@@ -822,16 +828,16 @@ class Decompiler:
             for key in self.variables.keys():
                 reg = key[:key.find("_")]
                 if region.end.start.parent[1].state.registers[reg].version == key:
-                    self.output_file.write("    " + self.variables[key] + " = " + region.end.start.parent[1].state.registers[reg].val + "\n")
-            self.output_file.write(indent + "    }\n")
+                    self.output_file.write(indent + "    " + self.variables[key] + " = " + region.end.start.parent[1].state.registers[reg].val + "\n")
+            self.output_file.write(indent + "}\n")
             # last_if_region = region.start.children[1]
             # and_n2 = last_if_region.children[0]
             # else_start = and_n2.children[0]
             # else_body = else_start.children[0]
             # last_else_region = else_start.children[1]
             else_body = region.start.children[1]
-            self.output_file.write("    else {\n")
-            self.make_output(else_body, '    ')
+            self.output_file.write(indent + "else {\n")
+            self.make_output(else_body, indent + '    ')
             # if isinstance(else_body.start, Node) and else_body.end.instruction.find("store") == -1:
             #     reg = else_body.end.instruction.split()[1][:-1]
             #     self.output_file.write("      variable = " + else_body.end.state.registers[reg].val + "\n")
@@ -839,8 +845,8 @@ class Decompiler:
             for key in self.variables.keys():
                 reg = key[:key.find("_")]
                 if region.end.start.parent[0].state.registers[reg].version == key:
-                    self.output_file.write("    " + self.variables[key] + " = " + region.end.start.parent[0].state.registers[reg].val + "\n")
-            self.output_file.write("    }\n")
+                    self.output_file.write(indent + "    " + self.variables[key] + " = " + region.end.start.parent[0].state.registers[reg].val + "\n")
+            self.output_file.write(indent + "}\n")
 
     def to_openCL(self, node, flag_of_status):
         if node.instruction[0][0] == ".":
@@ -850,9 +856,10 @@ class Decompiler:
                     for wait_node in self.from_node[node.instruction[0][:-1]]:
                         wait_node.add_child(node)
                         node.add_parent(wait_node)
-                        node.state = node.parent[-1].state
+                        node.state = copy.deepcopy(node.parent[-1].state)
                 return node
         tab = "    "
+        output_string = ""
         instruction = node.instruction
         #instruction = node.instruction.strip().replace(',', ' ').split()
         operation = instruction[0]
@@ -982,6 +989,7 @@ class Decompiler:
                                              Integrity.integer)
                                 node.state.make_version(self.versions, to_registers)
                         return node
+                    return output_string
                     #self.output_file.write(vdst + " = *(uint)(" + vaddr + " + " + inst_offset + "\n")
 
                 elif suffix == "dwordx4":
@@ -1008,31 +1016,37 @@ class Decompiler:
                             node.state.registers[to_registers] = \
                                 Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
                                          Integrity.integer)
-                            node.state.make_version(self.versions, to_registers)
+                            # node.state.make_version(self.versions, to_registers)
+                            node.state.registers[to_registers].version = node.parent[0].state.registers[to_registers].version
                         else:
                             to_now = name_of_register + str(first_to + 1)
                             if node.state.registers.get(vdata):
                                 node.state.registers[to_registers] = \
                                     Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
                                              Integrity.low_part)
-                                node.state.make_version(self.versions, to_registers)
+                                # node.state.make_version(self.versions, to_registers)
+                                node.state.registers[to_registers].version = node.parent[0].state.registers[to_registers].version
                                 node.state.registers[to_now] = \
                                     Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
                                              Integrity.high_part)
-                                node.state.make_version(self.versions, to_now)
+                                # node.state.make_version(self.versions, to_now)
+                                node.state.registers[to_now].version = node.parent[0].state.registers[to_now].version
                             else:
                                 return node
                         return node
                     if inst_offset != "0":
-                        self.output_file.write(
-                            "*(uint*)(" + node.parent[0].state.registers[to_registers].val + " + " + inst_offset + ") = " +
-                            node.state.registers[name_of_register + str(first_to)].val + "\n")
+                        output_string = "*(uint*)(" + node.parent[0].state.registers[to_registers].val \
+                                        + " + " + inst_offset + ") = " \
+                                        + node.state.registers[name_of_register + str(first_to)].val + "\n"
                     else:
+                        var = node.parent[0].state.registers[to_registers].val \
+                            if node.state.registers[to_registers].val.find("var") == -1 \
+                            else node.state.registers[to_registers].val
                         if node.state.registers.get(from_registers):
-                            self.output_file.write(tab + node.parent[0].state.registers[to_registers].val + " = " + node.state.registers[from_registers].val + "\n")
+                            output_string = var + " = " + node.state.registers[from_registers].val + "\n"
                         else:
-                            self.output_file.write(
-                                tab + node.parent[0].state.registers[to_registers].val + " = " + self.initial_state.registers[from_registers].val + "\n")
+                            output_string = var + " = " + self.initial_state.registers[from_registers].val + "\n"
+                    return output_string
                     # self.output_file.write("*(uint*)(" + vaddr + " + " + inst_offset + ") = " + vdata + "\n")  # нужен ли номер...
 
                 elif suffix == "dwordx4":
@@ -1102,7 +1116,7 @@ class Decompiler:
                         if sdst in [ssrc0, ssrc1]:
                             node.state.registers[sdst].make_prev()
                         return node
-
+                    return output_string
                     # temp = "temp" + str(self.number_of_temp)
                     # self.output_file.write("ulong " + temp + " = " + new_val + "\n")
                     # self.output_file.write(sdst + " = " + temp + "\n")
@@ -1136,6 +1150,7 @@ class Decompiler:
                         node.state.registers[sdst] = node.state.registers["exec"]
                         node.state.registers["exec"] = node.state.registers[ssrc0]
                         return node
+                    return output_string
                     # self.output_file.write(sdst + " = " + "exec\n")
                     # self.output_file.write("exec = " + ssrc0 + " & exec\n")
                     # self.output_file.write("scc = exec != 0\n")
@@ -1147,6 +1162,7 @@ class Decompiler:
                     ssrc1 = instruction[3]
                     if flag_of_status:
                         return node
+                    return output_string
                     # self.output_file.write(sdst + " = " + ssrc0 + " & ~" + ssrc1 + "\n")
                     # self.output_file.write("scc = " + sdst + " != 0\n")
 
@@ -1197,7 +1213,8 @@ class Decompiler:
                         else:
                             self.from_node[reladdr].append(node)
                     return node
-                self.output_file.write(node.state.registers["exec"].val)
+                output_string = node.state.registers["exec"].val
+                return output_string
                 # self.output_file.write("pc = exec == 0 ? " + reladdr + " : pc + 4\n")
 
             elif root == 'cbranch_scc0':
@@ -1245,7 +1262,8 @@ class Decompiler:
             elif root == 'endpgm':
                 if flag_of_status:
                     return node
-                self.output_file.write("}\n")
+                #self.output_file.write("}\n")
+                return output_string
             # здесь должна будет быть закрывающаяся скобка
             elif root == 'getpc':
                 if suffix == 'b64':
@@ -1262,6 +1280,7 @@ class Decompiler:
                     if flag_of_status:
                         node.state.upload(sdata, sbase, offset, self.params, self.versions)
                         return node
+                    return output_string
                     # self.output_file.write(sdata + " = *(uint*)(smem + (" + offset + " & ~3))\n")
 
                 elif suffix == 'dwordx2':
@@ -1273,6 +1292,7 @@ class Decompiler:
                     if flag_of_status:
                         node.state.upload(sdata, sbase, offset, self.params, self.versions)
                         return node
+                    return output_string
                     # self.output_file.write(sdata + " = " + node.state.registers[to_registers].val + "\n")
                     # self.output_file.write(sdata + " = *(ulong*)(smem + (" + offset + " & ~3))\n")  # smem??? как и dc..
 
@@ -1285,6 +1305,7 @@ class Decompiler:
                     if flag_of_status:
                         node.state.upload(sdata, sbase, offset, self.params, self.versions)
                         return node
+                    return output_string
                     # self.output_file.write("for (short i = 0; i < " + suffix[-1] + "; i++)\n")
                     # self.output_file.write(tab + sdata + " = *(uint*)(smem + i * 4 + (" + offset + " & ~3))\n")
 
@@ -1313,6 +1334,7 @@ class Decompiler:
                         if sdst in [ssrc0, ssrc1]:
                             node.state.registers[sdst].make_prev()
                         return node
+                    return output_string
                     # self.output_file.write(sdst + " = " + node.state.registers[sdst].val + "\n")
                     # self.output_file.write("scc = " + sdst + " != 0\n")
                     # self.output_file.write(sdst + " = " + ssrc0 + " << (" + ssrc1 + " & " + str(int(suffix[1:]) - 1) + ")\n")
@@ -1329,6 +1351,7 @@ class Decompiler:
                             node.state.registers[sdst] = Register(ssrc0, Type.int32, Integrity.integer)
                         node.state.make_version(self.versions, sdst)
                         return node
+                    return output_string
                     # self.output_file.write(sdst + " = " + ssrc0 + "\n")
 
             elif root == 'movk':
@@ -1348,6 +1371,7 @@ class Decompiler:
                         if sdst in [ssrc0, ssrc1]:
                             node.state.registers[sdst].make_prev()
                         return node
+                    return output_string
                     #self.output_file.write(sdst + " = " + ssrc0 + " * " + ssrc1 + "\n")
 
             elif root == 'mulk':
@@ -1360,6 +1384,7 @@ class Decompiler:
                         node.state.make_version(self.versions, sdst)
                         node.state.registers[sdst].make_prev()
                         return node
+                    return output_string
                     #self.output_file.write(sdst + " = " + sdst + " * " + simm16 + "\n")
 
             elif root == 'not':
@@ -1438,6 +1463,7 @@ class Decompiler:
             elif root == 'waitcnt':
                 if flag_of_status:
                     return node
+                return output_string
                 # self.output_file.write("Not resolve yet. Maybe you lose.\n")
 
         elif prefix == 'v':
@@ -1510,6 +1536,7 @@ class Decompiler:
                         # elif node.state.registers[src0].type == Type.param and node.state.registers[src1].type
                         # не хватает описания sdst
                         return node
+                    return output_string
                     # if node.state.registers[vdst].integrity == Integrity.integer:
                     #     new_val = node.state.registers[vdst].val
                     #     temp = "temp" + str(self.number_of_temp)
@@ -1547,6 +1574,7 @@ class Decompiler:
                             if vdst in [src0, src1]:
                                 node.state.registers[vdst].make_prev()
                         return node
+                    return output_string
                     # if node.state.registers[vdst].integrity == Integrity.integer:
                     #     new_val = node.state.registers[vdst].val
                     #     temp = "temp" + str(self.number_of_temp)
@@ -1612,6 +1640,7 @@ class Decompiler:
                         if sdst in [src0, src1]:
                             node.state.registers[sdst].make_prev()
                         return node
+                    return output_string
                     #self.output_file.write(sdst + " = (uint)" + src0 + " == (uint)" + src1 + "\n")
 
             elif root == "cmp_ge":
@@ -1639,6 +1668,7 @@ class Decompiler:
                         if sdst in [src0, src1]:
                             node.state.registers[sdst].make_prev()
                         return node
+                    return output_string
                     # self.output_file.write(sdst + " = (int)" + src0 + " != (int)" + src1 + "\n")
 
                 elif suffix == "u32":
@@ -1687,7 +1717,10 @@ class Decompiler:
                         if vdst in [src0, src1]:
                             node.state.registers[vdst].make_prev()
                         return node
-                    self.output_file.write(tab + "int " + node.state.registers[vdst].val + " = " + node.state.registers[ssrc2].val + " ? " + node.state.registers[src1].val + " : " + node.parent[0].state.registers[src0].val + "\n")
+                    output_string =  "int " + node.state.registers[vdst].val + " = " + node.state.registers[ssrc2].val \
+                                     + " ? " + node.state.registers[src1].val + " : " \
+                                     + node.parent[0].state.registers[src0].val + "\n"
+                    return output_string
                     #self.output_file.write(vdst + " = " + ssrc2 + " & (1ULL << laneid) ? " + src1 + " : " + src0 + "\n")
 
             elif root == "cvt":
@@ -1784,6 +1817,7 @@ class Decompiler:
                                 node.state.registers[to_registers_1].make_prev()
                         # нет описания под y и z
                         return node
+                    return output_string
                     # self.output_file.write(vdst + " = " + node.state.registers[to_registers].val + " + " + node.state.registers[name_of_register + str(last_to)].val + "\n") #понять, что хочу выводить
                     # self.output_file.write(vdst + " = " + src1 + " << (" + src0 + " & 63)\n")
 
@@ -1821,6 +1855,7 @@ class Decompiler:
                         if vdst in [src0, src1]:
                             node.state.registers[vdst].make_prev()
                         return node
+                    return output_string
 
             elif root == "mov":
                 if suffix == "b32":
@@ -1837,6 +1872,7 @@ class Decompiler:
                         if vdst in [src0]:
                             node.state.registers[vdst].make_prev()
                         return node
+                    return output_string
                     # self.output_file.write(vdst + " = " + node.state.registers[vdst].val + "\n")
                     # self.output_file.write(vdst + " = " + src0 + "\n")
             elif root == "sub":
@@ -1853,6 +1889,7 @@ class Decompiler:
                         if vdst in [src0, src1]:
                             node.state.registers[vdst].make_prev()
                         return node
+                    return output_string
 
             elif root == "subrev":
                 if suffix == "u32":
@@ -1868,6 +1905,7 @@ class Decompiler:
                         if vdst in [src0, src1]:
                             node.state.registers[vdst].make_prev()
                         return node
+                    return output_string
 
         else:
             self.output_file.write("Not resolve yet. Maybe you lose.\n")
