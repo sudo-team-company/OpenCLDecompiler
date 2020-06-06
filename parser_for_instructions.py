@@ -504,6 +504,8 @@ class Decompiler:
                                         and curr_node.state.registers[register].version not in not_touch:
                                     versions = curr_node.state.registers[register].prev_version
                                     var = "var" + str(num_of_variable)
+                                    if num_of_reg == 1 and curr_node.state.registers[register].type.param_global_id_x:
+                                        var = "*" + var
                                     num_of_variable += 1
                                     local_vars[curr_node.state.registers[register].version] = var
                                     curr_node.state.registers[register].val = var
@@ -516,6 +518,8 @@ class Decompiler:
                                         and curr_node.state.registers[reg].version not in not_touch:
                                     versions = curr_node.state.registers[reg].prev_version
                                     var = "var" + str(num_of_variable)
+                                    if num_of_reg == 1 and curr_node.state.registers[reg].type.param_global_id_x:
+                                        var = "*" + var
                                     num_of_variable += 1
                                     local_vars[curr_node.state.registers[reg].version] = var
                                     curr_node.state.registers[reg].val = var
@@ -828,7 +832,10 @@ class Decompiler:
             for key in self.variables.keys():
                 reg = key[:key.find("_")]
                 if region.end.start.parent[1].state.registers[reg].version == key:
-                    self.output_file.write(indent + "    " + self.variables[key] + " = " + region.end.start.parent[1].state.registers[reg].val + "\n")
+                    if self.variables[key].find("*") == -1:
+                        self.output_file.write(indent + "    " + self.variables[key] + " = " + region.end.start.parent[1].state.registers[reg].val + "\n")
+                    else:
+                        self.output_file.write(indent + "    " + self.variables[key][1:] + " = &" + region.end.start.parent[1].state.registers[reg].val + "\n")
             self.output_file.write(indent + "}\n")
             # last_if_region = region.start.children[1]
             # and_n2 = last_if_region.children[0]
@@ -845,7 +852,13 @@ class Decompiler:
             for key in self.variables.keys():
                 reg = key[:key.find("_")]
                 if region.end.start.parent[0].state.registers[reg].version == key:
-                    self.output_file.write(indent + "    " + self.variables[key] + " = " + region.end.start.parent[0].state.registers[reg].val + "\n")
+                    if self.variables[key].find("*") == -1:
+                        self.output_file.write(
+                            indent + "    " + self.variables[key] + " = " + region.end.start.parent[1].state.registers[
+                                reg].val + "\n")
+                    else:
+                        self.output_file.write(indent + "    " + self.variables[key][1:] + " = &" +
+                                               region.end.start.parent[1].state.registers[reg].val + "\n")
             self.output_file.write(indent + "}\n")
 
     def to_openCL(self, node, flag_of_status):
