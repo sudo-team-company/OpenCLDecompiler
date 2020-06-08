@@ -25,6 +25,8 @@ class Type(Enum):
     work_group_id_y_local_size_offset = auto()
     work_group_id_z_local_size_offset = auto()
     work_group_id_x_work_item_id = auto()
+    work_group_id_y_work_item_id = auto()
+    work_group_id_z_work_item_id = auto()
     param_global_id_x = auto()
     param_global_id_y = auto()
     param_global_id_z = auto()
@@ -560,42 +562,46 @@ class Decompiler:
 
     def union_regions(self, before_region, curr_region, next_region, start_region):
         start_now = start_region
-        if before_region.type != TypeNode.basic:
-            region = Region(TypeNode.linear, before_region)
-            region.end = curr_region
-            if before_region == start_now:
-                start_now = region
-            else:
-                parent = before_region.parent[0]
-                parent.children.remove(before_region)
-                parent.add_child(region)
-                region.add_parent(parent)
-            next_region.parent.remove(curr_region)
-            next_region.add_parent(region)
-            region.add_child(next_region)
-            if next_region != TypeNode.basic:
-                region_all = Region(TypeNode.linear, before_region)
-                region_all.end = next_region
-                if start_now == region:
-                    start_now = region_all
+        if len(before_region) == 1:
+            before_region = before_region[0]
+            if before_region.type != TypeNode.basic:
+                region = Region(TypeNode.linear, before_region)
+                region.end = curr_region
+                if before_region == start_now:
+                    start_now = region
                 else:
                     parent = before_region.parent[0]
-                    parent.remove(region)
-                    parent.add_child(region_all)
-                    region_all.add_parent(parent)
-                if next_region.children:
-                    child = next_region.children[0]
-                    child.parent.remove(next_region)
-                    child.add_parent(region_all)
-                    region_all.add_child(child)
-            return start_now
+                    parent.children.remove(before_region)
+                    parent.add_child(region)
+                    region.add_parent(parent)
+                if next_region is not None:
+                    next_region.parent.remove(curr_region)
+                    next_region.add_parent(region)
+                    region.add_child(next_region)
+                if next_region is not None and next_region != TypeNode.basic and len(curr_region.parent) == 1:
+                    region_all = Region(TypeNode.linear, before_region)
+                    region_all.end = next_region
+                    if start_now == region:
+                        start_now = region_all
+                    else:
+                        parent = before_region.parent[0]
+                        parent.remove(region)
+                        parent.add_child(region_all)
+                        region_all.add_parent(parent)
+                    if next_region.children:
+                        child = next_region.children[0]
+                        child.parent.remove(next_region)
+                        child.add_parent(region_all)
+                        region_all.add_child(child)
+                return start_now
 
-        if next_region != TypeNode.basic:
+        if next_region is not None and next_region != TypeNode.basic and len(curr_region.parent) == 1:
             region_all = Region(TypeNode.linear, curr_region)
             region_all.end = next_region
-            before_region.remove(curr_region)
-            before_region.add_child(region_all)
-            region_all.add_parent(before_region)
+            for prev_r in before_region:
+                prev_r.children.remove(curr_region)
+                prev_r.add_child(region_all)
+                region_all.add_parent(prev_r)
             if next_region.children:
                 child = next_region.children[0]
                 child.parent.remove(next_region)
@@ -605,9 +611,11 @@ class Decompiler:
 
     def check_if(self, curr_region):
         if curr_region.type == TypeNode.basic and len(curr_region.children) == 2 \
-                and curr_region.children[1].type == TypeNode.basic \
-                and len(curr_region.children[0].children) > 0 \
-                and curr_region.children[0].children[0] == curr_region.children[1]:
+                and (len(curr_region.children[0].children) > 0
+                     and curr_region.children[0].children[0] == curr_region.children[1]
+                     or len(curr_region.children[1].children) > 0
+                     and curr_region.children[1].children[0] == curr_region.children[0]):
+            # and curr_region.children[1].type == TypeNode.basic \
             return True
         else:
             return False
@@ -622,12 +630,14 @@ class Decompiler:
             return False
 
     def add_parent_and_child(self, before_r, next_r, region, pred_child, pred_parent):
-        before_r.children.remove(pred_child)
-        before_r.add_child(region)
-        region.add_parent(before_r)
-        next_r.parent.remove(pred_parent)
-        next_r.add_parent(region)
-        region.add_child(next_r)
+        for i in list(range(0, len(before_r))):
+            before_r[i].children.remove(pred_child[i])
+            before_r[i].add_child(region)
+            region.add_parent(before_r[i])
+        if next_r is not None:
+            next_r.parent.remove(pred_parent)
+            next_r.add_parent(region)
+            region.add_child(next_r)
 
     def process_cfg(self):
         curr_node = self.cfg
@@ -720,14 +730,29 @@ class Decompiler:
                         #
                         # else:
                         region = Region(TypeNode.ifstatement, curr_region)
-                        child0 = curr_region.children[0]
-                        child1 = curr_region.children[1]
+                        child0 = curr_region.children[0] if len(curr_region.children[0].parent) == 1 else curr_region.children[1]
+                        child1 = curr_region.children[1] if len(curr_region.children[1].parent) == 2 else curr_region.children[0]
                         region.end = child1
                         visited.append(child1)
                         visited.append(child0)
-                        before_r = curr_region.parent[0]
-                        next_r = child1.children[0]
-                        self.add_parent_and_child(before_r, next_r, region, curr_region, region.end)
+                        before_r = [curr_region.parent[0]]
+                        prev_child = [curr_region]
+                        if len(child0.parent) > 1:
+                            if child0.parent[0] not in [child1, curr_region]:
+                                before_r.append(child0.parent[0])
+                                prev_child.append(child0)
+                            if child0.parent[1] not in [child1, curr_region]:
+                                before_r = child0.parent[1]
+                                prev_child.append(child0)
+                        if len(child1.parent) > 1:
+                            if child1.parent[0] not in [child0, curr_region]:
+                                before_r.append(child1.parent[0])
+                                prev_child.append(child1)
+                            if child1.parent[1] not in [child0, curr_region]:
+                                before_r.append(child1.parent[1])
+                                prev_child.append(child1)
+                        next_r = child1.children[0] if len(child1.children) > 0 else None
+                        self.add_parent_and_child(before_r, next_r, region, prev_child, region.end)
                         start_region = self.union_regions(before_r, region, next_r, start_region)
                         # if curr_region.children:
                         #     for child in curr_region.children:
@@ -809,13 +834,14 @@ class Decompiler:
                     self.output_file.write(indent + self.variables[key] + " = " + region.start.start.parent[0].state.registers[reg].val)
             self.output_file.write(indent + "if (")
             self.output_file.write(self.to_openCL(region.start.start, False))
-            self.make_output(region.start.children[0], '    ')
             self.output_file.write(") {\n")
+            self.make_output(region.start.children[0], indent + '    ')
             for key in self.variables.keys():
                 reg = key[:key.find("_")]
                 if region.end.start.state.registers[reg].version == key:
-                    self.output_file.write("        " + self.variables[key] + " = " + region.end.start.state.registers[reg].val)
-            self.output_file.write("}\n")
+                    self.output_file.write(indent + "    " + self.variables[key] + " = " + region.end.start.state.registers[reg].val)
+            self.make_output(region.start.children[1], indent + '    ')
+            self.output_file.write(indent + "}\n")
         elif region.type == TypeNode.ifelsestatement:
             # self.output_file.write("    int variable\n")
             self.output_file.write(indent + "if (")
@@ -1504,7 +1530,11 @@ class Decompiler:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = Register("get_global_id(1)", Type.global_id_y, new_integrity)
                         elif node.state.registers[src0].type == Type.work_group_id_z_local_size_offset and \
-                                node.state.registers[src1].type == Type.work_item_id_z:
+                                node.state.registers[src1].type == Type.work_item_id_z or \
+                                node.state.registers[src0].type == Type.global_offset_z and \
+                                node.state.registers[src1].type == Type.work_group_id_z_work_item_id or \
+                                node.state.registers[src1].type == Type.global_offset_z and \
+                                node.state.registers[src0].type == Type.work_group_id_z_work_item_id:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = Register("get_global_id(2)", Type.global_id_z, new_integrity)
                         elif node.state.registers[src0].type == Type.paramA:
@@ -1525,6 +1555,10 @@ class Decompiler:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = \
                                 Register("", Type.work_group_id_y_work_item_id, new_integrity)
+                        elif node.state.registers[src0].type == Type.work_group_id_z_local_size and node.state.registers[src1].type == Type.work_item_id_z:
+                            new_integrity = node.state.registers[src1].integrity
+                            node.state.registers[vdst] = \
+                                Register("", Type.work_group_id_z_work_item_id, new_integrity)
                         # elif node.state.registers[src0].type == Type.global_id_y and node.state.registers[src1].type == Type.global_id_z\
                         #         or node.state.registers[src0].type == Type.global_id_z and node.state.registers[src1].type == Type.global_id_y:
                         #     new_integrity = node.state.registers[src1].integrity
@@ -1578,7 +1612,9 @@ class Decompiler:
                     ssrc2 = instruction[5]
                     new_val = " = (ulong)" + src0 + " + (ulong)" + src1
                     if flag_of_status:
-                        if node.state.registers[src0].type == Type.paramA \
+                        if src0 == "0":
+                            return node
+                        elif node.state.registers[src0].type == Type.paramA \
                                 and node.state.registers[src1].type == Type.global_id_x:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = Register(node.state.registers[src0].val + "[get_global_id(0)]",
@@ -1624,7 +1660,15 @@ class Decompiler:
                     vdst = instruction[1]
                     src0 = instruction[2]
                     src1 = instruction[3]
-                    self.output_file.write(vdst + " = " + src0 + " & " + src1 + "\n")
+                    if flag_of_status:
+                        new_integrity = node.state.registers[src1].integrity
+                        node.state.registers[vdst] = Register(node.state.registers[src1].val + " % " + str(pow(2, int(src0))), Type.unknown, new_integrity)
+                        node.state.make_version(self.versions, vdst)
+                        if vdst in [src0, src1]:
+                            node.state.registers[vdst].make_prev()
+                        return node
+                    return output_string
+                    #self.output_file.write(vdst + " = " + src0 + " & " + src1 + "\n")
 
             elif root == "and_or":
                 if suffix == "b32":
