@@ -402,8 +402,11 @@ class Decompiler:
             curr_node = self.make_cfg_node(instruction, last_node_state, last_node)
             # curr_node.add_parent(last_node)
             last_node_state = copy.deepcopy(curr_node.state)
-            last_node.add_child(curr_node)
+            if last_node is not None and last_node.instruction != "branch" and curr_node not in last_node.children:
+                last_node.add_child(curr_node)
             last_node = curr_node
+            if last_node is not None and last_node.instruction == "branch":
+                last_node_state = copy.deepcopy(self.initial_state)
             if instruction[0][0] == ".":
                 self.label = curr_node
                 self.parents_of_label = curr_node.parent
@@ -436,7 +439,8 @@ class Decompiler:
 
     def make_cfg_node(self, instruction, last_node_state, last_node):
         node = Node(instruction, last_node_state)
-        node.add_parent(last_node)
+        if last_node.instruction != "branch":
+            node.add_parent(last_node)
         return self.to_openCL(node, True)
 
     def make_version(self):
@@ -458,6 +462,7 @@ class Decompiler:
                         visited.remove(curr_node)
                     elif self.version_wait == curr_node:
                         self.update_versions(curr_node)
+                        self.version_wait = None
                         for child in curr_node.children:
                             if child not in visited:
                                 q.append(child)
@@ -772,9 +777,9 @@ class Decompiler:
                         visited.append(child1)
                         visited.append(child0)
                         visited.append(region.end)
-                        before_r = curr_region.parent[0]
+                        before_r = [curr_region.parent[0]]
                         next_r = region.end.children[0]
-                        self.add_parent_and_child(before_r, next_r, region, curr_region, region.end)
+                        self.add_parent_and_child(before_r, next_r, region, [curr_region], region.end)
                         start_region = self.union_regions(before_r, region, next_r, start_region)
                         # if curr_region.children:
                         #     for child in curr_region.children:
@@ -831,15 +836,15 @@ class Decompiler:
             for key in self.variables.keys():
                 reg = key[:key.find("_")]
                 if region.start.start.parent[0].state.registers[reg].version == key:
-                    self.output_file.write(indent + self.variables[key] + " = " + region.start.start.parent[0].state.registers[reg].val)
+                    self.output_file.write(indent + self.variables[key] + " = " + region.start.start.parent[0].state.registers[reg].val + "\n")
             self.output_file.write(indent + "if (")
             self.output_file.write(self.to_openCL(region.start.start, False))
             self.output_file.write(") {\n")
             self.make_output(region.start.children[0], indent + '    ')
             for key in self.variables.keys():
                 reg = key[:key.find("_")]
-                if region.end.start.state.registers[reg].version == key:
-                    self.output_file.write(indent + "    " + self.variables[key] + " = " + region.end.start.state.registers[reg].val)
+                if region.end.start.parent[0].state.registers[reg].version == key:
+                    self.output_file.write(indent + "    " + self.variables[key] + " = " + region.end.start.parent[0].state.registers[reg].val + "\n")
             self.make_output(region.start.children[1], indent + '    ')
             self.output_file.write(indent + "}\n")
         elif region.type == TypeNode.ifelsestatement:
@@ -880,25 +885,29 @@ class Decompiler:
                 if region.end.start.parent[0].state.registers[reg].version == key:
                     if self.variables[key].find("*") == -1:
                         self.output_file.write(
-                            indent + "    " + self.variables[key] + " = " + region.end.start.parent[1].state.registers[
+                            indent + "    " + self.variables[key] + " = " + region.end.start.parent[0].state.registers[
                                 reg].val + "\n")
                     else:
                         self.output_file.write(indent + "    " + self.variables[key][1:] + " = &" +
-                                               region.end.start.parent[1].state.registers[reg].val + "\n")
+                                               region.end.start.parent[0].state.registers[reg].val + "\n")
             self.output_file.write(indent + "}\n")
 
     def to_openCL(self, node, flag_of_status):
+        tab = "    "
+        output_string = ""
         if node.instruction[0][0] == ".":
             if flag_of_status:
                 self.to_node[node.instruction[0][:-1]] = node
                 if self.from_node.get(node.instruction[0][:-1]) is not None:
                     for wait_node in self.from_node[node.instruction[0][:-1]]:
-                        wait_node.add_child(node)
-                        node.add_parent(wait_node)
-                        node.state = copy.deepcopy(node.parent[-1].state)
+                        if node not in wait_node.children:
+                            wait_node.add_child(node)
+                            node.add_parent(wait_node)
+                            node.state = copy.deepcopy(node.parent[-1].state)
                 return node
-        tab = "    "
-        output_string = ""
+            return output_string
+        if node.instruction == "branch":
+            return output_string
         instruction = node.instruction
         #instruction = node.instruction.strip().replace(',', ' ').split()
         operation = instruction[0]
@@ -1238,7 +1247,17 @@ class Decompiler:
 
             elif root == 'branch':
                 reladdr = instruction[1]
-                self.output_file.write("pc = " + reladdr + "\n")
+                if self.to_node.get(reladdr) is not None:
+                    node.add_child(self.to_node[reladdr])
+                    self.to_node[reladdr].add_parent(node)
+                else:
+                    if self.from_node.get(reladdr) is None:
+                        self.from_node[reladdr] = [node]
+                    else:
+                        self.from_node[reladdr].append(node)
+                node.instruction = "branch"
+                return node
+                #self.output_file.write("pc = " + reladdr + "\n")
 
             elif root == 'cbranch_execz':
                 reladdr = instruction[1]
@@ -1258,7 +1277,19 @@ class Decompiler:
 
             elif root == 'cbranch_scc0':
                 reladdr = instruction[1]
-                self.output_file.write("pc = scc0 == 0 ? " + reladdr + " : pc + 4\n")
+                if flag_of_status:
+                    if self.to_node.get(reladdr) is not None:
+                        node.add_child(self.to_node[reladdr])
+                        self.to_node[reladdr].add_parent(node)
+                    else:
+                        if self.from_node.get(reladdr) is None:
+                            self.from_node[reladdr] = [node]
+                        else:
+                            self.from_node[reladdr].append(node)
+                    return node
+                output_string = node.state.registers["scc"].val
+                return output_string
+                #self.output_file.write("pc = scc0 == 0 ? " + reladdr + " : pc + 4\n")
 
             elif root == 'cbranch_scc1':
                 reladdr = instruction[1]
@@ -1289,6 +1320,14 @@ class Decompiler:
                 if suffix == 'i32':
                     ssrc0 = instruction[1]
                     ssrc1 = instruction[2]
+                    if flag_of_status:
+                        node.state.registers["scc"] = Register(node.state.registers[ssrc0].val + " < " + node.state.registers[ssrc1].val,
+                                                              Type.unknown, Integrity.integer)
+                        node.state.make_version(self.versions, "scc")
+                        if "scc" in [ssrc0, ssrc1]:
+                            node.state.registers["scc"].make_prev()
+                        return node
+                    return output_string
                     self.output_file.write("scc = (int)" + ssrc0 + " < (int)" + ssrc1 + "\n")
 
             elif root == 'cselect':
@@ -1863,15 +1902,17 @@ class Decompiler:
                             node.state.registers[to_registers] = \
                                 Register(node.state.registers[from_registers].val, node.state.registers[from_registers].type,
                                          Integrity.low_part)
-                            node.state.make_version(self.versions, to_registers)
-                            if to_registers == from_registers:
-                                node.state.registers[to_registers].make_prev()
+                            node.state.registers[to_registers].version = node.parent[0].state.registers[to_registers].version
+                            # node.state.make_version(self.versions, to_registers)
+                            # if to_registers == from_registers:
+                            #     node.state.registers[to_registers].make_prev()
                             node.state.registers[to_registers_1] = \
                                 Register(node.state.registers[from_registers_1].val, node.state.registers[from_registers].type,
                                          Integrity.high_part)
-                            node.state.make_version(self.versions, to_registers_1)
-                            if to_registers_1 == from_registers_1:
-                                node.state.registers[to_registers_1].make_prev()
+                            node.state.registers[to_registers_1].version = node.parent[0].state.registers[to_registers_1].version
+                            # node.state.make_version(self.versions, to_registers_1)
+                            # if to_registers_1 == from_registers_1:
+                            #     node.state.registers[to_registers_1].make_prev()
                         # нет описания под y и z
                         return node
                     return output_string

@@ -1,10 +1,18 @@
 __kernel __attribute__((reqd_work_group_size(16, 16, 16)))
 void localVarExample(int x, __global int *data, int y)
 {
+    var0
+    var1
+    var1 = get_global_id(0)
     if (0 == get_global_id(0)) {
-        if (0 == get_global_id(1) % 2) {
-            data[get_global_id(2)] = x
-        }
+        var1 = get_global_id(1)
     }
-    data[get_global_id(0)] = y
+    data[get_global_id(0)] = x
+    if (x < y) {
+        var0 = get_global_id(2)
+    }
+    else {
+        var0 = get_global_id(0)
+    }
+    data[get_global_id(2)] = y
 }
