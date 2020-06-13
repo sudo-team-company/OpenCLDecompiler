@@ -310,6 +310,7 @@ class Decompiler:
                 "vcc": 0,
                 "exec": 0
             }
+        self.names_of_vars = set()
 
     def process_config(self, set_of_config, name_of_program):
         dimensions = set_of_config[0][6:]
@@ -429,41 +430,54 @@ class Decompiler:
                 self.flag_of_else = False
             if instruction[0][0] == "." and len(curr_node.parent) > 1:
                 for reg in curr_node.parent[0].state.registers:
-                    if reg.find("s") == -1:
-                        version_of_reg = set()
-                        max_version = 0
-                        for parent in curr_node.parent:
-                            if parent.state.registers[reg] is not None:
-                                par_version = parent.state.registers[reg].version
-                                if len(version_of_reg) == 0:
+                    # if reg.find("s") == -1:
+                    version_of_reg = set()
+                    max_version = 0
+                    for parent in curr_node.parent:
+                        if parent.state.registers[reg] is not None:
+                            par_version = parent.state.registers[reg].version
+                            if len(version_of_reg) == 0:
+                                max_version = int(par_version[par_version.find("_") + 1:])
+                                version_of_reg.add(par_version)
+                            else:
+                                version_of_reg.add(par_version)
+                                if int(par_version[par_version.find("_") + 1:]) > max_version:
                                     max_version = int(par_version[par_version.find("_") + 1:])
-                                    version_of_reg.add(par_version)
-                                else:
-                                    version_of_reg.add(par_version)
-                                    if int(par_version[par_version.find("_") + 1:]) > max_version:
-                                        max_version = int(par_version[par_version.find("_") + 1:])
-                        if len(version_of_reg) == 1:
-                            if curr_node.state.registers[reg] is None:
-                                for p in curr_node.parent:
-                                    if p.state.registers[reg] is not None:
-                                        curr_node.state.registers[reg] = p.state.registers[reg]
-                                        break
-                        elif len(version_of_reg) > 1:
-                            curr_node.state.registers[reg].version = reg + "_" + str(max_version + 1)
-                            curr_node.state.registers[reg].prev_version = list(version_of_reg)
-                            variable = "var" + str(num_of_var)
-                            if curr_node.state.registers[reg].type == Type.param_global_id_x:
-                                variable = "*" + variable
-                            curr_node.state.registers[reg].val = variable
-                            num_of_var += 1
-                            for ver in version_of_reg:
-                                self.variables[ver] = variable
+                    if len(version_of_reg) == 1:
+                        if curr_node.state.registers[reg] is None:
+                            for p in curr_node.parent:
+                                if p.state.registers[reg] is not None:
+                                    curr_node.state.registers[reg] = p.state.registers[reg]
+                                    break
+                    elif len(version_of_reg) > 1:
+                        curr_node.state.registers[reg].version = reg + "_" + str(max_version + 1)
+                        curr_node.state.registers[reg].prev_version = list(version_of_reg)
+                        variable = "var" + str(num_of_var)
+                        if curr_node.state.registers[reg].type == Type.param_global_id_x:
+                            variable = "*" + variable
+                        curr_node.state.registers[reg].val = variable
+                        num_of_var += 1
+                        for ver in version_of_reg:
+                            self.variables[ver] = variable
                 last_node_state = curr_node.state
+            if instruction != "branch" and len(instruction) > 1:
+                for num_of_reg in list(range(1, len(curr_node.instruction))):
+                    register = curr_node.instruction[num_of_reg]
+                    if (curr_node.instruction[0].find("flat_store") != -1 or num_of_reg > 1) and len(register) > 1:
+                        if register[1] != "[":
+                            if curr_node.state.registers.get(register) is not None and curr_node.state.registers[register].val.find("var") != -1:
+                                self.names_of_vars.add(curr_node.state.registers[register].val)
+                        else:
+                            reg = register[0] + register[2: register.find(":")]
+                            if curr_node.state.registers.get(reg) is not None and curr_node.state.registers[reg].val.find("var") != -1:
+                                self.names_of_vars.add(curr_node.state.registers[reg].val)
+
         self.make_version()
         self.process_cfg()
         self.output_file.write("{\n")
         for var in set(self.variables.values()):
-            self.output_file.write("    " + var + "\n")
+            if var in self.names_of_vars:
+                self.output_file.write("    " + var + "\n")
         self.make_output(self.improve_cfg, '    ')
         self.output_file.write("}\n")
         # while curr_node.children:
@@ -868,7 +882,7 @@ class Decompiler:
         elif region.type == TypeNode.ifstatement:
             for key in self.variables.keys():
                 reg = key[:key.find("_")]
-                if region.start.start.parent[0].state.registers[reg] is not None and region.start.start.parent[0].state.registers[reg].version == key:
+                if region.start.start.parent[0].state.registers[reg] is not None and region.start.start.parent[0].state.registers[reg].version == key and self.variables[key] in self.names_of_vars:
                     self.output_file.write(indent + self.variables[key] + " = " + region.start.start.parent[0].state.registers[reg].val + "\n")
             self.output_file.write(indent + "if (")
             self.output_file.write(self.to_openCL(region.start.start, False))
@@ -876,7 +890,7 @@ class Decompiler:
             self.make_output(region.start.children[0], indent + '    ')
             for key in self.variables.keys():
                 reg = key[:key.find("_")]
-                if region.end.start.parent[0].state.registers[reg].version == key:
+                if region.end.start.parent[0].state.registers[reg].version == key and self.variables[key] in self.names_of_vars:
                     self.output_file.write(indent + "    " + self.variables[key] + " = " + region.end.start.parent[0].state.registers[reg].val + "\n")
             self.make_output(region.start.children[1], indent + '    ')
             self.output_file.write(indent + "}\n")
@@ -895,7 +909,7 @@ class Decompiler:
             #     self.initial_state.registers[reg] = Register("variable", Type.program_param, Integrity.integer)
             for key in self.variables.keys():
                 reg = key[:key.find("_")]
-                if region.end.start.parent[1].state.registers[reg].version == key:
+                if region.end.start.parent[1].state.registers[reg].version == key and self.variables[key] in self.names_of_vars:
                     if self.variables[key].find("*") == -1:
                         self.output_file.write(indent + "    " + self.variables[key] + " = " + region.end.start.parent[1].state.registers[reg].val + "\n")
                     else:
@@ -915,7 +929,7 @@ class Decompiler:
             #     self.initial_state.registers[reg] = Register("variable", Type.program_param, Integrity.integer)
             for key in self.variables.keys():
                 reg = key[:key.find("_")]
-                if region.end.start.parent[0].state.registers[reg].version == key:
+                if region.end.start.parent[0].state.registers[reg].version == key and self.variables[key] in self.names_of_vars:
                     if self.variables[key].find("*") == -1:
                         self.output_file.write(
                             indent + "    " + self.variables[key] + " = " + region.end.start.parent[0].state.registers[
