@@ -397,6 +397,7 @@ class Decompiler:
         last_node = Node("", self.initial_state)  # root
         last_node_state = self.initial_state
         self.cfg = last_node
+        num_of_var = 0
         for row in set_of_instructions:
             instruction = row.strip().replace(',', ' ').split()
             curr_node = self.make_cfg_node(instruction, last_node_state, last_node)
@@ -426,6 +427,38 @@ class Decompiler:
                 self.flag_of_else = False
             else:
                 self.flag_of_else = False
+            if instruction[0][0] == "." and len(curr_node.parent) > 1:
+                for reg in curr_node.parent[0].state.registers:
+                    if reg.find("s") == -1:
+                        version_of_reg = set()
+                        max_version = 0
+                        for parent in curr_node.parent:
+                            if parent.state.registers[reg] is not None:
+                                par_version = parent.state.registers[reg].version
+                                if len(version_of_reg) == 0:
+                                    max_version = int(par_version[par_version.find("_") + 1:])
+                                    version_of_reg.add(par_version)
+                                else:
+                                    version_of_reg.add(par_version)
+                                    if int(par_version[par_version.find("_") + 1:]) > max_version:
+                                        max_version = int(par_version[par_version.find("_") + 1:])
+                        if len(version_of_reg) == 1:
+                            if curr_node.state.registers[reg] is None:
+                                for p in curr_node.parent:
+                                    if p.state.registers[reg] is not None:
+                                        curr_node.state.registers[reg] = p.state.registers[reg]
+                                        break
+                        elif len(version_of_reg) > 1:
+                            curr_node.state.registers[reg].version = reg + "_" + str(max_version + 1)
+                            curr_node.state.registers[reg].prev_version = list(version_of_reg)
+                            variable = "var" + str(num_of_var)
+                            if curr_node.state.registers[reg].type == Type.param_global_id_x:
+                                variable = "*" + variable
+                            curr_node.state.registers[reg].val = variable
+                            num_of_var += 1
+                            for ver in version_of_reg:
+                                self.variables[ver] = variable
+                last_node_state = curr_node.state
         self.make_version()
         self.process_cfg()
         self.output_file.write("{\n")
@@ -835,7 +868,7 @@ class Decompiler:
         elif region.type == TypeNode.ifstatement:
             for key in self.variables.keys():
                 reg = key[:key.find("_")]
-                if region.start.start.parent[0].state.registers[reg].version == key:
+                if region.start.start.parent[0].state.registers[reg] is not None and region.start.start.parent[0].state.registers[reg].version == key:
                     self.output_file.write(indent + self.variables[key] + " = " + region.start.start.parent[0].state.registers[reg].val + "\n")
             self.output_file.write(indent + "if (")
             self.output_file.write(self.to_openCL(region.start.start, False))
@@ -1397,18 +1430,16 @@ class Decompiler:
                             node.state.registers[sdst] = Register(ssrc0 + " * " + str(pow(2, int(ssrc1))),
                                                                   Type.work_group_id_x_local_size, Integrity.integer)
                             node.state.registers["scc"] = Register(sdst + "!= 0", Type.int32, Integrity.integer)
-                            return node
                         elif node.state.registers[ssrc0].type == Type.work_group_id_y:
                             node.state.registers[sdst] = Register(ssrc0 + " * " + str(pow(2, int(ssrc1))),
                                                                   Type.work_group_id_y_local_size, Integrity.integer)
                             node.state.registers["scc"] = Register(sdst + "!= 0", Type.int32, Integrity.integer)
-                            return node
                         elif node.state.registers[ssrc0].type == Type.work_group_id_z:
                             node.state.registers[sdst] = Register(ssrc0 + " * " + str(pow(2, int(ssrc1))),
                                                                   Type.work_group_id_z_local_size, Integrity.integer)
                             node.state.registers["scc"] = Register(sdst + "!= 0", Type.int32, Integrity.integer)
-                            return node
                         node.state.make_version(self.versions, sdst)
+                        node.state.make_version(self.versions, "scc")
                         if sdst in [ssrc0, ssrc1]:
                             node.state.registers[sdst].make_prev()
                         return node
