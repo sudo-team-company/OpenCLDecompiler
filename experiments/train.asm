@@ -1,12 +1,13 @@
 .kernel localVarExample
     .config
-        .dims xyz
+        .dims xy
         .cws 16, 16, 16
         .sgprsnum 16
-        .vgprsnum 5
+        .vgprsnum 7
+        .localsize 512
         .floatmode 0xc0
         .pgmrsrc1 0x00ac0081
-        .pgmrsrc2 0x0000138c
+        .pgmrsrc2 0x0000098c
         .dx10clamp
         .ieeemode
         .useargs
@@ -17,54 +18,57 @@
         .arg _.printf_buffer, "size_t", void*, global, , rdonly
         .arg _.vqueue_pointer, "size_t", long
         .arg _.aqlwrap_pointer, "size_t", long
-        .arg x, "int", int
-        .arg data, "int*", int*, global,
-        .arg y, "int", int
+        .arg res, "int*", int*, global,
     .text
-        s_load_dwordx2  s[0:1], s[4:5], 0x0
+        s_mov_b32       m0, 0x10000
+        s_load_dwordx4  s[0:3], s[4:5], 0x0
         s_waitcnt       lgkmcnt(0)
         s_lshl_b32      s1, s6, 4
-        s_add_u32       s0, s1, s0
-        v_add_u32       v3, vcc, s0, v0
-        v_cmp_eq_i32    vcc, 0, v3
-        s_and_saveexec_b64 s[0:1], vcc
-        s_cbranch_execz .L60_0
-        s_load_dwordx2  s[2:3], s[4:5], 0x8
+        v_add_u32       v0, vcc, s1, v0
+        s_lshl_b32      s1, s7, 4
+        v_add_u32       v1, vcc, s1, v1
+        v_add_u32       v5, vcc, s0, v0
+        v_lshlrev_b32   v2, 2, v5
+        v_mov_b32       v3, 0
+        ds_write_b32    v2, v3
+        v_add_u32       v1, vcc, s2, v1
+        v_lshlrev_b32   v3, 2, v1
+        v_mov_b32       v4, 1
+        ds_write_b32    v3, v4 offset:256
+        v_mov_b32       v4, 0
+        v_ashrrev_i64   v[4:5], 30, v[4:5]
+        v_mov_b32       v0, 0
+        v_ashrrev_i64   v[0:1], 30, v[0:1]
         s_waitcnt       lgkmcnt(0)
-        s_lshl_b32      s3, s7, 4
-        s_add_u32       s2, s3, s2
-        v_add_u32       v3, vcc, s2, v1
-.L60_0:
-        s_mov_b64       exec, s[0:1]
-        s_load_dwordx2  s[0:1], s[4:5], 0x38
-        s_load_dword    s2, s[4:5], 0x30
-        v_mov_b32       v0, v3
-        v_mov_b32       v1, 0
-        v_lshlrev_b64   v[0:1], 2, v[0:1]
+        s_barrier
+        v_mov_b32       v6, 1
+        ds_add_u32      v2, v6
+        s_waitcnt       lgkmcnt(0)
+        s_barrier
+        s_load_dwordx2  s[0:1], s[4:5], 0x30
         s_waitcnt       lgkmcnt(0)
         v_add_u32       v0, vcc, s0, v0
-        v_mov_b32       v4, s1
-        v_addc_u32      v1, vcc, v4, v1, vcc
-        v_mov_b32       v4, s2
-        flat_store_dword v[0:1], v4
-        s_load_dword    s3, s[4:5], 0x40
+        v_mov_b32       v6, s1
+        v_addc_u32      v1, vcc, v6, v1, vcc
+        v_add_u32       v4, vcc, s0, v4
+        v_addc_u32      v5, vcc, v6, v5, vcc
+        s_barrier
+        ds_read_b32     v6, v2
         s_waitcnt       lgkmcnt(0)
-        s_cmp_lt_i32    s2, s3
-        s_cbranch_scc0  .L172_0
-        s_load_dwordx2  s[4:5], s[4:5], 0x10
-        s_lshl_b32      s2, s8, 4
+        ds_write_b32    v2, v6 offset:256
+        v_mov_b32       v6, 1
+        ds_add_u32      v3, v6 offset:256
         s_waitcnt       lgkmcnt(0)
-        s_add_u32       s2, s2, s4
-        v_add_u32       v0, vcc, s2, v2
-        s_branch        .L176_0
-.L172_0:
-        v_mov_b32       v0, v3
-.L176_0:
-        v_mov_b32       v1, 0
-        v_lshlrev_b64   v[0:1], 2, v[0:1]
-        v_add_u32       v0, vcc, s0, v0
-        v_mov_b32       v2, s1
-        v_addc_u32      v1, vcc, v2, v1, vcc
-        v_mov_b32       v2, s3
-        flat_store_dword v[0:1], v2
+        s_barrier
+        ds_read_b32     v6, v3 offset:256
+        s_waitcnt       lgkmcnt(0)
+        ds_write_b32    v2, v6
+        s_waitcnt       lgkmcnt(0)
+        s_barrier
+        ds_read_b32     v2, v2
+        ds_read_b32     v3, v3 offset:256
+        s_waitcnt       lgkmcnt(1)
+        flat_store_dword v[4:5], v2
+        s_waitcnt       lgkmcnt(1)
+        flat_store_dword v[0:1], v3
         s_endpgm
