@@ -1,4 +1,4 @@
-# OpenCLDecompiler
+# OpenCL Decompiler
 
 ![CPU](https://img.shields.io/badge/GPU-AMD_GCN-red) ![Python](https://img.shields.io/badge/python-v3.7-blue) ![GitHub repo size](https://img.shields.io/github/repo-size/KristinaMihajlenko/OpenCLDecompiler) ![GitHub last commit](https://img.shields.io/github/last-commit/KristinaMihajlenko/OpenCLDecompiler)
 
