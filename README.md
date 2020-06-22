@@ -13,7 +13,16 @@ This project is a bachelor's thesis. The experiments were conducted on an AMD Ra
 - Compiled OpenCL file 
 
 ## Instruction
+Firstly, you need to disassembler compiled OpenCL kernel in .asm file.
 
+**Sample usages of CLRX disassembler**
+```
+clrxdisasm.exe input.bin -dCfs > output.asm
+```
+Where _input.bin_ - compiled OpenCL binary file; _output.asm_ - is disassembled kernel file, would be _input_file.asm_ 
+in next operation.
+
+Next - decompiler work.
 
 **Sample usages**
 
@@ -23,12 +32,6 @@ python3 parser_for_instructions.py -i <input_file.asm> -o <output_file.cl>
 ```
 Where _input_file.asm_ - an AMD GCN assembler file; _output_file.cl_ - decompiled OpenCL
 To get _input_file.asm_ you need to use CLRX disassembler. 
-
-**Sample usages of CLRX disassembler**
-```
-clrxdisasm.exe input.bin -dCfs > output.asm
-```
-Where _input.bin_ - compiled OpenCL binary file; _output.asm_ - is _input_file.asm_ 
 
 ## Examples
 
