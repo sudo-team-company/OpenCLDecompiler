@@ -1,4 +1,4 @@
-/* Disassembling 'arith-Ellesmere.bin' */
+/* Disassembling 'if_else_in_if.bin' */
 .amdcl2
 .gpu Iceland
 .64bit
@@ -25,7 +25,7 @@
         .arg _.vqueue_pointer, "size_t", long
         .arg _.aqlwrap_pointer, "size_t", long
         .arg x, "int", int
-        .arg data, "int*", int*, global,
+        .arg data, "int*", int*, global, 
         .arg y, "int", int
     .text
 /*000000000000*/ s_load_dwordx2  s[0:1], s[4:5], 0x0

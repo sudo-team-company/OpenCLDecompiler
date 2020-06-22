@@ -5,9 +5,6 @@ void localVarExample(int x, __global int *data, int y)
         if (y > data[get_global_id(1)]) {
             data[get_global_id(2)] = x;
         }
-        else {
-            data[get_global_id(1)] = 0;
-        }
     }
     data[get_global_id(0)] = y;
 }

@@ -88,6 +88,17 @@ class State:
                 "s9": None,
                 "s10": None,
                 "s11": None,
+                "s12": None,
+                "s13": None,
+                "s14": None,
+                "s15": None,
+                "s16": None,
+                "s17": None,
+                "s18": None,
+                "s19": None,
+                "s20": None,
+                "s21": None,
+                "s22": None,
                 "v0": None,
                 "v1": None,
                 "v2": None,
@@ -95,6 +106,13 @@ class State:
                 "v4": None,
                 "v5": None,
                 "v6": None,
+                "v7": None,
+                "v8": None,
+                "v9": None,
+                "v10": None,
+                "v11": None,
+                "v12": None,
+                "v13": None,
                 "pc": None,
                 "scc": None,
                 "vcc": None,
@@ -305,6 +323,17 @@ class Decompiler:
             "s9": 0,
             "s10": 0,
             "s11": 0,
+            "s12": 0,
+            "s13": 0,
+            "s14": 0,
+            "s15": 0,
+            "s16": 0,
+            "s17": 0,
+            "s18": 0,
+            "s19": 0,
+            "s20": 0,
+            "s21": 0,
+            "s22": 0,
             "v0": 0,
             "v1": 0,
             "v2": 0,
@@ -312,6 +341,13 @@ class Decompiler:
             "v4": 0,
             "v5": 0,
             "v6": 0,
+            "v7": 0,
+            "v8": 0,
+            "v9": 0,
+            "v10": 0,
+            "v11": 0,
+            "v12": 0,
+            "v13": 0,
             "pc": 0,
             "scc": 0,
             "vcc": 0,
@@ -427,13 +463,16 @@ class Decompiler:
                 self.label = curr_node
                 self.parents_of_label = curr_node.parent
                 self.flag_of_else = True
-            elif instruction[0].find("andn2") != -1 and self.flag_of_else:
+            elif (instruction[0].find("andn2") != -1  or instruction[0].find("v_mov") != -1) and self.flag_of_else:
                 continue
             elif instruction[0].find("cbranch") != -1 and self.flag_of_else:
                 self.parents_of_label[0].children.remove(self.label)
                 self.parents_of_label[1].children.remove(self.label)
                 last_node = self.parents_of_label[1]
                 last_node_state = copy.deepcopy(self.parents_of_label[1].state)
+                if curr_node.parent[0].instruction[0].find("v_mov") != -1:
+                    last_node_state.registers[curr_node.parent[0].instruction[1]] \
+                        = curr_node.state.registers[curr_node.parent[0].instruction[1]]
                 self.from_node[instruction[1]].remove(curr_node)
                 if self.from_node.get(instruction[1], None) is None:
                     self.from_node[instruction[1]] = [self.parents_of_label[0]]
@@ -448,7 +487,7 @@ class Decompiler:
                     version_of_reg = set()
                     max_version = 0
                     for parent in curr_node.parent:
-                        if parent.state.registers[reg] is not None:
+                        if parent.state.registers.get(reg) is not None and parent.state.registers[reg] is not None:
                             par_version = parent.state.registers[reg].version
                             if len(version_of_reg) == 0:
                                 max_version = int(par_version[par_version.find("_") + 1:])
@@ -527,6 +566,8 @@ class Decompiler:
             return "long"
         elif asm_type == "b32":
             return "uint"
+        elif asm_type == "dword":
+            return "int";
 
     def make_cfg_node(self, instruction, last_node_state, last_node):
         node = Node(instruction, last_node_state)
@@ -684,7 +725,7 @@ class Decompiler:
                         start_now = region_all
                     else:
                         parent = before_region.parent[0]
-                        parent.remove(region)
+                        parent.children.remove(region)
                         parent.add_child(region_all)
                         region_all.add_parent(parent)
                     if next_region.children:
@@ -870,12 +911,18 @@ class Decompiler:
                         child0 = curr_region.children[0]
                         child1 = curr_region.children[1]
                         region.end = child0.children[0]
+                        prev_child = [curr_region]
                         visited.append(child1)
                         visited.append(child0)
                         visited.append(region.end)
                         before_r = [curr_region.parent[0]]
                         next_r = region.end.children[0]
-                        self.add_parent_and_child(before_r, next_r, region, [curr_region], region.end)
+                        if len(region.end.parent) > 2:
+                            for p in region.end.parent:
+                                if p not in [child0, child1]:
+                                    before_r.append(p)
+                                    prev_child.append(region.end)
+                        self.add_parent_and_child(before_r, next_r, region, prev_child, region.end)
                         start_region = self.union_regions(before_r, region, next_r, start_region)
                         # if curr_region.children:
                         #     for child in curr_region.children:
@@ -943,11 +990,12 @@ class Decompiler:
             self.make_output(region.start.children[0], indent + '    ')
             for key in self.variables.keys():
                 reg = key[:key.find("_")]
-                if region.end.start.parent[0].state.registers[reg].version == key and self.variables[
-                    key] in self.names_of_vars.keys():
+                r_node = region.end.start
+                while not isinstance(r_node, Node):
+                    r_node = r_node.start
+                if r_node.parent[0].state.registers[reg].version == key and self.variables[key] in self.names_of_vars.keys():
                     self.output_file.write(
-                        indent + "    " + self.variables[key] + " = " + region.end.start.parent[0].state.registers[
-                            reg].val + ";\n")
+                        indent + "    " + self.variables[key] + " = " + r_node.parent[0].state.registers[reg].val + ";\n")
             self.make_output(region.start.children[1], indent + '    ')
             self.output_file.write(indent + "}\n")
         elif region.type == TypeNode.ifelsestatement:
@@ -965,15 +1013,19 @@ class Decompiler:
             #     self.initial_state.registers[reg] = Register("variable", Type.program_param, Integrity.integer)
             for key in self.variables.keys():
                 reg = key[:key.find("_")]
-                if region.end.start.parent[1].state.registers[reg].version == key and self.variables[
+                r_node = region.end.start
+                while not isinstance(r_node, Node):
+                    r_node = r_node.start
+                if r_node.parent[1].state.registers.get(reg) is not None \
+                        and r_node.parent[1].state.registers[reg].version == key and self.variables[
                     key] in self.names_of_vars.keys():
                     if self.variables[key].find("*") == -1:
                         self.output_file.write(
-                            indent + "    " + self.variables[key] + " = " + region.end.start.parent[1].state.registers[
+                            indent + "    " + self.variables[key] + " = " + r_node.parent[1].state.registers[
                                 reg].val + ";\n")
                     else:
                         self.output_file.write(indent + "    " + self.variables[key][1:] + " = &" +
-                                               region.end.start.parent[1].state.registers[reg].val + ";\n")
+                                               r_node.parent[1].state.registers[reg].val + ";\n")
             self.output_file.write(indent + "}\n")
             # last_if_region = region.start.children[1]
             # and_n2 = last_if_region.children[0]
@@ -1980,6 +2032,19 @@ class Decompiler:
                     src1 = instruction[3]
                     self.output_file.write(sdst + " = (ulong)" + src0 + " > (uint)" + src1 + "\n")
 
+                elif suffix == "i32":
+                    sdst = instruction[1]
+                    src0 = instruction[2] if instruction[2][0] != "v" and instruction[2][0] != "s" else node.state.registers[instruction[2]].val
+                    src1 = instruction[3] if instruction[3][0] != "v" and instruction[2][0] != "s" else node.state.registers[instruction[3]].val
+                    if flag_of_status:
+                        node.state.registers[sdst] = Register(src0 + " > " + src1, Type.unknown, Integrity.integer)
+                        node.state.make_version(self.versions, sdst)
+                        if sdst in [src0, src1]:
+                            node.state.registers[sdst].make_prev()
+                        node.state.registers[sdst].type_of_data = suffix
+                        return node
+                    return output_string
+
             elif root == "cmp_lg":
                 if suffix == "i32":
                     sdst = instruction[1]
@@ -2052,7 +2117,7 @@ class Decompiler:
                         self.variables[node.state.registers[vdst].version] = variable
                         self.names_of_vars[variable] = suffix
                         return node
-                    output_string = "int " + node.state.registers[vdst].val + " = " + node.state.registers[ssrc2].val \
+                    output_string = node.state.registers[vdst].val + " = " + node.state.registers[ssrc2].val \
                                     + " ? " + node.state.registers[src1].val + " : " \
                                     + node.parent[0].state.registers[src0].val
                     return output_string
