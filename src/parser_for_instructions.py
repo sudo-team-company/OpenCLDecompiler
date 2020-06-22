@@ -420,31 +420,7 @@ class Decompiler:
             num_of_param += 1
         self.output_file.write(")\n")
 
-    def process_src(self, input_file):
-        with open(input_file, 'r') as file:
-            body_of_file = file.read().splitlines()
-        flag_config = False
-        flag_instructions = False
-        set_of_instructions = []
-        set_of_config = []
-        name_of_program = ""
-        for row in body_of_file:
-            row = re.sub("/\*(.*?)\*/", '', row)
-            row = row.strip()
-            if row.find(".kernel ") != -1:
-                name_of_program = row.split()[1]
-            if row == ".config":
-                flag_config = True
-                flag_instructions = False
-            elif row == ".text":
-                flag_instructions = True
-            elif flag_instructions:
-                set_of_instructions.append(row)
-            elif flag_config:
-                set_of_config.append(row)
-            else:
-                continue
-
+    def process_src(self, name_of_program, set_of_config, set_of_instructions):
         self.process_config(set_of_config, name_of_program)
         last_node = Node("", self.initial_state)  # root
         last_node_state = self.initial_state
@@ -567,7 +543,7 @@ class Decompiler:
         elif asm_type == "b32":
             return "uint"
         elif asm_type == "dword":
-            return "int";
+            return "int"
 
     def make_cfg_node(self, instruction, last_node_state, last_node):
         node = Node(instruction, last_node_state)
@@ -1829,17 +1805,17 @@ class Decompiler:
                                 node.state.registers[src1].type == Type.work_item_id_x:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = \
-                                Register("", Type.work_group_id_x_work_item_id, new_integrity)
+                                Register("get_global_id(0) - get_global_offset(0)", Type.work_group_id_x_work_item_id, new_integrity)
                         elif node.state.registers[src0].type == Type.work_group_id_y_local_size and \
                                 node.state.registers[src1].type == Type.work_item_id_y:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = \
-                                Register("", Type.work_group_id_y_work_item_id, new_integrity)
+                                Register("get_global_id(1) - get_global_offset(1)", Type.work_group_id_y_work_item_id, new_integrity)
                         elif node.state.registers[src0].type == Type.work_group_id_z_local_size and \
                                 node.state.registers[src1].type == Type.work_item_id_z:
                             new_integrity = node.state.registers[src1].integrity
                             node.state.registers[vdst] = \
-                                Register("", Type.work_group_id_z_work_item_id, new_integrity)
+                                Register("get_global_id(2) - get_global_offset(2)", Type.work_group_id_z_work_item_id, new_integrity)
                         # elif node.state.registers[src0].type == Type.global_id_y and node.state.registers[src1].type == Type.global_id_z\
                         #         or node.state.registers[src0].type == Type.global_id_z and node.state.registers[src1].type == Type.global_id_y:
                         #     new_integrity = node.state.registers[src1].integrity
@@ -2342,8 +2318,40 @@ class Decompiler:
 
 def main(input_par, output_par):
     output_file = open(output_par, 'w')
+
+    with open(input_par, 'r') as file:
+        body_of_file = file.read().splitlines()
+    flag_config = False
+    flag_instructions = False
+    set_of_instructions = []
+    set_of_config = []
+    name_of_program = ""
+    for row in body_of_file:
+        row = re.sub("/\*(.*?)\*/", '', row)
+        row = row.strip()
+        if row.find(".kernel ") != -1:
+            if flag_instructions:
+                flag_instructions = False
+                decompiler = Decompiler(output_file)
+                output_file.write("\n")
+                decompiler.process_src(name_of_program, set_of_config, set_of_instructions)
+                set_of_instructions = []
+                set_of_config = []
+                name_of_program = ""
+            name_of_program = row.split()[1]
+        if row == ".config":
+            flag_config = True
+        elif row == ".text":
+            flag_config = False
+            flag_instructions = True
+        elif flag_instructions:
+            set_of_instructions.append(row)
+        elif flag_config:
+            set_of_config.append(row)
+        else:
+            continue
     decompiler = Decompiler(output_file)
-    decompiler.process_src(input_par)
+    decompiler.process_src(name_of_program, set_of_config, set_of_instructions)
     output_file.close()
 
 

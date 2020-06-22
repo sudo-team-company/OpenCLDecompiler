@@ -24,7 +24,7 @@
         .arg _.printf_buffer, "size_t", void*, global, , rdonly
         .arg _.vqueue_pointer, "size_t", long
         .arg _.aqlwrap_pointer, "size_t", long
-        .arg data, "int*", int*, global,
+        .arg data, "int*", int*, global, 
         .arg x, "int", int
     .text
 /*000000000000*/ s_load_dwordx2  s[0:1], s[4:5], 0x0
@@ -63,7 +63,7 @@
         .arg _.vqueue_pointer, "size_t", long
         .arg _.aqlwrap_pointer, "size_t", long
         .arg x, "int", int
-        .arg data, "int*", int*, global,
+        .arg data, "int*", int*, global, 
     .text
 /*000000000000*/ s_load_dwordx2  s[0:1], s[4:5], 0x0
 /*000000000008*/ s_load_dwordx2  s[2:3], s[4:5], 0x38
@@ -101,7 +101,7 @@
         .arg _.vqueue_pointer, "size_t", long
         .arg _.aqlwrap_pointer, "size_t", long
         .arg x, "int", int
-        .arg data, "int*", int*, global,
+        .arg data, "int*", int*, global, 
     .text
 /*000000000000*/ s_load_dwordx4  s[0:3], s[4:5], 0x0
 /*000000000008*/ s_load_dwordx2  s[4:5], s[4:5], 0x38
@@ -139,7 +139,7 @@
         .arg _.vqueue_pointer, "size_t", long
         .arg _.aqlwrap_pointer, "size_t", long
         .arg x, "int", int
-        .arg data, "int*", int*, global,
+        .arg data, "int*", int*, global, 
     .text
 /*000000000000*/ s_load_dwordx2  s[0:1], s[4:5], 0x0
 /*000000000008*/ s_load_dwordx2  s[2:3], s[4:5], 0x38
@@ -177,7 +177,7 @@
         .arg _.vqueue_pointer, "size_t", long
         .arg _.aqlwrap_pointer, "size_t", long
         .arg x, "int", int
-        .arg data, "uint*", uint*, global,
+        .arg data, "uint*", uint*, global, 
     .text
 /*000000000000*/ s_load_dwordx4  s[0:3], s[4:5], 0x0
 /*000000000008*/ s_load_dwordx2  s[10:11], s[4:5], 0x10
@@ -220,7 +220,7 @@
         .arg _.vqueue_pointer, "size_t", long
         .arg _.aqlwrap_pointer, "size_t", long
         .arg x, "int", int
-        .arg data, "uint*", uint*, global,
+        .arg data, "uint*", uint*, global, 
     .text
 /*000000000000*/ s_load_dwordx4  s[0:3], s[4:5], 0x8
 /*000000000008*/ s_load_dwordx2  s[4:5], s[4:5], 0x38
@@ -260,7 +260,7 @@
         .arg _.printf_buffer, "size_t", void*, global, , rdonly
         .arg _.vqueue_pointer, "size_t", long
         .arg _.aqlwrap_pointer, "size_t", long
-        .arg data, "int*", int*, global,
+        .arg data, "int*", int*, global, 
         .arg x, "int", int
     .text
 /*000000000000*/ s_load_dwordx2  s[0:1], s[4:5], 0x0
