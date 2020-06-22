@@ -497,9 +497,15 @@ class Decompiler:
                         if register[1] == "[":
                             register = register[0] + register[2: register.find(":")]
                         if curr_node.state.registers.get(register) is not None \
-                                and curr_node.state.registers[register].val.find("var") != -1:
-                            self.names_of_vars[curr_node.parent[0].state.registers[register].val] = \
-                                curr_node.state.registers[register].type_of_data
+                                and curr_node.state.registers[register].val.find("var") != -1 \
+                                and curr_node.state.registers[register].type_of_data is not None \
+                                and register != "vcc":
+                            if curr_node.parent[0].state.registers[register].val.find("*var") != -1:
+                                self.names_of_vars[curr_node.parent[0].state.registers[register].val] = \
+                                    curr_node.parent[0].state.registers[register].type_of_data
+                            else:
+                                self.names_of_vars[curr_node.parent[0].state.registers[register].val] = \
+                                    curr_node.state.registers[register].type_of_data
                         # if register[1] != "[":
                         #     if curr_node.state.registers.get(register) is not None \
                         #             and curr_node.state.registers[register].val.find("var") != -1:
@@ -1280,9 +1286,9 @@ class Decompiler:
                                         + " + " + inst_offset + ") = " \
                                         + node.state.registers[name_of_register + str(first_to)].val
                     else:
-                        var = node.parent[0].state.registers[to_registers].val \
-                            if node.state.registers[to_registers].val.find("var") == -1 \
-                            else node.state.registers[to_registers].val
+                        var = node.parent[0].state.registers[to_registers].val
+                            # if node.state.registers[to_registers].val.find("var") == -1 \
+                            # else node.state.registers[to_registers].val
                         if node.state.registers.get(from_registers):
                             output_string = var + " = " + node.state.registers[from_registers].val
                         else:
