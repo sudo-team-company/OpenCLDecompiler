@@ -33,6 +33,12 @@ class Type(Enum):
     param_global_id_x = auto()
     param_global_id_y = auto()
     param_global_id_z = auto()
+    local_size_x = auto()
+    local_size_y = auto()
+    local_size_z = auto()
+    global_size_x = auto()
+    global_size_y = auto()
+    global_size_z = auto()
     param = auto()
     paramA = auto()
     program_param = auto()
@@ -154,6 +160,17 @@ class State:
         self.registers[reg].add_version(reg, par[reg])
         parent[reg] += 1
 
+    def upload_usesetup(self, to_registers, from_registers, offset, parameter_of_kernel, parent):
+        if offset == "0x4":
+            self.registers["s0"] = Register("get_local_size(0)", Type.local_size_x, Integrity.integer)
+            self.make_version(parent, "s0")
+            self.registers["s1"] = Register("get_local_size(2)", Type.local_size_z, Integrity.integer)
+            self.make_version(parent, "s1")
+            self.registers["s2"] = Register("get_global_size(0)", Type.global_size_x, Integrity.integer)
+            self.make_version(parent, "s2")
+            self.registers["s3"] = Register("get_global_size(1)", Type.global_size_y, Integrity.integer)
+            self.make_version(parent, "s2")
+
     def upload(self, to_registers, from_registers, offset, parameter_of_kernel, parent):
         first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
             = self.find_first_last_num_to_from(to_registers, from_registers)
@@ -201,12 +218,24 @@ class State:
                 if last_to - first_to >= 1:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
                     self.make_version(parent, to_registers)
-                    self.registers[name_of_register + str(last_to)] = \
+                    self.registers[name_of_register + str(first_to + 1)] = \
                         Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_register + str(last_to))
+                    self.make_version(parent, name_of_register + str(first_to + 1))
                 else:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
                     self.make_version(parent, to_registers)
+                if last_to - first_to > 2:
+                    val_of_register = parameter_of_kernel["param1"]
+                    if val_of_register[0] == "*":
+                        type_param = Type.paramA
+                        val_of_register = val_of_register[1:]
+                    else:
+                        type_param = Type.param
+                    self.registers[name_of_register + str(last_to - 1)] = Register(val_of_register, type_param, Integrity.low_part)
+                    self.make_version(parent, name_of_register + str(last_to - 1))
+                    self.registers[name_of_register + str(last_to)] = \
+                        Register(val_of_register, type_param, Integrity.high_part)
+                    self.make_version(parent, name_of_register + str(last_to))
             if offset == "0x38":
                 val_of_register = parameter_of_kernel["param1"]
                 if val_of_register[0] == "*":
@@ -223,7 +252,7 @@ class State:
                 else:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
                     self.make_version(parent, to_registers)
-            if offset == "0x40":
+            if offset == "0x3c":
                 val_of_register = parameter_of_kernel["param2"]
                 if val_of_register[0] == "*":
                     type_param = Type.paramA
@@ -239,7 +268,88 @@ class State:
                 else:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
                     self.make_version(parent, to_registers)
-
+            if offset == "0x40":
+                val_of_register = parameter_of_kernel["param3"] \
+                    if parameter_of_kernel["param1"][0] != "*" and parameter_of_kernel["param2"][0] != "*" else parameter_of_kernel["param2"]
+                if val_of_register[0] == "*":
+                    type_param = Type.paramA
+                    val_of_register = val_of_register[1:]
+                else:
+                    type_param = Type.param
+                if last_to - first_to >= 1:
+                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
+                    self.make_version(parent, to_registers)
+                    self.registers[name_of_register + str(last_to)] = \
+                        Register(val_of_register, type_param, Integrity.high_part)
+                    self.make_version(parent, name_of_register + str(last_to))
+                else:
+                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
+                    self.make_version(parent, to_registers)
+            if offset == "0x44":
+                val_of_register = parameter_of_kernel["param4"]
+                if val_of_register[0] == "*":
+                    type_param = Type.paramA
+                    val_of_register = val_of_register[1:]
+                else:
+                    type_param = Type.param
+                if last_to - first_to >= 1:
+                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
+                    self.make_version(parent, to_registers)
+                    self.registers[name_of_register + str(last_to)] = \
+                        Register(val_of_register, type_param, Integrity.high_part)
+                    self.make_version(parent, name_of_register + str(last_to))
+                else:
+                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
+                    self.make_version(parent, to_registers)
+            if offset == "0x48":
+                val_of_register = parameter_of_kernel["param4"] \
+                    if parameter_of_kernel["param1"][0] != "*" and parameter_of_kernel["param2"][0] != "*" else parameter_of_kernel["param3"]
+                if val_of_register[0] == "*":
+                    type_param = Type.paramA
+                    val_of_register = val_of_register[1:]
+                else:
+                    type_param = Type.param
+                if last_to - first_to >= 1:
+                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
+                    self.make_version(parent, to_registers)
+                    self.registers[name_of_register + str(first_to + 1)] = \
+                        Register(val_of_register, type_param, Integrity.high_part)
+                    self.make_version(parent, name_of_register + str(first_to + 1))
+                else:
+                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
+                    self.make_version(parent, to_registers)
+                if last_to - first_to > 2:
+                    val_of_register = parameter_of_kernel["param5"] \
+                        if parameter_of_kernel["param1"][0] != "*" and parameter_of_kernel["param2"][0] != "*" else parameter_of_kernel[
+                        "param4"]
+                    if val_of_register[0] == "*":
+                        type_param = Type.paramA
+                        val_of_register = val_of_register[1:]
+                    else:
+                        type_param = Type.param
+                    self.registers[name_of_register + str(last_to - 1)] = Register(val_of_register, type_param, Integrity.low_part)
+                    self.make_version(parent, name_of_register + str(last_to - 1))
+                    self.registers[name_of_register + str(last_to)] = \
+                        Register(val_of_register, type_param, Integrity.high_part)
+                    self.make_version(parent, name_of_register + str(last_to))
+            if offset == "0x50":
+                val_of_register = parameter_of_kernel["param5"] \
+                    if parameter_of_kernel["param2"][0] != "*" and parameter_of_kernel["param3"][0] != "*" else parameter_of_kernel[
+                    "param4"]
+                if val_of_register[0] == "*":
+                    type_param = Type.paramA
+                    val_of_register = val_of_register[1:]
+                else:
+                    type_param = Type.param
+                if last_to - first_to >= 1:
+                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
+                    self.make_version(parent, to_registers)
+                    self.registers[name_of_register + str(first_to + 1)] = \
+                        Register(val_of_register, type_param, Integrity.high_part)
+                    self.make_version(parent, name_of_register + str(first_to + 1))
+                else:
+                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
+                    self.make_version(parent, to_registers)
 
 class Node:
     def __init__(self, instruction, state):
@@ -280,6 +390,7 @@ class Region:
 class Decompiler:
     def __init__(self, output_file):
         self.output_file = output_file
+        self.usesetup = False
         self.cfg = None
         self.improve_cfg = None
         # self.last_node = None
@@ -361,42 +472,57 @@ class Decompiler:
 
     def process_config(self, set_of_config, name_of_program):
         dimensions = set_of_config[0][6:]
+        g_id = ["s6", "s7", "s8"]
+        if ".usesetup" in set_of_config:
+            g_id = ["s8", "s9", "s10"]
+            self.usesetup = True
         if len(dimensions) > 0:
-            self.initial_state.registers["s6"] = Register("get_group_id(0)", Type.work_group_id_x, Integrity.integer)
-            self.initial_state.registers["s6"].add_version("s6", self.versions["s6"])
-            self.versions["s6"] += 1
+            self.initial_state.registers[g_id[0]] = Register("get_group_id(0)", Type.work_group_id_x, Integrity.integer)
+            self.initial_state.registers[g_id[0]].add_version(g_id[0], self.versions[g_id[0]])
+            self.versions[g_id[0]] += 1
             self.initial_state.registers["v0"] = Register("get_local_id(0)", Type.work_item_id_x, Integrity.integer)
             self.initial_state.registers["v0"].add_version("v0", self.versions["v0"])
             self.versions["v0"] += 1
         if len(dimensions) > 1:
-            self.initial_state.registers["s7"] = Register("get_group_id(1)", Type.work_group_id_y, Integrity.integer)
-            self.initial_state.registers["s7"].add_version("s7", self.versions["s7"])
-            self.versions["s7"] += 1
+            self.initial_state.registers[g_id[1]] = Register("get_group_id(1)", Type.work_group_id_y, Integrity.integer)
+            self.initial_state.registers[g_id[1]].add_version(g_id[1], self.versions[g_id[1]])
+            self.versions[g_id[1]] += 1
             self.initial_state.registers["v1"] = Register("get_local_id(1)", Type.work_item_id_y, Integrity.integer)
             self.initial_state.registers["v1"].add_version("v1", self.versions["v1"])
             self.versions["v1"] += 1
         if len(dimensions) > 2:
-            self.initial_state.registers["s8"] = Register("get_group_id(2)", Type.work_group_id_z, Integrity.integer)
-            self.initial_state.registers["s8"].add_version("s8", self.versions["s8"])
-            self.versions["s8"] += 1
+            self.initial_state.registers[g_id[2]] = Register("get_group_id(2)", Type.work_group_id_z, Integrity.integer)
+            self.initial_state.registers[g_id[2]].add_version(g_id[2], self.versions[g_id[2]])
+            self.versions[g_id[2]] += 1
             self.initial_state.registers["v2"] = Register("get_local_id(2)", Type.work_item_id_z, Integrity.integer)
             self.initial_state.registers["v2"].add_version("v2", self.versions["v2"])
             self.versions["v2"] += 1
 
-        size_of_work_groups = set_of_config[1].replace(',', ' ').split()
-        self.output_file.write("__kernel __attribute__((reqd_work_group_size(" + size_of_work_groups[1] + ", "
-                               + size_of_work_groups[2] + ", " + size_of_work_groups[3] + ")))\n")
-        self.sgprsnum = int(set_of_config[2][10:])
-        self.vgprsnum = int(set_of_config[3][10:])
-        self.initial_state.registers["s4"] = Register("s4", Type.arguments_pointer, Integrity.low_part)
-        self.initial_state.registers["s4"].add_version("s4", self.versions["s4"])
-        self.versions["s4"] += 1
-        self.initial_state.registers["s5"] = Register("s5", Type.arguments_pointer, Integrity.high_part)
-        self.initial_state.registers["s5"].add_version("s5", self.versions["s5"])
-        self.versions["s5"] += 1
+        if not self.usesetup:
+            size_of_work_groups = set_of_config[1].replace(',', ' ').split()
+            self.output_file.write("__kernel __attribute__((reqd_work_group_size(" + size_of_work_groups[1] + ", "
+                                   + size_of_work_groups[2] + ", " + size_of_work_groups[3] + ")))\n")
+            self.sgprsnum = int(set_of_config[2][10:])
+            self.vgprsnum = int(set_of_config[3][10:])
+            self.initial_state.registers["s4"] = Register("s4", Type.arguments_pointer, Integrity.low_part)
+            self.initial_state.registers["s4"].add_version("s4", self.versions["s4"])
+            self.versions["s4"] += 1
+            self.initial_state.registers["s5"] = Register("s5", Type.arguments_pointer, Integrity.high_part)
+            self.initial_state.registers["s5"].add_version("s5", self.versions["s5"])
+            self.versions["s5"] += 1
+        else:
+            self.output_file.write("__kernel ")
+            self.initial_state.registers["s6"] = Register("s6", Type.arguments_pointer, Integrity.low_part)
+            self.initial_state.registers["s6"].add_version("s6", self.versions["s6"])
+            self.versions["s6"] += 1
+            self.initial_state.registers["s7"] = Register("s7", Type.arguments_pointer, Integrity.high_part)
+            self.initial_state.registers["s7"].add_version("s7", self.versions["s7"])
+            self.versions["s7"] += 1
         parameters = set_of_config[17:]
         if set_of_config[4].find("localsize") != -1:
             parameters = set_of_config[18:]
+            if ".usesetup" in set_of_config:
+                parameters = set_of_config[19:]
             self.localsize = int(set_of_config[4][11:])
         self.output_file.write("void " + name_of_program + "(")
         num_of_param = 0
@@ -463,7 +589,8 @@ class Decompiler:
                     version_of_reg = set()
                     max_version = 0
                     for parent in curr_node.parent:
-                        if parent.state.registers.get(reg) is not None and parent.state.registers[reg] is not None:
+                        if parent.state.registers.get(reg) is not None and parent.state.registers[reg] is not None \
+                                and parent.state.registers[reg].version is not None:
                             par_version = parent.state.registers[reg].version
                             if len(version_of_reg) == 0:
                                 max_version = int(par_version[par_version.find("_") + 1:])
@@ -680,7 +807,11 @@ class Decompiler:
                         q.append(child)
 
     def make_op(self, node, register1, register2, operation):
-        return node.state.registers[register1].val + operation + node.state.registers[register2].val
+        if len(node.state.registers[register1].val) > 40:
+            s = "(" + node.state.registers[register1].val + ")" + operation + node.state.registers[register2].val
+        else:
+            s = node.state.registers[register1].val + operation + node.state.registers[register2].val
+        return s
 
     def union_regions(self, before_region, curr_region, next_region, start_region):
         start_now = start_region
@@ -1059,7 +1190,7 @@ class Decompiler:
         root = parts_of_operation[1]
         if len(parts_of_operation) >= 3:
             for part in parts_of_operation[2:]:
-                if part in ["b32", 'b64', "u32", "u64", "i32", "i64", "dwordx4", "dwordx2", "dword"]:  # дописать!
+                if part in ["b32", 'b64', "u32", "u64", "i32", "i64", "dwordx4", "dwordx2", "dword", "f32", "f64"]:  # дописать!
                     if suffix != "":
                         suffix = part + "_" + suffix
                     else:
@@ -1386,11 +1517,15 @@ class Decompiler:
 
             elif root == 'and':
                 if suffix == 'b32' or suffix == 'b64':
-                    sdst = instruction[1]
-                    ssrc0 = instruction[2]
-                    ssrc1 = instruction[3]
-                    self.output_file.write(sdst + " = " + ssrc0 + " & " + ssrc1 + "\n")
-                    self.output_file.write("scc = " + sdst + " != 0\n")
+                    if flag_of_status:
+                        sdst = instruction[1]
+                        ssrc0 = instruction[2]
+                        ssrc1 = instruction[3]
+                        node.state.registers[sdst] = node.state.registers[ssrc0]
+                        return node
+                    return output_string
+                    # self.output_file.write(sdst + " = " + ssrc0 + " & " + ssrc1 + "\n")
+                    # self.output_file.write("scc = " + sdst + " != 0\n")
 
             elif root == 'and_saveexec':
                 if suffix == 'b64':
@@ -1421,8 +1556,18 @@ class Decompiler:
                     sdst = instruction[1]
                     ssrc0 = instruction[2]
                     ssrc1 = instruction[3]
-                    self.output_file.write(sdst + " = (int)" + ssrc0 + " >> (" + ssrc1 + " & 31)\n")
-                    self.output_file.write("scc = " + sdst + " != 0\n")
+                    if flag_of_status:
+                        node.state.registers[sdst] = \
+                            Register(node.state.registers[ssrc0].val + "/" + str(pow(2, int(ssrc1)))
+                                     , Type.unknown, Integrity.integer)
+                        node.state.make_version(self.versions, sdst)
+                        if sdst in [ssrc0, ssrc1]:
+                            node.state.registers[sdst].make_prev()
+                        node.state.registers[sdst].type_of_data = suffix
+                        return node
+                    return output_string
+                    # self.output_file.write(sdst + " = (int)" + ssrc0 + " >> (" + ssrc1 + " & 31)\n")
+                    # self.output_file.write("scc = " + sdst + " != 0\n")
 
             elif root == 'barrier':
                 if flag_of_status:
@@ -1435,21 +1580,26 @@ class Decompiler:
                     sdst = instruction[1]
                     ssrc0 = instruction[2]
                     ssrc1 = instruction[3]
-                    shift = "shift" + str(self.number_of_shift)
-                    length = "length" + str(self.number_of_length)
-                    self.output_file.write("uchar " + shift + " = " + ssrc1 + " & 31\n")
-                    self.output_file.write("uchar " + length + " = (" + ssrc0 + " >> 16) & 0x7f\n")
-                    self.output_file.write("if (" + length + " == 0)\n")
-                    self.output_file.write(tab + sdst + " = 0\n")
-                    self.output_file.write("if (" + shift + " + " + length + " < 32)\n")
-                    self.output_file.write(
-                        tab + sdst + " = " + ssrc0 + " << (32 - " + shift + " - " + length + ") >> (32 - "
-                        + length + "\n")
-                    self.output_file.write("else\n")
-                    self.output_file.write(tab + sdst + " = " + instruction[2] + " >> " + shift + "\n")
-                    self.output_file.write("scc = " + ssrc0 + " != 0\n")
-                    self.number_of_length += 1
-                    self.number_of_shift += 1
+                    if flag_of_status:
+                        node.state.registers[sdst].val = "get_local_size(1)"
+                        node.state.make_version(self.versions, sdst)
+                        return node
+                    return output_string
+                    # shift = "shift" + str(self.number_of_shift)
+                    # length = "length" + str(self.number_of_length)
+                    # self.output_file.write("uchar " + shift + " = " + ssrc1 + " & 31\n")
+                    # self.output_file.write("uchar " + length + " = (" + ssrc0 + " >> 16) & 0x7f\n")
+                    # self.output_file.write("if (" + length + " == 0)\n")
+                    # self.output_file.write(tab + sdst + " = 0\n")
+                    # self.output_file.write("if (" + shift + " + " + length + " < 32)\n")
+                    # self.output_file.write(
+                    #     tab + sdst + " = " + ssrc0 + " << (32 - " + shift + " - " + length + ") >> (32 - "
+                    #     + length + "\n")
+                    # self.output_file.write("else\n")
+                    # self.output_file.write(tab + sdst + " = " + instruction[2] + " >> " + shift + "\n")
+                    # self.output_file.write("scc = " + ssrc0 + " != 0\n")
+                    # self.number_of_length += 1
+                    # self.number_of_shift += 1
 
             elif root == 'branch':
                 reladdr = instruction[1]
@@ -1591,7 +1741,11 @@ class Decompiler:
                     first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
                         = node.state.find_first_last_num_to_from(sdata, sbase)
                     if flag_of_status:
-                        node.state.upload(sdata, sbase, offset, self.params, self.versions)
+                        if self.usesetup == False and sbase == "s[4:5]" \
+                                or self.usesetup == True and sbase == "s[6:7]":
+                            node.state.upload(sdata, sbase, offset, self.params, self.versions)
+                        else:
+                            node.state.upload_usesetup(sdata, sbase, offset, self.params, self.versions)
                         node.state.registers[to_registers].type_of_data = suffix
                         return node
                     return output_string
@@ -1628,6 +1782,12 @@ class Decompiler:
                     # self.output_file.write("scc = " + sdst + " != 0\n")
                     # self.output_file.write(sdst + " = " + ssrc0 + " << (" + ssrc1 + " & " + str(int(suffix[1:]) - 1) + ")\n")
 
+            elif root == 'lshr':
+                if suffix == 'b32':
+                    if flag_of_status:
+                        return node
+                    return output_string
+
             elif root == 'mov':
                 if suffix == 'b32' or suffix == 'b64':
                     sdst = instruction[1]
@@ -1658,7 +1818,17 @@ class Decompiler:
                     ssrc0 = instruction[2]
                     ssrc1 = instruction[3]
                     if flag_of_status:
-                        node.state.registers[sdst] = Register(self.make_op(node, ssrc0, ssrc1, " * "), Type.unknown,
+                        if node.state.registers[ssrc0].type == Type.local_size_x and node.state.registers[ssrc1].type == Type.work_group_id_x:
+                            node.state.registers[sdst] = Register(self.make_op(node, ssrc0, ssrc1, " * "), Type.work_group_id_x_local_size,
+                                                                  Integrity.integer)
+                        elif node.state.registers[ssrc0].type == Type.local_size_y and node.state.registers[ssrc1].type == Type.work_group_id_y:
+                            node.state.registers[sdst] = Register(self.make_op(node, ssrc0, ssrc1, " * "), Type.work_group_id_y_local_size,
+                                                                  Integrity.integer)
+                        elif node.state.registers[ssrc0].type == Type.local_size_z and node.state.registers[ssrc1].type == Type.work_group_id_z:
+                            node.state.registers[sdst] = Register(self.make_op(node, ssrc0, ssrc1, " * "), Type.work_group_id_z_local_size,
+                                                                  Integrity.integer)
+                        else:
+                            node.state.registers[sdst] = Register(self.make_op(node, ssrc0, ssrc1, " * "), Type.unknown,
                                                               Integrity.integer)
                         node.state.make_version(self.versions, sdst)
                         if sdst in [ssrc0, ssrc1]:
@@ -1949,7 +2119,20 @@ class Decompiler:
                     self.output_file.write(vdst + " = (" + src0 + " & " + src1 + ") | " + src2 + "\n")
 
             elif root == "ashrrev":
-                if suffix == "i64":
+                if suffix =="i32":
+                    vdst = instruction[1]
+                    src0 = instruction[2]
+                    src1 = instruction[3]
+                    if flag_of_status:
+                        node.state.registers[vdst] = \
+                            Register(node.state.registers[src1].val,
+                                     node.state.registers[src1].type,
+                                     Integrity.integer)
+                        node.state.registers[vdst].version = node.parent[0].state.registers[vdst].version
+                        node.state.registers[vdst].type_of_data = suffix
+                        return node
+                    return output_string
+                elif suffix == "i64":
                     vdst = instruction[1]
                     src0 = instruction[2]
                     src1 = instruction[3]
@@ -2242,7 +2425,22 @@ class Decompiler:
                     self.output_file.write(vdst + " = min(" + src0 + ", " + src1 + ")\n")
 
             elif root == "mul":
-                if suffix == "f64":
+                if suffix == "f32":
+                    vdst = instruction[1]
+                    src0 = instruction[2]
+                    src1 = instruction[3]
+                    if flag_of_status:
+                        new_integrity = node.state.registers[src1].integrity
+                        node.state.registers[vdst] = Register(self.make_op(node, src0, src1, " * "), Type.unknown,
+                                                              new_integrity)
+                        node.state.make_version(self.versions, vdst)
+                        if vdst in [src0, src1]:
+                            node.state.registers[vdst].make_prev()
+                        node.state.registers[vdst].type_of_data = suffix
+                        return node
+                    return output_string
+
+                elif suffix == "f64":
                     vdst = instruction[1]
                     src0 = instruction[2]
                     src1 = instruction[3]
