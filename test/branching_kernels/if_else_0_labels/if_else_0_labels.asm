@@ -25,7 +25,7 @@
         .arg _.vqueue_pointer, "size_t", long
         .arg _.aqlwrap_pointer, "size_t", long
         .arg x, "int", int
-        .arg data, "int*", int*, global,
+        .arg data, "int*", int*, global, 
         .arg y, "int", int
     .text
 /*000000000000*/ s_load_dwordx4  s[0:3], s[4:5], 0x0

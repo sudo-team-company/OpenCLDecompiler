@@ -321,6 +321,7 @@ class Decompiler:
         self.localsize = 0
         self.lds_vars = {}
         self.lds_var_number = 0
+        self.num_of_var = 0
 
     def process_config(self, set_of_config, name_of_program):
         dimensions = set_of_config[0][6:]
@@ -412,7 +413,6 @@ class Decompiler:
         last_node = Node("", self.initial_state)  # root
         last_node_state = self.initial_state
         self.cfg = last_node
-        num_of_var = 0
         for row in set_of_instructions:
             instruction = row.strip().replace(',', ' ').split()
             curr_node = self.make_cfg_node(instruction, last_node_state, last_node)
@@ -466,18 +466,19 @@ class Decompiler:
                     elif len(version_of_reg) > 1:
                         curr_node.state.registers[reg].version = reg + "_" + str(max_version + 1)
                         curr_node.state.registers[reg].prev_version = list(version_of_reg)
-                        variable = "var" + str(num_of_var)
+                        variable = "var" + str(self.num_of_var)
                         if curr_node.state.registers[reg].type == Type.param_global_id_x:
                             variable = "*" + variable
                         curr_node.state.registers[reg].val = variable
-                        num_of_var += 1
+                        self.num_of_var += 1
                         for ver in version_of_reg:
                             self.variables[ver] = variable
                 last_node_state = curr_node.state
             if instruction != "branch" and len(instruction) > 1:
                 for num_of_reg in list(range(1, len(curr_node.instruction))):
                     register = curr_node.instruction[num_of_reg]
-                    if (curr_node.instruction[0].find("flat_store") != -1 or num_of_reg > 1) and len(register) > 1:
+                    if (curr_node.instruction[0].find("flat_store") != -1 or num_of_reg > 1) and len(register) > 1 \
+                            and curr_node.instruction[0].find("cnd") == -1:
                         if register[1] == "[":
                             register = register[0] + register[2: register.find(":")]
                         if curr_node.state.registers.get(register) is not None \
@@ -920,7 +921,7 @@ class Decompiler:
                     reg = reg.children[0]
                 new_output = self.to_openCL(reg, False)  # надо правильно будет переделать OpenCL
                 if new_output != "":
-                    self.output_file.write(indent + new_output)
+                    self.output_file.write(indent + new_output + ";\n")
             else:
                 reg = region.start
                 self.make_output(reg, indent)
@@ -1987,6 +1988,8 @@ class Decompiler:
                     if flag_of_status:
                         node.state.registers[sdst] = Register(node.state.registers[src0].val + " != " + src1,
                                                               Type.unknown, Integrity.integer)
+                        if self.versions.get(sdst) is None:
+                            self.versions[sdst] = 0
                         node.state.make_version(self.versions, sdst)
                         if sdst in [src0, src1]:
                             node.state.registers[sdst].make_prev()
@@ -2034,13 +2037,20 @@ class Decompiler:
                     src0 = instruction[2]
                     src1 = instruction[3]
                     ssrc2 = instruction[4]
-                    name_of_variable = "variable"
+                    variable = "var" + str(self.num_of_var)
                     if flag_of_status:
-                        node.state.registers[vdst] = Register(name_of_variable, Type.program_param, Integrity.integer)
-                        node.state.make_version(self.version, vdst)
+                        node.state.registers[vdst] = Register(variable, Type.program_param, Integrity.integer)
+                        node.state.make_version(self.versions, vdst)
                         if vdst in [src0, src1]:
                             node.state.registers[vdst].make_prev()
                         node.state.registers[vdst].type_of_date = suffix
+
+                        if node.state.registers[vdst].type == Type.param_global_id_x:
+                            variable = "*" + variable
+                        node.state.registers[vdst].val = variable
+                        self.num_of_var += 1
+                        self.variables[node.state.registers[vdst].version] = variable
+                        self.names_of_vars[variable] = suffix
                         return node
                     output_string = "int " + node.state.registers[vdst].val + " = " + node.state.registers[ssrc2].val \
                                     + " ? " + node.state.registers[src1].val + " : " \
@@ -2142,8 +2152,11 @@ class Decompiler:
                                 Register(node.state.registers[from_registers].val,
                                          node.state.registers[from_registers].type,
                                          Integrity.low_part)
-                            node.state.registers[to_registers].version = node.parent[0].state.registers[
-                                to_registers].version
+                            if node.parent[0].state.registers.get(to_registers) is not None:
+                                node.state.registers[to_registers].version = node.parent[0].state.registers[
+                                    to_registers].version
+                            else:
+                                node.state.make_version(self.versions, to_registers)
                             node.state.registers[to_registers].type_of_data = suffix
                             # node.state.make_version(self.versions, to_registers)
                             # if to_registers == from_registers:
@@ -2152,8 +2165,11 @@ class Decompiler:
                                 Register(node.state.registers[from_registers_1].val,
                                          node.state.registers[from_registers].type,
                                          Integrity.high_part)
-                            node.state.registers[to_registers_1].version = node.parent[0].state.registers[
-                                to_registers_1].version
+                            if node.parent[0].state.registers.get(to_registers_1) is not None:
+                                node.state.registers[to_registers_1].version = node.parent[0].state.registers[
+                                    to_registers_1].version
+                            else:
+                                node.state.make_version(self.versions, to_registers_1)
                             node.state.registers[to_registers_1].type_of_data = suffix
                             # node.state.make_version(self.versions, to_registers_1)
                             # if to_registers_1 == from_registers_1:
