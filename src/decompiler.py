@@ -168,6 +168,41 @@ class Decompiler:
             num_of_param += 1
         self.output_file.write(")\n")
 
+    def change_cfg_for_else_structure(self, curr_node, instruction):
+        self.parents_of_label[0].children.remove(self.label)
+        self.parents_of_label[1].children.remove(self.label)
+        last_node = self.parents_of_label[1]
+        last_node_state = copy.deepcopy(self.parents_of_label[1].state)
+        if curr_node.parent[0].instruction[0].find("v_mov") != -1:
+            last_node_state.registers[curr_node.parent[0].instruction[1]] \
+                = curr_node.state.registers[curr_node.parent[0].instruction[1]]
+        self.from_node[instruction[1]].remove(curr_node)
+        if self.from_node.get(instruction[1], None) is None:
+            self.from_node[instruction[1]] = [self.parents_of_label[0]]
+        else:
+            self.from_node[instruction[1]].append(self.parents_of_label[0])
+        self.flag_of_else = False
+        return last_node, last_node_state
+
+    def update_reg_version(self, reg, curr_node, max_version, version_of_reg):
+        if len(version_of_reg) == 1:
+            if curr_node.state.registers[reg] is None:
+                for p in curr_node.parent:
+                    if p.state.registers[reg] is not None:
+                        curr_node.state.registers[reg] = p.state.registers[reg]
+                        break
+        elif len(version_of_reg) > 1:
+            curr_node.state.registers[reg].version = reg + "_" + str(max_version + 1)
+            curr_node.state.registers[reg].prev_version = list(version_of_reg)
+            variable = "var" + str(self.num_of_var)
+            if curr_node.state.registers[reg].type == Type.param_global_id_x:
+                variable = "*" + variable
+            curr_node.state.registers[reg].val = variable
+            self.num_of_var += 1
+            for ver in version_of_reg:
+                self.variables[ver] = variable
+        return curr_node
+
     def process_src(self, name_of_program, set_of_config, set_of_instructions):
         self.process_config(set_of_config, name_of_program)
         last_node = Node("", self.initial_state)  # root
@@ -190,19 +225,7 @@ class Decompiler:
             elif (instruction[0].find("andn2") != -1 or instruction[0].find("v_mov") != -1) and self.flag_of_else:
                 continue
             elif instruction[0].find("cbranch") != -1 and self.flag_of_else:
-                self.parents_of_label[0].children.remove(self.label)
-                self.parents_of_label[1].children.remove(self.label)
-                last_node = self.parents_of_label[1]
-                last_node_state = copy.deepcopy(self.parents_of_label[1].state)
-                if curr_node.parent[0].instruction[0].find("v_mov") != -1:
-                    last_node_state.registers[curr_node.parent[0].instruction[1]] \
-                        = curr_node.state.registers[curr_node.parent[0].instruction[1]]
-                self.from_node[instruction[1]].remove(curr_node)
-                if self.from_node.get(instruction[1], None) is None:
-                    self.from_node[instruction[1]] = [self.parents_of_label[0]]
-                else:
-                    self.from_node[instruction[1]].append(self.parents_of_label[0])
-                self.flag_of_else = False
+                last_node, last_node_state = self.change_cfg_for_else_structure(curr_node, instruction)
             else:
                 self.flag_of_else = False
             if instruction[0][0] == "." and len(curr_node.parent) > 1:
@@ -221,22 +244,7 @@ class Decompiler:
                                 version_of_reg.add(par_version)
                                 if int(par_version[par_version.find("_") + 1:]) > max_version:
                                     max_version = int(par_version[par_version.find("_") + 1:])
-                    if len(version_of_reg) == 1:
-                        if curr_node.state.registers[reg] is None:
-                            for p in curr_node.parent:
-                                if p.state.registers[reg] is not None:
-                                    curr_node.state.registers[reg] = p.state.registers[reg]
-                                    break
-                    elif len(version_of_reg) > 1:
-                        curr_node.state.registers[reg].version = reg + "_" + str(max_version + 1)
-                        curr_node.state.registers[reg].prev_version = list(version_of_reg)
-                        variable = "var" + str(self.num_of_var)
-                        if curr_node.state.registers[reg].type == Type.param_global_id_x:
-                            variable = "*" + variable
-                        curr_node.state.registers[reg].val = variable
-                        self.num_of_var += 1
-                        for ver in version_of_reg:
-                            self.variables[ver] = variable
+                    curr_node = self.update_reg_version(reg, curr_node, max_version, version_of_reg)
                 last_node_state = curr_node.state
             if instruction != "branch" and len(instruction) > 1:
                 for num_of_reg in list(range(1, len(curr_node.instruction))):
