@@ -16,7 +16,7 @@ class Decompiler:
         self.cfg = None
         self.improve_cfg = None
         # self.last_node = None
-        self.number_of_temp = 0  # версии для ассемблерного кода в случае отсутствия перевода
+        self.number_of_temp = 0  # versions for asm code if decompilation is not success (версии для ассемблерного кода в случае отсутствия перевода)
         self.number_of_shift = 0
         self.number_of_length = 0
         self.number_of_mask = 0
@@ -30,14 +30,14 @@ class Decompiler:
         self.number_of_v = 0
         self.number_of_vm = 0
         self.number_of_p = 0
-        self.initial_state = State()  # начальное состояние регистров
-        self.sgprsnum = 0  # количество s регистров, используемых системой
-        self.vgprsnum = 0  # количество v регистров, используемых системой
+        self.initial_state = State()  # start state of registers (начальное состояние регистров)
+        self.sgprsnum = 0  # number of s registers used by system (количество s регистров, используемых системой)
+        self.vgprsnum = 0  # number of v registers used by system (количество v регистров, используемых системой)
         self.params = {}
-        self.to_node = {}  # метка, с которой начинается блок -> вершина
-        self.from_node = {}  # метку, которую ожидает вершина -> вершина ("лист ожидания")
-        self.starts_regions = {}  # Node или Region -> Region
-        self.ends_regions = {}  # Node или Region -> Region
+        self.to_node = {}  # the label at which the block starts -> node (метка, с которой начинается блок -> вершина)
+        self.from_node = {}  # the label the vertex is expecting -> node (метка, которую ожидает вершина -> вершина ("лист ожидания"))
+        self.starts_regions = {}  # Node or Region -> Region
+        self.ends_regions = {}  # Node or Region -> Region
         self.label = None
         self.parents_of_label = []
         self.flag_of_else = False
@@ -707,11 +707,11 @@ class Decompiler:
                 if region.start == self.cfg:
                     reg = self.cfg.children[0]
                 while reg != region.end:
-                    new_output = self.to_openCL(reg, False)  # надо правильно будет переделать OpenCL
+                    new_output = self.to_openCL(reg, False)
                     if new_output != "":
                         self.output_file.write(indent + new_output + ";\n")
                     reg = reg.children[0]
-                new_output = self.to_openCL(reg, False)  # надо правильно будет переделать OpenCL
+                new_output = self.to_openCL(reg, False)
                 if new_output != "":
                     self.output_file.write(indent + new_output + ";\n")
             else:
@@ -879,7 +879,7 @@ class Decompiler:
                         node.state.registers[vdst].type_of_data = "u" + suffix[1:]
                         return node
                     return output_string
-                    self.output_file.write(vdst + " = *(uint)(ds + ((" + addr + " + " + offset + ") & ~3)\n")
+                    # self.output_file.write(vdst + " = *(uint)(ds + ((" + addr + " + " + offset + ") & ~3)\n")
 
                 elif suffix == "b64":
                     vdst = instruction[1]
@@ -1348,7 +1348,7 @@ class Decompiler:
                     return node
                 # self.output_file.write("}\n")
                 return output_string
-            # здесь должна будет быть закрывающаяся скобка
+
             elif root == 'getpc':
                 if suffix == 'b64':
                     sdst = instruction[1]
