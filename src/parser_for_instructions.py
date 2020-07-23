@@ -9,8 +9,9 @@ def main(input_par, output_par):
 
     with open(input_par, 'r') as file:
         body_of_file = file.read().splitlines()
-    flag_config = False
-    flag_instructions = False
+    # flag_config = False
+    # flag_instructions = False
+    status_of_parse = "start"
     set_of_instructions = []
     set_of_config = []
     name_of_program = ""
@@ -18,23 +19,29 @@ def main(input_par, output_par):
         row = re.sub("/\*(.*?)\*/", '', row)
         row = row.strip()
         if row.find(".kernel ") != -1:
-            if flag_instructions:
-                flag_instructions = False
+            # if flag_instructions:
+            if status_of_parse == "instruction":
+                # flag_instructions = False
+                status_of_parse = "kernel"
                 decompiler = Decompiler(output_file)
-                output_file.write("\n")
                 decompiler.process_src(name_of_program, set_of_config, set_of_instructions)
+                output_file.write("\n")
                 set_of_instructions = []
                 set_of_config = []
                 name_of_program = ""
             name_of_program = row.split()[1]
         if row == ".config":
-            flag_config = True
+            # flag_config = True
+            status_of_parse = "config"
         elif row == ".text":
-            flag_config = False
-            flag_instructions = True
-        elif flag_instructions:
+            # flag_config = False
+            # flag_instructions = True
+            status_of_parse = "instruction"
+        # elif flag_instructions:
+        elif status_of_parse == "instruction":
             set_of_instructions.append(row)
-        elif flag_config:
+        # elif flag_config:
+        elif status_of_parse == "config":
             set_of_config.append(row)
         else:
             continue
