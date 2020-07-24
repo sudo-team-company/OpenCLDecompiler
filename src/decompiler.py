@@ -16,7 +16,7 @@ class Decompiler:
         self.cfg = None
         self.improve_cfg = None
         # self.last_node = None
-        self.number_of_temp = 0  # версии для ассемблерного кода в случае отсутствия перевода
+        self.number_of_temp = 0  # versions for asm code if decompilation is not success (версии для ассемблерного кода в случае отсутствия перевода)
         self.number_of_shift = 0
         self.number_of_length = 0
         self.number_of_mask = 0
@@ -30,14 +30,14 @@ class Decompiler:
         self.number_of_v = 0
         self.number_of_vm = 0
         self.number_of_p = 0
-        self.initial_state = State()  # начальное состояние регистров
-        self.sgprsnum = 0  # количество s регистров, используемых системой
-        self.vgprsnum = 0  # количество v регистров, используемых системой
+        self.initial_state = State()  # start state of registers (начальное состояние регистров)
+        self.sgprsnum = 0  # number of s registers used by system (количество s регистров, используемых системой)
+        self.vgprsnum = 0  # number of v registers used by system (количество v регистров, используемых системой)
         self.params = {}
-        self.to_node = {}  # метка, с которой начинается блок -> вершина
-        self.from_node = {}  # метку, которую ожидает вершина -> вершина ("лист ожидания")
-        self.starts_regions = {}  # Node или Region -> Region
-        self.ends_regions = {}  # Node или Region -> Region
+        self.to_node = {}  # the label at which the block starts -> node (метка, с которой начинается блок -> вершина)
+        self.from_node = {}  # the label the vertex is expecting -> node (метка, которую ожидает вершина -> вершина ("лист ожидания"))
+        self.starts_regions = {}  # Node or Region -> Region
+        self.ends_regions = {}  # Node or Region -> Region
         self.label = None
         self.parents_of_label = []
         self.flag_of_else = False
@@ -168,6 +168,41 @@ class Decompiler:
             num_of_param += 1
         self.output_file.write(")\n")
 
+    def change_cfg_for_else_structure(self, curr_node, instruction):
+        self.parents_of_label[0].children.remove(self.label)
+        self.parents_of_label[1].children.remove(self.label)
+        last_node = self.parents_of_label[1]
+        last_node_state = copy.deepcopy(self.parents_of_label[1].state)
+        if curr_node.parent[0].instruction[0].find("v_mov") != -1:
+            last_node_state.registers[curr_node.parent[0].instruction[1]] \
+                = curr_node.state.registers[curr_node.parent[0].instruction[1]]
+        self.from_node[instruction[1]].remove(curr_node)
+        if self.from_node.get(instruction[1], None) is None:
+            self.from_node[instruction[1]] = [self.parents_of_label[0]]
+        else:
+            self.from_node[instruction[1]].append(self.parents_of_label[0])
+        self.flag_of_else = False
+        return last_node, last_node_state
+
+    def update_reg_version(self, reg, curr_node, max_version, version_of_reg):
+        if len(version_of_reg) == 1:
+            if curr_node.state.registers[reg] is None:
+                for p in curr_node.parent:
+                    if p.state.registers[reg] is not None:
+                        curr_node.state.registers[reg] = p.state.registers[reg]
+                        break
+        elif len(version_of_reg) > 1:
+            curr_node.state.registers[reg].version = reg + "_" + str(max_version + 1)
+            curr_node.state.registers[reg].prev_version = list(version_of_reg)
+            variable = "var" + str(self.num_of_var)
+            if curr_node.state.registers[reg].type == Type.param_global_id_x:
+                variable = "*" + variable
+            curr_node.state.registers[reg].val = variable
+            self.num_of_var += 1
+            for ver in version_of_reg:
+                self.variables[ver] = variable
+        return curr_node
+
     def process_src(self, name_of_program, set_of_config, set_of_instructions):
         self.process_config(set_of_config, name_of_program)
         last_node = Node("", self.initial_state)  # root
@@ -190,19 +225,7 @@ class Decompiler:
             elif (instruction[0].find("andn2") != -1 or instruction[0].find("v_mov") != -1) and self.flag_of_else:
                 continue
             elif instruction[0].find("cbranch") != -1 and self.flag_of_else:
-                self.parents_of_label[0].children.remove(self.label)
-                self.parents_of_label[1].children.remove(self.label)
-                last_node = self.parents_of_label[1]
-                last_node_state = copy.deepcopy(self.parents_of_label[1].state)
-                if curr_node.parent[0].instruction[0].find("v_mov") != -1:
-                    last_node_state.registers[curr_node.parent[0].instruction[1]] \
-                        = curr_node.state.registers[curr_node.parent[0].instruction[1]]
-                self.from_node[instruction[1]].remove(curr_node)
-                if self.from_node.get(instruction[1], None) is None:
-                    self.from_node[instruction[1]] = [self.parents_of_label[0]]
-                else:
-                    self.from_node[instruction[1]].append(self.parents_of_label[0])
-                self.flag_of_else = False
+                last_node, last_node_state = self.change_cfg_for_else_structure(curr_node, instruction)
             else:
                 self.flag_of_else = False
             if instruction[0][0] == "." and len(curr_node.parent) > 1:
@@ -221,22 +244,7 @@ class Decompiler:
                                 version_of_reg.add(par_version)
                                 if int(par_version[par_version.find("_") + 1:]) > max_version:
                                     max_version = int(par_version[par_version.find("_") + 1:])
-                    if len(version_of_reg) == 1:
-                        if curr_node.state.registers[reg] is None:
-                            for p in curr_node.parent:
-                                if p.state.registers[reg] is not None:
-                                    curr_node.state.registers[reg] = p.state.registers[reg]
-                                    break
-                    elif len(version_of_reg) > 1:
-                        curr_node.state.registers[reg].version = reg + "_" + str(max_version + 1)
-                        curr_node.state.registers[reg].prev_version = list(version_of_reg)
-                        variable = "var" + str(self.num_of_var)
-                        if curr_node.state.registers[reg].type == Type.param_global_id_x:
-                            variable = "*" + variable
-                        curr_node.state.registers[reg].val = variable
-                        self.num_of_var += 1
-                        for ver in version_of_reg:
-                            self.variables[ver] = variable
+                    curr_node = self.update_reg_version(reg, curr_node, max_version, version_of_reg)
                 last_node_state = curr_node.state
             if instruction != "branch" and len(instruction) > 1:
                 for num_of_reg in list(range(1, len(curr_node.instruction))):
@@ -699,11 +707,11 @@ class Decompiler:
                 if region.start == self.cfg:
                     reg = self.cfg.children[0]
                 while reg != region.end:
-                    new_output = self.to_openCL(reg, False)  # надо правильно будет переделать OpenCL
+                    new_output = self.to_openCL(reg, False)
                     if new_output != "":
                         self.output_file.write(indent + new_output + ";\n")
                     reg = reg.children[0]
-                new_output = self.to_openCL(reg, False)  # надо правильно будет переделать OpenCL
+                new_output = self.to_openCL(reg, False)
                 if new_output != "":
                     self.output_file.write(indent + new_output + ";\n")
             else:
@@ -871,7 +879,7 @@ class Decompiler:
                         node.state.registers[vdst].type_of_data = "u" + suffix[1:]
                         return node
                     return output_string
-                    self.output_file.write(vdst + " = *(uint)(ds + ((" + addr + " + " + offset + ") & ~3)\n")
+                    # self.output_file.write(vdst + " = *(uint)(ds + ((" + addr + " + " + offset + ") & ~3)\n")
 
                 elif suffix == "b64":
                     vdst = instruction[1]
@@ -1340,7 +1348,7 @@ class Decompiler:
                     return node
                 # self.output_file.write("}\n")
                 return output_string
-            # здесь должна будет быть закрывающаяся скобка
+
             elif root == 'getpc':
                 if suffix == 'b64':
                     sdst = instruction[1]
