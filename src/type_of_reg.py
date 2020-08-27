@@ -38,3 +38,5 @@ class Type(Enum):
     paramA = auto()
     program_param = auto()
     int32 = auto()
+    work_dim = auto()
+    general_setup = auto()

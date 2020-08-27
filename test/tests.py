@@ -86,6 +86,15 @@ class LinearKernelsTest(unittest.TestCase):
             with open(r"linear_kernels\many_linears\many_linears_dcmpl.cl") as decompiled:
                 self.assertEqual(hands_decompilation.read(), decompiled.read())
 
+    def test_work_item_built_in_functions(self):
+        subprocess.call(r'test.bat linear_kernels\work_item_built_in_functions\work_item_built_in_functions.bin ' +
+                        r'linear_kernels\work_item_built_in_functions\work_item_built_in_functions.asm')
+        parser_for_instructions.main(r"linear_kernels\work_item_built_in_functions\work_item_built_in_functions.asm",
+                                     r"linear_kernels\work_item_built_in_functions\work_item_built_in_functions.cl")
+        with open(
+                r"linear_kernels\work_item_built_in_functions\work_item_built_in_functions_hands.cl") as hands_decompilation:
+            with open(r"linear_kernels\work_item_built_in_functions\work_item_built_in_functions_dcmpl.cl") as decompiled:
+                self.assertEqual(hands_decompilation.read(), decompiled.read())
 
 class LocalMemoryKernelsTest(unittest.TestCase):
     def test_barrier_1(self):

@@ -142,10 +142,14 @@ class Decompiler:
             self.versions["s7"] += 1
         parameters = set_of_config[17:]
         if set_of_config[4].find("localsize") != -1:
-            parameters = set_of_config[18:]
-            if ".usesetup" in set_of_config:
-                parameters = set_of_config[19:]
+            # parameters = set_of_config[18:]
+            # if ".usesetup" in set_of_config:
+            #     parameters = set_of_config[19:]
             self.localsize = int(set_of_config[4][11:])
+        for num_of_setting in list(range(0, len(set_of_config))):
+            if set_of_config[num_of_setting].find(".arg") != -1 and set_of_config[num_of_setting].find("_.") == -1:
+                parameters = set_of_config[num_of_setting:]
+                break
         self.output_file.write("void " + name_of_program + "(")
         num_of_param = 0
         flag_start = False
@@ -1017,7 +1021,8 @@ class Decompiler:
                             Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
                                      Integrity.high_part)
                         # node.state.make_version(self.versions, to_now)
-                        node.state.registers[to_now].version = node.parent[0].state.registers[to_now].version
+                        if node.parent[0].state.registers[to_now] is not None:
+                            node.state.registers[to_now].version = node.parent[0].state.registers[to_now].version
                         node.state.registers[to_now].type_of_data = suffix
                     else:
                         return node
@@ -1086,7 +1091,7 @@ class Decompiler:
             sdst = instruction[1]
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
-            new_val = "(ulong)" + ssrc0 + " + (ulong)" + ssrc1
+            new_val = "(ulong)" + node.state.registers[ssrc0].val + " + (ulong)" + node.state.registers[ssrc1].val
             if flag_of_status:
                 if node.state.registers[ssrc0].type == Type.work_group_id_x_local_size \
                         and node.state.registers[ssrc1].type == Type.global_offset_x:
@@ -1100,6 +1105,9 @@ class Decompiler:
                         and node.state.registers[ssrc1].type == Type.global_offset_z:
                     node.state.registers[sdst] = \
                         Register(new_val, Type.work_group_id_z_local_size_offset, Integrity.integer)
+                elif node.state.registers[ssrc0].type == Type.param or node.state.registers[ssrc1].type == Type.param:
+                    node.state.registers[sdst] = \
+                        Register(new_val, Type.param, Integrity.integer)
                 else:
                     node.state.registers[sdst] = node.state.registers[ssrc0]
                 node.state.make_version(self.versions, sdst)
@@ -1191,7 +1199,10 @@ class Decompiler:
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
             if flag_of_status:
-                node.state.registers[sdst].val = "get_local_size(1)"
+                if ssrc1 == "0x20010":
+                    node.state.registers[sdst] = Register("get_work_dim()", Type.work_dim, Integrity.integer)
+                else:
+                    node.state.registers[sdst].val = "get_local_size(1)"
                 node.state.make_version(self.versions, sdst)
                 return node
             return output_string
@@ -1400,9 +1411,15 @@ class Decompiler:
             # self.output_file.write("scc = " + sdst + " != 0\n")
             # self.output_file.write(sdst + " = " + ssrc0 + " << (" + ssrc1 + " & " + str(int(suffix[1:]) - 1) + ")\n")
 
-    def s_lshr(self, node, flag_of_status, suffix, output_string):
+    def s_lshr(self, node, instruction, flag_of_status, suffix, output_string):
+        sdst = instruction[1]
+        ssrc0 = instruction[2]
+        ssrc1 = instruction[3]
         if suffix == 'b32':
             if flag_of_status:
+                node.state.registers[sdst] = Register(node.state.registers[ssrc0].val + " / " + str(pow(2, int(ssrc1))),
+                                                      node.state.registers[ssrc0].type, Integrity.integer)
+                node.state.make_version(self.versions, sdst)
                 return node
             return output_string
 
@@ -2111,7 +2128,7 @@ class Decompiler:
                 new_integrity = node.state.registers[src1].integrity
                 node.state.registers[vdst] = Register(self.make_op(node, src0, src1, " - "), Type.unknown,
                                                       new_integrity)
-                node.state.make_version(self.version, vdst)
+                node.state.make_version(self.versions, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
                 node.state.registers[vdst].type_of_data = suffix
@@ -2269,7 +2286,7 @@ class Decompiler:
                 return self.s_lshl(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'lshr':
-                return self.s_lshr(node, flag_of_status, suffix, output_string)
+                return self.s_lshr(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'mov':
                 return self.s_mov(node, instruction, flag_of_status, suffix, output_string)
