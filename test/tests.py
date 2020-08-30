@@ -100,7 +100,7 @@ class LinearKernelsTest(unittest.TestCase):
         subprocess.call(r'test.bat linear_kernels\work_item_built_in_functions\work_item_built_in_functions.bin ' +
                         r'linear_kernels\work_item_built_in_functions\work_item_built_in_functions.asm')
         parser_for_instructions.main(r"linear_kernels\work_item_built_in_functions\work_item_built_in_functions.asm",
-                                     r"linear_kernels\work_item_built_in_functions\work_item_built_in_functions.cl")
+                                     r"linear_kernels\work_item_built_in_functions\work_item_built_in_functions_dcmpl.cl")
         with open(
                 r"linear_kernels\work_item_built_in_functions\work_item_built_in_functions_hands.cl") as hands_decompilation:
             with open(r"linear_kernels\work_item_built_in_functions\work_item_built_in_functions_dcmpl.cl") as decompiled:

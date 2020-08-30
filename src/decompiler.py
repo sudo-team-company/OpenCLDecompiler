@@ -13,6 +13,7 @@ class Decompiler:
     def __init__(self, output_file):
         self.output_file = output_file
         self.usesetup = False
+        self.size_of_work_groups = []
         self.cfg = None
         self.improve_cfg = None
         # self.last_node = None
@@ -123,9 +124,9 @@ class Decompiler:
             self.initial_state.registers["v2"].add_version("v2", self.versions["v2"])
             self.versions["v2"] += 1
         if set_of_config[1].find(".cws") != "-1":
-            size_of_work_groups = set_of_config[1].replace(',', ' ').split()
-            self.output_file.write("__kernel __attribute__((reqd_work_group_size(" + size_of_work_groups[1] + ", "
-                                   + size_of_work_groups[2] + ", " + size_of_work_groups[3] + ")))\n")
+            self.size_of_work_groups = set_of_config[1].replace(',', ' ').split()[1:]
+            self.output_file.write("__kernel __attribute__((reqd_work_group_size(" + self.size_of_work_groups[0] + ", "
+                                   + self.size_of_work_groups[1] + ", " + self.size_of_work_groups[2] + ")))\n")
         else:
             self.output_file.write("__kernel ")
         self.sgprsnum = int(set_of_config[2][10:])
@@ -1445,8 +1446,21 @@ class Decompiler:
         ssrc1 = instruction[3]
         if suffix == 'b32':
             if flag_of_status:
-                node.state.registers[sdst] = Register(node.state.registers[ssrc0].val + " / " + str(pow(2, int(ssrc1))),
-                                                      node.state.registers[ssrc0].type, Integrity.integer)
+                if node.state.registers[ssrc0].type == Type.global_size_x \
+                        and str(pow(2, int(ssrc1))) == self.size_of_work_groups[0]:
+                    node.state.registers[sdst] = Register("get_num_groups(0)",
+                                                          node.state.registers[ssrc0].type, Integrity.integer)
+                elif node.state.registers[ssrc0].type == Type.global_size_y \
+                        and str(pow(2, int(ssrc1))) == self.size_of_work_groups[1]:
+                    node.state.registers[sdst] = Register("get_num_groups(1)",
+                                                          node.state.registers[ssrc0].type, Integrity.integer)
+                elif node.state.registers[ssrc0].type == Type.global_size_z \
+                        and str(pow(2, int(ssrc1))) == self.size_of_work_groups[2]:
+                    node.state.registers[sdst] = Register("get_num_groups(2)",
+                                                          node.state.registers[ssrc0].type, Integrity.integer)
+                else:
+                    node.state.registers[sdst] = Register(node.state.registers[ssrc0].val + " / " + str(pow(2, int(ssrc1))),
+                                                          node.state.registers[ssrc0].type, Integrity.integer)
                 node.state.make_version(self.versions, sdst)
                 return node
             return output_string
