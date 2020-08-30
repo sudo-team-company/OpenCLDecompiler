@@ -87,7 +87,14 @@ class State:
         parent[reg] += 1
 
     def upload_usesetup(self, to_registers, from_registers, offset, parameter_of_kernel, parent):
-        if offset == "0x4":
+        to_registers1 = ""
+        if to_registers.find(":") != -1:
+            to_registers1 = "s" + to_registers[to_registers.find(":") + 1:-1]
+            to_registers = "s" + to_registers[2:to_registers.find(":")]
+        if offset == "0x0":
+            self.registers[to_registers] = Register(to_registers, Type.general_setup, Integrity.integer)
+            self.make_version(parent, to_registers)
+        elif offset == "0x4":
             self.registers["s0"] = Register("get_local_size(0)", Type.local_size_x, Integrity.integer)
             self.make_version(parent, "s0")
             self.registers["s1"] = Register("get_local_size(2)", Type.local_size_z, Integrity.integer)
@@ -96,6 +103,21 @@ class State:
             self.make_version(parent, "s2")
             self.registers["s3"] = Register("get_global_size(1)", Type.global_size_y, Integrity.integer)
             self.make_version(parent, "s2")
+        elif offset == "0xc":
+            self.registers[to_registers] = Register("get_global_size(0)", Type.global_size_x, Integrity.integer)
+            self.make_version(parent, to_registers)
+            if to_registers1 != "":
+                self.registers[to_registers1] = Register("get_global_size(1)", Type.global_size_y, Integrity.integer)
+                self.make_version(parent, to_registers1)
+        elif offset == "0x10":
+            self.registers[to_registers] = Register("get_global_size(1)", Type.global_size_y, Integrity.integer)
+            self.make_version(parent, to_registers)
+            if to_registers1 != "":
+                self.registers[to_registers1] = Register("get_global_size(2)", Type.global_size_z, Integrity.integer)
+                self.make_version(parent, to_registers1)
+        elif offset == "0x14":
+            self.registers[to_registers] = Register("get_global_size(2)", Type.global_size_z, Integrity.integer)
+            self.make_version(parent, to_registers)
 
     def upload(self, to_registers, from_registers, offset, parameter_of_kernel, parent):
         first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
