@@ -142,9 +142,6 @@ class Decompiler:
             self.versions["s7"] += 1
         parameters = set_of_config[17:]
         if set_of_config[4].find("localsize") != -1:
-            # parameters = set_of_config[18:]
-            # if ".usesetup" in set_of_config:
-            #     parameters = set_of_config[19:]
             self.localsize = int(set_of_config[4][11:])
         for num_of_setting in list(range(0, len(set_of_config))):
             if set_of_config[num_of_setting].find(".arg") != -1 and set_of_config[num_of_setting].find("_.") == -1:
