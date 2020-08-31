@@ -5,7 +5,7 @@
 .arch_minor 0
 .arch_stepping 4
 .driver_version 200406
-.kernel copy_x_x
+.kernel add_x_x
     .config
         .dims x
         .cws 64, 1, 1
@@ -44,7 +44,7 @@
 /*000000000048*/ v_mov_b32       v2, s0
 /*00000000004c*/ flat_store_dword v[0:1], v2
 /*000000000054*/ s_endpgm
-.kernel copy_get_global_offset_x
+.kernel add_get_global_offset_x
     .config
         .dims xyz
         .cws 4, 16, 2
@@ -104,7 +104,7 @@
 /*0000000000ac*/ flat_store_dword v[1:2], v7
 /*0000000000b4*/ flat_store_dword v[12:13], v8
 /*0000000000bc*/ s_endpgm
-.kernel copy_get_local_id_x
+.kernel add_get_local_id_x
     .config
         .dims xyz
         .cws 8, 4, 4
@@ -161,7 +161,7 @@
 /*0000000000a4*/ v_addc_u32      v1, vcc, v6, v1, vcc
 /*0000000000a8*/ flat_store_dword v[0:1], v3
 /*0000000000b0*/ s_endpgm
-.kernel copy_get_group_id_x
+.kernel add_get_group_id_x
     .config
         .dims xyz
         .cws 4, 16, 2
@@ -221,7 +221,7 @@
 /*0000000000ac*/ flat_store_dword v[1:2], v7
 /*0000000000b4*/ flat_store_dword v[12:13], v8
 /*0000000000bc*/ s_endpgm
-.kernel copy_get_local_size_x
+.kernel add_get_local_size_x
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -279,7 +279,7 @@
 /*0000000000a4*/ flat_store_dword v[1:2], v5
 /*0000000000ac*/ flat_store_dword v[12:13], v7
 /*0000000000b4*/ s_endpgm
-.kernel copy_get_global_id_x
+.kernel add_get_global_id_x
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -336,7 +336,7 @@
 /*0000000000a0*/ flat_store_dword v[6:7], v1
 /*0000000000a8*/ flat_store_dword v[8:9], v2
 /*0000000000b0*/ s_endpgm
-.kernel copy_get_global_size_x
+.kernel add_get_global_size_x
     .config
         .dims xyz
         .cws 16, 2, 2
@@ -399,7 +399,7 @@
 /*0000000000bc*/ flat_store_dword v[1:2], v7
 /*0000000000c4*/ flat_store_dword v[12:13], v8
 /*0000000000cc*/ s_endpgm
-.kernel copy_get_num_groups_x
+.kernel add_get_num_groups_x
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -465,7 +465,7 @@
 /*0000000000c8*/ flat_store_dword v[1:2], v7
 /*0000000000d0*/ flat_store_dword v[12:13], v8
 /*0000000000d8*/ s_endpgm
-.kernel copy_get_work_dim_x
+.kernel add_get_work_dim_x
     .config
         .dims x
         .cws 2, 2, 4
@@ -507,7 +507,7 @@
 /*000000000058*/ v_mov_b32       v2, s0
 /*00000000005c*/ flat_store_dword v[0:1], v2
 /*000000000064*/ s_endpgm
-.kernel copy_x_get_global_offset
+.kernel add_x_get_global_offset
     .config
         .dims xyz
         .cws 16, 2, 2
@@ -567,7 +567,7 @@
 /*0000000000ac*/ flat_store_dword v[1:2], v7
 /*0000000000b4*/ flat_store_dword v[12:13], v8
 /*0000000000bc*/ s_endpgm
-.kernel copy_get_global_offset_get_global_offset
+.kernel add_get_global_offset_get_global_offset
     .config
         .dims xyz
         .cws 4, 16, 2
@@ -625,7 +625,7 @@
 /*0000000000a0*/ flat_store_dword v[1:2], v7
 /*0000000000a8*/ flat_store_dword v[12:13], v8
 /*0000000000b0*/ s_endpgm
-.kernel copy_get_local_id_get_global_offset
+.kernel add_get_local_id_get_global_offset
     .config
         .dims xyz
         .cws 8, 4, 4
@@ -680,7 +680,7 @@
 /*000000000098*/ v_addc_u32      v1, vcc, v5, v1, vcc
 /*00000000009c*/ flat_store_dword v[0:1], v3
 /*0000000000a4*/ s_endpgm
-.kernel copy_get_group_id_get_global_offset
+.kernel add_get_group_id_get_global_offset
     .config
         .dims xyz
         .cws 4, 16, 2
@@ -738,7 +738,7 @@
 /*0000000000a0*/ flat_store_dword v[1:2], v7
 /*0000000000a8*/ flat_store_dword v[12:13], v8
 /*0000000000b0*/ s_endpgm
-.kernel copy_get_local_size_get_global_offset
+.kernel add_get_local_size_get_global_offset
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -796,7 +796,7 @@
 /*0000000000a0*/ flat_store_dword v[1:2], v7
 /*0000000000a8*/ flat_store_dword v[12:13], v8
 /*0000000000b0*/ s_endpgm
-.kernel copy_get_global_id_get_global_offset
+.kernel add_get_global_id_get_global_offset
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -851,7 +851,7 @@
 /*000000000094*/ flat_store_dword v[6:7], v1
 /*00000000009c*/ flat_store_dword v[8:9], v2
 /*0000000000a4*/ s_endpgm
-.kernel copy_get_global_size_get_global_offset
+.kernel add_get_global_size_get_global_offset
     .config
         .dims xyz
         .cws 16, 2, 2
@@ -913,7 +913,7 @@
 /*0000000000b4*/ flat_store_dword v[1:2], v7
 /*0000000000bc*/ flat_store_dword v[12:13], v8
 /*0000000000c4*/ s_endpgm
-.kernel copy_get_num_groups_get_global_offset
+.kernel add_get_num_groups_get_global_offset
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -978,7 +978,7 @@
 /*0000000000c0*/ flat_store_dword v[1:2], v7
 /*0000000000c8*/ flat_store_dword v[12:13], v8
 /*0000000000d0*/ s_endpgm
-.kernel copy_get_work_dim_get_global_offset
+.kernel add_get_work_dim_get_global_offset
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -1040,7 +1040,7 @@
 /*0000000000b4*/ flat_store_dword v[1:2], v7
 /*0000000000bc*/ flat_store_dword v[12:13], v8
 /*0000000000c4*/ s_endpgm
-.kernel copy_x_get_local_id
+.kernel add_x_get_local_id
     .config
         .dims xyz
         .cws 16, 2, 2
@@ -1097,7 +1097,7 @@
 /*0000000000a4*/ v_addc_u32      v1, vcc, v6, v1, vcc
 /*0000000000a8*/ flat_store_dword v[0:1], v3
 /*0000000000b0*/ s_endpgm
-.kernel copy_get_global_offset_get_local_id
+.kernel add_get_global_offset_get_local_id
     .config
         .dims xyz
         .cws 4, 16, 2
@@ -1152,7 +1152,7 @@
 /*000000000098*/ v_addc_u32      v1, vcc, v5, v1, vcc
 /*00000000009c*/ flat_store_dword v[0:1], v3
 /*0000000000a4*/ s_endpgm
-.kernel copy_get_local_id_get_local_id
+.kernel add_get_local_id_get_local_id
     .config
         .dims xyz
         .cws 8, 4, 4
@@ -1207,7 +1207,7 @@
 /*000000000094*/ flat_store_dword v[12:13], v1
 /*00000000009c*/ flat_store_dword v[3:4], v2
 /*0000000000a4*/ s_endpgm
-.kernel copy_get_group_id_get_local_id
+.kernel add_get_group_id_get_local_id
     .config
         .dims xyz
         .cws 4, 16, 2
@@ -1262,7 +1262,7 @@
 /*000000000098*/ v_addc_u32      v1, vcc, v5, v1, vcc
 /*00000000009c*/ flat_store_dword v[0:1], v3
 /*0000000000a4*/ s_endpgm
-.kernel copy_get_local_size_get_local_id
+.kernel add_get_local_size_get_local_id
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -1317,7 +1317,7 @@
 /*000000000094*/ flat_store_dword v[12:13], v1
 /*00000000009c*/ flat_store_dword v[3:4], v2
 /*0000000000a4*/ s_endpgm
-.kernel copy_get_global_id_get_local_id
+.kernel add_get_global_id_get_local_id
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -1372,7 +1372,7 @@
 /*000000000094*/ flat_store_dword v[3:4], v1
 /*00000000009c*/ flat_store_dword v[7:8], v2
 /*0000000000a4*/ s_endpgm
-.kernel copy_get_global_size_get_local_id
+.kernel add_get_global_size_get_local_id
     .config
         .dims xyz
         .cws 16, 2, 2
@@ -1430,7 +1430,7 @@
 /*0000000000a8*/ v_addc_u32      v1, vcc, v5, v1, vcc
 /*0000000000ac*/ flat_store_dword v[0:1], v3
 /*0000000000b4*/ s_endpgm
-.kernel copy_get_num_groups_get_local_id
+.kernel add_get_num_groups_get_local_id
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -1491,7 +1491,7 @@
 /*0000000000b4*/ v_addc_u32      v1, vcc, v5, v1, vcc
 /*0000000000b8*/ flat_store_dword v[0:1], v3
 /*0000000000c0*/ s_endpgm
-.kernel copy_get_work_dim_get_local_id
+.kernel add_get_work_dim_get_local_id
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -1549,7 +1549,7 @@
 /*0000000000a8*/ v_addc_u32      v1, vcc, v6, v1, vcc
 /*0000000000ac*/ flat_store_dword v[0:1], v3
 /*0000000000b4*/ s_endpgm
-.kernel copy_x_get_group_id
+.kernel add_x_get_group_id
     .config
         .dims xyz
         .cws 16, 2, 2
@@ -1609,7 +1609,7 @@
 /*0000000000ac*/ flat_store_dword v[1:2], v7
 /*0000000000b4*/ flat_store_dword v[12:13], v8
 /*0000000000bc*/ s_endpgm
-.kernel copy_get_global_offset_get_group_id
+.kernel add_get_global_offset_get_group_id
     .config
         .dims xyz
         .cws 4, 16, 2
@@ -1667,7 +1667,7 @@
 /*0000000000a0*/ flat_store_dword v[1:2], v7
 /*0000000000a8*/ flat_store_dword v[12:13], v8
 /*0000000000b0*/ s_endpgm
-.kernel copy_get_local_id_get_group_id
+.kernel add_get_local_id_get_group_id
     .config
         .dims xyz
         .cws 8, 4, 4
@@ -1722,7 +1722,7 @@
 /*000000000098*/ v_addc_u32      v1, vcc, v5, v1, vcc
 /*00000000009c*/ flat_store_dword v[0:1], v3
 /*0000000000a4*/ s_endpgm
-.kernel copy_get_group_id_get_group_id
+.kernel add_get_group_id_get_group_id
     .config
         .dims xyz
         .cws 4, 16, 2
@@ -1779,7 +1779,7 @@
 /*00000000009c*/ flat_store_dword v[1:2], v7
 /*0000000000a4*/ flat_store_dword v[12:13], v8
 /*0000000000ac*/ s_endpgm
-.kernel copy_get_local_size_get_group_id
+.kernel add_get_local_size_get_group_id
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -1837,7 +1837,7 @@
 /*0000000000a0*/ flat_store_dword v[1:2], v7
 /*0000000000a8*/ flat_store_dword v[12:13], v8
 /*0000000000b0*/ s_endpgm
-.kernel copy_get_global_id_get_group_id
+.kernel add_get_global_id_get_group_id
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -1892,7 +1892,7 @@
 /*000000000094*/ flat_store_dword v[6:7], v1
 /*00000000009c*/ flat_store_dword v[8:9], v2
 /*0000000000a4*/ s_endpgm
-.kernel copy_get_global_size_get_group_id
+.kernel add_get_global_size_get_group_id
     .config
         .dims xyz
         .cws 16, 2, 2
@@ -1954,7 +1954,7 @@
 /*0000000000b4*/ flat_store_dword v[1:2], v7
 /*0000000000bc*/ flat_store_dword v[12:13], v8
 /*0000000000c4*/ s_endpgm
-.kernel copy_get_num_groups_get_group_id
+.kernel add_get_num_groups_get_group_id
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -2019,7 +2019,7 @@
 /*0000000000c0*/ flat_store_dword v[1:2], v7
 /*0000000000c8*/ flat_store_dword v[12:13], v8
 /*0000000000d0*/ s_endpgm
-.kernel copy_get_work_dim_get_group_id
+.kernel add_get_work_dim_get_group_id
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -2081,7 +2081,7 @@
 /*0000000000b4*/ flat_store_dword v[1:2], v7
 /*0000000000bc*/ flat_store_dword v[12:13], v8
 /*0000000000c4*/ s_endpgm
-.kernel copy_x_get_local_size
+.kernel add_x_get_local_size
     .config
         .dims xyz
         .cws 16, 2, 2
@@ -2139,7 +2139,7 @@
 /*0000000000a4*/ flat_store_dword v[1:2], v7
 /*0000000000ac*/ flat_store_dword v[8:9], v7
 /*0000000000b4*/ s_endpgm
-.kernel copy_get_global_offset_get_local_size
+.kernel add_get_global_offset_get_local_size
     .config
         .dims xyz
         .cws 4, 16, 2
@@ -2197,7 +2197,7 @@
 /*0000000000a0*/ flat_store_dword v[1:2], v7
 /*0000000000a8*/ flat_store_dword v[12:13], v8
 /*0000000000b0*/ s_endpgm
-.kernel copy_get_local_id_get_local_size
+.kernel add_get_local_id_get_local_size
     .config
         .dims xyz
         .cws 8, 4, 4
@@ -2252,7 +2252,7 @@
 /*000000000094*/ flat_store_dword v[12:13], v1
 /*00000000009c*/ flat_store_dword v[3:4], v2
 /*0000000000a4*/ s_endpgm
-.kernel copy_get_group_id_get_local_size
+.kernel add_get_group_id_get_local_size
     .config
         .dims xyz
         .cws 4, 16, 2
@@ -2310,7 +2310,7 @@
 /*0000000000a0*/ flat_store_dword v[1:2], v7
 /*0000000000a8*/ flat_store_dword v[12:13], v8
 /*0000000000b0*/ s_endpgm
-.kernel copy_get_local_size_get_local_size
+.kernel add_get_local_size_get_local_size
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -2364,7 +2364,7 @@
 /*000000000090*/ flat_store_dword v[1:2], v5
 /*000000000098*/ flat_store_dword v[12:13], v7
 /*0000000000a0*/ s_endpgm
-.kernel copy_get_global_id_get_local_size
+.kernel add_get_global_id_get_local_size
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -2419,7 +2419,7 @@
 /*000000000094*/ flat_store_dword v[6:7], v1
 /*00000000009c*/ flat_store_dword v[8:9], v2
 /*0000000000a4*/ s_endpgm
-.kernel copy_get_global_size_get_local_size
+.kernel add_get_global_size_get_local_size
     .config
         .dims xyz
         .cws 16, 2, 2
@@ -2481,7 +2481,7 @@
 /*0000000000b4*/ flat_store_dword v[1:2], v7
 /*0000000000bc*/ flat_store_dword v[12:13], v8
 /*0000000000c4*/ s_endpgm
-.kernel copy_get_num_groups_get_local_size
+.kernel add_get_num_groups_get_local_size
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -2546,7 +2546,7 @@
 /*0000000000c0*/ flat_store_dword v[1:2], v7
 /*0000000000c8*/ flat_store_dword v[12:13], v8
 /*0000000000d0*/ s_endpgm
-.kernel copy_get_work_dim_get_local_size
+.kernel add_get_work_dim_get_local_size
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -2606,7 +2606,7 @@
 /*0000000000ac*/ flat_store_dword v[1:2], v5
 /*0000000000b4*/ flat_store_dword v[12:13], v7
 /*0000000000bc*/ s_endpgm
-.kernel copy_x_get_global_id
+.kernel add_x_get_global_id
     .config
         .dims xyz
         .cws 16, 2, 2
@@ -2663,7 +2663,7 @@
 /*0000000000a4*/ v_addc_u32      v1, vcc, v5, v1, vcc
 /*0000000000a8*/ flat_store_dword v[0:1], v2
 /*0000000000b0*/ s_endpgm
-.kernel copy_get_global_offset_get_global_id
+.kernel add_get_global_offset_get_global_id
     .config
         .dims xyz
         .cws 4, 16, 2
@@ -2718,7 +2718,7 @@
 /*000000000098*/ v_addc_u32      v1, vcc, v5, v1, vcc
 /*00000000009c*/ flat_store_dword v[0:1], v2
 /*0000000000a4*/ s_endpgm
-.kernel copy_get_local_id_get_global_id
+.kernel add_get_local_id_get_global_id
     .config
         .dims xyz
         .cws 8, 4, 4
@@ -2773,7 +2773,7 @@
 /*000000000098*/ v_addc_u32      v1, vcc, v6, v1, vcc
 /*00000000009c*/ flat_store_dword v[0:1], v2
 /*0000000000a4*/ s_endpgm
-.kernel copy_get_group_id_get_global_id
+.kernel add_get_group_id_get_global_id
     .config
         .dims xyz
         .cws 4, 16, 2
@@ -2828,7 +2828,7 @@
 /*000000000098*/ v_addc_u32      v1, vcc, v5, v1, vcc
 /*00000000009c*/ flat_store_dword v[0:1], v2
 /*0000000000a4*/ s_endpgm
-.kernel copy_get_local_size_get_global_id
+.kernel add_get_local_size_get_global_id
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -2883,7 +2883,7 @@
 /*000000000094*/ flat_store_dword v[6:7], v1
 /*00000000009c*/ flat_store_dword v[8:9], v2
 /*0000000000a4*/ s_endpgm
-.kernel copy_get_global_id_get_global_id
+.kernel add_get_global_id_get_global_id
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -2938,7 +2938,7 @@
 /*000000000094*/ flat_store_dword v[6:7], v1
 /*00000000009c*/ flat_store_dword v[8:9], v2
 /*0000000000a4*/ s_endpgm
-.kernel copy_get_global_size_get_global_id
+.kernel add_get_global_size_get_global_id
     .config
         .dims xyz
         .cws 16, 2, 2
@@ -2996,7 +2996,7 @@
 /*0000000000a8*/ v_addc_u32      v1, vcc, v5, v1, vcc
 /*0000000000ac*/ flat_store_dword v[0:1], v2
 /*0000000000b4*/ s_endpgm
-.kernel copy_get_num_groups_get_global_id
+.kernel add_get_num_groups_get_global_id
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -3057,7 +3057,7 @@
 /*0000000000b4*/ v_addc_u32      v1, vcc, v5, v1, vcc
 /*0000000000b8*/ flat_store_dword v[0:1], v2
 /*0000000000c0*/ s_endpgm
-.kernel copy_get_work_dim_get_global_id
+.kernel add_get_work_dim_get_global_id
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -3115,7 +3115,7 @@
 /*0000000000a8*/ v_addc_u32      v1, vcc, v5, v1, vcc
 /*0000000000ac*/ flat_store_dword v[0:1], v2
 /*0000000000b4*/ s_endpgm
-.kernel copy_x_get_global_size
+.kernel add_x_get_global_size
     .config
         .dims xyz
         .cws 16, 2, 2
@@ -3178,7 +3178,7 @@
 /*0000000000bc*/ flat_store_dword v[1:2], v7
 /*0000000000c4*/ flat_store_dword v[12:13], v8
 /*0000000000cc*/ s_endpgm
-.kernel copy_get_global_offset_get_global_size
+.kernel add_get_global_offset_get_global_size
     .config
         .dims xyz
         .cws 4, 16, 2
@@ -3240,7 +3240,7 @@
 /*0000000000b4*/ flat_store_dword v[1:2], v7
 /*0000000000bc*/ flat_store_dword v[12:13], v8
 /*0000000000c4*/ s_endpgm
-.kernel copy_get_local_id_get_global_size
+.kernel add_get_local_id_get_global_size
     .config
         .dims xyz
         .cws 8, 4, 4
@@ -3298,7 +3298,7 @@
 /*0000000000a8*/ v_addc_u32      v1, vcc, v5, v1, vcc
 /*0000000000ac*/ flat_store_dword v[0:1], v3
 /*0000000000b4*/ s_endpgm
-.kernel copy_get_group_id_get_global_size
+.kernel add_get_group_id_get_global_size
     .config
         .dims xyz
         .cws 4, 16, 2
@@ -3360,7 +3360,7 @@
 /*0000000000b4*/ flat_store_dword v[1:2], v7
 /*0000000000bc*/ flat_store_dword v[12:13], v8
 /*0000000000c4*/ s_endpgm
-.kernel copy_get_local_size_get_global_size
+.kernel add_get_local_size_get_global_size
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -3422,7 +3422,7 @@
 /*0000000000b4*/ flat_store_dword v[1:2], v7
 /*0000000000bc*/ flat_store_dword v[12:13], v8
 /*0000000000c4*/ s_endpgm
-.kernel copy_get_global_id_get_global_size
+.kernel add_get_global_id_get_global_size
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -3481,7 +3481,7 @@
 /*0000000000a8*/ flat_store_dword v[6:7], v1
 /*0000000000b0*/ flat_store_dword v[8:9], v2
 /*0000000000b8*/ s_endpgm
-.kernel copy_get_global_size_get_global_size
+.kernel add_get_global_size_get_global_size
     .config
         .dims xyz
         .cws 16, 2, 2
@@ -3543,7 +3543,7 @@
 /*0000000000b4*/ flat_store_dword v[1:2], v7
 /*0000000000bc*/ flat_store_dword v[12:13], v8
 /*0000000000c4*/ s_endpgm
-.kernel copy_get_num_groups_get_global_size
+.kernel add_get_num_groups_get_global_size
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -3608,7 +3608,7 @@
 /*0000000000c0*/ flat_store_dword v[1:2], v7
 /*0000000000c8*/ flat_store_dword v[12:13], v8
 /*0000000000d0*/ s_endpgm
-.kernel copy_get_work_dim_get_global_size
+.kernel add_get_work_dim_get_global_size
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -3672,7 +3672,7 @@
 /*0000000000c4*/ flat_store_dword v[1:2], v7
 /*0000000000cc*/ flat_store_dword v[12:13], v8
 /*0000000000d4*/ s_endpgm
-.kernel copy_x_get_num_groups
+.kernel add_x_get_num_groups
     .config
         .dims xyz
         .cws 16, 2, 2
@@ -3738,7 +3738,7 @@
 /*0000000000c8*/ flat_store_dword v[1:2], v7
 /*0000000000d0*/ flat_store_dword v[12:13], v8
 /*0000000000d8*/ s_endpgm
-.kernel copy_get_global_offset_get_num_groups
+.kernel add_get_global_offset_get_num_groups
     .config
         .dims xyz
         .cws 4, 16, 2
@@ -3803,7 +3803,7 @@
 /*0000000000c0*/ flat_store_dword v[1:2], v7
 /*0000000000c8*/ flat_store_dword v[12:13], v8
 /*0000000000d0*/ s_endpgm
-.kernel copy_get_local_id_get_num_groups
+.kernel add_get_local_id_get_num_groups
     .config
         .dims xyz
         .cws 8, 4, 4
@@ -3864,7 +3864,7 @@
 /*0000000000b4*/ v_addc_u32      v1, vcc, v5, v1, vcc
 /*0000000000b8*/ flat_store_dword v[0:1], v3
 /*0000000000c0*/ s_endpgm
-.kernel copy_get_group_id_get_num_groups
+.kernel add_get_group_id_get_num_groups
     .config
         .dims xyz
         .cws 4, 16, 2
@@ -3929,7 +3929,7 @@
 /*0000000000c0*/ flat_store_dword v[1:2], v7
 /*0000000000c8*/ flat_store_dword v[12:13], v8
 /*0000000000d0*/ s_endpgm
-.kernel copy_get_local_size_get_num_groups
+.kernel add_get_local_size_get_num_groups
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -3994,7 +3994,7 @@
 /*0000000000c0*/ flat_store_dword v[1:2], v7
 /*0000000000c8*/ flat_store_dword v[12:13], v8
 /*0000000000d0*/ s_endpgm
-.kernel copy_get_global_id_get_num_groups
+.kernel add_get_global_id_get_num_groups
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -4056,7 +4056,7 @@
 /*0000000000b4*/ flat_store_dword v[6:7], v1
 /*0000000000bc*/ flat_store_dword v[8:9], v2
 /*0000000000c4*/ s_endpgm
-.kernel copy_get_global_size_get_num_groups
+.kernel add_get_global_size_get_num_groups
     .config
         .dims xyz
         .cws 16, 2, 2
@@ -4121,7 +4121,7 @@
 /*0000000000c0*/ flat_store_dword v[1:2], v7
 /*0000000000c8*/ flat_store_dword v[12:13], v8
 /*0000000000d0*/ s_endpgm
-.kernel copy_get_num_groups_get_num_groups
+.kernel add_get_num_groups_get_num_groups
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -4186,7 +4186,7 @@
 /*0000000000c0*/ flat_store_dword v[1:2], v7
 /*0000000000c8*/ flat_store_dword v[12:13], v8
 /*0000000000d0*/ s_endpgm
-.kernel copy_get_work_dim_get_num_groups
+.kernel add_get_work_dim_get_num_groups
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -4253,7 +4253,7 @@
 /*0000000000d0*/ flat_store_dword v[1:2], v7
 /*0000000000d8*/ flat_store_dword v[12:13], v8
 /*0000000000e0*/ s_endpgm
-.kernel copy_x_get_work_dim
+.kernel add_x_get_work_dim
     .config
         .dims xyz
         .cws 16, 2, 2
@@ -4312,7 +4312,7 @@
 /*0000000000ac*/ flat_store_dword v[1:2], v5
 /*0000000000b4*/ flat_store_dword v[6:7], v5
 /*0000000000bc*/ s_endpgm
-.kernel copy_get_global_offset_get_work_dim
+.kernel add_get_global_offset_get_work_dim
     .config
         .dims xyz
         .cws 4, 16, 2
@@ -4374,7 +4374,7 @@
 /*0000000000b4*/ flat_store_dword v[1:2], v7
 /*0000000000bc*/ flat_store_dword v[12:13], v8
 /*0000000000c4*/ s_endpgm
-.kernel copy_get_local_id_get_work_dim
+.kernel add_get_local_id_get_work_dim
     .config
         .dims xyz
         .cws 8, 4, 4
@@ -4432,7 +4432,7 @@
 /*0000000000a8*/ v_addc_u32      v1, vcc, v6, v1, vcc
 /*0000000000ac*/ flat_store_dword v[0:1], v3
 /*0000000000b4*/ s_endpgm
-.kernel copy_get_group_id_get_work_dim
+.kernel add_get_group_id_get_work_dim
     .config
         .dims xyz
         .cws 4, 16, 2
@@ -4494,7 +4494,7 @@
 /*0000000000b4*/ flat_store_dword v[1:2], v7
 /*0000000000bc*/ flat_store_dword v[12:13], v8
 /*0000000000c4*/ s_endpgm
-.kernel copy_get_local_size_get_work_dim
+.kernel add_get_local_size_get_work_dim
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -4554,7 +4554,7 @@
 /*0000000000ac*/ flat_store_dword v[1:2], v5
 /*0000000000b4*/ flat_store_dword v[12:13], v7
 /*0000000000bc*/ s_endpgm
-.kernel copy_get_global_id_get_work_dim
+.kernel add_get_global_id_get_work_dim
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -4613,7 +4613,7 @@
 /*0000000000a8*/ flat_store_dword v[6:7], v1
 /*0000000000b0*/ flat_store_dword v[8:9], v2
 /*0000000000b8*/ s_endpgm
-.kernel copy_get_global_size_get_work_dim
+.kernel add_get_global_size_get_work_dim
     .config
         .dims xyz
         .cws 16, 2, 2
@@ -4677,7 +4677,7 @@
 /*0000000000c4*/ flat_store_dword v[1:2], v7
 /*0000000000cc*/ flat_store_dword v[12:13], v8
 /*0000000000d4*/ s_endpgm
-.kernel copy_get_num_groups_get_work_dim
+.kernel add_get_num_groups_get_work_dim
     .config
         .dims xyz
         .cws 2, 2, 4
@@ -4744,7 +4744,7 @@
 /*0000000000d0*/ flat_store_dword v[1:2], v7
 /*0000000000d8*/ flat_store_dword v[12:13], v8
 /*0000000000e0*/ s_endpgm
-.kernel copy_get_work_dim_get_work_dim
+.kernel add_get_work_dim_get_work_dim
     .config
         .dims xyz
         .cws 2, 2, 4

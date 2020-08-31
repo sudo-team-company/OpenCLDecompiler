@@ -1107,7 +1107,7 @@ class Decompiler:
             sdst = instruction[1]
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
-            new_val, ssrc0_reg, ssrc1_reg = self.make_op(node, ssrc0, ssrc1, "+")  # may be this should be (ulong)
+            new_val, ssrc0_reg, ssrc1_reg = self.make_op(node, ssrc0, ssrc1, " + ")  # may be this should be (ulong)
             if flag_of_status:
                 if ssrc0_reg and ssrc1_reg:
                     if node.state.registers[ssrc0].type == Type.work_group_id_x_local_size \
@@ -1623,7 +1623,7 @@ class Decompiler:
             sdst = instruction[2]
             src0 = instruction[3]
             src1 = instruction[4]
-            new_val, src0_reg, src1_reg = self.make_op(node, src0, src1, "+")  # may be this should be ulong
+            new_val, src0_reg, src1_reg = self.make_op(node, src0, src1, " + ")  # may be this should be ulong
             if flag_of_status:
                 if src0_reg and src1_reg:
                     if node.state.registers[src0].type == Type.work_group_id_x_local_size_offset and \
@@ -1726,7 +1726,7 @@ class Decompiler:
             src0 = instruction[3]
             src1 = instruction[4]
             ssrc2 = instruction[5]
-            new_val, src0_reg, src1_reg = self.make_op(node, src0, src1, "+")  # may be this should be ulong
+            new_val, src0_reg, src1_reg = self.make_op(node, src0, src1, " + ")  # may be this should be ulong
             if flag_of_status:
                 if src0_reg and src1_reg:
                     if node.state.registers[src0].type == Type.paramA \
