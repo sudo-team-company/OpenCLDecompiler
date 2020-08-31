@@ -454,9 +454,9 @@ class Decompiler:
             new_val = register0
             register0_flag = False
         if register1.find("s") != -1 or register1.find("v") != -1:
-            new_val = new_val + " + " + node.state.registers[register1].val
+            new_val = new_val + operation + node.state.registers[register1].val
         else:
-            new_val = new_val + " + " + register1
+            new_val = new_val + operation + register1
             register1_flag = False
         # think about it after testing real kernels
         # if len(node.state.registers[register1].val) > 40:
