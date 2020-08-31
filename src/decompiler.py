@@ -451,18 +451,19 @@ class Decompiler:
         if register0.find("s") != -1 or register0.find("v") != -1:
             new_val += node.state.registers[register0].val
         else:
+            if register0[0] == "-":
+                register0 = "(" + register0 + ")"
             new_val = register0
             register0_flag = False
         if register1.find("s") != -1 or register1.find("v") != -1:
+            if operation == " - " and (node.state.registers[register1].val.find("-") != -1 or node.state.registers[register1].val.find("-") != -1):
+                node.state.registers[register1].val = "(" + node.state.registers[register1].val + ")"
             new_val = new_val + operation + node.state.registers[register1].val
         else:
+            if register1[0] == "-":
+                register1 = "(" + register1 + ")"
             new_val = new_val + operation + register1
             register1_flag = False
-        # think about it after testing real kernels
-        # if len(node.state.registers[register1].val) > 40:
-        #     s = "(" + node.state.registers[register1].val + ")" + operation + node.state.registers[register2].val
-        # else:
-        #     s = node.state.registers[register1].val + operation + node.state.registers[register2].val
         return new_val, register0_flag, register1_flag
 
     def union_regions(self, before_region, curr_region, next_region, start_region):
@@ -1572,7 +1573,7 @@ class Decompiler:
                 + ")\n")
             self.number_of_mask += 1
 
-    def s_sub(self, instruction, suffix):
+    def s_sub(self, node, instruction, flag_of_status, suffix, output_string):
         if suffix == 'i32':
             sdst = instruction[1]
             ssrc0 = instruction[2]
@@ -1588,13 +1589,19 @@ class Decompiler:
             sdst = instruction[1]
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
-            temp = "temp" + str(self.number_of_temp)
-            self.output_file.write("ulong " + temp + " = (ulong)" + ssrc0 + " - (ulong)" + ssrc1 + "\n")
-            self.output_file.write(sdst + " = " + temp + "\n")
-            self.output_file.write("scc = (" + temp + " >> 32) != 0\n")
-            self.number_of_temp += 1
+            if flag_of_status:
+                new_val, src0_reg, src1_reg = self.make_op(node, ssrc0, ssrc1, " - ")
+                new_integrity = node.state.registers[ssrc1].integrity
+                node.state.registers[sdst] = Register(new_val, Type.unknown, new_integrity)
+                node.state.make_version(self.versions, sdst)
+                if sdst in [ssrc0, ssrc1]:
+                    node.state.registers[sdst].make_prev()
+                node.state.registers[sdst].type_of_data = suffix
+                return node
+            return output_string
+            # may be should add "ulong"
 
-    def s_subb(self, instruction, suffix):
+    def s_subb(self, node, instruction, flag_of_status, suffix, output_string):
         if suffix == 'u32':
             sdst = instruction[1]
             ssrc0 = instruction[2]
@@ -1697,8 +1704,7 @@ class Decompiler:
                         type_reg = node.state.registers[src0].type
                     if src1_reg:
                         type_reg = node.state.registers[src1].type
-                    node.state.registers[vdst] = \
-                        Register(new_val, type_reg, Integrity.integer)
+                    node.state.registers[vdst] = Register(new_val, type_reg, Integrity.integer)
                 node.state.make_version(self.versions, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
@@ -1743,8 +1749,7 @@ class Decompiler:
                         type_reg = node.state.registers[src0].type
                     if src1_reg:
                         type_reg = node.state.registers[src1].type
-                    node.state.registers[vdst] = \
-                        Register(new_val, type_reg, Integrity.integer)
+                    node.state.registers[vdst] = Register(new_val, type_reg, Integrity.integer)
                 node.state.make_version(self.versions, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
@@ -2190,9 +2195,9 @@ class Decompiler:
             src0 = instruction[3]
             src1 = instruction[4]
             if flag_of_status:
+                new_val, src0_reg, src1_reg = self.make_op(node, src0, src1, " - ")
                 new_integrity = node.state.registers[src1].integrity
-                node.state.registers[vdst] = Register(self.make_op(node, src0, src1, " - "), Type.unknown,
-                                                      new_integrity)
+                node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
                 node.state.make_version(self.versions, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
@@ -2207,9 +2212,9 @@ class Decompiler:
             src0 = instruction[3]
             src1 = instruction[4]
             if flag_of_status:
+                new_val, src0_reg, src1_reg = self.make_op(node, src1, src0, " - ")
                 new_integrity = node.state.registers[src1].integrity
-                node.state.registers[vdst] = Register(self.make_op(node, src1, src0, " - "), Type.unknown,
-                                                      new_integrity)
+                node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
                 node.state.make_version(self.versions, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
@@ -2381,10 +2386,10 @@ class Decompiler:
                 return self.s_setreg(instruction, suffix)
 
             elif root == 'sub':
-                return self.s_sub(instruction, suffix)
+                return self.s_sub(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'subb':
-                return self.s_subb(instruction, suffix)
+                return self.s_subb(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'swappc':
                 return self.s_swappc(instruction, suffix)

@@ -86,6 +86,16 @@ class LinearKernelsTest(unittest.TestCase):
             with open(r"linear_kernels\addition\addition_dcmpl.cl") as decompiled:
                 self.assertEqual(hands_decompilation.read(), decompiled.read())
 
+    def test_subtraction(self):
+        subprocess.call(r'test.bat linear_kernels\subtraction\subtraction.bin ' +
+                        r'linear_kernels\subtraction\subtraction.asm')
+        parser_for_instructions.main(r"linear_kernels\subtraction\subtraction.asm",
+                                     r"linear_kernels\subtraction\subtraction_dcmpl.cl")
+        with open(
+                r"linear_kernels\subtraction\subtraction_hands.cl") as hands_decompilation:
+            with open(r"linear_kernels\subtraction\subtraction_dcmpl.cl") as decompiled:
+                self.assertEqual(hands_decompilation.read(), decompiled.read())
+
     def test_many_linears(self):
         subprocess.call(r'test.bat linear_kernels\many_linears\many_linears.bin ' +
                         r'linear_kernels\many_linears\many_linears.asm')
