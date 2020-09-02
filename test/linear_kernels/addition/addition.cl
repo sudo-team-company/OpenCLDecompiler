@@ -5,7 +5,7 @@ void add_x_x(__global int *data, int x)
 	data[id] = x + x;
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void add_get_global_offset_x(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -19,7 +19,7 @@ void add_get_global_offset_x(int x, __global int *data)
 	data[id2] = g2 + x;
 }
 
-__kernel __attribute__((reqd_work_group_size(8, 4, 4)))
+__kernel __attribute__((reqd_work_group_size(8, 4, 2)))
 void add_get_local_id_x(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -33,7 +33,7 @@ void add_get_local_id_x(int x, __global int *data)
 	data[id2] = g2 + x;
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void add_get_group_id_x(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -122,7 +122,7 @@ void add_x_get_global_offset(__global int *data, int x)
 	data[id2] = x + get_global_offset(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void add_get_global_offset_get_global_offset(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -136,7 +136,7 @@ void add_get_global_offset_get_global_offset(int x, __global int *data)
 	data[id2] = g2 + get_global_offset(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(8, 4, 4)))
+__kernel __attribute__((reqd_work_group_size(8, 4, 2)))
 void add_get_local_id_get_global_offset(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -150,7 +150,7 @@ void add_get_local_id_get_global_offset(int x, __global int *data)
 	data[id2] = g2 + get_global_offset(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void add_get_group_id_get_global_offset(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -243,7 +243,7 @@ void add_x_get_local_id(__global int *data, int x)
 	data[id2] = x + get_local_id(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void add_get_global_offset_get_local_id(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -257,7 +257,7 @@ void add_get_global_offset_get_local_id(int x, __global int *data)
 	data[id2] = g2 + get_local_id(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(8, 4, 4)))
+__kernel __attribute__((reqd_work_group_size(8, 4, 2)))
 void add_get_local_id_get_local_id(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -271,7 +271,7 @@ void add_get_local_id_get_local_id(int x, __global int *data)
 	data[id2] = g2 + get_local_id(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void add_get_group_id_get_local_id(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -364,7 +364,7 @@ void add_x_get_group_id(__global int *data, int x)
 	data[id2] = x + get_group_id(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void add_get_global_offset_get_group_id(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -378,7 +378,7 @@ void add_get_global_offset_get_group_id(int x, __global int *data)
 	data[id2] = g2 + get_group_id(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(8, 4, 4)))
+__kernel __attribute__((reqd_work_group_size(8, 4, 2)))
 void add_get_local_id_get_group_id(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -392,7 +392,7 @@ void add_get_local_id_get_group_id(int x, __global int *data)
 	data[id2] = g2 + get_group_id(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void add_get_group_id_get_group_id(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -485,7 +485,7 @@ void add_x_get_local_size(__global int *data, int x)
 	data[id2] = x + get_local_size(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void add_get_global_offset_get_local_size(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -499,7 +499,7 @@ void add_get_global_offset_get_local_size(int x, __global int *data)
 	data[id2] = g2 + get_local_size(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(8, 4, 4)))
+__kernel __attribute__((reqd_work_group_size(8, 4, 2)))
 void add_get_local_id_get_local_size(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -513,7 +513,7 @@ void add_get_local_id_get_local_size(int x, __global int *data)
 	data[id2] = g2 + get_local_size(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void add_get_group_id_get_local_size(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -606,7 +606,7 @@ void add_x_get_global_id(__global int *data, int x)
 	data[id2] = x + get_global_id(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void add_get_global_offset_get_global_id(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -620,7 +620,7 @@ void add_get_global_offset_get_global_id(int x, __global int *data)
 	data[id2] = g2 + get_global_id(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(8, 4, 4)))
+__kernel __attribute__((reqd_work_group_size(8, 4, 2)))
 void add_get_local_id_get_global_id(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -634,7 +634,7 @@ void add_get_local_id_get_global_id(int x, __global int *data)
 	data[id2] = g2 + get_global_id(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void add_get_group_id_get_global_id(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -727,7 +727,7 @@ void add_x_get_global_size(__global int *data, int x)
 	data[id2] = x + get_global_size(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void add_get_global_offset_get_global_size(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -741,7 +741,7 @@ void add_get_global_offset_get_global_size(int x, __global int *data)
 	data[id2] = g2 + get_global_size(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(8, 4, 4)))
+__kernel __attribute__((reqd_work_group_size(8, 4, 2)))
 void add_get_local_id_get_global_size(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -755,7 +755,7 @@ void add_get_local_id_get_global_size(int x, __global int *data)
 	data[id2] = g2 + get_global_size(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void add_get_group_id_get_global_size(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -848,7 +848,7 @@ void add_x_get_num_groups(__global int *data, int x)
 	data[id2] = x + get_num_groups(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void add_get_global_offset_get_num_groups(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -862,7 +862,7 @@ void add_get_global_offset_get_num_groups(int x, __global int *data)
 	data[id2] = g2 + get_num_groups(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(8, 4, 4)))
+__kernel __attribute__((reqd_work_group_size(8, 4, 2)))
 void add_get_local_id_get_num_groups(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -876,7 +876,7 @@ void add_get_local_id_get_num_groups(int x, __global int *data)
 	data[id2] = g2 + get_num_groups(2);
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void add_get_group_id_get_num_groups(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -969,7 +969,7 @@ void add_x_get_work_dim(__global int *data, int x)
 	data[id2] = x + get_work_dim();
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void add_get_global_offset_get_work_dim(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -983,7 +983,7 @@ void add_get_global_offset_get_work_dim(int x, __global int *data)
 	data[id2] = g2 + get_work_dim();
 }
 
-__kernel __attribute__((reqd_work_group_size(8, 4, 4)))
+__kernel __attribute__((reqd_work_group_size(8, 4, 2)))
 void add_get_local_id_get_work_dim(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -997,7 +997,7 @@ void add_get_local_id_get_work_dim(int x, __global int *data)
 	data[id2] = g2 + get_work_dim();
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void add_get_group_id_get_work_dim(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -1075,4 +1075,157 @@ void add_get_work_dim_get_work_dim(int x, __global uint *data)
 	data[g0] = o0 + get_work_dim();
 	data[g1] = o0 + get_work_dim();
 	data[g2] = o0 + get_work_dim();
+}
+
+
+
+__kernel __attribute__((reqd_work_group_size(64, 1, 1)))
+void add_x_64(int x, __global uint *data)
+{
+	uint g0 = get_global_id(0);
+	data[g0] = x + x;
+}
+
+__kernel __attribute__((reqd_work_group_size(64, 1, 1)))
+void add_get_global_offset_64(int x, __global uint *data)
+{
+	uint g0 = get_global_id(0);
+	uint o0 = get_global_offset(0);
+	data[g0] = o0 + o0;
+}
+
+__kernel __attribute__((reqd_work_group_size(64, 1, 1)))
+void add_get_local_id_64(int x, __global uint *data)
+{
+	uint g0 = get_global_id(0);
+	uint o0 = get_local_id(0);
+	data[g0] = o0 + o0;
+}
+
+__kernel __attribute__((reqd_work_group_size(64, 1, 1)))
+void add_get_group_id_64(int x, __global uint *data)
+{
+	uint g0 = get_global_id(0);
+	uint o0 = get_group_id(0);
+	data[g0] = o0 + o0;
+}
+
+__kernel __attribute__((reqd_work_group_size(64, 1, 1)))
+void add_get_local_size_64(int x, __global uint *data)
+{
+	uint g0 = get_global_id(0);
+	uint o0 = get_local_size(0);
+	data[g0] = o0 + o0;
+}
+
+__kernel __attribute__((reqd_work_group_size(64, 1, 1)))
+void add_get_global_id_64(int x, __global uint *data)
+{
+	uint g0 = get_global_id(0);
+	data[g0] = g0 + g0;
+}
+
+__kernel __attribute__((reqd_work_group_size(64, 1, 1)))
+void add_get_global_size_64(int x, __global uint *data)
+{
+	uint g0 = get_global_id(0);
+	uint o0 = get_global_size(0);
+	data[g0] = o0 + o0;
+}
+
+__kernel __attribute__((reqd_work_group_size(64, 1, 1)))
+void add_get_num_groups_64(int x, __global uint *data)
+{
+	uint g0 = get_global_id(0);
+	uint o0 = get_num_groups(0);
+	data[g0] = o0 + o0;
+}
+
+__kernel __attribute__((reqd_work_group_size(64, 1, 1)))
+void add_get_work_dim(int x, __global uint *data)
+{
+	uint g0 = get_global_id(0);
+	uint o0 = get_work_dim();
+	data[g0] = o0 + o0;
+}
+
+
+
+__kernel __attribute__((reqd_work_group_size(8, 8, 1)))
+void add_x_8_8(int x, __global uint *data)
+{
+	uint g0 = get_global_id(0);
+	uint g1 = get_global_id(1);
+	data[g0] = x + g1;
+}
+
+__kernel __attribute__((reqd_work_group_size(8, 8, 1)))
+void add_get_global_offset_8_8(int x, __global uint *data)
+{
+	uint g0 = get_global_id(0);
+	uint o0 = get_global_offset(0);
+	uint o1 = get_global_offset(1);
+	data[g0] = o0 + o1;
+}
+
+__kernel __attribute__((reqd_work_group_size(8, 8, 1)))
+void add_get_local_id_8_8(int x, __global uint *data)
+{
+	uint g0 = get_global_id(0);
+	uint o0 = get_local_id(0);
+	uint o1 = get_local_id(1);
+	data[g0] = o0 + o1;
+}
+
+__kernel __attribute__((reqd_work_group_size(8, 8, 1)))
+void add_get_group_id_8_8(int x, __global uint *data)
+{
+	uint g0 = get_global_id(0);
+	uint o0 = get_group_id(0);
+	uint o1 = get_group_id(1);
+	data[g0] = o0 + o1;
+}
+
+__kernel __attribute__((reqd_work_group_size(8, 8, 1)))
+void add_get_local_size_8_8(int x, __global uint *data)
+{
+	uint g0 = get_global_id(0);
+	uint o0 = get_local_size(0);
+	uint o1 = get_local_size(1);
+	data[g0] = o0 + o1;
+}
+
+__kernel __attribute__((reqd_work_group_size(8, 8, 1)))
+void add_get_global_id_8_8(int x, __global uint *data)
+{
+	uint g0 = get_global_id(0);
+	uint g1 = get_global_id(1);
+	data[g0] = g0 + g1;
+}
+
+__kernel __attribute__((reqd_work_group_size(8, 8, 1)))
+void add_get_global_size_8_8(int x, __global uint *data)
+{
+	uint g0 = get_global_id(0);
+	uint o0 = get_global_size(0);
+	uint o1 = get_global_size(1);
+	data[g0] = o0 + o1;
+}
+
+__kernel __attribute__((reqd_work_group_size(8, 8, 1)))
+void add_get_num_groups_8_8(int x, __global uint *data)
+{
+	uint g0 = get_global_id(0);
+	uint o0 = get_num_groups(0);
+	uint o1 = get_num_groups(1);
+	data[g0] = o0 + o1;
+}
+
+__kernel __attribute__((reqd_work_group_size(8, 8, 1)))
+void add_get_work_dim_8_8(int x, __global uint *data)
+{
+	uint g0 = get_global_id(0);
+	uint g1 = get_global_id(1);
+	uint o0 = get_work_dim();
+	data[g0] = o0 + g1;
 }

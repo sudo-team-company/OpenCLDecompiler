@@ -44,7 +44,7 @@
 .kernel subtract_get_global_offset_x
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 17
         .vgprsnum 14
         .floatmode 0xc0
@@ -68,7 +68,7 @@
 /*000000000010*/ s_waitcnt       lgkmcnt(0)
 /*000000000014*/ s_load_dword    s1, s[4:5], 0x30
 /*00000000001c*/ s_load_dwordx2  s[4:5], s[4:5], 0x38
-/*000000000024*/ s_lshl_b32      s3, s6, 2
+/*000000000024*/ s_lshl_b32      s3, s6, 1
 /*000000000028*/ s_lshl_b32      s6, s7, 4
 /*00000000002c*/ s_add_u32       s3, s3, s0
 /*000000000030*/ s_lshl_b32      s7, s8, 1
@@ -104,7 +104,7 @@
 .kernel subtract_get_local_id_x
     .config
         .dims xyz
-        .cws 8, 4, 4
+        .cws 8, 4, 2
         .sgprsnum 17
         .vgprsnum 7
         .floatmode 0xc0
@@ -131,7 +131,7 @@
 /*000000000024*/ s_lshl_b32      s3, s6, 3
 /*000000000028*/ s_waitcnt       lgkmcnt(0)
 /*00000000002c*/ s_lshl_b32      s5, s7, 2
-/*000000000030*/ s_lshl_b32      s6, s8, 2
+/*000000000030*/ s_lshl_b32      s6, s8, 1
 /*000000000034*/ v_subrev_u32    v5, vcc, s1, v0
 /*000000000038*/ s_add_u32       s0, s3, s0
 /*00000000003c*/ v_add_u32       v3, vcc, s0, v0
@@ -161,7 +161,7 @@
 .kernel subtract_get_group_id_x
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 17
         .vgprsnum 14
         .floatmode 0xc0
@@ -185,7 +185,7 @@
 /*000000000010*/ s_waitcnt       lgkmcnt(0)
 /*000000000014*/ s_load_dword    s1, s[4:5], 0x30
 /*00000000001c*/ s_load_dwordx2  s[4:5], s[4:5], 0x38
-/*000000000024*/ s_lshl_b32      s3, s6, 2
+/*000000000024*/ s_lshl_b32      s3, s6, 1
 /*000000000028*/ s_lshl_b32      s9, s7, 4
 /*00000000002c*/ s_add_u32       s0, s3, s0
 /*000000000030*/ s_lshl_b32      s3, s8, 1
@@ -567,7 +567,7 @@
 .kernel subtract_get_global_offset_get_global_offset
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 17
         .vgprsnum 12
         .floatmode 0xc0
@@ -590,7 +590,7 @@
 /*000000000008*/ s_load_dwordx2  s[10:11], s[4:5], 0x10
 /*000000000010*/ s_load_dwordx2  s[4:5], s[4:5], 0x38
 /*000000000018*/ s_waitcnt       lgkmcnt(0)
-/*00000000001c*/ s_lshl_b32      s1, s6, 2
+/*00000000001c*/ s_lshl_b32      s1, s6, 1
 /*000000000020*/ s_lshl_b32      s3, s7, 4
 /*000000000024*/ s_add_u32       s0, s1, s0
 /*000000000028*/ s_lshl_b32      s1, s8, 1
@@ -620,7 +620,7 @@
 .kernel subtract_get_local_id_get_global_offset
     .config
         .dims xyz
-        .cws 8, 4, 4
+        .cws 8, 4, 2
         .sgprsnum 17
         .vgprsnum 6
         .floatmode 0xc0
@@ -645,7 +645,7 @@
 /*000000000018*/ s_waitcnt       lgkmcnt(0)
 /*00000000001c*/ s_lshl_b32      s1, s6, 3
 /*000000000020*/ s_lshl_b32      s3, s7, 2
-/*000000000024*/ s_lshl_b32      s5, s8, 2
+/*000000000024*/ s_lshl_b32      s5, s8, 1
 /*000000000028*/ s_add_u32       s1, s1, s0
 /*00000000002c*/ v_add_u32       v3, vcc, s1, v0
 /*000000000030*/ v_subrev_u32    v0, vcc, s0, v0
@@ -675,7 +675,7 @@
 .kernel subtract_get_group_id_get_global_offset
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 17
         .vgprsnum 14
         .floatmode 0xc0
@@ -698,7 +698,7 @@
 /*000000000008*/ s_load_dwordx2  s[10:11], s[4:5], 0x10
 /*000000000010*/ s_load_dwordx2  s[4:5], s[4:5], 0x38
 /*000000000018*/ s_waitcnt       lgkmcnt(0)
-/*00000000001c*/ s_lshl_b32      s1, s6, 2
+/*00000000001c*/ s_lshl_b32      s1, s6, 1
 /*000000000020*/ s_lshl_b32      s3, s7, 4
 /*000000000024*/ s_add_u32       s1, s1, s0
 /*000000000028*/ s_lshl_b32      s9, s8, 1
@@ -1087,7 +1087,7 @@
 .kernel subtract_get_global_offset_get_local_id
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 17
         .vgprsnum 6
         .floatmode 0xc0
@@ -1110,7 +1110,7 @@
 /*000000000008*/ s_load_dwordx2  s[10:11], s[4:5], 0x38
 /*000000000010*/ s_load_dwordx2  s[4:5], s[4:5], 0x10
 /*000000000018*/ s_waitcnt       lgkmcnt(0)
-/*00000000001c*/ s_lshl_b32      s1, s6, 2
+/*00000000001c*/ s_lshl_b32      s1, s6, 1
 /*000000000020*/ s_lshl_b32      s3, s7, 4
 /*000000000024*/ s_lshl_b32      s5, s8, 1
 /*000000000028*/ s_add_u32       s1, s1, s0
@@ -1142,7 +1142,7 @@
 .kernel subtract_get_local_id_get_local_id
     .config
         .dims xyz
-        .cws 8, 4, 4
+        .cws 8, 4, 2
         .sgprsnum 17
         .vgprsnum 12
         .floatmode 0xc0
@@ -1168,7 +1168,7 @@
 /*00000000001c*/ s_lshl_b32      s1, s6, 3
 /*000000000020*/ s_lshl_b32      s3, s7, 2
 /*000000000024*/ s_add_u32       s0, s1, s0
-/*000000000028*/ s_lshl_b32      s1, s8, 2
+/*000000000028*/ s_lshl_b32      s1, s8, 1
 /*00000000002c*/ v_add_u32       v3, vcc, s0, v0
 /*000000000030*/ s_add_u32       s0, s3, s2
 /*000000000034*/ v_add_u32       v6, vcc, s0, v1
@@ -1195,7 +1195,7 @@
 .kernel subtract_get_group_id_get_local_id
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 17
         .vgprsnum 6
         .floatmode 0xc0
@@ -1218,7 +1218,7 @@
 /*000000000008*/ s_load_dwordx2  s[10:11], s[4:5], 0x38
 /*000000000010*/ s_load_dwordx2  s[4:5], s[4:5], 0x10
 /*000000000018*/ s_waitcnt       lgkmcnt(0)
-/*00000000001c*/ s_lshl_b32      s1, s6, 2
+/*00000000001c*/ s_lshl_b32      s1, s6, 1
 /*000000000020*/ s_lshl_b32      s3, s7, 4
 /*000000000024*/ s_lshl_b32      s5, s8, 1
 /*000000000028*/ s_add_u32       s0, s1, s0
@@ -1597,7 +1597,7 @@
 .kernel subtract_get_global_offset_get_group_id
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 17
         .vgprsnum 14
         .floatmode 0xc0
@@ -1620,7 +1620,7 @@
 /*000000000008*/ s_load_dwordx2  s[10:11], s[4:5], 0x10
 /*000000000010*/ s_load_dwordx2  s[4:5], s[4:5], 0x38
 /*000000000018*/ s_waitcnt       lgkmcnt(0)
-/*00000000001c*/ s_lshl_b32      s1, s6, 2
+/*00000000001c*/ s_lshl_b32      s1, s6, 1
 /*000000000020*/ s_lshl_b32      s3, s7, 4
 /*000000000024*/ s_add_u32       s1, s1, s0
 /*000000000028*/ s_lshl_b32      s9, s8, 1
@@ -1655,7 +1655,7 @@
 .kernel subtract_get_local_id_get_group_id
     .config
         .dims xyz
-        .cws 8, 4, 4
+        .cws 8, 4, 2
         .sgprsnum 17
         .vgprsnum 6
         .floatmode 0xc0
@@ -1680,7 +1680,7 @@
 /*000000000018*/ s_waitcnt       lgkmcnt(0)
 /*00000000001c*/ s_lshl_b32      s1, s6, 3
 /*000000000020*/ s_lshl_b32      s3, s7, 2
-/*000000000024*/ s_lshl_b32      s5, s8, 2
+/*000000000024*/ s_lshl_b32      s5, s8, 1
 /*000000000028*/ s_add_u32       s0, s1, s0
 /*00000000002c*/ v_add_u32       v3, vcc, s0, v0
 /*000000000030*/ v_subrev_u32    v0, vcc, s6, v0
@@ -1710,7 +1710,7 @@
 .kernel subtract_get_group_id_get_group_id
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 17
         .vgprsnum 12
         .floatmode 0xc0
@@ -1733,7 +1733,7 @@
 /*000000000008*/ s_load_dwordx2  s[10:11], s[4:5], 0x10
 /*000000000010*/ s_load_dwordx2  s[4:5], s[4:5], 0x38
 /*000000000018*/ s_waitcnt       lgkmcnt(0)
-/*00000000001c*/ s_lshl_b32      s1, s6, 2
+/*00000000001c*/ s_lshl_b32      s1, s6, 1
 /*000000000020*/ s_lshl_b32      s3, s7, 4
 /*000000000024*/ s_add_u32       s0, s1, s0
 /*000000000028*/ s_lshl_b32      s1, s8, 1
@@ -2123,7 +2123,7 @@
 .kernel subtract_get_global_offset_get_local_size
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 17
         .vgprsnum 14
         .floatmode 0xc0
@@ -2146,7 +2146,7 @@
 /*000000000008*/ s_load_dwordx2  s[10:11], s[4:5], 0x10
 /*000000000010*/ s_load_dwordx2  s[4:5], s[4:5], 0x38
 /*000000000018*/ s_waitcnt       lgkmcnt(0)
-/*00000000001c*/ s_lshl_b32      s1, s6, 2
+/*00000000001c*/ s_lshl_b32      s1, s6, 1
 /*000000000020*/ s_lshl_b32      s3, s7, 4
 /*000000000024*/ s_add_u32       s1, s1, s0
 /*000000000028*/ s_lshl_b32      s6, s8, 1
@@ -2156,7 +2156,7 @@
 /*000000000038*/ s_add_u32       s1, s6, s10
 /*00000000003c*/ v_mov_b32       v4, 0
 /*000000000040*/ v_lshlrev_b64   v[3:4], 2, v[3:4]
-/*000000000048*/ s_add_u32       s0, s0, -4
+/*000000000048*/ s_add_u32       s0, s0, -2
 /*00000000004c*/ v_add_u32       v8, vcc, s1, v2
 /*000000000050*/ v_add_u32       v10, vcc, s4, v3
 /*000000000054*/ v_mov_b32       v3, s5
@@ -2181,7 +2181,7 @@
 .kernel subtract_get_local_id_get_local_size
     .config
         .dims xyz
-        .cws 8, 4, 4
+        .cws 8, 4, 2
         .sgprsnum 17
         .vgprsnum 14
         .floatmode 0xc0
@@ -2207,7 +2207,7 @@
 /*00000000001c*/ s_lshl_b32      s1, s6, 3
 /*000000000020*/ s_lshl_b32      s3, s7, 2
 /*000000000024*/ s_add_u32       s0, s1, s0
-/*000000000028*/ s_lshl_b32      s1, s8, 2
+/*000000000028*/ s_lshl_b32      s1, s8, 1
 /*00000000002c*/ v_add_u32       v5, vcc, s0, v0
 /*000000000030*/ s_add_u32       s0, s3, s2
 /*000000000034*/ v_add_u32       v8, vcc, s0, v1
@@ -2228,7 +2228,7 @@
 /*000000000078*/ v_lshlrev_b64   v[9:10], 2, v[10:11]
 /*000000000080*/ v_add_u32       v3, vcc, s4, v9
 /*000000000084*/ v_addc_u32      v4, vcc, v7, v10, vcc
-/*000000000088*/ v_add_u32       v2, vcc, -4, v2
+/*000000000088*/ v_add_u32       v2, vcc, -2, v2
 /*00000000008c*/ flat_store_dword v[5:6], v0
 /*000000000094*/ flat_store_dword v[12:13], v1
 /*00000000009c*/ flat_store_dword v[3:4], v2
@@ -2236,7 +2236,7 @@
 .kernel subtract_get_group_id_get_local_size
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 17
         .vgprsnum 14
         .floatmode 0xc0
@@ -2259,7 +2259,7 @@
 /*000000000008*/ s_load_dwordx2  s[10:11], s[4:5], 0x10
 /*000000000010*/ s_load_dwordx2  s[4:5], s[4:5], 0x38
 /*000000000018*/ s_waitcnt       lgkmcnt(0)
-/*00000000001c*/ s_lshl_b32      s1, s6, 2
+/*00000000001c*/ s_lshl_b32      s1, s6, 1
 /*000000000020*/ s_lshl_b32      s3, s7, 4
 /*000000000024*/ s_add_u32       s0, s1, s0
 /*000000000028*/ s_lshl_b32      s1, s8, 1
@@ -2269,7 +2269,7 @@
 /*000000000038*/ s_add_u32       s0, s1, s10
 /*00000000003c*/ v_mov_b32       v4, 0
 /*000000000040*/ v_lshlrev_b64   v[3:4], 2, v[3:4]
-/*000000000048*/ s_add_u32       s1, s6, -4
+/*000000000048*/ s_add_u32       s1, s6, -2
 /*00000000004c*/ v_add_u32       v8, vcc, s0, v2
 /*000000000050*/ v_add_u32       v10, vcc, s4, v3
 /*000000000054*/ v_mov_b32       v3, s5
@@ -2646,7 +2646,7 @@
 .kernel subtract_get_global_offset_get_global_id
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 17
         .vgprsnum 14
         .floatmode 0xc0
@@ -2669,7 +2669,7 @@
 /*000000000008*/ s_load_dwordx2  s[10:11], s[4:5], 0x10
 /*000000000010*/ s_load_dwordx2  s[4:5], s[4:5], 0x38
 /*000000000018*/ s_waitcnt       lgkmcnt(0)
-/*00000000001c*/ s_lshl_b32      s1, s6, 2
+/*00000000001c*/ s_lshl_b32      s1, s6, 1
 /*000000000020*/ v_add_u32       v0, vcc, s1, v0
 /*000000000024*/ s_lshl_b32      s1, s7, 4
 /*000000000028*/ v_add_u32       v1, vcc, s1, v1
@@ -2701,7 +2701,7 @@
 .kernel subtract_get_local_id_get_global_id
     .config
         .dims xyz
-        .cws 8, 4, 4
+        .cws 8, 4, 2
         .sgprsnum 17
         .vgprsnum 9
         .floatmode 0xc0
@@ -2726,7 +2726,7 @@
 /*000000000018*/ s_waitcnt       lgkmcnt(0)
 /*00000000001c*/ s_lshl_b32      s1, s6, 3
 /*000000000020*/ s_lshl_b32      s3, s7, 2
-/*000000000024*/ s_lshl_b32      s5, s8, 2
+/*000000000024*/ s_lshl_b32      s5, s8, 1
 /*000000000028*/ s_add_u32       s0, s1, s0
 /*00000000002c*/ v_add_u32       v3, vcc, s0, v0
 /*000000000030*/ s_add_u32       s0, s3, s2
@@ -2756,7 +2756,7 @@
 .kernel subtract_get_group_id_get_global_id
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 17
         .vgprsnum 8
         .floatmode 0xc0
@@ -2779,7 +2779,7 @@
 /*000000000008*/ s_load_dwordx2  s[10:11], s[4:5], 0x38
 /*000000000010*/ s_load_dwordx2  s[4:5], s[4:5], 0x10
 /*000000000018*/ s_waitcnt       lgkmcnt(0)
-/*00000000001c*/ s_lshl_b32      s1, s6, 2
+/*00000000001c*/ s_lshl_b32      s1, s6, 1
 /*000000000020*/ s_lshl_b32      s3, s7, 4
 /*000000000024*/ s_lshl_b32      s5, s8, 1
 /*000000000028*/ s_add_u32       s0, s1, s0
@@ -3157,7 +3157,7 @@
 .kernel subtract_get_global_offset_get_global_size
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 21
         .vgprsnum 14
         .floatmode 0xc0
@@ -3182,7 +3182,7 @@
 /*000000000010*/ s_load_dwordx2  s[14:15], s[4:5], 0xc
 /*000000000018*/ s_load_dwordx2  s[6:7], s[6:7], 0x38
 /*000000000020*/ s_waitcnt       lgkmcnt(0)
-/*000000000024*/ s_lshl_b32      s1, s8, 2
+/*000000000024*/ s_lshl_b32      s1, s8, 1
 /*000000000028*/ s_load_dword    s3, s[4:5], 0x14
 /*000000000030*/ s_lshl_b32      s4, s9, 4
 /*000000000034*/ s_add_u32       s1, s1, s0
@@ -3219,7 +3219,7 @@
 .kernel subtract_get_local_id_get_global_size
     .config
         .dims xyz
-        .cws 8, 4, 4
+        .cws 8, 4, 2
         .sgprsnum 21
         .vgprsnum 6
         .floatmode 0xc0
@@ -3247,7 +3247,7 @@
 /*000000000028*/ s_lshl_b32      s3, s8, 3
 /*00000000002c*/ s_waitcnt       lgkmcnt(0)
 /*000000000030*/ s_lshl_b32      s7, s9, 2
-/*000000000034*/ s_lshl_b32      s8, s10, 2
+/*000000000034*/ s_lshl_b32      s8, s10, 1
 /*000000000038*/ s_add_u32       s3, s3, s12
 /*00000000003c*/ v_add_u32       v3, vcc, s3, v0
 /*000000000040*/ v_subrev_u32    v0, vcc, s0, v0
@@ -3277,7 +3277,7 @@
 .kernel subtract_get_group_id_get_global_size
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 21
         .vgprsnum 14
         .floatmode 0xc0
@@ -3302,7 +3302,7 @@
 /*000000000010*/ s_load_dwordx2  s[14:15], s[4:5], 0xc
 /*000000000018*/ s_load_dwordx2  s[6:7], s[6:7], 0x38
 /*000000000020*/ s_waitcnt       lgkmcnt(0)
-/*000000000024*/ s_lshl_b32      s1, s8, 2
+/*000000000024*/ s_lshl_b32      s1, s8, 1
 /*000000000028*/ s_load_dword    s3, s[4:5], 0x14
 /*000000000030*/ s_lshl_b32      s4, s9, 4
 /*000000000034*/ s_add_u32       s0, s1, s0
@@ -3708,7 +3708,7 @@
 .kernel subtract_get_global_offset_get_num_groups
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 21
         .vgprsnum 14
         .floatmode 0xc0
@@ -3734,13 +3734,13 @@
 /*000000000018*/ s_waitcnt       lgkmcnt(0)
 /*00000000001c*/ s_load_dword    s1, s[4:5], 0x14
 /*000000000024*/ s_load_dwordx2  s[4:5], s[6:7], 0x38
-/*00000000002c*/ s_lshl_b32      s3, s8, 2
+/*00000000002c*/ s_lshl_b32      s3, s8, 1
 /*000000000030*/ s_lshl_b32      s6, s9, 4
 /*000000000034*/ s_add_u32       s3, s3, s0
 /*000000000038*/ s_lshl_b32      s7, s10, 1
 /*00000000003c*/ v_add_u32       v3, vcc, s3, v0
 /*000000000040*/ s_add_u32       s3, s6, s2
-/*000000000044*/ s_lshr_b32      s6, s12, 2
+/*000000000044*/ s_lshr_b32      s6, s12, 1
 /*000000000048*/ v_add_u32       v6, vcc, s3, v1
 /*00000000004c*/ s_add_u32       s3, s7, s14
 /*000000000050*/ s_lshr_b32      s7, s13, 4
@@ -3773,7 +3773,7 @@
 .kernel subtract_get_local_id_get_num_groups
     .config
         .dims xyz
-        .cws 8, 4, 4
+        .cws 8, 4, 2
         .sgprsnum 21
         .vgprsnum 6
         .floatmode 0xc0
@@ -3801,10 +3801,10 @@
 /*000000000028*/ s_waitcnt       lgkmcnt(0)
 /*00000000002c*/ s_lshr_b32      s0, s0, 3
 /*000000000030*/ s_lshr_b32      s1, s1, 2
-/*000000000034*/ s_lshr_b32      s2, s2, 2
+/*000000000034*/ s_lshr_b32      s2, s2, 1
 /*000000000038*/ s_lshl_b32      s3, s8, 3
 /*00000000003c*/ s_lshl_b32      s7, s9, 2
-/*000000000040*/ s_lshl_b32      s8, s10, 2
+/*000000000040*/ s_lshl_b32      s8, s10, 1
 /*000000000044*/ s_add_u32       s3, s3, s12
 /*000000000048*/ v_add_u32       v3, vcc, s3, v0
 /*00000000004c*/ v_subrev_u32    v0, vcc, s0, v0
@@ -3834,7 +3834,7 @@
 .kernel subtract_get_group_id_get_num_groups
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 21
         .vgprsnum 14
         .floatmode 0xc0
@@ -3860,13 +3860,13 @@
 /*000000000018*/ s_waitcnt       lgkmcnt(0)
 /*00000000001c*/ s_load_dword    s1, s[4:5], 0x14
 /*000000000024*/ s_load_dwordx2  s[4:5], s[6:7], 0x38
-/*00000000002c*/ s_lshl_b32      s3, s8, 2
+/*00000000002c*/ s_lshl_b32      s3, s8, 1
 /*000000000030*/ s_lshl_b32      s6, s9, 4
 /*000000000034*/ s_add_u32       s0, s3, s0
 /*000000000038*/ s_lshl_b32      s3, s10, 1
 /*00000000003c*/ v_add_u32       v3, vcc, s0, v0
 /*000000000040*/ s_add_u32       s0, s6, s2
-/*000000000044*/ s_lshr_b32      s2, s12, 2
+/*000000000044*/ s_lshr_b32      s2, s12, 1
 /*000000000048*/ v_add_u32       v6, vcc, s0, v1
 /*00000000004c*/ s_add_u32       s0, s3, s14
 /*000000000050*/ s_lshr_b32      s3, s13, 4
@@ -4270,7 +4270,7 @@
 .kernel subtract_get_global_offset_get_work_dim
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 17
         .vgprsnum 14
         .floatmode 0xc0
@@ -4295,7 +4295,7 @@
 /*00000000000c*/ s_load_dword    s1, s[4:5], 0x0
 /*000000000014*/ s_load_dwordx2  s[4:5], s[6:7], 0x10
 /*00000000001c*/ s_load_dwordx2  s[6:7], s[6:7], 0x38
-/*000000000024*/ s_lshl_b32      s3, s8, 2
+/*000000000024*/ s_lshl_b32      s3, s8, 1
 /*000000000028*/ s_waitcnt       lgkmcnt(0)
 /*00000000002c*/ s_lshl_b32      s5, s9, 4
 /*000000000030*/ s_add_u32       s3, s3, s0
@@ -4332,7 +4332,7 @@
 .kernel subtract_get_local_id_get_work_dim
     .config
         .dims xyz
-        .cws 8, 4, 4
+        .cws 8, 4, 2
         .sgprsnum 21
         .vgprsnum 7
         .floatmode 0xc0
@@ -4360,7 +4360,7 @@
 /*000000000024*/ s_bfe_u32       s0, s0, 0x20010
 /*00000000002c*/ s_lshl_b32      s1, s8, 3
 /*000000000030*/ s_lshl_b32      s5, s9, 2
-/*000000000034*/ s_lshl_b32      s6, s10, 2
+/*000000000034*/ s_lshl_b32      s6, s10, 1
 /*000000000038*/ v_subrev_u32    v5, vcc, s0, v0
 /*00000000003c*/ s_add_u32       s1, s1, s12
 /*000000000040*/ v_add_u32       v3, vcc, s1, v0
@@ -4390,7 +4390,7 @@
 .kernel subtract_get_group_id_get_work_dim
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 17
         .vgprsnum 14
         .floatmode 0xc0
@@ -4415,7 +4415,7 @@
 /*00000000000c*/ s_load_dword    s1, s[4:5], 0x0
 /*000000000014*/ s_load_dwordx2  s[4:5], s[6:7], 0x10
 /*00000000001c*/ s_load_dwordx2  s[6:7], s[6:7], 0x38
-/*000000000024*/ s_lshl_b32      s3, s8, 2
+/*000000000024*/ s_lshl_b32      s3, s8, 1
 /*000000000028*/ s_waitcnt       lgkmcnt(0)
 /*00000000002c*/ s_lshl_b32      s5, s9, 4
 /*000000000030*/ s_add_u32       s0, s3, s0
@@ -4752,3 +4752,689 @@
 /*00000000008c*/ flat_store_dword v[1:2], v5
 /*000000000094*/ flat_store_dword v[6:7], v5
 /*00000000009c*/ s_endpgm
+.kernel substract_x_64
+    .config
+        .dims x
+        .cws 64, 1, 1
+        .sgprsnum 13
+        .vgprsnum 4
+        .floatmode 0xc0
+        .pgmrsrc1 0x00ac0040
+        .pgmrsrc2 0x0000008c
+        .dx10clamp
+        .ieeemode
+        .useargs
+        .priority 0
+        .arg _.global_offset_0, "size_t", long
+        .arg _.global_offset_1, "size_t", long
+        .arg _.global_offset_2, "size_t", long
+        .arg _.printf_buffer, "size_t", void*, global, , rdonly
+        .arg _.vqueue_pointer, "size_t", long
+        .arg _.aqlwrap_pointer, "size_t", long
+        .arg x, "int", int
+        .arg data, "uint*", uint*, global, 
+    .text
+/*000000000000*/ s_load_dwordx2  s[0:1], s[4:5], 0x0
+/*000000000008*/ s_waitcnt       lgkmcnt(0)
+/*00000000000c*/ s_load_dword    s1, s[4:5], 0x30
+/*000000000014*/ s_load_dwordx2  s[2:3], s[4:5], 0x38
+/*00000000001c*/ s_lshl_b32      s4, s6, 6
+/*000000000020*/ s_add_u32       s0, s4, s0
+/*000000000024*/ v_add_u32       v0, vcc, s0, v0
+/*000000000028*/ v_mov_b32       v1, 0
+/*00000000002c*/ v_lshlrev_b64   v[1:2], 2, v[0:1]
+/*000000000034*/ s_waitcnt       lgkmcnt(0)
+/*000000000038*/ v_sub_u32       v0, vcc, s1, v0
+/*00000000003c*/ v_add_u32       v1, vcc, s2, v1
+/*000000000040*/ v_mov_b32       v3, s3
+/*000000000044*/ v_addc_u32      v2, vcc, v3, v2, vcc
+/*000000000048*/ flat_store_dword v[1:2], v0
+/*000000000050*/ s_endpgm
+.kernel substract_get_global_offset_64
+    .config
+        .dims x
+        .cws 64, 1, 1
+        .sgprsnum 13
+        .vgprsnum 4
+        .floatmode 0xc0
+        .pgmrsrc1 0x00ac0040
+        .pgmrsrc2 0x0000008c
+        .dx10clamp
+        .ieeemode
+        .useargs
+        .priority 0
+        .arg _.global_offset_0, "size_t", long
+        .arg _.global_offset_1, "size_t", long
+        .arg _.global_offset_2, "size_t", long
+        .arg _.printf_buffer, "size_t", void*, global, , rdonly
+        .arg _.vqueue_pointer, "size_t", long
+        .arg _.aqlwrap_pointer, "size_t", long
+        .arg x, "int", int
+        .arg data, "uint*", uint*, global, 
+    .text
+/*000000000000*/ s_load_dwordx2  s[0:1], s[4:5], 0x0
+/*000000000008*/ s_load_dwordx2  s[2:3], s[4:5], 0x38
+/*000000000010*/ s_waitcnt       lgkmcnt(0)
+/*000000000014*/ s_lshl_b32      s1, s6, 6
+/*000000000018*/ s_add_u32       s1, s1, s0
+/*00000000001c*/ v_add_u32       v0, vcc, s1, v0
+/*000000000020*/ v_mov_b32       v1, 0
+/*000000000024*/ v_lshlrev_b64   v[1:2], 2, v[0:1]
+/*00000000002c*/ v_sub_u32       v0, vcc, s0, v0
+/*000000000030*/ v_add_u32       v1, vcc, s2, v1
+/*000000000034*/ v_mov_b32       v3, s3
+/*000000000038*/ v_addc_u32      v2, vcc, v3, v2, vcc
+/*00000000003c*/ flat_store_dword v[1:2], v0
+/*000000000044*/ s_endpgm
+.kernel substract_get_local_id_64
+    .config
+        .dims x
+        .cws 64, 1, 1
+        .sgprsnum 13
+        .vgprsnum 4
+        .floatmode 0xc0
+        .pgmrsrc1 0x00ac0040
+        .pgmrsrc2 0x0000008c
+        .dx10clamp
+        .ieeemode
+        .useargs
+        .priority 0
+        .arg _.global_offset_0, "size_t", long
+        .arg _.global_offset_1, "size_t", long
+        .arg _.global_offset_2, "size_t", long
+        .arg _.printf_buffer, "size_t", void*, global, , rdonly
+        .arg _.vqueue_pointer, "size_t", long
+        .arg _.aqlwrap_pointer, "size_t", long
+        .arg x, "int", int
+        .arg data, "uint*", uint*, global, 
+    .text
+/*000000000000*/ s_load_dwordx2  s[0:1], s[4:5], 0x0
+/*000000000008*/ s_load_dwordx2  s[2:3], s[4:5], 0x38
+/*000000000010*/ s_waitcnt       lgkmcnt(0)
+/*000000000014*/ s_lshl_b32      s1, s6, 6
+/*000000000018*/ s_add_u32       s0, s1, s0
+/*00000000001c*/ v_add_u32       v1, vcc, s0, v0
+/*000000000020*/ v_mov_b32       v2, 0
+/*000000000024*/ v_lshlrev_b64   v[2:3], 2, v[1:2]
+/*00000000002c*/ v_sub_u32       v0, vcc, v0, v1
+/*000000000030*/ v_add_u32       v1, vcc, s2, v2
+/*000000000034*/ v_mov_b32       v2, s3
+/*000000000038*/ v_addc_u32      v2, vcc, v2, v3, vcc
+/*00000000003c*/ flat_store_dword v[1:2], v0
+/*000000000044*/ s_endpgm
+.kernel substract_get_group_id_64
+    .config
+        .dims x
+        .cws 64, 1, 1
+        .sgprsnum 13
+        .vgprsnum 4
+        .floatmode 0xc0
+        .pgmrsrc1 0x00ac0040
+        .pgmrsrc2 0x0000008c
+        .dx10clamp
+        .ieeemode
+        .useargs
+        .priority 0
+        .arg _.global_offset_0, "size_t", long
+        .arg _.global_offset_1, "size_t", long
+        .arg _.global_offset_2, "size_t", long
+        .arg _.printf_buffer, "size_t", void*, global, , rdonly
+        .arg _.vqueue_pointer, "size_t", long
+        .arg _.aqlwrap_pointer, "size_t", long
+        .arg x, "int", int
+        .arg data, "uint*", uint*, global, 
+    .text
+/*000000000000*/ s_load_dwordx2  s[0:1], s[4:5], 0x0
+/*000000000008*/ s_load_dwordx2  s[2:3], s[4:5], 0x38
+/*000000000010*/ s_waitcnt       lgkmcnt(0)
+/*000000000014*/ s_lshl_b32      s1, s6, 6
+/*000000000018*/ s_add_u32       s0, s1, s0
+/*00000000001c*/ v_add_u32       v0, vcc, s0, v0
+/*000000000020*/ v_mov_b32       v1, 0
+/*000000000024*/ v_lshlrev_b64   v[1:2], 2, v[0:1]
+/*00000000002c*/ v_sub_u32       v0, vcc, s6, v0
+/*000000000030*/ v_add_u32       v1, vcc, s2, v1
+/*000000000034*/ v_mov_b32       v3, s3
+/*000000000038*/ v_addc_u32      v2, vcc, v3, v2, vcc
+/*00000000003c*/ flat_store_dword v[1:2], v0
+/*000000000044*/ s_endpgm
+.kernel substract_get_local_size_64
+    .config
+        .dims x
+        .cws 64, 1, 1
+        .sgprsnum 13
+        .vgprsnum 4
+        .floatmode 0xc0
+        .pgmrsrc1 0x00ac0040
+        .pgmrsrc2 0x0000008c
+        .dx10clamp
+        .ieeemode
+        .useargs
+        .priority 0
+        .arg _.global_offset_0, "size_t", long
+        .arg _.global_offset_1, "size_t", long
+        .arg _.global_offset_2, "size_t", long
+        .arg _.printf_buffer, "size_t", void*, global, , rdonly
+        .arg _.vqueue_pointer, "size_t", long
+        .arg _.aqlwrap_pointer, "size_t", long
+        .arg x, "int", int
+        .arg data, "uint*", uint*, global, 
+    .text
+/*000000000000*/ s_load_dwordx2  s[0:1], s[4:5], 0x0
+/*000000000008*/ s_load_dwordx2  s[2:3], s[4:5], 0x38
+/*000000000010*/ s_waitcnt       lgkmcnt(0)
+/*000000000014*/ s_lshl_b32      s1, s6, 6
+/*000000000018*/ s_add_u32       s0, s1, s0
+/*00000000001c*/ v_add_u32       v0, vcc, s0, v0
+/*000000000020*/ v_mov_b32       v1, 0
+/*000000000024*/ v_lshlrev_b64   v[1:2], 2, v[0:1]
+/*00000000002c*/ v_add_u32       v1, vcc, s2, v1
+/*000000000030*/ v_mov_b32       v3, s3
+/*000000000034*/ v_addc_u32      v2, vcc, v3, v2, vcc
+/*000000000038*/ v_sub_u32       v0, vcc, 64, v0
+/*00000000003c*/ flat_store_dword v[1:2], v0
+/*000000000044*/ s_endpgm
+.kernel substract_get_global_id_64
+    .config
+        .dims x
+        .cws 64, 1, 1
+        .sgprsnum 13
+        .vgprsnum 3
+        .floatmode 0xc0
+        .pgmrsrc1 0x00ac0040
+        .pgmrsrc2 0x0000008c
+        .dx10clamp
+        .ieeemode
+        .useargs
+        .priority 0
+        .arg _.global_offset_0, "size_t", long
+        .arg _.global_offset_1, "size_t", long
+        .arg _.global_offset_2, "size_t", long
+        .arg _.printf_buffer, "size_t", void*, global, , rdonly
+        .arg _.vqueue_pointer, "size_t", long
+        .arg _.aqlwrap_pointer, "size_t", long
+        .arg x, "int", int
+        .arg data, "uint*", uint*, global, 
+    .text
+/*000000000000*/ s_load_dwordx2  s[0:1], s[4:5], 0x0
+/*000000000008*/ s_load_dwordx2  s[2:3], s[4:5], 0x38
+/*000000000010*/ s_waitcnt       lgkmcnt(0)
+/*000000000014*/ s_lshl_b32      s1, s6, 6
+/*000000000018*/ s_add_u32       s0, s1, s0
+/*00000000001c*/ v_add_u32       v0, vcc, s0, v0
+/*000000000020*/ v_mov_b32       v1, 0
+/*000000000024*/ v_lshlrev_b64   v[0:1], 2, v[0:1]
+/*00000000002c*/ v_add_u32       v0, vcc, s2, v0
+/*000000000030*/ v_mov_b32       v2, s3
+/*000000000034*/ v_addc_u32      v1, vcc, v2, v1, vcc
+/*000000000038*/ v_mov_b32       v2, 0
+/*00000000003c*/ flat_store_dword v[0:1], v2
+/*000000000044*/ s_endpgm
+.kernel substract_get_global_size_64
+    .config
+        .dims x
+        .cws 64, 1, 1
+        .sgprsnum 16
+        .vgprsnum 4
+        .floatmode 0xc0
+        .pgmrsrc1 0x00ac0080
+        .pgmrsrc2 0x00000090
+        .dx10clamp
+        .ieeemode
+        .useargs
+        .usesetup
+        .priority 0
+        .arg _.global_offset_0, "size_t", long
+        .arg _.global_offset_1, "size_t", long
+        .arg _.global_offset_2, "size_t", long
+        .arg _.printf_buffer, "size_t", void*, global, , rdonly
+        .arg _.vqueue_pointer, "size_t", long
+        .arg _.aqlwrap_pointer, "size_t", long
+        .arg x, "int", int
+        .arg data, "uint*", uint*, global, 
+    .text
+/*000000000000*/ s_load_dwordx2  s[0:1], s[6:7], 0x0
+/*000000000008*/ s_waitcnt       lgkmcnt(0)
+/*00000000000c*/ s_load_dword    s1, s[4:5], 0xc
+/*000000000014*/ s_load_dwordx2  s[2:3], s[6:7], 0x38
+/*00000000001c*/ s_lshl_b32      s4, s8, 6
+/*000000000020*/ s_add_u32       s0, s4, s0
+/*000000000024*/ v_add_u32       v0, vcc, s0, v0
+/*000000000028*/ v_mov_b32       v1, 0
+/*00000000002c*/ v_lshlrev_b64   v[1:2], 2, v[0:1]
+/*000000000034*/ s_waitcnt       lgkmcnt(0)
+/*000000000038*/ v_sub_u32       v0, vcc, s1, v0
+/*00000000003c*/ v_add_u32       v1, vcc, s2, v1
+/*000000000040*/ v_mov_b32       v3, s3
+/*000000000044*/ v_addc_u32      v2, vcc, v3, v2, vcc
+/*000000000048*/ flat_store_dword v[1:2], v0
+/*000000000050*/ s_endpgm
+.kernel substract_get_num_groups_64
+    .config
+        .dims x
+        .cws 64, 1, 1
+        .sgprsnum 16
+        .vgprsnum 4
+        .floatmode 0xc0
+        .pgmrsrc1 0x00ac0080
+        .pgmrsrc2 0x00000090
+        .dx10clamp
+        .ieeemode
+        .useargs
+        .usesetup
+        .priority 0
+        .arg _.global_offset_0, "size_t", long
+        .arg _.global_offset_1, "size_t", long
+        .arg _.global_offset_2, "size_t", long
+        .arg _.printf_buffer, "size_t", void*, global, , rdonly
+        .arg _.vqueue_pointer, "size_t", long
+        .arg _.aqlwrap_pointer, "size_t", long
+        .arg x, "int", int
+        .arg data, "uint*", uint*, global, 
+    .text
+/*000000000000*/ s_load_dwordx2  s[0:1], s[6:7], 0x0
+/*000000000008*/ s_waitcnt       lgkmcnt(0)
+/*00000000000c*/ s_load_dword    s1, s[4:5], 0xc
+/*000000000014*/ s_load_dwordx2  s[2:3], s[6:7], 0x38
+/*00000000001c*/ s_lshl_b32      s4, s8, 6
+/*000000000020*/ s_add_u32       s0, s4, s0
+/*000000000024*/ v_add_u32       v0, vcc, s0, v0
+/*000000000028*/ s_waitcnt       lgkmcnt(0)
+/*00000000002c*/ s_lshr_b32      s0, s1, 6
+/*000000000030*/ v_mov_b32       v1, 0
+/*000000000034*/ v_lshlrev_b64   v[1:2], 2, v[0:1]
+/*00000000003c*/ v_sub_u32       v0, vcc, s0, v0
+/*000000000040*/ v_add_u32       v1, vcc, s2, v1
+/*000000000044*/ v_mov_b32       v3, s3
+/*000000000048*/ v_addc_u32      v2, vcc, v3, v2, vcc
+/*00000000004c*/ flat_store_dword v[1:2], v0
+/*000000000054*/ s_endpgm
+.kernel substract_get_work_dim
+    .config
+        .dims x
+        .cws 64, 1, 1
+        .sgprsnum 16
+        .vgprsnum 4
+        .floatmode 0xc0
+        .pgmrsrc1 0x00ac0080
+        .pgmrsrc2 0x00000090
+        .dx10clamp
+        .ieeemode
+        .useargs
+        .usesetup
+        .priority 0
+        .arg _.global_offset_0, "size_t", long
+        .arg _.global_offset_1, "size_t", long
+        .arg _.global_offset_2, "size_t", long
+        .arg _.printf_buffer, "size_t", void*, global, , rdonly
+        .arg _.vqueue_pointer, "size_t", long
+        .arg _.aqlwrap_pointer, "size_t", long
+        .arg x, "int", int
+        .arg data, "uint*", uint*, global, 
+    .text
+/*000000000000*/ s_load_dwordx2  s[0:1], s[6:7], 0x0
+/*000000000008*/ s_waitcnt       lgkmcnt(0)
+/*00000000000c*/ s_load_dword    s1, s[4:5], 0x0
+/*000000000014*/ s_load_dwordx2  s[2:3], s[6:7], 0x38
+/*00000000001c*/ s_lshl_b32      s4, s8, 6
+/*000000000020*/ s_add_u32       s0, s4, s0
+/*000000000024*/ v_add_u32       v0, vcc, s0, v0
+/*000000000028*/ s_waitcnt       lgkmcnt(0)
+/*00000000002c*/ s_bfe_u32       s0, s1, 0x20010
+/*000000000034*/ v_mov_b32       v1, 0
+/*000000000038*/ v_lshlrev_b64   v[1:2], 2, v[0:1]
+/*000000000040*/ v_sub_u32       v0, vcc, s0, v0
+/*000000000044*/ v_add_u32       v1, vcc, s2, v1
+/*000000000048*/ v_mov_b32       v3, s3
+/*00000000004c*/ v_addc_u32      v2, vcc, v3, v2, vcc
+/*000000000050*/ flat_store_dword v[1:2], v0
+/*000000000058*/ s_endpgm
+.kernel substract_x_8_8
+    .config
+        .dims xy
+        .cws 8, 8, 1
+        .sgprsnum 16
+        .vgprsnum 4
+        .floatmode 0xc0
+        .pgmrsrc1 0x00ac0080
+        .pgmrsrc2 0x0000098c
+        .dx10clamp
+        .ieeemode
+        .useargs
+        .priority 0
+        .arg _.global_offset_0, "size_t", long
+        .arg _.global_offset_1, "size_t", long
+        .arg _.global_offset_2, "size_t", long
+        .arg _.printf_buffer, "size_t", void*, global, , rdonly
+        .arg _.vqueue_pointer, "size_t", long
+        .arg _.aqlwrap_pointer, "size_t", long
+        .arg x, "int", int
+        .arg data, "uint*", uint*, global, 
+    .text
+/*000000000000*/ s_load_dwordx4  s[0:3], s[4:5], 0x0
+/*000000000008*/ s_waitcnt       lgkmcnt(0)
+/*00000000000c*/ s_load_dword    s1, s[4:5], 0x30
+/*000000000014*/ s_load_dwordx2  s[4:5], s[4:5], 0x38
+/*00000000001c*/ s_lshl_b32      s3, s6, 3
+/*000000000020*/ s_lshl_b32      s6, s7, 3
+/*000000000024*/ s_add_u32       s2, s6, s2
+/*000000000028*/ v_add_u32       v1, vcc, s2, v1
+/*00000000002c*/ s_waitcnt       lgkmcnt(0)
+/*000000000030*/ v_sub_u32       v2, vcc, s1, v1
+/*000000000034*/ s_add_u32       s0, s3, s0
+/*000000000038*/ v_add_u32       v0, vcc, s0, v0
+/*00000000003c*/ v_mov_b32       v1, 0
+/*000000000040*/ v_lshlrev_b64   v[0:1], 2, v[0:1]
+/*000000000048*/ v_add_u32       v0, vcc, s4, v0
+/*00000000004c*/ v_mov_b32       v3, s5
+/*000000000050*/ v_addc_u32      v1, vcc, v3, v1, vcc
+/*000000000054*/ flat_store_dword v[0:1], v2
+/*00000000005c*/ s_endpgm
+.kernel substract_get_global_offset_8_8
+    .config
+        .dims x
+        .cws 8, 8, 1
+        .sgprsnum 13
+        .vgprsnum 3
+        .floatmode 0xc0
+        .pgmrsrc1 0x00ac0040
+        .pgmrsrc2 0x0000008c
+        .dx10clamp
+        .ieeemode
+        .useargs
+        .priority 0
+        .arg _.global_offset_0, "size_t", long
+        .arg _.global_offset_1, "size_t", long
+        .arg _.global_offset_2, "size_t", long
+        .arg _.printf_buffer, "size_t", void*, global, , rdonly
+        .arg _.vqueue_pointer, "size_t", long
+        .arg _.aqlwrap_pointer, "size_t", long
+        .arg x, "int", int
+        .arg data, "uint*", uint*, global, 
+    .text
+/*000000000000*/ s_load_dwordx4  s[0:3], s[4:5], 0x0
+/*000000000008*/ s_load_dwordx2  s[4:5], s[4:5], 0x38
+/*000000000010*/ s_waitcnt       lgkmcnt(0)
+/*000000000014*/ s_lshl_b32      s1, s6, 3
+/*000000000018*/ s_add_u32       s1, s1, s0
+/*00000000001c*/ v_add_u32       v0, vcc, s1, v0
+/*000000000020*/ s_sub_u32       s0, s0, s2
+/*000000000024*/ v_mov_b32       v1, 0
+/*000000000028*/ v_lshlrev_b64   v[0:1], 2, v[0:1]
+/*000000000030*/ v_add_u32       v0, vcc, s4, v0
+/*000000000034*/ v_mov_b32       v2, s5
+/*000000000038*/ v_addc_u32      v1, vcc, v2, v1, vcc
+/*00000000003c*/ v_mov_b32       v2, s0
+/*000000000040*/ flat_store_dword v[0:1], v2
+/*000000000048*/ s_endpgm
+.kernel substract_get_local_id_8_8
+    .config
+        .dims x, xy
+        .cws 8, 8, 1
+        .sgprsnum 13
+        .vgprsnum 4
+        .floatmode 0xc0
+        .pgmrsrc1 0x00ac0040
+        .pgmrsrc2 0x0000088c
+        .dx10clamp
+        .ieeemode
+        .useargs
+        .priority 0
+        .arg _.global_offset_0, "size_t", long
+        .arg _.global_offset_1, "size_t", long
+        .arg _.global_offset_2, "size_t", long
+        .arg _.printf_buffer, "size_t", void*, global, , rdonly
+        .arg _.vqueue_pointer, "size_t", long
+        .arg _.aqlwrap_pointer, "size_t", long
+        .arg x, "int", int
+        .arg data, "uint*", uint*, global, 
+    .text
+/*000000000000*/ s_load_dwordx2  s[0:1], s[4:5], 0x0
+/*000000000008*/ s_load_dwordx2  s[2:3], s[4:5], 0x38
+/*000000000010*/ s_waitcnt       lgkmcnt(0)
+/*000000000014*/ s_lshl_b32      s1, s6, 3
+/*000000000018*/ v_sub_u32       v2, vcc, v0, v1
+/*00000000001c*/ s_add_u32       s0, s1, s0
+/*000000000020*/ v_add_u32       v0, vcc, s0, v0
+/*000000000024*/ v_mov_b32       v1, 0
+/*000000000028*/ v_lshlrev_b64   v[0:1], 2, v[0:1]
+/*000000000030*/ v_add_u32       v0, vcc, s2, v0
+/*000000000034*/ v_mov_b32       v3, s3
+/*000000000038*/ v_addc_u32      v1, vcc, v3, v1, vcc
+/*00000000003c*/ flat_store_dword v[0:1], v2
+/*000000000044*/ s_endpgm
+.kernel substract_get_group_id_8_8
+    .config
+        .dims xy, x
+        .cws 8, 8, 1
+        .sgprsnum 16
+        .vgprsnum 3
+        .floatmode 0xc0
+        .pgmrsrc1 0x00ac0080
+        .pgmrsrc2 0x0000018c
+        .dx10clamp
+        .ieeemode
+        .useargs
+        .priority 0
+        .arg _.global_offset_0, "size_t", long
+        .arg _.global_offset_1, "size_t", long
+        .arg _.global_offset_2, "size_t", long
+        .arg _.printf_buffer, "size_t", void*, global, , rdonly
+        .arg _.vqueue_pointer, "size_t", long
+        .arg _.aqlwrap_pointer, "size_t", long
+        .arg x, "int", int
+        .arg data, "uint*", uint*, global, 
+    .text
+/*000000000000*/ s_load_dwordx2  s[0:1], s[4:5], 0x0
+/*000000000008*/ s_load_dwordx2  s[2:3], s[4:5], 0x38
+/*000000000010*/ s_waitcnt       lgkmcnt(0)
+/*000000000014*/ s_lshl_b32      s1, s6, 3
+/*000000000018*/ s_add_u32       s0, s1, s0
+/*00000000001c*/ v_add_u32       v0, vcc, s0, v0
+/*000000000020*/ s_sub_u32       s0, s6, s7
+/*000000000024*/ v_mov_b32       v1, 0
+/*000000000028*/ v_lshlrev_b64   v[0:1], 2, v[0:1]
+/*000000000030*/ v_add_u32       v0, vcc, s2, v0
+/*000000000034*/ v_mov_b32       v2, s3
+/*000000000038*/ v_addc_u32      v1, vcc, v2, v1, vcc
+/*00000000003c*/ v_mov_b32       v2, s0
+/*000000000040*/ flat_store_dword v[0:1], v2
+/*000000000048*/ s_endpgm
+.kernel substract_get_local_size_8_8
+    .config
+        .dims x
+        .cws 8, 8, 1
+        .sgprsnum 13
+        .vgprsnum 3
+        .floatmode 0xc0
+        .pgmrsrc1 0x00ac0040
+        .pgmrsrc2 0x0000008c
+        .dx10clamp
+        .ieeemode
+        .useargs
+        .priority 0
+        .arg _.global_offset_0, "size_t", long
+        .arg _.global_offset_1, "size_t", long
+        .arg _.global_offset_2, "size_t", long
+        .arg _.printf_buffer, "size_t", void*, global, , rdonly
+        .arg _.vqueue_pointer, "size_t", long
+        .arg _.aqlwrap_pointer, "size_t", long
+        .arg x, "int", int
+        .arg data, "uint*", uint*, global, 
+    .text
+/*000000000000*/ s_load_dwordx2  s[0:1], s[4:5], 0x0
+/*000000000008*/ s_load_dwordx2  s[2:3], s[4:5], 0x38
+/*000000000010*/ s_waitcnt       lgkmcnt(0)
+/*000000000014*/ s_lshl_b32      s1, s6, 3
+/*000000000018*/ s_add_u32       s0, s1, s0
+/*00000000001c*/ v_add_u32       v0, vcc, s0, v0
+/*000000000020*/ v_mov_b32       v1, 0
+/*000000000024*/ v_lshlrev_b64   v[0:1], 2, v[0:1]
+/*00000000002c*/ v_add_u32       v0, vcc, s2, v0
+/*000000000030*/ v_mov_b32       v2, s3
+/*000000000034*/ v_addc_u32      v1, vcc, v2, v1, vcc
+/*000000000038*/ v_mov_b32       v2, 0
+/*00000000003c*/ flat_store_dword v[0:1], v2
+/*000000000044*/ s_endpgm
+.kernel substract_get_global_id_8_8
+    .config
+        .dims xy
+        .cws 8, 8, 1
+        .sgprsnum 16
+        .vgprsnum 4
+        .floatmode 0xc0
+        .pgmrsrc1 0x00ac0080
+        .pgmrsrc2 0x0000098c
+        .dx10clamp
+        .ieeemode
+        .useargs
+        .priority 0
+        .arg _.global_offset_0, "size_t", long
+        .arg _.global_offset_1, "size_t", long
+        .arg _.global_offset_2, "size_t", long
+        .arg _.printf_buffer, "size_t", void*, global, , rdonly
+        .arg _.vqueue_pointer, "size_t", long
+        .arg _.aqlwrap_pointer, "size_t", long
+        .arg x, "int", int
+        .arg data, "uint*", uint*, global, 
+    .text
+/*000000000000*/ s_load_dwordx4  s[0:3], s[4:5], 0x0
+/*000000000008*/ s_load_dwordx2  s[4:5], s[4:5], 0x38
+/*000000000010*/ s_waitcnt       lgkmcnt(0)
+/*000000000014*/ s_lshl_b32      s1, s6, 3
+/*000000000018*/ s_lshl_b32      s3, s7, 3
+/*00000000001c*/ s_add_u32       s2, s3, s2
+/*000000000020*/ v_add_u32       v1, vcc, s2, v1
+/*000000000024*/ s_add_u32       s0, s1, s0
+/*000000000028*/ v_add_u32       v0, vcc, s0, v0
+/*00000000002c*/ v_sub_u32       v2, vcc, v0, v1
+/*000000000030*/ v_mov_b32       v1, 0
+/*000000000034*/ v_lshlrev_b64   v[0:1], 2, v[0:1]
+/*00000000003c*/ v_add_u32       v0, vcc, s4, v0
+/*000000000040*/ v_mov_b32       v3, s5
+/*000000000044*/ v_addc_u32      v1, vcc, v3, v1, vcc
+/*000000000048*/ flat_store_dword v[0:1], v2
+/*000000000050*/ s_endpgm
+.kernel substract_get_global_size_8_8
+    .config
+        .dims x
+        .cws 8, 8, 1
+        .sgprsnum 16
+        .vgprsnum 3
+        .floatmode 0xc0
+        .pgmrsrc1 0x00ac0080
+        .pgmrsrc2 0x00000090
+        .dx10clamp
+        .ieeemode
+        .useargs
+        .usesetup
+        .priority 0
+        .arg _.global_offset_0, "size_t", long
+        .arg _.global_offset_1, "size_t", long
+        .arg _.global_offset_2, "size_t", long
+        .arg _.printf_buffer, "size_t", void*, global, , rdonly
+        .arg _.vqueue_pointer, "size_t", long
+        .arg _.aqlwrap_pointer, "size_t", long
+        .arg x, "int", int
+        .arg data, "uint*", uint*, global, 
+    .text
+/*000000000000*/ s_load_dwordx2  s[0:1], s[6:7], 0x0
+/*000000000008*/ s_load_dwordx2  s[2:3], s[4:5], 0xc
+/*000000000010*/ s_load_dwordx2  s[4:5], s[6:7], 0x38
+/*000000000018*/ s_waitcnt       lgkmcnt(0)
+/*00000000001c*/ s_lshl_b32      s1, s8, 3
+/*000000000020*/ s_add_u32       s0, s1, s0
+/*000000000024*/ v_add_u32       v0, vcc, s0, v0
+/*000000000028*/ s_sub_u32       s0, s2, s3
+/*00000000002c*/ v_mov_b32       v1, 0
+/*000000000030*/ v_lshlrev_b64   v[0:1], 2, v[0:1]
+/*000000000038*/ v_add_u32       v0, vcc, s4, v0
+/*00000000003c*/ v_mov_b32       v2, s5
+/*000000000040*/ v_addc_u32      v1, vcc, v2, v1, vcc
+/*000000000044*/ v_mov_b32       v2, s0
+/*000000000048*/ flat_store_dword v[0:1], v2
+/*000000000050*/ s_endpgm
+.kernel substract_get_num_groups_8_8
+    .config
+        .dims x
+        .cws 8, 8, 1
+        .sgprsnum 16
+        .vgprsnum 3
+        .floatmode 0xc0
+        .pgmrsrc1 0x00ac0080
+        .pgmrsrc2 0x00000090
+        .dx10clamp
+        .ieeemode
+        .useargs
+        .usesetup
+        .priority 0
+        .arg _.global_offset_0, "size_t", long
+        .arg _.global_offset_1, "size_t", long
+        .arg _.global_offset_2, "size_t", long
+        .arg _.printf_buffer, "size_t", void*, global, , rdonly
+        .arg _.vqueue_pointer, "size_t", long
+        .arg _.aqlwrap_pointer, "size_t", long
+        .arg x, "int", int
+        .arg data, "uint*", uint*, global, 
+    .text
+/*000000000000*/ s_load_dwordx2  s[0:1], s[6:7], 0x0
+/*000000000008*/ s_load_dwordx2  s[2:3], s[4:5], 0xc
+/*000000000010*/ s_load_dwordx2  s[4:5], s[6:7], 0x38
+/*000000000018*/ s_waitcnt       lgkmcnt(0)
+/*00000000001c*/ s_lshl_b32      s1, s8, 3
+/*000000000020*/ s_add_u32       s0, s1, s0
+/*000000000024*/ v_add_u32       v0, vcc, s0, v0
+/*000000000028*/ s_lshr_b32      s0, s2, 3
+/*00000000002c*/ s_lshr_b32      s1, s3, 3
+/*000000000030*/ s_sub_u32       s0, s0, s1
+/*000000000034*/ v_mov_b32       v1, 0
+/*000000000038*/ v_lshlrev_b64   v[0:1], 2, v[0:1]
+/*000000000040*/ v_add_u32       v0, vcc, s4, v0
+/*000000000044*/ v_mov_b32       v2, s5
+/*000000000048*/ v_addc_u32      v1, vcc, v2, v1, vcc
+/*00000000004c*/ v_mov_b32       v2, s0
+/*000000000050*/ flat_store_dword v[0:1], v2
+/*000000000058*/ s_endpgm
+.kernel substract_get_work_dim_8_8
+    .config
+        .dims xy
+        .cws 8, 8, 1
+        .sgprsnum 16
+        .vgprsnum 4
+        .floatmode 0xc0
+        .pgmrsrc1 0x00ac0080
+        .pgmrsrc2 0x00000990
+        .dx10clamp
+        .ieeemode
+        .useargs
+        .usesetup
+        .priority 0
+        .arg _.global_offset_0, "size_t", long
+        .arg _.global_offset_1, "size_t", long
+        .arg _.global_offset_2, "size_t", long
+        .arg _.printf_buffer, "size_t", void*, global, , rdonly
+        .arg _.vqueue_pointer, "size_t", long
+        .arg _.aqlwrap_pointer, "size_t", long
+        .arg x, "int", int
+        .arg data, "uint*", uint*, global, 
+    .text
+/*000000000000*/ s_load_dwordx4  s[0:3], s[6:7], 0x0
+/*000000000008*/ s_waitcnt       lgkmcnt(0)
+/*00000000000c*/ s_load_dword    s1, s[4:5], 0x0
+/*000000000014*/ s_load_dwordx2  s[4:5], s[6:7], 0x38
+/*00000000001c*/ s_lshl_b32      s3, s8, 3
+/*000000000020*/ s_add_u32       s0, s3, s0
+/*000000000024*/ s_lshl_b32      s3, s9, 3
+/*000000000028*/ v_add_u32       v0, vcc, s0, v0
+/*00000000002c*/ s_add_u32       s0, s3, s2
+/*000000000030*/ s_waitcnt       lgkmcnt(0)
+/*000000000034*/ s_bfe_u32       s1, s1, 0x20010
+/*00000000003c*/ v_add_u32       v2, vcc, s0, v1
+/*000000000040*/ v_mov_b32       v1, 0
+/*000000000044*/ v_lshlrev_b64   v[0:1], 2, v[0:1]
+/*00000000004c*/ v_sub_u32       v2, vcc, s1, v2
+/*000000000050*/ v_add_u32       v0, vcc, s4, v0
+/*000000000054*/ v_mov_b32       v3, s5
+/*000000000058*/ v_addc_u32      v1, vcc, v3, v1, vcc
+/*00000000005c*/ flat_store_dword v[0:1], v2
+/*000000000064*/ s_endpgm
