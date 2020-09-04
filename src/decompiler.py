@@ -86,6 +86,10 @@ class Decompiler:
             "v14": 0,
             "v15": 0,
             "v16": 0,
+            "v17": 0,
+            "v18": 0,
+            "v19": 0,
+            "v20": 0,
             "pc": 0,
             "scc": 0,
             "vcc": 0,
@@ -1060,6 +1064,38 @@ class Decompiler:
             return output_string
             # self.output_file.write("*(uint*)(" + vaddr + " + " + inst_offset + ") = " + vdata + "\n")  # нужен ли номер...
 
+        elif suffix == "dwordx2":
+            vaddr = instruction[1]
+            vdata = instruction[2]
+            inst_offset = "0" if len(instruction) < 4 else instruction[3]
+            first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
+                = node.state.find_first_last_num_to_from(vaddr, vdata)
+            if flag_of_status:
+                to_now = name_of_register + str(first_to + 1)
+                node.state.registers[to_registers] = \
+                    Register(node.state.registers[from_registers].val, node.state.registers[from_registers].type,
+                             Integrity.low_part)
+                # node.state.make_version(self.versions, to_registers)
+                node.state.registers[to_registers].version = \
+                    node.parent[0].state.registers[to_registers].version
+                node.state.registers[to_registers].type_of_data = suffix
+                second_from = name_of_from + str(first_from + 1)
+                node.state.registers[to_now] = \
+                    Register(node.state.registers[second_from].val, node.state.registers[second_from].type,
+                             Integrity.high_part)
+                # node.state.make_version(self.versions, to_now)
+                if node.parent[0].state.registers[to_now] is not None:
+                    node.state.registers[to_now].version = node.parent[0].state.registers[to_now].version
+                node.state.registers[to_now].type_of_data = suffix
+                return node
+            else:
+                var = node.parent[0].state.registers[to_registers].val
+                if node.state.registers.get(from_registers):
+                    output_string = var + " = " + node.state.registers[from_registers].val
+                else:
+                    output_string = var + " = " + self.initial_state.registers[from_registers].val
+            return output_string
+
         elif suffix == "dwordx4":
             vaddr = instruction[1]
             vdata = instruction[2]
@@ -1150,16 +1186,35 @@ class Decompiler:
             # self.output_file.write("scc = " + temp + " >> 32\n")
             # self.number_of_temp += 1
 
-    def s_addc(self, instruction, suffix):
+    def s_addc(self, node, instruction, flag_of_status, suffix, output_string):
         if suffix == 'u32':
             sdst = instruction[1]
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
-            temp = " temp" + str(self.number_of_temp)
-            self.output_file.write("ulong " + temp + " = (ulong)" + ssrc0 + " + (ulong)" + ssrc1 + " scc\n")
-            self.output_file.write(sdst + " = " + temp + "\n")
-            self.output_file.write("scc = " + temp + " >> 32\n")
-            self.number_of_temp += 1
+            new_val, ssrc0_reg, ssrc1_reg = self.make_op(node, ssrc0, ssrc1, " + ")  # may be this should be (ulong)
+            if flag_of_status:
+                if ssrc0_reg and ssrc1_reg:
+                    node.state.registers[sdst] = \
+                        Register(new_val, Type.unknown, Integrity.integer)
+                else:
+                    type_reg = Type.int32
+                    if ssrc0_reg:
+                        type_reg = node.state.registers[ssrc0].type
+                    if ssrc1_reg:
+                        type_reg = node.state.registers[ssrc1].type
+                    node.state.registers[sdst] = \
+                        Register(new_val, type_reg, Integrity.integer)
+                node.state.make_version(self.versions, sdst)
+                if sdst in [ssrc0, ssrc1]:
+                    node.state.registers[sdst].make_prev()
+                node.state.registers[sdst].type_of_data = suffix
+                return node
+            return output_string
+            # temp = " temp" + str(self.number_of_temp)
+            # self.output_file.write("ulong " + temp + " = (ulong)" + ssrc0 + " + (ulong)" + ssrc1 + " scc\n")
+            # self.output_file.write(sdst + " = " + temp + "\n")
+            # self.output_file.write("scc = " + temp + " >> 32\n")
+            # self.number_of_temp += 1
 
     def s_and(self, node, instruction, flag_of_status, suffix, output_string):
         if suffix == 'b32' or suffix == 'b64':
@@ -1230,8 +1285,16 @@ class Decompiler:
                 if ssrc1 == "0x20010":
                     node.state.registers[sdst] = Register("get_work_dim()", Type.work_dim, Integrity.integer)
                 else:
-                    node.state.registers[sdst].val = "get_local_size(1)"
+                    node.state.registers[sdst].val = "get_local_size(1)" # I think that it not all true
                 node.state.make_version(self.versions, sdst)
+                return node
+            return output_string
+
+        if suffix == "i32":
+            sdst = instruction[1]
+            ssrc0 = instruction[2]
+            ssrc1 = instruction[3]
+            if flag_of_status:
                 return node
             return output_string
             # shift = "shift" + str(self.number_of_shift)
@@ -1410,7 +1473,7 @@ class Decompiler:
             # self.output_file.write(tab + sdata + " = *(uint*)(smem + i * 4 + (" + offset + " & ~3))\n")
 
     def s_lshl(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == 'b32' or suffix == 'b64':
+        if suffix == 'b32':
             sdst = instruction[1]
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
@@ -1439,6 +1502,31 @@ class Decompiler:
             # self.output_file.write(sdst + " = " + node.state.registers[sdst].val + "\n")
             # self.output_file.write("scc = " + sdst + " != 0\n")
             # self.output_file.write(sdst + " = " + ssrc0 + " << (" + ssrc1 + " & " + str(int(suffix[1:]) - 1) + ")\n")
+        if suffix == 'b64':
+            sdst = instruction[1]
+            ssrc0 = instruction[2]
+            ssrc1 = instruction[3]
+            if flag_of_status:
+                first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
+                    = node.state.find_first_last_num_to_from(sdst, ssrc0)
+                from_registers1 = name_of_from + str(first_from + 1)
+                to_registers1 = name_of_register + str(first_to + 1)
+                new_val0, ssrc0_flag0, ssrc1_flag0 = self.make_op(node, from_registers, str(pow(2, int(ssrc1))), " * ")
+                new_val1, ssrc0_flag1, ssrc1_flag1 = self.make_op(node, from_registers1, str(pow(2, int(ssrc1))), " * ")
+                node.state.registers[to_registers] = \
+                    Register(new_val0, node.state.registers[from_registers].type, Integrity.low_part)
+                node.state.registers[to_registers1] = \
+                    Register(new_val1, node.state.registers[from_registers1].type, Integrity.high_part)
+                node.state.make_version(self.versions, to_registers)
+                node.state.registers[to_registers].type_of_data = suffix
+                if to_registers in [from_registers, ssrc1]:
+                    node.state.registers[to_registers].make_prev()
+                node.state.make_version(self.versions, to_registers1)
+                node.state.registers[to_registers1].type_of_data = suffix
+                if to_registers1 in [from_registers1, ssrc1]:
+                    node.state.registers[to_registers1].make_prev()
+                return node
+            return output_string
 
     def s_lshr(self, node, instruction, flag_of_status, suffix, output_string):
         sdst = instruction[1]
@@ -1471,7 +1559,8 @@ class Decompiler:
             ssrc0 = instruction[2]
             if flag_of_status:
                 if node.state.registers.get(ssrc0) is not None:
-                    node.state.registers[sdst] = Register(ssrc0, node.state.registers[ssrc0].type, Integrity.integer)
+                    node.state.registers[sdst] = \
+                        Register(node.state.registers[ssrc0].val, node.state.registers[ssrc0].type, Integrity.integer)
                 else:
                     node.state.registers[sdst] = Register(ssrc0, Type.int32, Integrity.integer)
                 if self.versions.get(sdst) is None:
@@ -1482,11 +1571,19 @@ class Decompiler:
             return output_string
             # self.output_file.write(sdst + " = " + ssrc0 + "\n")
 
-    def s_movk(self, instruction, suffix):
+    def s_movk(self, node, instruction, flag_of_status, suffix, output_string):
         if suffix == 'i32':
             sdst = instruction[1]
             simm16 = instruction[2]
-            self.output_file.write(sdst + " = " + simm16 + "\n")
+            if flag_of_status:
+                node.state.registers[sdst] = Register(simm16, Type.unknown, Integrity.integer)  #  may be here can be not  only value
+                if self.versions.get(sdst) is None:
+                    self.versions[sdst] = 0
+                node.state.make_version(self.versions, sdst)
+                node.state.registers[sdst].type_of_data = suffix
+                return node
+            return output_string
+            # self.output_file.write(sdst + " = " + simm16 + "\n")
 
     def s_mul(self, node, instruction, flag_of_status, suffix, output_string):
         if suffix == 'i32':
@@ -1658,6 +1755,12 @@ class Decompiler:
                             new_val = node.state.registers[src0].val + "[" + new_value + "]"
                             node.state.registers[vdst] = \
                                 Register(new_val, Type.param_global_id_x, new_integrity)
+                        elif self.type_params.get("*" + node.state.registers[src0].val) == "long" \
+                                or self.type_params.get("*" + node.state.registers[src0].val) == "ulong":
+                            new_value, src0_flaf, src1_flag = self.make_op(node, src1, "8", " / ")
+                            new_val = node.state.registers[src0].val + "[" + new_value + "]"
+                            node.state.registers[vdst] = \
+                                Register(new_val, Type.param_global_id_x, new_integrity)
                         #  make something same fo another types
 
                     elif node.state.registers[src0].type == Type.work_group_id_x_local_size and \
@@ -1788,14 +1891,14 @@ class Decompiler:
             self.output_file.write(
                 vdst + " = (((ulong)" + src0 + ") << 32) | " + src1 + ") >> ((" + src2 + " & 3) * 8)\n")
 
-    def v_and(self, node, instruction, flag_of_status, suffix, output_string):
+    def v_and(self, node, instruction, flag_of_status, suffix, output_string):  # fixed by examples, not sure
         if suffix == "b32":
             vdst = instruction[1]
             src0 = instruction[2]
             src1 = instruction[3]
             if flag_of_status:
                 new_integrity = node.state.registers[src1].integrity
-                new_val, src0_flag, src1_flag = self.make_op(node, src1, str(pow(2, int(src0))), " % ")
+                new_val, src0_flag, src1_flag = self.make_op(node, src1, src0[1:], " * ")
                 # check is this expression correctly, may be add to make_op
                 node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
                 node.state.make_version(self.versions, vdst)
@@ -2070,44 +2173,51 @@ class Decompiler:
             if flag_of_status:
                 to_registers_1 = name_of_register + str(last_to)
                 from_registers_1 = name_of_from + str(first_from + 1)
-                new_val, src0_flag, src1_flag = self.make_op(node, from_registers, str(pow(2, int(src0))), " * ")
-                if node.state.registers[from_registers].type in [Type.global_id_x, Type.global_id_y,
-                                                                 Type.global_id_z] \
-                        and node.state.registers[name_of_register + str(first_from + 1)].val == "0":
-                    # node.state.registers[to_registers] = \
-                    #     Register(from_registers + " * " + str(pow(2, int(src0))), Type.global_id_x, Integrity.low_part)
-                    # node.state.registers[to_registers_1] = \
-                    #     Register(from_registers_1 + " * " + str(pow(2, int(src0))), Type.global_id_x, Integrity.high_part)
-                    node.state.registers[to_registers] = \
-                        Register(new_val, node.state.registers[from_registers].type, Integrity.low_part)
-                    if node.parent[0].state.registers.get(to_registers) is not None:
-                        node.state.registers[to_registers].version = \
-                            node.parent[0].state.registers[to_registers].version
+                new_val, src1_flag, src0_flag = self.make_op(node, from_registers, str(pow(2, int(src0))), " * ")
+                if src0_flag and src1_flag:
+                    if node.state.registers[from_registers].type \
+                            in [Type.global_id_x, Type.global_id_y, Type.global_id_z] \
+                            and node.state.registers[name_of_register + str(first_from + 1)].val == "0":
+                        node.state.registers[to_registers] = \
+                            Register(new_val, node.state.registers[from_registers].type, Integrity.low_part)
+                        if node.parent[0].state.registers.get(to_registers) is not None:
+                            node.state.registers[to_registers].version = \
+                                node.parent[0].state.registers[to_registers].version
+                        else:
+                            node.state.make_version(self.versions, to_registers)
+                        node.state.registers[to_registers].type_of_data = suffix
+                        # node.state.make_version(self.versions, to_registers)
+                        # if to_registers == from_registers:
+                        #     node.state.registers[to_registers].make_prev()
+                        node.state.registers[to_registers_1] = \
+                            Register(node.state.registers[from_registers_1].val,
+                                     node.state.registers[from_registers].type,
+                                     Integrity.high_part)
+                        if node.parent[0].state.registers.get(to_registers_1) is not None:
+                            node.state.registers[to_registers_1].version = \
+                                node.parent[0].state.registers[to_registers_1].version
+                        else:
+                            node.state.make_version(self.versions, to_registers_1)
+                        node.state.registers[to_registers_1].type_of_data = suffix
+                        # node.state.make_version(self.versions, to_registers_1)
+                        # if to_registers_1 == from_registers_1:
+                        #     node.state.registers[to_registers_1].make_prev()
                     else:
+                        node.state.registers[to_registers] = node.state.registers[from_registers]
                         node.state.make_version(self.versions, to_registers)
-                    node.state.registers[to_registers].type_of_data = suffix
-                    # node.state.make_version(self.versions, to_registers)
-                    # if to_registers == from_registers:
-                    #     node.state.registers[to_registers].make_prev()
-                    node.state.registers[to_registers_1] = \
-                        Register(node.state.registers[from_registers_1].val,
-                                 node.state.registers[from_registers].type,
-                                 Integrity.high_part)
-                    if node.parent[0].state.registers.get(to_registers_1) is not None:
-                        node.state.registers[to_registers_1].version = \
-                            node.parent[0].state.registers[to_registers_1].version
-                    else:
+                        node.state.registers[to_registers_1] = node.state.registers[from_registers_1]
                         node.state.make_version(self.versions, to_registers_1)
-                    node.state.registers[to_registers_1].type_of_data = suffix
-                    # node.state.make_version(self.versions, to_registers_1)
-                    # if to_registers_1 == from_registers_1:
-                    #     node.state.registers[to_registers_1].make_prev()
-                else:
-                    node.state.registers[to_registers] = node.state.registers[from_registers]
+                    # нет описания под y и z
+                else: #  should check
+                    type_reg = Type.int32
+                    if src0_flag:
+                        type_reg = node.state.registers[src0].type
+                    if src1_flag:
+                        type_reg = node.state.registers[from_registers].type
+                    node.state.registers[to_registers] = Register(new_val, type_reg, Integrity.low_part)
                     node.state.make_version(self.versions, to_registers)
-                    node.state.registers[to_registers_1] = node.state.registers[from_registers_1]
+                    node.state.registers[to_registers_1] = Register(new_val, type_reg, Integrity.high_part)
                     node.state.make_version(self.versions, to_registers_1)
-                # нет описания под y и z
                 return node
             return output_string
             # self.output_file.write(vdst + " = " + node.state.registers[to_registers].val + " + " + node.state.registers[name_of_register + str(last_to)].val + "\n") #понять, что хочу выводить
@@ -2193,8 +2303,12 @@ class Decompiler:
             src1 = instruction[4]
             if flag_of_status:
                 new_val, src0_reg, src1_reg = self.make_op(node, src0, src1, " - ")
-                new_integrity = node.state.registers[src1].integrity
-                node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
+                type_reg = Type.int32
+                if src0_reg:
+                    type_reg = node.state.registers[src0].integrity
+                elif src1_reg:
+                    type_reg = node.state.registers[src1].integrity
+                node.state.registers[vdst] = Register(new_val, Type.unknown, type_reg)
                 node.state.make_version(self.versions, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
@@ -2293,7 +2407,7 @@ class Decompiler:
                 return self.s_add(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'addc':
-                return self.s_addc(instruction, suffix)
+                return self.s_addc(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'and':
                 return self.s_and(node, instruction, flag_of_status, suffix, output_string)
@@ -2359,7 +2473,7 @@ class Decompiler:
                 return self.s_mov(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'movk':
-                return self.s_movk(instruction, suffix)
+                return self.s_movk(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'mul':
                 return self.s_mul(node, instruction, flag_of_status, suffix, output_string)
@@ -2386,7 +2500,7 @@ class Decompiler:
                 return self.s_sub(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'subb':
-                return self.s_subb(node, instruction, flag_of_status, suffix, output_string)
+                return self.s_sub(node, instruction, flag_of_status, suffix, output_string)  # probably it's not correct
 
             elif root == 'swappc':
                 return self.s_swappc(instruction, suffix)
@@ -2477,6 +2591,9 @@ class Decompiler:
             elif root == "mul":
                 return self.v_mul(node, instruction, flag_of_status, suffix, output_string)
 
+            elif root == "mul_hi":
+                return self.v_mul_lo(node, instruction, flag_of_status, suffix, output_string)  # I'm not sure
+
             elif root == "mul_lo":
                 return self.v_mul_lo(node, instruction, flag_of_status, suffix, output_string)
 
@@ -2485,6 +2602,9 @@ class Decompiler:
 
             elif root == "sub":
                 return self.v_sub(node, instruction, flag_of_status, suffix, output_string)
+
+            elif root == "subb":
+                return self.v_sub(node, instruction, flag_of_status, suffix, output_string)  # probably it's not correct
 
             elif root == "subrev":
                 return self.v_subrev(node, instruction, flag_of_status, suffix, output_string)
