@@ -1014,99 +1014,98 @@ class Decompiler:
             self.output_file.write(vdst + "[3] = *(uint*)(" + vm + " + 12)\n")
             self.number_of_vm += 1
 
-    def flat_store(self, node, instruction, flag_of_status, suffix):
-        if suffix == "dword":
-            vaddr = instruction[1]
-            vdata = instruction[2]
-            inst_offset = "0" if len(instruction) < 4 else instruction[3]
-            first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
-                = node.state.find_first_last_num_to_from(vaddr, vdata)
-            if flag_of_status:
-                if first_to == last_to:
+    def flat_store_dword(self, node, instruction, flag_of_status, suffix):
+        vaddr = instruction[1]
+        vdata = instruction[2]
+        inst_offset = "0" if len(instruction) < 4 else instruction[3]
+        first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
+            = node.state.find_first_last_num_to_from(vaddr, vdata)
+        if flag_of_status:
+            if first_to == last_to:
+                node.state.registers[to_registers] = \
+                    Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
+                             Integrity.integer)
+                # node.state.make_version(self.versions, to_registers)
+                node.state.registers[to_registers].version = node.parent[0].state.registers[to_registers].version
+                node.state.registers[to_registers].type_of_data = suffix
+            else:
+                to_now = name_of_register + str(first_to + 1)
+                if node.state.registers.get(vdata):
                     node.state.registers[to_registers] = \
                         Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
-                                 Integrity.integer)
+                                 Integrity.low_part)
                     # node.state.make_version(self.versions, to_registers)
-                    node.state.registers[to_registers].version = node.parent[0].state.registers[to_registers].version
+                    node.state.registers[to_registers].version = \
+                        node.parent[0].state.registers[to_registers].version
                     node.state.registers[to_registers].type_of_data = suffix
+                    node.state.registers[to_now] = \
+                        Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
+                                 Integrity.high_part)
+                    # node.state.make_version(self.versions, to_now)
+                    if node.parent[0].state.registers[to_now] is not None:
+                        node.state.registers[to_now].version = node.parent[0].state.registers[to_now].version
+                    node.state.registers[to_now].type_of_data = suffix
                 else:
-                    to_now = name_of_register + str(first_to + 1)
-                    if node.state.registers.get(vdata):
-                        node.state.registers[to_registers] = \
-                            Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
-                                     Integrity.low_part)
-                        # node.state.make_version(self.versions, to_registers)
-                        node.state.registers[to_registers].version = \
-                            node.parent[0].state.registers[to_registers].version
-                        node.state.registers[to_registers].type_of_data = suffix
-                        node.state.registers[to_now] = \
-                            Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
-                                     Integrity.high_part)
-                        # node.state.make_version(self.versions, to_now)
-                        if node.parent[0].state.registers[to_now] is not None:
-                            node.state.registers[to_now].version = node.parent[0].state.registers[to_now].version
-                        node.state.registers[to_now].type_of_data = suffix
-                    else:
-                        return node
-                return node
-            if inst_offset != "0":
-                output_string = "*(uint*)(" + node.parent[0].state.registers[to_registers].val \
-                                + " + " + inst_offset + ") = " \
-                                + node.state.registers[name_of_register + str(first_to)].val
+                    return node
+            return node
+        if inst_offset != "0":
+            output_string = "*(uint*)(" + node.parent[0].state.registers[to_registers].val \
+                            + " + " + inst_offset + ") = " \
+                            + node.state.registers[name_of_register + str(first_to)].val
+        else:
+            var = node.parent[0].state.registers[to_registers].val
+            # if node.state.registers[to_registers].val.find("var") == -1 \
+            # else node.state.registers[to_registers].val
+            if node.state.registers.get(from_registers):
+                output_string = var + " = " + node.state.registers[from_registers].val
             else:
-                var = node.parent[0].state.registers[to_registers].val
-                # if node.state.registers[to_registers].val.find("var") == -1 \
-                # else node.state.registers[to_registers].val
-                if node.state.registers.get(from_registers):
-                    output_string = var + " = " + node.state.registers[from_registers].val
-                else:
-                    output_string = var + " = " + self.initial_state.registers[from_registers].val
-            return output_string
-            # self.output_file.write("*(uint*)(" + vaddr + " + " + inst_offset + ") = " + vdata + "\n")  # нужен ли номер...
+                output_string = var + " = " + self.initial_state.registers[from_registers].val
+        return output_string
+        # self.output_file.write("*(uint*)(" + vaddr + " + " + inst_offset + ") = " + vdata + "\n")  # нужен ли номер...
 
-        elif suffix == "dwordx2":
-            vaddr = instruction[1]
-            vdata = instruction[2]
-            inst_offset = "0" if len(instruction) < 4 else instruction[3]
-            first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
-                = node.state.find_first_last_num_to_from(vaddr, vdata)
-            if flag_of_status:
-                to_now = name_of_register + str(first_to + 1)
-                node.state.registers[to_registers] = \
-                    Register(node.state.registers[from_registers].val, node.state.registers[from_registers].type,
-                             Integrity.low_part)
-                # node.state.make_version(self.versions, to_registers)
-                node.state.registers[to_registers].version = \
-                    node.parent[0].state.registers[to_registers].version
-                node.state.registers[to_registers].type_of_data = suffix
-                second_from = name_of_from + str(first_from + 1)
-                node.state.registers[to_now] = \
-                    Register(node.state.registers[second_from].val, node.state.registers[second_from].type,
-                             Integrity.high_part)
-                # node.state.make_version(self.versions, to_now)
-                if node.parent[0].state.registers[to_now] is not None:
-                    node.state.registers[to_now].version = node.parent[0].state.registers[to_now].version
-                node.state.registers[to_now].type_of_data = suffix
-                return node
+    def flat_store_dwordx2(self, node, instruction, flag_of_status):
+        vaddr = instruction[1]
+        vdata = instruction[2]
+        inst_offset = "0" if len(instruction) < 4 else instruction[3]
+        first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
+            = node.state.find_first_last_num_to_from(vaddr, vdata)
+        if flag_of_status:
+            to_now = name_of_register + str(first_to + 1)
+            node.state.registers[to_registers] = \
+                Register(node.state.registers[from_registers].val, node.state.registers[from_registers].type,
+                         Integrity.low_part)
+            # node.state.make_version(self.versions, to_registers)
+            node.state.registers[to_registers].version = \
+                node.parent[0].state.registers[to_registers].version
+            node.state.registers[to_registers].type_of_data = "dwordx2"
+            second_from = name_of_from + str(first_from + 1)
+            node.state.registers[to_now] = \
+                Register(node.state.registers[second_from].val, node.state.registers[second_from].type,
+                         Integrity.high_part)
+            # node.state.make_version(self.versions, to_now)
+            if node.parent[0].state.registers[to_now] is not None:
+                node.state.registers[to_now].version = node.parent[0].state.registers[to_now].version
+            node.state.registers[to_now].type_of_data = "dwordx2"
+            return node
+        else:
+            var = node.parent[0].state.registers[to_registers].val
+            if node.state.registers.get(from_registers):
+                output_string = var + " = " + node.state.registers[from_registers].val
             else:
-                var = node.parent[0].state.registers[to_registers].val
-                if node.state.registers.get(from_registers):
-                    output_string = var + " = " + node.state.registers[from_registers].val
-                else:
-                    output_string = var + " = " + self.initial_state.registers[from_registers].val
-            return output_string
+                output_string = var + " = " + self.initial_state.registers[from_registers].val
+        return output_string
 
-        elif suffix == "dwordx4":
-            vaddr = instruction[1]
-            vdata = instruction[2]
-            inst_offset = instruction[3]
-            vm = "vm" + str(self.number_of_vm)
-            self.output_file.write("short* " + vm + " = (" + vaddr + " + " + inst_offset + ")\n")
-            self.output_file.write("*(uint*)(" + vm + ") = " + vdata + "[0]\n")
-            self.output_file.write("*(uint*)(" + vm + " + 4) = " + vdata + "[1]\n")
-            self.output_file.write("*(uint*)(" + vm + " + 8) = " + vdata + "[2]\n")
-            self.output_file.write("*(uint*)(" + vm + " + 12) = " + vdata + "[3]\n")
-            self.number_of_vm += 1
+    def flat_store_dwordx4(self, node, instruction, flag_of_status):
+        vaddr = instruction[1]
+        vdata = instruction[2]
+        inst_offset = instruction[3]
+        vm = "vm" + str(self.number_of_vm)
+        self.output_file.write("short* " + vm + " = (" + vaddr + " + " + inst_offset + ")\n")
+        self.output_file.write("*(uint*)(" + vm + ") = " + vdata + "[0]\n")
+        self.output_file.write("*(uint*)(" + vm + " + 4) = " + vdata + "[1]\n")
+        self.output_file.write("*(uint*)(" + vm + " + 8) = " + vdata + "[2]\n")
+        self.output_file.write("*(uint*)(" + vm + " + 12) = " + vdata + "[3]\n")
+        self.number_of_vm += 1
 
     def global_load(self, instruction, suffix):
         if suffix == "dword":
@@ -1761,6 +1760,12 @@ class Decompiler:
                             new_val = node.state.registers[src0].val + "[" + new_value + "]"
                             node.state.registers[vdst] = \
                                 Register(new_val, Type.param_global_id_x, new_integrity)
+                        elif self.type_params.get("*" + node.state.registers[src0].val) == "char" \
+                                or self.type_params.get("*" + node.state.registers[src0].val) == "uchar":
+                            # new_value, src0_flaf, src1_flag = self.make_op(node, src1, "8", " / ")
+                            new_val = node.state.registers[src0].val + "[" + node.state.registers[src1].val + "]"
+                            node.state.registers[vdst] = \
+                                Register(new_val, Type.param_global_id_x, new_integrity)
                         #  make something same fo another types
 
                     elif node.state.registers[src0].type == Type.work_group_id_x_local_size and \
@@ -2359,7 +2364,7 @@ class Decompiler:
         if len(parts_of_operation) >= 3:
             for part in parts_of_operation[2:]:
                 if part in ["b32", 'b64', "u32", "u64", "i32", "i64", "dwordx4", "dwordx2", "dword", "f32",
-                            "f64", "i32", "i24"]:  # дописать!
+                            "f64", "i32", "i24", "byte"]:  # дописать!
                     if suffix != "":
                         suffix = suffix + "_" + part
                     else:
@@ -2393,7 +2398,12 @@ class Decompiler:
                 return self.flat_load(node, instruction, flag_of_status, suffix)
 
             elif root == "store":
-                return self.flat_store(node, instruction, flag_of_status, suffix)
+                if suffix == "dword" or suffix == "byte":
+                    return self.flat_store_dword(node, instruction, flag_of_status, suffix)
+                elif suffix == "dwordx2":
+                    return self.flat_store_dwordx2(node, instruction, flag_of_status)
+                elif suffix == "dwordx4":
+                    return self.flat_store_dwordx4(node, instruction, flag_of_status)
 
         elif prefix == 'global':  # offset - опциональная часть?
             if root == "load":
