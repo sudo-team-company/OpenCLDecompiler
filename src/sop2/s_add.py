@@ -47,8 +47,3 @@ class SAdd(BaseInstruction):
                 node.state.registers[sdst].type_of_data = suffix
                 return node
             return output_string
-            # temp = "temp" + str(self.number_of_temp)
-            # self.output_file.write("ulong " + temp + " = " + new_val + "\n")
-            # self.output_file.write(sdst + " = " + temp + "\n")
-            # self.output_file.write("scc = " + temp + " >> 32\n")
-            # self.number_of_temp += 1
