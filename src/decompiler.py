@@ -7,6 +7,7 @@ from register import Register
 from type_of_node import TypeNode
 from type_of_reg import Type
 from decompiler_data import DecompilerData
+from sop2.s_add import SAdd
 
 
 class Decompiler:
@@ -2328,7 +2329,8 @@ class Decompiler:
 
         elif prefix == 's':
             if root == 'add':
-                return self.s_add(node, instruction, flag_of_status, suffix, output_string)
+                #return self.s_add(node, instruction, flag_of_status, suffix, output_string)
+                return SAdd().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'addc':
                 return self.s_addc(node, instruction, flag_of_status, suffix, output_string)

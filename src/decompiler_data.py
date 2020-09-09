@@ -224,3 +224,26 @@ class DecompilerData:
         self.lds_vars = {}
         self.lds_var_number = 0
         self.num_of_var = 0
+
+    def make_op(self, node, register0, register1, operation):
+        new_val = ""
+        new_val0 = ""
+        new_val1 = ""
+        register0_flag = True
+        register1_flag = True
+        if register0.find("s") != -1 or register0.find("v") != -1:
+            new_val0 = node.state.registers[register0].val
+        else:
+            new_val0 = register0
+            register0_flag = False
+        if register1.find("s") != -1 or register1.find("v") != -1:
+            new_val1 = node.state.registers[register1].val
+        else:
+            new_val1 = register1
+            register1_flag = False
+        if new_val0.find("-") != -1 or new_val0.find("+") != -1 or new_val0.find("*") != -1 or new_val0.find("/") != -1:
+            new_val0 = "(" + new_val0 + ")"
+        if new_val1.find("-") != -1 or new_val1.find("+") != -1 or new_val1.find("*") != -1 or new_val1.find("/") != -1:
+            new_val1 = "(" + new_val1 + ")"
+        new_val = new_val0 + operation + new_val1
+        return new_val, register0_flag, register1_flag
