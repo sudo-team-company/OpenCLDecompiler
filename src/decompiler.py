@@ -7,14 +7,88 @@ from register import Register
 from type_of_node import TypeNode
 from type_of_reg import Type
 from decompiler_data import DecompilerData
+from ds.ds_add import DsAdd
+from ds.ds_bpermute import DsBpermute
+from ds.ds_read import DsRead
+from ds.ds_read2 import DsRead2
+from ds.ds_write import DsWrite
+from ds.ds_write2 import DsWrite2
+from flat.flat_atomic_add import FlatAtomicAdd
+from flat.flat_load import FlatLoad
+from flat.flat_store_dword import FlatStoreDword
+from flat.flat_store_dwordx2 import FlatStoreDwordx2
+from flat.flat_store_dwordx4 import FlatStoreDwordx4
+from flat.global_load import GlobalLoad
+from flat.global_store import GlobalStore
+from smem.s_load import SLoad
+from sop1.s_and_saveexec import SAndSaveexec
+from sop1.s_getpc import SGetpc
+from sop1.s_mov import SMov
+from sop1.s_not import SNot
+from sop1.s_setpc import SSetpc
+from sop1.s_swappc import SSwappc
 from sop2.s_add import SAdd
+from sop2.s_addc import SAddc
+from sop2.s_and import SAnd
+from sop2.s_andn2 import SAndn2
+from sop2.s_ashr import SAshr
+from sop2.s_bfe import SBfe
+from sop2.s_cselect import SCselect
+from sop2.s_lshl import SLshl
+from sop2.s_lshr import SLshr
+from sop2.s_mul import SMul
+from sop2.s_sub import SSub
+from sopc.s_cmp_eq import SCmpEq
+from sopc.s_cmp_ge import SCmpGe
+from sopc.s_cmp_lt import SCmpLt
+from sopc.s_set_gpr_idx_on import SSetGprIdxOn
+from sopk.s_movk import SMovk
+from sopk.s_mulk import SMulk
+from sopk.s_setreg import SSetreg
+from sopp.s_barrier import SBarrier
+from sopp.s_branch import SBranch
+from sopp.s_cbranch_execz import SCbranchExecz
+from sopp.s_cbranch_scc0 import SCbranchScc0
+from sopp.s_cbranch_scc1 import SCbranchScc1
+from sopp.s_cbranch_vccnz import SCbranchVccnz
+from sopp.s_endpgm import SEndpgm
+from sopp.s_set_gpr_idx_off import SSetGprIdxOff
+from sopp.s_waitcnt import SWaitcnt
+from vop1.v_cvt import VCvt
+from vop1.v_mov import VMov
+from vop2.v_add import VAdd
+from vop2.v_addc import VAddc
+from vop2.v_and import VAnd
+from vop2.v_ashrrev import VAshrrev
+from vop2.v_cndmask import VCndmask
+from vop2.v_lshlrev import VLshlrev
+from vop2.v_lshrrev import VLshrrev
+from vop2.v_min import VMin
+from vop2.v_mul_f32 import VMulF32
+from vop2.v_sub import VSub
+from vop2.v_subrev import VSubrev
+from vop3.v_alignbit import VAlignbit
+from vop3.v_alignbyte import VAlignbyte
+from vop3.v_and_or import VAndOr
+from vop3.v_bfi import VBfi
+from vop3.v_div_fixup import VDivFixup
+from vop3.v_fma import VFma
+from vop3.v_mul_f64 import VMulF64
+from vop3.v_mul_lo import VMulLo
+from vopc.v_cmp_eq import VCmpEq
+from vopc.v_cmp_ge import VCmpGe
+from vopc.v_cmp_gt import VCmpGt
+from vopc.v_cmp_lg import VCmpLg
+from vopc.v_cmp_lt import VCmpLt
+from vopc.v_cmpx_class import VCmpxClass
+from vopc.v_cmpx_eq import VCmpxEq
+from vopc.v_cmpx_le import VCmpxLe
 
 
 class Decompiler:
     def __init__(self, output_file):
         self.decompiler_data = DecompilerData.Instance()
         self.decompiler_data.reset(output_file)
-
 
     def process_config(self, set_of_config, name_of_program):
         dimensions = set_of_config[0][6:]
@@ -742,1517 +816,6 @@ class Decompiler:
                                                region.end.start.parent[0].state.registers[reg].val + ";\n")
             self.decompiler_data.output_file.write(indent + "}\n")
 
-    def ds_add(self, node, instruction, flag_of_status, suffix):
-        if suffix == "u32":
-            addr = instruction[1]
-            vdata0 = instruction[2]
-            offset = int(instruction[3][7:]) if len(instruction) == 4 else 0
-            name = self.decompiler_data.lds_vars[offset][0] + "[" + node.state.registers[addr].val + "]"
-            if flag_of_status:
-                node.state.registers[name].val = \
-                    node.state.registers[name].val + " + " + node.state.registers[vdata0].val
-                node.state.make_version(self.decompiler_data.versions, name)
-                node.state.registers[name].type_of_data = suffix
-                return node
-            output_string = name + " += " + node.state.registers[vdata0].val
-            return output_string
-
-    def ds_bpermute(self, suffix, instruction):
-        if suffix == "b32":
-            tab = "    "
-            tmp = "tmp" + str(self.decompiler_data.number_of_tmp)
-            dst = instruction[1]
-            addr = instruction[2]
-            src = instruction[3]
-            offset = instruction[4][7:]
-            self.decompiler_data.output_file.write("uint64 " + tmp + "\n")  # именно массив
-            self.decompiler_data.output_file.write("for (short i = 0; i < 64; i++)\n")
-            self.decompiler_data.output_file.write("{\n")
-            self.decompiler_data.output_file.write(tab + "uint lane_id = " + addr + "[(i + (" + offset + " >> 2)) & 63]\n")
-            self.decompiler_data.output_file.write(
-                tab + tmp + "[i] = exec & (1ULL << lane_id) != 0) ? " + src + "[lane_id] : 0\n")
-            self.decompiler_data.output_file.write("}\n")
-            self.decompiler_data.output_file.write("for (short i = 0; i < 64; i++)\n")
-            self.decompiler_data.output_file.write(tab + "if (exec & (1ULL << i) != 0)\n")
-            self.decompiler_data.output_file.write(tab + tab + dst + "[i] = " + tmp + "[i]\n")
-            self.decompiler_data.number_of_tmp += 1
-
-    def ds_read(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == "b32":
-            vdst = instruction[1]
-            addr = instruction[2]
-            offset = int(instruction[3][7:]) if len(instruction) == 4 else 0
-            name = self.decompiler_data.lds_vars[offset][0] + "[" + node.state.registers[addr].val + "]"
-            if flag_of_status:
-                node.state.registers[vdst] = Register(name, node.state.registers[name].type, Integrity.integer)
-                node.state.make_version(self.decompiler_data.versions, vdst)
-                node.state.registers[vdst].type_of_data = "u" + suffix[1:]
-                return node
-            return output_string
-            # self.output_file.write(vdst + " = *(uint)(ds + ((" + addr + " + " + offset + ") & ~3)\n")
-
-        elif suffix == "b64":
-            vdst = instruction[1]
-            addr = instruction[2]
-            offset = int(instruction[3][7:]) if len(instruction) == 4 else 0
-            # name = self.lds_vars[offset][0] + "[" + node.state.registers[addr].var + "]"
-            # if flag_of_status:
-            #     node.state.registers[vdst] = Register(name, node.state.registers[name].type, Integrity.integer)
-            #     node.state.make_version(self.versions, vdst)
-            #     node.state.registers[vdst].type_of_data = "u" + suffix[1:]
-            #     return node
-            # return output_string
-            # self.output_file.write(vdst + " = *(ulong)(ds + ((" + addr + " + " + offset + ") & ~7)\n")
-
-    def ds_read2(self, instruction, suffix):
-        if suffix == "b64":
-            v0 = "v0" + str(self.decompiler_data.number_of_v0)
-            v1 = "v1" + str(self.decompiler_data.number_of_v1)
-            vdst = instruction[1]
-            addr = instruction[2]
-            offset0 = instruction[3][8:]
-            offset1 = instruction[4][8:]
-            self.decompiler_data.output_file.write(
-                "ulong* " + v0 + " = (ulong*)(ds + (" + addr + " + " + offset0 + " * 8) & ~7)\n")
-            self.decompiler_data.output_file.write(
-                "ulong* " + v1 + " = (ulong*)(ds + (" + addr + " + " + offset1 + " * 8) & ~7)\n")
-            self.decompiler_data.output_file.write(vdst + " = *" + v0 + " | (ulonglong(*" + v1 + ") << 64)\n")  # uint128????
-            self.decompiler_data.number_of_v0 += 1
-            self.decompiler_data.number_of_v1 += 1
-
-    def ds_write(self, node, instruction, flag_of_status, suffix):
-        if suffix == "b32":
-            addr = instruction[1]
-            vdata0 = instruction[2]
-            offset = int(instruction[3][7:]) if len(instruction) == 4 else 0
-            if self.decompiler_data.lds_vars.get(offset) is None:
-                self.decompiler_data.lds_vars[offset] = ["lds" + str(self.decompiler_data.lds_var_number), "u" + suffix[1:]]
-                self.decompiler_data.lds_var_number += 1
-            name = self.decompiler_data.lds_vars[offset][0] + "[" + node.state.registers[addr].val + "]"
-            if flag_of_status:
-                node.state.registers[name] = \
-                    Register(node.state.registers[vdata0].val, node.state.registers[vdata0].type, Integrity.integer)
-                if self.decompiler_data.versions.get(name) is None:
-                    self.decompiler_data.versions[name] = 0
-                node.state.make_version(self.decompiler_data.versions, name)
-                node.state.registers[name].type_of_data = "u" + suffix[1:]
-                return node
-            output_string = name + " = " + node.state.registers[name].val
-            return output_string
-            # v = "v" + str(self.number_of_v)
-            # self.output_file.write("uint* " + v + "\n")
-            # self.output_file.write(v + " = (uint*)(ds + ((" + addr + " + " + offset + ") & ~3))\n")
-            # self.output_file.write("*" + v + " = " + vdata0 + "\n")
-            # self.number_of_v += 1
-
-        elif suffix == "b64":
-            v = "v" + str(self.decompiler_data.number_of_v)
-            addr = instruction[1]
-            vdata0 = instruction[2]
-            offset = instruction[3][7:]
-            self.decompiler_data.output_file.write("ulong* " + v + "\n")
-            self.decompiler_data.output_file.write(v + " = (ulong*)(ds + ((" + addr + " + " + offset + ") & ~3))\n")
-            self.decompiler_data.output_file.write("*" + v + " = " + vdata0 + "\n")
-            self.decompiler_data.number_of_v += 1
-
-    def ds_write2(self, instruction, suffix):
-        if suffix == "b64":
-            v0 = "v0" + str(self.decompiler_data.number_of_v0)
-            v1 = "v1" + str(self.decompiler_data.number_of_v1)
-            addr = instruction[1]
-            vdata0 = instruction[2]
-            vdata1 = instruction[3]
-            offset0 = instruction[4][8:]
-            offset1 = instruction[5][8:]
-            self.decompiler_data.output_file.write(
-                "ulong* " + v0 + " = (ulong*)(ds + (" + addr + " + " + offset0 + " * 8) & ~7)\n")
-            self.decompiler_data.output_file.write(
-                "ulong* " + v1 + " = (ulong*)(ds + (" + addr + " + " + offset1 + " * 8) & ~7)\n")
-            self.decompiler_data.output_file.write("*" + v0 + " = " + vdata0 + "\n")
-            self.decompiler_data.output_file.write("*" + v1 + " = " + vdata1 + "\n")
-            self.decompiler_data.number_of_v0 += 1
-            self.decompiler_data.number_of_v1 += 1
-
-    def flat_atomic_add(self, instruction):
-        vdst = instruction[1]
-        vaddr = instruction[2]
-        vdata = instruction[3]
-        vm = "vm" + str(self.decompiler_data.number_of_vm)
-        p = "p" + str(self.decompiler_data.number_of_p)
-        inst_offset = instruction[4]  # не очень понятно, должно ли это быть в виде INST_OFFSET:OFFSET
-        self.decompiler_data.output_file.write("uint* " + vm + " = (uint*)(" + vaddr + " + " + inst_offset + ")\n")
-        self.decompiler_data.output_file.write("uint " + p + " = *" + vm + "; *" + vm + " = *" + vm + " + " + vdata + "; "
-                               + vdst + " = (glc) ? " + p + " : " + vdst + '\n')
-        self.decompiler_data.number_of_vm += 1
-        self.decompiler_data.number_of_p += 1
-
-    def flat_load(self, node, instruction, flag_of_status, suffix):
-        if suffix == "dword":
-            vdst = instruction[1]
-            vaddr = instruction[2]
-            inst_offset = instruction[3] if len(instruction) > 3 else ""
-            variable = "var" + str(self.decompiler_data.num_of_var)
-            first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
-                = node.state.find_first_last_num_to_from(vdst, vaddr)
-            if flag_of_status:
-                if inst_offset == "":
-                    if first_to == last_to:
-                        # node.state.registers[to_registers] = \
-                        #     Register(node.state.registers[from_registers].val,
-                        #              node.state.registers[from_registers].type,
-                        #              Integrity.integer)
-                        node.state.registers[to_registers] = Register(variable, Type.program_param,
-                                                                      Integrity.integer)
-                        node.state.make_version(self.decompiler_data.versions, to_registers)
-                        node.state.registers[to_registers].type_of_data = node.state.registers[
-                            from_registers].type_of_data
-                        #
-                        node.state.registers[to_registers].val = variable
-                        self.decompiler_data.num_of_var += 1
-                        self.decompiler_data.variables[node.state.registers[to_registers].version] = variable
-                        self.decompiler_data.names_of_vars[variable] = node.state.registers[from_registers].type_of_data
-                return node
-            output_string = node.state.registers[to_registers].val + " = " + node.state.registers[
-                from_registers].val
-            return output_string
-            # self.output_file.write(vdst + " = *(uint)(" + vaddr + " + " + inst_offset + "\n")
-
-        elif suffix == "dwordx4":
-            vdst = instruction[1]
-            vaddr = instruction[2]
-            inst_offset = instruction[3]
-            vm = "vm" + str(self.decompiler_data.number_of_vm)
-            self.decompiler_data.output_file.write("short* " + vm + " = (" + vaddr + " + " + inst_offset + ")\n")
-            self.decompiler_data.output_file.write(vdst + "[0] = *(uint*)" + vm + "\n")
-            self.decompiler_data.output_file.write(vdst + "[1] = *(uint*)(" + vm + " + 4)\n")
-            self.decompiler_data.output_file.write(vdst + "[2] = *(uint*)(" + vm + " + 8)\n")
-            self.decompiler_data.output_file.write(vdst + "[3] = *(uint*)(" + vm + " + 12)\n")
-            self.decompiler_data.number_of_vm += 1
-
-    def flat_store_dword(self, node, instruction, flag_of_status, suffix):
-        vaddr = instruction[1]
-        vdata = instruction[2]
-        inst_offset = "0" if len(instruction) < 4 else instruction[3]
-        first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
-            = node.state.find_first_last_num_to_from(vaddr, vdata)
-        if flag_of_status:
-            if first_to == last_to:
-                node.state.registers[to_registers] = \
-                    Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
-                             Integrity.integer)
-                # node.state.make_version(self.versions, to_registers)
-                node.state.registers[to_registers].version = node.parent[0].state.registers[to_registers].version
-                node.state.registers[to_registers].type_of_data = suffix
-            else:
-                to_now = name_of_register + str(first_to + 1)
-                if node.state.registers.get(vdata):
-                    node.state.registers[to_registers] = \
-                        Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
-                                 Integrity.low_part)
-                    # node.state.make_version(self.versions, to_registers)
-                    node.state.registers[to_registers].version = \
-                        node.parent[0].state.registers[to_registers].version
-                    node.state.registers[to_registers].type_of_data = suffix
-                    node.state.registers[to_now] = \
-                        Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
-                                 Integrity.high_part)
-                    # node.state.make_version(self.versions, to_now)
-                    if node.parent[0].state.registers[to_now] is not None:
-                        node.state.registers[to_now].version = node.parent[0].state.registers[to_now].version
-                    node.state.registers[to_now].type_of_data = suffix
-                else:
-                    return node
-            return node
-        if inst_offset != "0":
-            output_string = "*(uint*)(" + node.parent[0].state.registers[to_registers].val \
-                            + " + " + inst_offset + ") = " \
-                            + node.state.registers[name_of_register + str(first_to)].val
-        else:
-            var = node.parent[0].state.registers[to_registers].val
-            # if node.state.registers[to_registers].val.find("var") == -1 \
-            # else node.state.registers[to_registers].val
-            if node.state.registers.get(from_registers):
-                output_string = var + " = " + node.state.registers[from_registers].val
-            else:
-                output_string = var + " = " + self.decompiler_data.initial_state.registers[from_registers].val
-        return output_string
-        # self.output_file.write("*(uint*)(" + vaddr + " + " + inst_offset + ") = " + vdata + "\n")  # нужен ли номер...
-
-    def flat_store_dwordx2(self, node, instruction, flag_of_status):
-        vaddr = instruction[1]
-        vdata = instruction[2]
-        inst_offset = "0" if len(instruction) < 4 else instruction[3]
-        first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
-            = node.state.find_first_last_num_to_from(vaddr, vdata)
-        if flag_of_status:
-            to_now = name_of_register + str(first_to + 1)
-            node.state.registers[to_registers] = \
-                Register(node.state.registers[from_registers].val, node.state.registers[from_registers].type,
-                         Integrity.low_part)
-            # node.state.make_version(self.versions, to_registers)
-            node.state.registers[to_registers].version = \
-                node.parent[0].state.registers[to_registers].version
-            node.state.registers[to_registers].type_of_data = "dwordx2"
-            second_from = name_of_from + str(first_from + 1)
-            node.state.registers[to_now] = \
-                Register(node.state.registers[second_from].val, node.state.registers[second_from].type,
-                         Integrity.high_part)
-            # node.state.make_version(self.versions, to_now)
-            if node.parent[0].state.registers[to_now] is not None:
-                node.state.registers[to_now].version = node.parent[0].state.registers[to_now].version
-            node.state.registers[to_now].type_of_data = "dwordx2"
-            return node
-        else:
-            var = node.parent[0].state.registers[to_registers].val
-            if node.state.registers.get(from_registers):
-                output_string = var + " = " + node.state.registers[from_registers].val
-            else:
-                output_string = var + " = " + self.decompiler_data.initial_state.registers[from_registers].val
-        return output_string
-
-    def flat_store_dwordx4(self, node, instruction, flag_of_status):
-        vaddr = instruction[1]
-        vdata = instruction[2]
-        inst_offset = instruction[3]
-        vm = "vm" + str(self.decompiler_data.number_of_vm)
-        self.decompiler_data.output_file.write("short* " + vm + " = (" + vaddr + " + " + inst_offset + ")\n")
-        self.decompiler_data.output_file.write("*(uint*)(" + vm + ") = " + vdata + "[0]\n")
-        self.decompiler_data.output_file.write("*(uint*)(" + vm + " + 4) = " + vdata + "[1]\n")
-        self.decompiler_data.output_file.write("*(uint*)(" + vm + " + 8) = " + vdata + "[2]\n")
-        self.decompiler_data.output_file.write("*(uint*)(" + vm + " + 12) = " + vdata + "[3]\n")
-        self.decompiler_data.number_of_vm += 1
-
-    def global_load(self, instruction, suffix):
-        if suffix == "dword":
-            vdst = instruction[1]
-            vaddr = instruction[2]
-            saddr = "0" if instruction[3] == "off" else instruction[3]
-            inst_offset = "0" if len(instruction) == 4 else instruction[4]
-            self.decompiler_data.output_file.write(vdst + " = *(uint*)(" + vaddr + " + " + saddr + " + " + inst_offset + ")\n")
-
-        elif suffix == "dwordx2":
-            vdst = instruction[1]
-            vaddr = instruction[2]
-            saddr = "0" if instruction[3] == "off" else instruction[3]
-            inst_offset = "0" if len(instruction) == 4 else instruction[4]
-            self.decompiler_data.output_file.write(vdst + " = *(ulong*)(" + vaddr + " + " + saddr + " + " + inst_offset + ")\n")
-
-    def global_store(self, instruction, suffix):
-        if suffix == "dword":
-            vaddr = instruction[1]
-            vdata = instruction[2]
-            saddr = 0 if instruction[3] == "off" else instruction[3]
-            inst_offset = 0 if len(instruction) == 4 else instruction[4]
-            self.decompiler_data.output_file.write(
-                "*(uint*)(" + vaddr + " + " + saddr + " + " + inst_offset + ") = " + vdata + "\n")
-
-        elif suffix == "dwordx2":
-            vaddr = instruction[1]
-            vdata = instruction[2]
-            saddr = 0 if instruction[3] == "off" else instruction[3]
-            inst_offset = 0 if len(instruction) == 4 else instruction[4]
-            self.decompiler_data.output_file.write(
-                "*(ulong*)(" + vaddr + " + " + saddr + " + " + inst_offset + ") = " + vdata + "\n")
-
-    def s_add(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == 'u32':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            ssrc1 = instruction[3]
-            new_val, ssrc0_reg, ssrc1_reg = self.make_op(node, ssrc0, ssrc1, " + ")  # may be this should be (ulong)
-            if flag_of_status:
-                if ssrc0_reg and ssrc1_reg:
-                    if node.state.registers[ssrc0].type == Type.work_group_id_x_local_size \
-                            and node.state.registers[ssrc1].type == Type.global_offset_x:
-                        node.state.registers[sdst] = \
-                            Register(new_val, Type.work_group_id_x_local_size_offset, Integrity.integer)
-                    elif node.state.registers[ssrc0].type == Type.work_group_id_y_local_size \
-                            and node.state.registers[ssrc1].type == Type.global_offset_y:
-                        node.state.registers[sdst] = \
-                            Register(new_val, Type.work_group_id_y_local_size_offset, Integrity.integer)
-                    elif node.state.registers[ssrc0].type == Type.work_group_id_z_local_size \
-                            and node.state.registers[ssrc1].type == Type.global_offset_z:
-                        node.state.registers[sdst] = \
-                            Register(new_val, Type.work_group_id_z_local_size_offset, Integrity.integer)
-                    elif node.state.registers[ssrc0].type == Type.param or node.state.registers[ssrc1].type == Type.param:
-                        node.state.registers[sdst] = \
-                            Register(new_val, Type.param, Integrity.integer)
-                    else:
-                        node.state.registers[sdst] = \
-                            Register(new_val, Type.unknown, Integrity.integer)
-                else:
-                    type_reg = Type.int32
-                    if ssrc0_reg:
-                        type_reg = node.state.registers[ssrc0].type
-                    if ssrc1_reg:
-                        type_reg = node.state.registers[ssrc1].type
-                    node.state.registers[sdst] = \
-                        Register(new_val, type_reg, Integrity.integer)
-                node.state.make_version(self.decompiler_data.versions, sdst)
-                if sdst in [ssrc0, ssrc1]:
-                    node.state.registers[sdst].make_prev()
-                node.state.registers[sdst].type_of_data = suffix
-                return node
-            return output_string
-            # temp = "temp" + str(self.number_of_temp)
-            # self.output_file.write("ulong " + temp + " = " + new_val + "\n")
-            # self.output_file.write(sdst + " = " + temp + "\n")
-            # self.output_file.write("scc = " + temp + " >> 32\n")
-            # self.number_of_temp += 1
-
-    def s_addc(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == 'u32':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            ssrc1 = instruction[3]
-            new_val, ssrc0_reg, ssrc1_reg = self.make_op(node, ssrc0, ssrc1, " + ")  # may be this should be (ulong)
-            if flag_of_status:
-                if ssrc0_reg and ssrc1_reg:
-                    node.state.registers[sdst] = \
-                        Register(new_val, Type.unknown, Integrity.integer)
-                else:
-                    type_reg = Type.int32
-                    if ssrc0_reg:
-                        type_reg = node.state.registers[ssrc0].type
-                    if ssrc1_reg:
-                        type_reg = node.state.registers[ssrc1].type
-                    node.state.registers[sdst] = \
-                        Register(new_val, type_reg, Integrity.integer)
-                node.state.make_version(self.decompiler_data.versions, sdst)
-                if sdst in [ssrc0, ssrc1]:
-                    node.state.registers[sdst].make_prev()
-                node.state.registers[sdst].type_of_data = suffix
-                return node
-            return output_string
-            # temp = " temp" + str(self.number_of_temp)
-            # self.output_file.write("ulong " + temp + " = (ulong)" + ssrc0 + " + (ulong)" + ssrc1 + " scc\n")
-            # self.output_file.write(sdst + " = " + temp + "\n")
-            # self.output_file.write("scc = " + temp + " >> 32\n")
-            # self.number_of_temp += 1
-
-    def s_and(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == 'b32' or suffix == 'b64':
-            if flag_of_status:
-                sdst = instruction[1]
-                ssrc0 = instruction[2]
-                ssrc1 = instruction[3]
-                node.state.registers[sdst] = node.state.registers[ssrc0]
-                return node
-            return output_string
-            # self.output_file.write(sdst + " = " + ssrc0 + " & " + ssrc1 + "\n")
-            # self.output_file.write("scc = " + sdst + " != 0\n")
-
-    def s_and_saveexec(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == 'b64':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            if flag_of_status:
-                node.state.registers[sdst] = node.state.registers["exec"]
-                node.state.registers["exec"] = node.state.registers[ssrc0]
-                return node
-            return output_string
-            # self.output_file.write(sdst + " = " + "exec\n")
-            # self.output_file.write("exec = " + ssrc0 + " & exec\n")
-            # self.output_file.write("scc = exec != 0\n")
-
-    def s_andn2(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == 'b64':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            ssrc1 = instruction[3]
-            if flag_of_status:
-                return node
-            return output_string
-            # self.output_file.write(sdst + " = " + ssrc0 + " & ~" + ssrc1 + "\n")
-            # self.output_file.write("scc = " + sdst + " != 0\n")
-
-    def s_ashr(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == 'i32':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            ssrc1 = instruction[3]
-            if flag_of_status:
-                new_val, ssrc0_flag, ssrc1_flag = self.make_op(node, ssrc0, str(pow(2, int(ssrc1))), " / ")
-                node.state.registers[sdst] = \
-                    Register(new_val, Type.unknown, Integrity.integer)
-                node.state.make_version(self.decompiler_data.versions, sdst)
-                if sdst in [ssrc0, ssrc1]:
-                    node.state.registers[sdst].make_prev()
-                node.state.registers[sdst].type_of_data = suffix
-                return node
-            return output_string
-            # self.output_file.write(sdst + " = (int)" + ssrc0 + " >> (" + ssrc1 + " & 31)\n")
-            # self.output_file.write("scc = " + sdst + " != 0\n")
-
-    def s_barrier(self, node, flag_of_status):
-        if flag_of_status:
-            return node
-        output_string = "barrier(CLK_LOCAL_MEM_FENCE)"
-        return output_string
-
-    def s_bfe(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == 'u32':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            ssrc1 = instruction[3]
-            if flag_of_status:
-                if ssrc1 == "0x20010":
-                    node.state.registers[sdst] = Register("get_work_dim()", Type.work_dim, Integrity.integer)
-                else:
-                    node.state.registers[sdst].val = "get_local_size(1)" # I think that it not all true
-                node.state.make_version(self.decompiler_data.versions, sdst)
-                return node
-            return output_string
-
-        if suffix == "i32":
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            ssrc1 = instruction[3]
-            if flag_of_status:
-                return node
-            return output_string
-            # shift = "shift" + str(self.number_of_shift)
-            # length = "length" + str(self.number_of_length)
-            # self.output_file.write("uchar " + shift + " = " + ssrc1 + " & 31\n")
-            # self.output_file.write("uchar " + length + " = (" + ssrc0 + " >> 16) & 0x7f\n")
-            # self.output_file.write("if (" + length + " == 0)\n")
-            # self.output_file.write(tab + sdst + " = 0\n")
-            # self.output_file.write("if (" + shift + " + " + length + " < 32)\n")
-            # self.output_file.write(
-            #     tab + sdst + " = " + ssrc0 + " << (32 - " + shift + " - " + length + ") >> (32 - "
-            #     + length + "\n")
-            # self.output_file.write("else\n")
-            # self.output_file.write(tab + sdst + " = " + instruction[2] + " >> " + shift + "\n")
-            # self.output_file.write("scc = " + ssrc0 + " != 0\n")
-            # self.number_of_length += 1
-            # self.number_of_shift += 1
-
-    def s_branch(self, node, instruction):
-        reladdr = instruction[1]
-        if self.decompiler_data.to_node.get(reladdr) is not None:
-            node.add_child(self.decompiler_data.to_node[reladdr])
-            self.decompiler_data.to_node[reladdr].add_parent(node)
-        else:
-            if self.decompiler_data.from_node.get(reladdr) is None:
-                self.decompiler_data.from_node[reladdr] = [node]
-            else:
-                self.decompiler_data.from_node[reladdr].append(node)
-        node.instruction = "branch"
-        return node
-        # self.output_file.write("pc = " + reladdr + "\n")
-
-    def s_cbranch_execz(self, node, instruction, flag_of_status):
-        reladdr = instruction[1]
-        if flag_of_status:
-            if self.decompiler_data.to_node.get(reladdr) is not None:
-                node.add_child(self.decompiler_data.to_node[reladdr])
-                self.decompiler_data.to_node[reladdr].add_parent(node)
-            else:
-                if self.decompiler_data.from_node.get(reladdr) is None:
-                    self.decompiler_data.from_node[reladdr] = [node]
-                else:
-                    self.decompiler_data.from_node[reladdr].append(node)
-            return node
-        output_string = node.state.registers["exec"].val
-        return output_string
-        # self.output_file.write("pc = exec == 0 ? " + reladdr + " : pc + 4\n")
-
-    def s_cbranch_scc0(self, node, instruction, flag_of_status):
-        reladdr = instruction[1]
-        if flag_of_status:
-            if self.decompiler_data.to_node.get(reladdr) is not None:
-                node.add_child(self.decompiler_data.to_node[reladdr])
-                self.decompiler_data.to_node[reladdr].add_parent(node)
-            else:
-                if self.decompiler_data.from_node.get(reladdr) is None:
-                    self.decompiler_data.from_node[reladdr] = [node]
-                else:
-                    self.decompiler_data.from_node[reladdr].append(node)
-            return node
-        output_string = node.state.registers["scc"].val
-        return output_string
-        # self.output_file.write("pc = scc0 == 0 ? " + reladdr + " : pc + 4\n")
-
-    def s_cbranch_scc1(self, instruction):
-        reladdr = instruction[1]
-        self.decompiler_data.output_file.write("pc = scc1 == 0 ? " + reladdr + " : pc + 4\n")
-
-    def s_cbranch_vccnz(self, instruction):
-        reladdr = instruction[1]
-        self.decompiler_data.output_file.write("pc = vcc != 0 ? " + reladdr + " : pc + 4")
-
-    def s_cmp_eq(self, instruction, suffix):
-        if suffix == 'i32' or suffix == 'u32':
-            ssrc0 = instruction[1]
-            ssrc1 = instruction[2]
-            self.decompiler_data.output_file.write("scc = " + ssrc0 + " == " + ssrc1 + "\n")
-
-    def s_cmp_ge(self, instruction, suffix):
-        if suffix == 'i32':
-            ssrc0 = instruction[1]
-            ssrc1 = instruction[2]
-            self.decompiler_data.output_file.write("scc = (int)" + ssrc0 + " >= (int)" + ssrc1 + "\n")
-
-        elif suffix == 'u32':
-            ssrc0 = instruction[1]
-            ssrc1 = instruction[2]
-            self.decompiler_data.output_file.write("scc = " + ssrc0 + " >= " + ssrc1 + "\n")
-
-    def s_cmp_lt(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == 'i32':
-            ssrc0 = instruction[1]
-            ssrc1 = instruction[2]
-            if flag_of_status:
-                node.state.registers["scc"] = Register(
-                    node.state.registers[ssrc0].val + " < " + node.state.registers[ssrc1].val,
-                    Type.unknown, Integrity.integer)
-                node.state.make_version(self.decompiler_data.versions, "scc")
-                if "scc" in [ssrc0, ssrc1]:
-                    node.state.registers["scc"].make_prev()
-                node.state.registers["scc"].type_of_data = suffix
-                return node
-            return output_string
-            # self.output_file.write("scc = (int)" + ssrc0 + " < (int)" + ssrc1 + "\n")
-
-    def s_cselect(self, instruction, suffix):
-        if suffix == 'b64':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            ssrc1 = instruction[3]
-            self.decompiler_data.output_file.write(sdst + " = scc ? " + ssrc0 + " : " + ssrc1 + "\n")
-
-    def s_endpgm(self, node, flag_of_status, output_string):
-        if flag_of_status:
-            return node
-        # self.output_file.write("}\n")
-        return output_string
-
-    def s_getpc(self, instruction, suffix):
-        if suffix == 'b64':
-            sdst = instruction[1]
-            self.decompiler_data.output_file.write(sdst + " = pc + 4\n")
-
-    def s_load(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == 'dword':
-            sdata = instruction[1]
-            sbase = instruction[2]
-            offset = instruction[3]
-            first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
-                = node.state.find_first_last_num_to_from(sdata, sbase)
-            if flag_of_status:
-                if self.decompiler_data.usesetup == False and sbase == "s[4:5]" \
-                        or self.decompiler_data.usesetup == True and sbase == "s[6:7]":
-                    node.state.upload(sdata, sbase, offset, self.decompiler_data.params, self.decompiler_data.versions)
-                else:
-                    node.state.upload_usesetup(sdata, sbase, offset, self.decompiler_data.params, self.decompiler_data.versions)
-                node.state.registers[to_registers].type_of_data = suffix
-                return node
-            return output_string
-            # self.output_file.write(sdata + " = *(uint*)(smem + (" + offset + " & ~3))\n")
-
-        elif suffix == 'dwordx2':
-            sdata = instruction[1]
-            sbase = instruction[2]
-            offset = instruction[3]
-            first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
-                = node.state.find_first_last_num_to_from(sdata, sbase)
-            if flag_of_status:
-                if self.decompiler_data.usesetup == False and sbase == "s[4:5]" \
-                        or self.decompiler_data.usesetup == True and sbase == "s[6:7]":
-                    node.state.upload(sdata, sbase, offset, self.decompiler_data.params, self.decompiler_data.versions)
-                else:
-                    node.state.upload_usesetup(sdata, sbase, offset, self.decompiler_data.params, self.decompiler_data.versions)
-                node.state.registers[to_registers].type_of_data = suffix
-                return node
-            return output_string
-            # self.output_file.write(sdata + " = " + node.state.registers[to_registers].val + "\n")
-            # self.output_file.write(sdata + " = *(ulong*)(smem + (" + offset + " & ~3))\n")  # smem??? как и dc..
-
-        elif suffix == 'dwordx4' or suffix == 'dwordx8':
-            sdata = instruction[1]
-            sbase = instruction[2]
-            offset = instruction[3]
-            first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
-                = node.state.find_first_last_num_to_from(sdata, sbase)
-            if flag_of_status:
-                if self.decompiler_data.usesetup == False and sbase == "s[4:5]" \
-                        or self.decompiler_data.usesetup == True and sbase == "s[6:7]":
-                    node.state.upload(sdata, sbase, offset, self.decompiler_data.params, self.decompiler_data.versions)
-                else:
-                    node.state.upload_usesetup(sdata, sbase, offset, self.decompiler_data.params, self.decompiler_data.versions)
-                node.state.registers[to_registers].type_of_data = suffix
-                return node
-            return output_string
-            # self.output_file.write("for (short i = 0; i < " + suffix[-1] + "; i++)\n")
-            # self.output_file.write(tab + sdata + " = *(uint*)(smem + i * 4 + (" + offset + " & ~3))\n")
-
-    def s_lshl(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == 'b32':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            ssrc1 = instruction[3]
-            if flag_of_status:
-                new_val, ssrc0_flag, ssrc1_flag = self.make_op(node, ssrc0, str(pow(2, int(ssrc1))), " * ")
-                # probably we should check ssrc0_flag and ssrc1_flag. not sure
-                if node.state.registers[ssrc0].type == Type.work_group_id_x:
-                    node.state.registers[sdst] = Register(new_val, Type.work_group_id_x_local_size, Integrity.integer)
-                    node.state.registers["scc"] = Register(sdst + "!= 0", Type.int32, Integrity.integer)
-                elif node.state.registers[ssrc0].type == Type.work_group_id_y:
-                    node.state.registers[sdst] = Register(new_val, Type.work_group_id_y_local_size, Integrity.integer)
-                    node.state.registers["scc"] = Register(sdst + "!= 0", Type.int32, Integrity.integer)
-                elif node.state.registers[ssrc0].type == Type.work_group_id_z:
-                    node.state.registers[sdst] = Register(new_val, Type.work_group_id_z_local_size, Integrity.integer)
-                    node.state.registers["scc"] = Register(sdst + "!= 0", Type.int32, Integrity.integer)
-                else:
-                    node.state.registers[sdst] = Register(new_val, node.state.registers[ssrc0].type, Integrity.integer)
-                node.state.make_version(self.decompiler_data.versions, sdst)
-                node.state.registers[sdst].type_of_data = suffix
-                node.state.make_version(self.decompiler_data.versions, "scc")
-                node.state.registers["scc"].type_of_data = suffix
-                if sdst in [ssrc0, ssrc1]:
-                    node.state.registers[sdst].make_prev()
-                return node
-            return output_string
-            # self.output_file.write(sdst + " = " + node.state.registers[sdst].val + "\n")
-            # self.output_file.write("scc = " + sdst + " != 0\n")
-            # self.output_file.write(sdst + " = " + ssrc0 + " << (" + ssrc1 + " & " + str(int(suffix[1:]) - 1) + ")\n")
-        if suffix == 'b64':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            ssrc1 = instruction[3]
-            if flag_of_status:
-                first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
-                    = node.state.find_first_last_num_to_from(sdst, ssrc0)
-                from_registers1 = name_of_from + str(first_from + 1)
-                to_registers1 = name_of_register + str(first_to + 1)
-                new_val0, ssrc0_flag0, ssrc1_flag0 = self.make_op(node, from_registers, str(pow(2, int(ssrc1))), " * ")
-                new_val1, ssrc0_flag1, ssrc1_flag1 = self.make_op(node, from_registers1, str(pow(2, int(ssrc1))), " * ")
-                node.state.registers[to_registers] = \
-                    Register(new_val0, node.state.registers[from_registers].type, Integrity.low_part)
-                node.state.registers[to_registers1] = \
-                    Register(new_val1, node.state.registers[from_registers1].type, Integrity.high_part)
-                node.state.make_version(self.decompiler_data.versions, to_registers)
-                node.state.registers[to_registers].type_of_data = suffix
-                if to_registers in [from_registers, ssrc1]:
-                    node.state.registers[to_registers].make_prev()
-                node.state.make_version(self.decompiler_data.versions, to_registers1)
-                node.state.registers[to_registers1].type_of_data = suffix
-                if to_registers1 in [from_registers1, ssrc1]:
-                    node.state.registers[to_registers1].make_prev()
-                return node
-            return output_string
-
-    def s_lshr(self, node, instruction, flag_of_status, suffix, output_string):
-        sdst = instruction[1]
-        ssrc0 = instruction[2]
-        ssrc1 = instruction[3]
-        if suffix == 'b32':
-            if flag_of_status:
-                if node.state.registers[ssrc0].type == Type.global_size_x \
-                        and str(pow(2, int(ssrc1))) == self.decompiler_data.size_of_work_groups[0]:
-                    node.state.registers[sdst] = \
-                        Register("get_num_groups(0)", node.state.registers[ssrc0].type, Integrity.integer)
-                elif node.state.registers[ssrc0].type == Type.global_size_y \
-                        and str(pow(2, int(ssrc1))) == self.decompiler_data.size_of_work_groups[1]:
-                    node.state.registers[sdst] = \
-                        Register("get_num_groups(1)", node.state.registers[ssrc0].type, Integrity.integer)
-                elif node.state.registers[ssrc0].type == Type.global_size_z \
-                        and str(pow(2, int(ssrc1))) == self.decompiler_data.size_of_work_groups[2]:
-                    node.state.registers[sdst] = \
-                        Register("get_num_groups(2)", node.state.registers[ssrc0].type, Integrity.integer)
-                else:
-                    new_val, ssrc0_flag, ssrc1_flag = self.make_op(node, ssrc0, str(pow(2, int(ssrc1))), " / ")
-                    node.state.registers[sdst] = Register(new_val, node.state.registers[ssrc0].type, Integrity.integer)
-                node.state.make_version(self.decompiler_data.versions, sdst)
-                return node
-            return output_string
-
-    def s_mov(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == 'b32' or suffix == 'b64':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            if flag_of_status:
-                if node.state.registers.get(ssrc0) is not None:
-                    node.state.registers[sdst] = \
-                        Register(node.state.registers[ssrc0].val, node.state.registers[ssrc0].type, Integrity.integer)
-                else:
-                    node.state.registers[sdst] = Register(ssrc0, Type.int32, Integrity.integer)
-                if self.decompiler_data.versions.get(sdst) is None:
-                    self.decompiler_data.versions[sdst] = 0
-                node.state.make_version(self.decompiler_data.versions, sdst)
-                node.state.registers[sdst].type_of_data = suffix
-                return node
-            return output_string
-            # self.output_file.write(sdst + " = " + ssrc0 + "\n")
-
-    def s_movk(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == 'i32':
-            sdst = instruction[1]
-            simm16 = instruction[2]
-            if flag_of_status:
-                node.state.registers[sdst] = Register(simm16, Type.unknown, Integrity.integer)  #  may be here can be not  only value
-                if self.decompiler_data.versions.get(sdst) is None:
-                    self.decompiler_data.versions[sdst] = 0
-                node.state.make_version(self.decompiler_data.versions, sdst)
-                node.state.registers[sdst].type_of_data = suffix
-                return node
-            return output_string
-            # self.output_file.write(sdst + " = " + simm16 + "\n")
-
-    def s_mul(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == 'i32':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            ssrc1 = instruction[3]
-            if flag_of_status:
-                new_val, ssrc0_reg, ssrc1_reg = self.make_op(node, ssrc0, ssrc1, " * ")
-                if ssrc0_reg and ssrc1_reg:
-                    if node.state.registers[ssrc0].type == Type.local_size_x \
-                            and node.state.registers[ssrc1].type == Type.work_group_id_x:
-                        node.state.registers[sdst] = \
-                            Register(new_val, Type.work_group_id_x_local_size, Integrity.integer)
-                    elif node.state.registers[ssrc0].type == Type.local_size_y \
-                            and node.state.registers[ssrc1].type == Type.work_group_id_y:
-                        node.state.registers[sdst] = \
-                            Register(new_val, Type.work_group_id_y_local_size, Integrity.integer)
-                    elif node.state.registers[ssrc0].type == Type.local_size_z \
-                            and node.state.registers[ssrc1].type == Type.work_group_id_z:
-                        node.state.registers[sdst] = \
-                            Register(new_val, Type.work_group_id_z_local_size, Integrity.integer)
-                    else:
-                        node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
-                else:
-                    node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
-                node.state.make_version(self.decompiler_data.versions, sdst)
-                if sdst in [ssrc0, ssrc1]:
-                    node.state.registers[sdst].make_prev()
-                node.state.registers[sdst].type_of_data = suffix
-                return node
-            return output_string
-            # self.output_file.write(sdst + " = " + ssrc0 + " * " + ssrc1 + "\n")
-
-    def s_mulk(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == 'i32':
-            sdst = instruction[1]
-            simm16 = instruction[2][instruction[2].find("x") + 1:]
-            if flag_of_status:
-                new_val, sdst_flag, simm16_flag = self.make_op(node, sdst, simm16, " * ")
-                node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
-                node.state.make_version(self.decompiler_data.versions, sdst)
-                node.state.registers[sdst].make_prev()
-                node.state.registers[sdst].type_of_data = suffix
-                return node
-            return output_string
-            # self.output_file.write(sdst + " = " + sdst + " * " + simm16 + "\n")
-
-    def s_not(self, instruction, suffix):
-        if suffix == 'b64':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            self.decompiler_data.output_file.write(sdst + " = ~" + ssrc0 + "\n")
-            self.decompiler_data.output_file.write("scc = " + sdst + " != 0\n")
-
-    def s_set_gpr_idx_on(self, instruction):
-        ssrc0 = instruction[1]
-        imm8 = instruction[2]
-        self.decompiler_data.output_file.write("mode = (mode & ~(1U << 27)) | (1U << 27)\n")
-        self.decompiler_data.output_file.write(
-            "m0 = (m0 & 0xffff0f00) | ((" + imm8 + " & 15) << 12) | (" + ssrc0 + " & 0xff)\n")
-
-    def s_set_gpr_idx_off(self):
-        self.decompiler_data.output_file.write("mode = (mode & ~(1U << 27))\n")
-
-    def s_setpc(self, instruction, suffix):
-        if suffix == 'b64':
-            ssrc0 = instruction[1]
-            self.decompiler_data.output_file.write("pc = " + ssrc0 + "\n")
-
-    def s_setreg(self, instruction, suffix):
-        if suffix == 'b32':
-            hwreg = instruction[1]
-            hwregname = instruction[2]
-            bitoffset = instruction[3]
-            bitsize = instruction[4]
-            sdst = instruction[5]
-            mask = "mask" + str(self.decompiler_data.number_of_mask)
-            self.decompiler_data.output_file.write("uint " + mask + " = (1U << " + bitsize + ") - 1U) << " + bitoffset + "\n")
-            self.decompiler_data.output_file.write(
-                hwreg + " = (" + hwreg + "& ~" + mask + ") | ((" + sdst + " << " + bitoffset + ") & " + mask
-                + ")\n")
-            self.decompiler_data.number_of_mask += 1
-
-    def s_sub(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == 'i32':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            ssrc1 = instruction[3]
-            temp = "temp" + str(self.decompiler_data.number_of_temp)
-            self.decompiler_data.output_file.write(sdst + " = " + ssrc0 + " - " + ssrc1 + "\n")
-            self.decompiler_data.output_file.write(
-                "long " + temp + " = (long)" + ssrc0 + " - (long)" + ssrc1 + "\n")  # SEXT64 - long?
-            self.decompiler_data.output_file.write("scc = " + temp + " > ((1LL << 31) - 1) || " + temp + " < (-1LL << 31)\n")
-            self.decompiler_data.number_of_temp += 1
-
-        elif suffix == 'u32':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            ssrc1 = instruction[3]
-            if flag_of_status:
-                new_val, src0_reg, src1_reg = self.make_op(node, ssrc0, ssrc1, " - ")
-                new_integrity = node.state.registers[ssrc1].integrity
-                node.state.registers[sdst] = Register(new_val, Type.unknown, new_integrity)
-                node.state.make_version(self.decompiler_data.versions, sdst)
-                if sdst in [ssrc0, ssrc1]:
-                    node.state.registers[sdst].make_prev()
-                node.state.registers[sdst].type_of_data = suffix
-                return node
-            return output_string
-            # may be should add "ulong"
-
-    def s_subb(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == 'u32':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            ssrc1 = instruction[3]
-            temp = "temp" + str(self.decompiler_data.number_of_temp)
-            self.decompiler_data.output_file.write("ulong " + temp + " = (ulong)" + ssrc0 + " - (ulong)" + ssrc1 + " - scc\n")
-            self.decompiler_data.output_file.write(sdst + " = " + temp + "\n")
-            self.decompiler_data.output_file.write("scc = (" + temp + " >> 32) & 1\n")
-            self.decompiler_data.number_of_temp += 1
-
-    def s_swappc(self, instruction, suffix):
-        if suffix == 'b64':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            self.decompiler_data.output_file.write(sdst + " = pc + 4\n")
-            self.decompiler_data.output_file.write("pc = " + ssrc0 + "\n")
-
-    def s_waitcnt(self, node, flag_of_status, output_string):
-        if flag_of_status:
-            return node
-        return output_string
-
-    def v_add(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == "u32":
-            vdst = instruction[1]
-            sdst = instruction[2]
-            src0 = instruction[3]
-            src1 = instruction[4]
-            new_val, src0_reg, src1_reg = self.make_op(node, src0, src1, " + ")  # may be this should be ulong
-            if flag_of_status:
-                if src0_reg and src1_reg:
-                    if node.state.registers[src0].type == Type.work_group_id_x_local_size_offset and \
-                            node.state.registers[src1].type == Type.work_item_id_x or \
-                            node.state.registers[src0].type == Type.global_offset_x and \
-                            node.state.registers[src1].type == Type.work_group_id_x_work_item_id:
-                        new_integrity = node.state.registers[src1].integrity
-                        node.state.registers[vdst] = Register("get_global_id(0)", Type.global_id_x, new_integrity)
-                    elif node.state.registers[src0].type == Type.work_group_id_y_local_size_offset and \
-                            node.state.registers[src1].type == Type.work_item_id_y or \
-                            node.state.registers[src0].type == Type.global_offset_y and \
-                            node.state.registers[src1].type == Type.work_group_id_y_work_item_id:
-                        new_integrity = node.state.registers[src1].integrity
-                        node.state.registers[vdst] = Register("get_global_id(1)", Type.global_id_y, new_integrity)
-                    elif node.state.registers[src0].type == Type.work_group_id_z_local_size_offset and \
-                            node.state.registers[src1].type == Type.work_item_id_z or \
-                            node.state.registers[src0].type == Type.global_offset_z and \
-                            node.state.registers[src1].type == Type.work_group_id_z_work_item_id or \
-                            node.state.registers[src1].type == Type.global_offset_z and \
-                            node.state.registers[src0].type == Type.work_group_id_z_work_item_id:
-                        new_integrity = node.state.registers[src1].integrity
-                        node.state.registers[vdst] = Register("get_global_id(2)", Type.global_id_z, new_integrity)
-                    elif node.state.registers[src0].type == Type.paramA:
-                        new_integrity = node.state.registers[src1].integrity
-                        if self.decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "int" \
-                                or self.decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "uint":
-                            new_value, src0_flaf, src1_flag = self.make_op(node, src1, "4", " / ")
-                            new_val = node.state.registers[src0].val + "[" + new_value + "]"
-                            node.state.registers[vdst] = \
-                                Register(new_val, Type.param_global_id_x, new_integrity)
-                        elif self.decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "long" \
-                                or self.decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "ulong":
-                            new_value, src0_flaf, src1_flag = self.make_op(node, src1, "8", " / ")
-                            new_val = node.state.registers[src0].val + "[" + new_value + "]"
-                            node.state.registers[vdst] = \
-                                Register(new_val, Type.param_global_id_x, new_integrity)
-                        elif self.decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "char" \
-                                or self.decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "uchar":
-                            # new_value, src0_flaf, src1_flag = self.make_op(node, src1, "8", " / ")
-                            new_val = node.state.registers[src0].val + "[" + node.state.registers[src1].val + "]"
-                            node.state.registers[vdst] = \
-                                Register(new_val, Type.param_global_id_x, new_integrity)
-                        #  make something same fo another types
-
-                    elif node.state.registers[src0].type == Type.work_group_id_x_local_size and \
-                            node.state.registers[src1].type == Type.work_item_id_x:
-                        new_integrity = node.state.registers[src1].integrity
-                        node.state.registers[vdst] = \
-                            Register("get_global_id(0) - get_global_offset(0)", Type.work_group_id_x_work_item_id,
-                                     new_integrity)
-                    elif node.state.registers[src0].type == Type.work_group_id_y_local_size and \
-                            node.state.registers[src1].type == Type.work_item_id_y:
-                        new_integrity = node.state.registers[src1].integrity
-                        node.state.registers[vdst] = \
-                            Register("get_global_id(1) - get_global_offset(1)", Type.work_group_id_y_work_item_id,
-                                     new_integrity)
-                    elif node.state.registers[src0].type == Type.work_group_id_z_local_size and \
-                            node.state.registers[src1].type == Type.work_item_id_z:
-                        new_integrity = node.state.registers[src1].integrity
-                        node.state.registers[vdst] = \
-                            Register("get_global_id(2) - get_global_offset(2)", Type.work_group_id_z_work_item_id,
-                                     new_integrity)
-                    # elif node.state.registers[src0].type == Type.global_id_y and node.state.registers[src1].type == Type.global_id_z\
-                    #         or node.state.registers[src0].type == Type.global_id_z and node.state.registers[src1].type == Type.global_id_y:
-                    #     new_integrity = node.state.registers[src1].integrity
-                    #     node.state.registers[vdst] = \
-                    #         Register(node.state.registers[src0].val + " + " + node.state.registers[src1].val,
-                    #                  Type.unknown, new_integrity)
-                    elif node.state.registers[src0].type == Type.work_group_id_x_local_size and \
-                            node.state.registers[src1].type == Type.work_item_id_x or \
-                            node.state.registers[src1].type == Type.work_group_id_x_local_size and \
-                            node.state.registers[src0].type == Type.work_item_id_x:
-                        new_integrity = node.state.registers[src1].integrity
-                        node.state.registers[vdst] = \
-                            Register("get_global_id(0) - get_global_offset(0)", Type.unknown, new_integrity)
-                    # elif node.state.registers[src0]. type == Type.param or node.state.registers[src1]. type == Type.param:
-                    else:
-                        new_integrity = node.state.registers[src1].integrity
-                        node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
-                else:
-                    type_reg = Type.int32
-                    if src0_reg:
-                        type_reg = node.state.registers[src0].type
-                    if src1_reg:
-                        type_reg = node.state.registers[src1].type
-                    node.state.registers[vdst] = Register(new_val, type_reg, Integrity.integer)
-                node.state.make_version(self.decompiler_data.versions, vdst)
-                if vdst in [src0, src1]:
-                    node.state.registers[vdst].make_prev()
-                node.state.registers[vdst].type_of_data = suffix
-                # elif node.state.registers[src0].type == Type.param and node.state.registers[src1].type
-                # не хватает описания sdst
-                return node
-            return output_string
-            # if node.state.registers[vdst].integrity == Integrity.integer:
-            #     new_val = node.state.registers[vdst].val
-            #     temp = "temp" + str(self.number_of_temp)
-            #     mask = "mask" + str(self.number_of_mask)
-            #     self.output_file.write("ulong " + temp + " = " + new_val + "\n")
-            #     self.output_file.write(vdst + " = clamp ? min(" + temp + ", 0xffffffff) : " + temp + "\n")
-            #     self.output_file.write(sdst + " = 0\n")
-            #     self.output_file.write("ulong " + mask + " = (1ULL << laneid)\n")
-            #     self.output_file.write(sdst + " = (" + sdst + " & ~" + mask + ") | ((" + temp + " >> 32) ? " + mask + " : 0\n")
-            #     self.number_of_temp += 1
-            #     self.number_of_mask += 1
-
-    def v_addc(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == "u32":
-            vdst = instruction[1]
-            sdst = instruction[2]
-            src0 = instruction[3]
-            src1 = instruction[4]
-            ssrc2 = instruction[5]
-            new_val, src0_reg, src1_reg = self.make_op(node, src0, src1, " + ")  # may be this should be ulong
-            if flag_of_status:
-                if src0_reg and src1_reg:
-                    if node.state.registers[src0].type == Type.paramA \
-                            and node.state.registers[src1].type == Type.global_id_x:
-                        new_integrity = node.state.registers[src1].integrity
-                        node.state.registers[vdst] = \
-                            Register(node.state.registers[src0].val + "[get_global_id(0)]",
-                                                              Type.param_global_id_x, new_integrity)
-                        # think about another case with paramA, it should be like v_add?
-                    else:
-                        new_integrity = node.state.registers[src1].integrity
-                        node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
-                else:
-                    type_reg = Type.int32
-                    if src0_reg:
-                        type_reg = node.state.registers[src0].type
-                    if src1_reg:
-                        type_reg = node.state.registers[src1].type
-                    node.state.registers[vdst] = Register(new_val, type_reg, Integrity.integer)
-                node.state.make_version(self.decompiler_data.versions, vdst)
-                if vdst in [src0, src1]:
-                    node.state.registers[vdst].make_prev()
-                node.state.registers[vdst].type_of_data = suffix
-                return node
-            return output_string
-            # if node.state.registers[vdst].integrity == Integrity.integer:
-            #     new_val = node.state.registers[vdst].val
-            #     temp = "temp" + str(self.number_of_temp)
-            #     mask = "mask" + str(self.number_of_mask)
-            #     cc = "cc" + str(self.number_of_cc)
-            #     self.output_file.write("ulong " + mask + " = (1ULL << laneid)\n")
-            #     self.output_file.write("uchar " + cc + " = ((" + ssrc2 + " & " + mask + ") ? 1 : 0)\n")
-            #     self.output_file.write("ulong " + temp + " = " + new_val + " + " + cc + "\n")
-            #     self.output_file.write(sdst + " = 0\n")
-            #     self.output_file.write(vdst + " = clamp ? min(" + temp + ", 0xffffffff) : " + temp + "\n")
-            #     self.output_file.write(sdst + " = (" + sdst + " & ~" + mask + ") | ((" + temp + " >> 32) ? " + mask + " : 0)\n")
-            #     self.number_of_temp += 1
-            #     self.number_of_mask += 1
-            #     self.number_of_mask += 1
-
-    def v_alignbit(self, instruction, suffix):
-        if suffix == "b32":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            src2 = instruction[4]
-            self.decompiler_data.output_file.write(
-                vdst + " = (((ulong)" + src0 + ") << 32) | " + src1 + ") >> (" + src2 + " & 31)\n")
-
-    def v_alignbyte(self, instruction, suffix):
-        if suffix == "b32":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            src2 = instruction[4]
-            self.decompiler_data.output_file.write(
-                vdst + " = (((ulong)" + src0 + ") << 32) | " + src1 + ") >> ((" + src2 + " & 3) * 8)\n")
-
-    def v_and(self, node, instruction, flag_of_status, suffix, output_string):  # fixed by examples, not sure
-        if suffix == "b32":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            if flag_of_status:
-                new_integrity = node.state.registers[src1].integrity
-                new_val, src0_flag, src1_flag = self.make_op(node, src1, src0[1:], " * ")
-                # check is this expression correctly, may be add to make_op
-                node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
-                node.state.make_version(self.decompiler_data.versions, vdst)
-                if vdst in [src0, src1]:
-                    node.state.registers[vdst].make_prev()
-                node.state.registers[vdst].type_of_data = suffix
-                return node
-            return output_string
-            # self.output_file.write(vdst + " = " + src0 + " & " + src1 + "\n")
-
-    def v_and_or(self, instruction, suffix):
-        if suffix == "b32":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            src2 = instruction[4]
-            self.decompiler_data.output_file.write(vdst + " = (" + src0 + " & " + src1 + ") | " + src2 + "\n")
-
-    def v_ashrrev(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == "i32":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            if flag_of_status:
-                node.state.registers[vdst] = \
-                    Register(node.state.registers[src1].val, node.state.registers[src1].type, Integrity.integer)
-                node.state.registers[vdst].version = node.parent[0].state.registers[vdst].version
-                node.state.registers[vdst].type_of_data = suffix
-                return node
-            return output_string
-
-        elif suffix == "i64":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
-                = node.state.find_first_last_num_to_from(vdst, src1)
-            if flag_of_status:
-                if node.state.registers[from_registers].val == "0":
-                    node.state.registers[from_registers].val = \
-                        node.state.registers[name_of_from + str(first_from + 1)].val
-                node.state.registers[to_registers] = \
-                    Register(node.state.registers[from_registers].val,
-                             node.state.registers[from_registers].type,
-                             Integrity.low_part)
-                node.state.registers[to_registers].version = \
-                    node.parent[0].state.registers[to_registers].version
-                node.state.registers[to_registers].type_of_data = suffix
-                to_registers_1 = name_of_register + str(last_to)
-                node.state.registers[to_registers_1] = \
-                    Register(node.state.registers[from_registers].val,
-                             node.state.registers[from_registers].type,
-                             Integrity.high_part)
-                node.state.registers[to_registers_1].version = \
-                    node.parent[0].state.registers[to_registers_1].version
-                node.state.registers[to_registers_1].type_of_data = suffix
-                return node
-            return output_string
-
-    def v_bfi(self, instruction, suffix):
-        if suffix == "b32":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            src2 = instruction[4]
-            self.decompiler_data.output_file.write(vdst + " = (" + src0 + " & " + src1 + ") | (~" + src0 + " & " + src2 + ")\n")
-
-    def v_cmp_eq(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == "u32" or suffix == "i32":
-            sdst = instruction[1]
-            src0 = instruction[2] #  if instruction[2][0] != "v" else node.state.registers[instruction[2]].val
-            src1 = instruction[3] #  if instruction[3][0] != "v" else node.state.registers[instruction[3]].val
-            # I think that it not necessary now, check tests
-            if flag_of_status:
-                new_val, src0_flag, src1_flag = self.make_op(node, src0, src1, " == ")
-                node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
-                node.state.make_version(self.decompiler_data.versions, sdst)
-                if sdst in [src0, src1]:
-                    node.state.registers[sdst].make_prev()
-                node.state.registers[sdst].type_of_data = suffix
-                return node
-            return output_string
-            # self.output_file.write(sdst + " = (uint)" + src0 + " == (uint)" + src1 + "\n")
-
-    def v_cmp_ge(self, instruction, suffix):
-        if suffix == "u32":
-            sdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            self.decompiler_data.output_file.write(sdst + " = (uint)" + src0 + " >= (uint)" + src1 + "\n")
-
-    def v_cmp_gt(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == "u64":
-            sdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            self.decompiler_data.output_file.write(sdst + " = (ulong)" + src0 + " > (uint)" + src1 + "\n")
-
-        elif suffix == "i32":
-            sdst = instruction[1]
-            src0 = instruction[2] #  if instruction[2][0] != "v" and instruction[2][0] != "s" else node.state.registers[instruction[2]].val
-            src1 = instruction[3] #  if instruction[3][0] != "v" and instruction[2][0] != "s" else node.state.registers[instruction[3]].val
-            # I think that it not necessary now, check tests
-            if flag_of_status:
-                new_val, src0_flag, src1_flag = self.make_op(node, src0, src1, " > ")
-                node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
-                node.state.make_version(self.decompiler_data.versions, sdst)
-                if sdst in [src0, src1]:
-                    node.state.registers[sdst].make_prev()
-                node.state.registers[sdst].type_of_data = suffix
-                return node
-            return output_string
-
-    def v_cmp_lg(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == "i32":
-            sdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            if flag_of_status:
-                new_val, src0_flag, src1_flag = self.make_op(node, src0, src1, " != ")
-                node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
-                if self.decompiler_data.versions.get(sdst) is None:
-                    self.decompiler_data.versions[sdst] = 0
-                node.state.make_version(self.decompiler_data.versions, sdst)
-                if sdst in [src0, src1]:
-                    node.state.registers[sdst].make_prev()
-                node.state.registers[sdst].type_of_data = suffix
-                return node
-            return output_string
-            # self.output_file.write(sdst + " = (int)" + src0 + " != (int)" + src1 + "\n")
-
-        elif suffix == "u32":
-            sdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            self.decompiler_data.output_file.write(sdst + " = (uint)" + src0 + " != (uint)" + src1 + "\n")
-
-    def v_cmp_lt(self, instruction, suffix):
-        if suffix == "u32":
-            sdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            self.decompiler_data.output_file.write(sdst + " = (uint)" + src0 + " < (uint)" + src1 + "\n")
-
-    def v_cmpx_class(self, suffix):
-        if suffix == "f64":
-            self.decompiler_data.output_file.write("Not resolve yet. Maybe you lose.\n")
-
-    def v_cmpx_eq(self, instruction, suffix):
-        if suffix == "f64":
-            sdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            self.decompiler_data.output_file.write(sdst + " = as_double(" + src0 + ") == as_double(" + src1 + ")\n")
-            self.decompiler_data.output_file.write("exec = " + sdst + "\n")
-
-    def v_cmpx_le(self, instruction, suffix):
-        if suffix == "u32":
-            sdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            self.decompiler_data.output_file.write(sdst + " = (uint)" + src0 + " <= (uint)" + src1 + "\n")
-            self.decompiler_data.output_file.write("exec = " + " = " + sdst + "\n")
-
-    def v_cndmask(self, node, instruction, flag_of_status, suffix):
-        if suffix == "b32":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            ssrc2 = instruction[4]
-            variable = "var" + str(self.decompiler_data.num_of_var)
-            if flag_of_status:
-                node.state.registers[vdst] = Register(variable, Type.program_param, Integrity.integer)
-                node.state.make_version(self.decompiler_data.versions, vdst)
-                if vdst in [src0, src1]:
-                    node.state.registers[vdst].make_prev()
-                node.state.registers[vdst].type_of_date = suffix
-
-                if node.state.registers[vdst].type == Type.param_global_id_x:
-                    variable = "*" + variable
-                node.state.registers[vdst].val = variable
-                self.decompiler_data.num_of_var += 1
-                self.decompiler_data.variables[node.state.registers[vdst].version] = variable
-                self.decompiler_data.names_of_vars[variable] = suffix
-                return node
-            output_string = node.state.registers[vdst].val + " = " + node.state.registers[ssrc2].val \
-                            + " ? " + node.state.registers[src1].val + " : " \
-                            + node.parent[0].state.registers[src0].val
-            return output_string
-            # self.output_file.write(vdst + " = " + ssrc2 + " & (1ULL << laneid) ? " + src1 + " : " + src0 + "\n")
-
-    def v_cvt(self, instruction, suffix):
-        tab = "    "
-        if suffix == "f32_u32":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            self.decompiler_data.output_file.write(vdst + " = (float)" + src0 + "\n")
-
-        elif suffix == "f64_i32":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            self.decompiler_data.output_file.write(vdst + " = (double)(int)" + src0 + "\n")
-
-        elif suffix == "u32_f32":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            self.decompiler_data.output_file.write(instruction[1] + " = 0\n")
-            self.decompiler_data.output_file.write("if (!isnan(as_float(" + src0 + ")))\n")
-            self.decompiler_data.output_file.write(
-                tab + vdst + " = (int)min(convert_int_rtz(as_float(" + src0 + ")), 4294967295.0)\n")
-
-    def v_div_fixup(self, instruction, suffix):
-        tab = "    "
-        if suffix == "f64":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            src2 = instruction[4]
-            sf0 = "sf0" + str(self.decompiler_data.number_of_sf0)
-            sf1 = "sf1" + str(self.decompiler_data.number_of_sf1)
-            sf2 = "sf2" + str(self.decompiler_data.number_of_sf2)
-            self.decompiler_data.output_file.write("double " + sf0 + " = as_double(" + src0 + ")\n")
-            self.decompiler_data.output_file.write("double " + sf1 + " = as_double(" + src1 + ")\n")
-            self.decompiler_data.output_file.write("double " + sf2 + " = as_double(" + src2 + ")\n")
-            self.decompiler_data.output_file.write("if (isnan(" + sf1 + ") && !isnan(" + sf2 + "))\n")
-            self.decompiler_data.output_file.write(tab + vdst + " = nan(" + sf1 + ")\n")
-            self.decompiler_data.output_file.write("else if (abs(" + sf2 + "))\n")
-            self.decompiler_data.output_file.write(
-                tab + vdst + " = nan(" + sf2 + ")\n")  # nan не может принимать что-то нецелое
-            self.decompiler_data.output_file.write("else if (" + sf1 + " == 0.0 && " + sf2 + " == 0.0)\n")
-            self.decompiler_data.output_file.write(tab + vdst + " = NAN\n")
-            self.decompiler_data.output_file.write("else if (abs(" + sf1 + ") == INFINITY)\n")
-            self.decompiler_data.output_file.write(tab + vdst + " = -NAN\n")
-            self.decompiler_data.output_file.write("else if (" + sf1 + " == 0.0)\n")
-            self.decompiler_data.output_file.write(tab + vdst + " = INFINITY * sign(" + sf1 + ") * sign(" + sf2 + ")\n")
-            self.decompiler_data.output_file.write("else if (abs(" + sf1 + ") == INFINITY)\n")
-            self.decompiler_data.output_file.write(tab + vdst + " = sign(" + sf1 + ") * sign(" + sf2 + ") >= 0 ? 0.0 : -0.0\n")
-            self.decompiler_data.output_file.write("else if (isnan(" + sf0 + "))\n")
-            self.decompiler_data.output_file.write(tab + vdst + " = sign(" + sf1 + ") * sign(" + sf2 + ") * INFINITY\n")
-            self.decompiler_data.output_file.write("else\n")
-            self.decompiler_data.output_file.write(tab + vdst + " = " + sf0 + "\n")
-
-    def v_fma(self, instruction, suffix):
-        if suffix == "f64":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            src2 = instruction[4]
-            self.decompiler_data.output_file.write(
-                vdst + " = " + "as_double(" + src0 + ") * as_double(" + src1 + ") + as_double(" + src2 + ")\n")
-
-    def v_lshlrev(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == "b32":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            if flag_of_status:
-                new_val, src0_flag, src1_flag = self.make_op(node, src1, str(pow(2, int(src0))), " * ")
-                node.state.registers[vdst] = Register(new_val, node.state.registers[src1].type, Integrity.integer)
-                node.state.registers[vdst].version = node.parent[0].state.registers[src1].version
-                node.state.registers[vdst].type_of_data = suffix
-                return node
-            return output_string
-            # self.output_file.write(vdst + " = " + src1 + " << (" + src0 + " & 31)\n")
-
-        elif suffix == "b64":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
-                = node.state.find_first_last_num_to_from(vdst, src1)
-            if flag_of_status:
-                to_registers_1 = name_of_register + str(last_to)
-                from_registers_1 = name_of_from + str(first_from + 1)
-                new_val, src1_flag, src0_flag = self.make_op(node, from_registers, str(pow(2, int(src0))), " * ")
-                if src0_flag and src1_flag:
-                    if node.state.registers[from_registers].type \
-                            in [Type.global_id_x, Type.global_id_y, Type.global_id_z] \
-                            and node.state.registers[name_of_register + str(first_from + 1)].val == "0":
-                        node.state.registers[to_registers] = \
-                            Register(new_val, node.state.registers[from_registers].type, Integrity.low_part)
-                        if node.parent[0].state.registers.get(to_registers) is not None:
-                            node.state.registers[to_registers].version = \
-                                node.parent[0].state.registers[to_registers].version
-                        else:
-                            node.state.make_version(self.decompiler_data.versions, to_registers)
-                        node.state.registers[to_registers].type_of_data = suffix
-                        # node.state.make_version(self.versions, to_registers)
-                        # if to_registers == from_registers:
-                        #     node.state.registers[to_registers].make_prev()
-                        node.state.registers[to_registers_1] = \
-                            Register(node.state.registers[from_registers_1].val,
-                                     node.state.registers[from_registers].type,
-                                     Integrity.high_part)
-                        if node.parent[0].state.registers.get(to_registers_1) is not None:
-                            node.state.registers[to_registers_1].version = \
-                                node.parent[0].state.registers[to_registers_1].version
-                        else:
-                            node.state.make_version(self.decompiler_data.versions, to_registers_1)
-                        node.state.registers[to_registers_1].type_of_data = suffix
-                        # node.state.make_version(self.versions, to_registers_1)
-                        # if to_registers_1 == from_registers_1:
-                        #     node.state.registers[to_registers_1].make_prev()
-                    else:
-                        node.state.registers[to_registers] = node.state.registers[from_registers]
-                        node.state.make_version(self.decompiler_data.versions, to_registers)
-                        node.state.registers[to_registers_1] = node.state.registers[from_registers_1]
-                        node.state.make_version(self.decompiler_data.versions, to_registers_1)
-                    # нет описания под y и z
-                else: #  should check
-                    type_reg = Type.int32
-                    if src0_flag:
-                        type_reg = node.state.registers[src0].type
-                    if src1_flag:
-                        type_reg = node.state.registers[from_registers].type
-                    node.state.registers[to_registers] = Register(new_val, type_reg, Integrity.low_part)
-                    node.state.make_version(self.decompiler_data.versions, to_registers)
-                    node.state.registers[to_registers_1] = Register(new_val, type_reg, Integrity.high_part)
-                    node.state.make_version(self.decompiler_data.versions, to_registers_1)
-                return node
-            return output_string
-            # self.output_file.write(vdst + " = " + node.state.registers[to_registers].val + " + " + node.state.registers[name_of_register + str(last_to)].val + "\n") #понять, что хочу выводить
-            # self.output_file.write(vdst + " = " + src1 + " << (" + src0 + " & 63)\n")
-
-    def v_lshrrev(self, instruction, suffix):
-        if suffix == "b64":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            self.decompiler_data.output_file.write(vdst + " = " + src1 + " >> (" + src0 + " & 63)\n")
-
-    def v_min(self, instruction, suffix):
-        if suffix == "u32":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            self.decompiler_data.output_file.write(vdst + " = min(" + src0 + ", " + src1 + ")\n")
-
-    def v_mul(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == "f32" or suffix == "i32_i24":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            if flag_of_status:
-                new_integrity = node.state.registers[src1].integrity
-                new_val, src0_reg, src1_reg = self.make_op(node, src0, src1, " * ")
-                node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
-                node.state.make_version(self.decompiler_data.versions, vdst)
-                if vdst in [src0, src1]:
-                    node.state.registers[vdst].make_prev()
-                node.state.registers[vdst].type_of_data = suffix
-                return node
-            return output_string
-
-        elif suffix == "f64":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            self.decompiler_data.output_file.write(vdst + " = as_double(" + src0 + ") * as_double(" + src1 + ")\n")
-
-    def v_mul_lo(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == "u32":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            if flag_of_status:
-                new_integrity = node.state.registers[src1].integrity
-                new_val, src0_reg, src1_reg = self.make_op(node, src0, src1, " * ")
-                node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
-                node.state.make_version(self.decompiler_data.versions, vdst)
-                if vdst in [src0, src1]:
-                    node.state.registers[vdst].make_prev()
-                node.state.registers[vdst].type_of_data = suffix
-                return node
-            return output_string
-
-    def v_mov(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == "b32":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            if flag_of_status:
-                if node.state.registers.get(src0) is not None:
-                    node.state.registers[vdst] = \
-                        Register(node.state.registers[src0].val, node.state.registers[src0].type,
-                                 Integrity.integer)
-                else:
-                    node.state.registers[vdst] = Register(src0, Type.int32, Integrity.integer)
-                node.state.make_version(self.decompiler_data.versions, vdst)
-                if vdst in [src0]:
-                    node.state.registers[vdst].make_prev()
-                node.state.registers[vdst].type_of_data = suffix
-                return node
-            return output_string
-            # self.output_file.write(vdst + " = " + node.state.registers[vdst].val + "\n")
-            # self.output_file.write(vdst + " = " + src0 + "\n")
-
-    def v_sub(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == "u32":
-            vdst = instruction[1]
-            vcc = instruction[2]
-            src0 = instruction[3]
-            src1 = instruction[4]
-            if flag_of_status:
-                new_val, src0_reg, src1_reg = self.make_op(node, src0, src1, " - ")
-                type_reg = Type.int32
-                if src0_reg:
-                    type_reg = node.state.registers[src0].integrity
-                elif src1_reg:
-                    type_reg = node.state.registers[src1].integrity
-                node.state.registers[vdst] = Register(new_val, Type.unknown, type_reg)
-                node.state.make_version(self.decompiler_data.versions, vdst)
-                if vdst in [src0, src1]:
-                    node.state.registers[vdst].make_prev()
-                node.state.registers[vdst].type_of_data = suffix
-                return node
-            return output_string
-
-    def v_subrev(self, node, instruction, flag_of_status, suffix, output_string):
-        if suffix == "u32":
-            vdst = instruction[1]
-            vcc = instruction[2]
-            src0 = instruction[3]
-            src1 = instruction[4]
-            if flag_of_status:
-                new_val, src0_reg, src1_reg = self.make_op(node, src1, src0, " - ")
-                new_integrity = node.state.registers[src1].integrity
-                node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
-                node.state.make_version(self.decompiler_data.versions, vdst)
-                if vdst in [src0, src1]:
-                    node.state.registers[vdst].make_prev()
-                node.state.registers[vdst].type_of_data = suffix
-                return node
-            return output_string
-
     def to_openCL(self, node, flag_of_status):
         tab = "    "
         output_string = ""
@@ -2288,252 +851,244 @@ class Decompiler:
                     root = root + "_" + part
         if prefix == "ds":
             if root == "add":
-                return self.ds_add(node, instruction, flag_of_status, suffix)
+                return DsAdd().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "bpermute":
-                return self.ds_bpermute(suffix, instruction)
+                return DsBpermute().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "read":
-                return self.ds_read(node, instruction, flag_of_status, suffix, output_string)
+                return DsRead().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "read2":
-                return self.ds_read2(instruction, suffix)
+                return DsRead2().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "write":
-                return self.ds_write(node, instruction, flag_of_status, suffix)
+                return DsWrite().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "write2":
-                return self.ds_write2(instruction, suffix)
+                return DsWrite2().execute(node, instruction, flag_of_status, suffix, output_string)
 
         elif prefix == "flat":  # не очень понятное описание, особенно про inst_offset
             if root == "atomic_add":
-                return self.flat_atomic_add(instruction)
+                return FlatAtomicAdd().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "load":
-                return self.flat_load(node, instruction, flag_of_status, suffix)
+                return FlatLoad().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "store":
                 if suffix == "dword" or suffix == "byte":
-                    return self.flat_store_dword(node, instruction, flag_of_status, suffix)
+                    return FlatStoreDword().execute(node, instruction, flag_of_status, suffix, output_string)
                 elif suffix == "dwordx2":
-                    return self.flat_store_dwordx2(node, instruction, flag_of_status)
+                    return FlatStoreDwordx2().execute(node, instruction, flag_of_status, suffix, output_string)
                 elif suffix == "dwordx4":
-                    return self.flat_store_dwordx4(node, instruction, flag_of_status)
+                    return FlatStoreDwordx4().execute(node, instruction, flag_of_status, suffix, output_string)
 
         elif prefix == 'global':  # offset - опциональная часть?
             if root == "load":
-                return self.global_load(instruction, suffix)
+                return GlobalLoad().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "store":
-                return self.global_store(instruction, suffix)
+                return GlobalStore().execute(node, instruction, flag_of_status, suffix, output_string)
 
         elif prefix == 's':
             if root == 'add':
-                #return self.s_add(node, instruction, flag_of_status, suffix, output_string)
                 return SAdd().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'addc':
-                return self.s_addc(node, instruction, flag_of_status, suffix, output_string)
+                return SAddc().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'and':
-                return self.s_and(node, instruction, flag_of_status, suffix, output_string)
+                return SAnd().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'and_saveexec':
-                return self.s_and_saveexec(node, instruction, flag_of_status, suffix, output_string)
+                return SAndSaveexec().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'andn2':
-                return self.s_andn2(node, instruction, flag_of_status, suffix, output_string)
+                return SAndn2().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'ashr':
-                return self.s_ashr(node, instruction, flag_of_status, suffix, output_string)
+                return SAshr().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'barrier':
-                return self.s_barrier(node, flag_of_status)
+                return SBarrier().execute(node, instruction, flag_of_status, suffix, output_string)  # this more than need arguments
 
             elif root == 'bfe':
-                return self.s_bfe(node, instruction, flag_of_status, suffix, output_string)
+                return SBfe().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'branch':
-                return self.s_branch(node, instruction)
+                return SBranch().execute(node, instruction, flag_of_status, suffix, output_string)  # this more than need arguments
 
             elif root == 'cbranch_execz':
-                return self.s_cbranch_execz(node, instruction, flag_of_status)
+                return SCbranchExecz().execute(node, instruction, flag_of_status, suffix, output_string)  # this more than need arguments
 
             elif root == 'cbranch_scc0':
-                return self.s_cbranch_scc0(node, instruction, flag_of_status)
+                return SCbranchScc0().execute(node, instruction, flag_of_status, suffix, output_string)  # this more than need arguments
 
             elif root == 'cbranch_scc1':
-                return self.s_cbranch_scc1(instruction)
+                return SCbranchScc1().execute(node, instruction, flag_of_status, suffix, output_string)  # this more than need arguments
 
             elif root == 'cbranch_vccnz':
-                return self.s_cbranch_vccnz(instruction)
+                return SCbranchVccnz().execute(node, instruction, flag_of_status, suffix, output_string)  # this more than need arguments
 
             elif root == 'cmp_eq':
-                return self.s_cmp_eq(instruction, suffix)
+                return SCmpEq().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'cmp_ge':
-                return self.s_cmp_ge(instruction, suffix)
+                return SCmpGe().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'cmp_lt':
-                return self.s_cmp_lt(node, instruction, flag_of_status, suffix, output_string)
+                return SCmpLt().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'cselect':
-                return self.s_cselect(instruction, suffix)
+                return SCselect().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'endpgm':
-                return self.s_endpgm(node, flag_of_status, output_string)
+                return SEndpgm().execute(node, instruction, flag_of_status, suffix, output_string)  # this more than need arguments
 
             elif root == 'getpc':
-                return self.s_getpc(instruction, suffix)
+                return SGetpc().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'load':
-                return self.s_load(node, instruction, flag_of_status, suffix, output_string)
+                return SLoad().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'lshl':
-                return self.s_lshl(node, instruction, flag_of_status, suffix, output_string)
+                return SLshl().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'lshr':
-                return self.s_lshr(node, instruction, flag_of_status, suffix, output_string)
+                return SLshr().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'mov':
-                return self.s_mov(node, instruction, flag_of_status, suffix, output_string)
+                return SMov().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'movk':
-                return self.s_movk(node, instruction, flag_of_status, suffix, output_string)
+                return SMovk().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'mul':
-                return self.s_mul(node, instruction, flag_of_status, suffix, output_string)
+                return SMul().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'mulk':
-                return self.s_mulk(node, instruction, flag_of_status, suffix, output_string)
+                return SMulk().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'not':
-                return self.s_not(instruction, suffix)
+                return SNot().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'set_gpr_idx_on':
-                return self.s_set_gpr_idx_on(instruction)
+                return SSetGprIdxOn().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'set_gpr_idx_off':
-                return self.s_set_gpr_idx_off()
+                return SSetGprIdxOff().execute(node, instruction, flag_of_status, suffix, output_string)  # this more than need arguments
 
             elif root == 'setpc':
-                return self.s_setpc(instruction, suffix)
+                return SSetpc().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'setreg':  # возможно это неправда
-                return self.s_setreg(instruction, suffix)
+                return SSetreg().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'sub':
-                return self.s_sub(node, instruction, flag_of_status, suffix, output_string)
+                return SSub().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'subb':
-                return self.s_sub(node, instruction, flag_of_status, suffix, output_string)  # probably it's not correct
+                return SSub().execute(node, instruction, flag_of_status, suffix, output_string)  # probably it's not correct
 
             elif root == 'swappc':
-                return self.s_swappc(instruction, suffix)
+                return SSwappc().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == 'waitcnt':
-                return self.s_waitcnt(node, flag_of_status, output_string)
+                return SWaitcnt().execute(node, instruction, flag_of_status, suffix, output_string)  # this more than need arguments
 
         elif prefix == 'v':
-            # if root == "add_co":
-            #     if suffix == "u32":
-            # не 1.2
             if root == "add":
-                return self.v_add(node, instruction, flag_of_status, suffix, output_string)
-
-            # elif root == "add3":
-            #     if suffix == "u32":
-            #
-            # elif root == "addc_co":
-            #     if suffix == "u32":
-            # не 1.2
+                return VAdd().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "addc":
-                return self.v_addc(node, instruction, flag_of_status, suffix, output_string)
+                return VAddc().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "alignbit":
-                return self.v_alignbit(instruction, suffix)
+                return VAlignbit().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "alignbyte":
-                return self.v_alignbyte(instruction, suffix)
+                return VAlignbyte().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "and":
-                return self.v_and(node, instruction, flag_of_status, suffix, output_string)
+                return VAnd().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "and_or":
-                return self.v_and_or(instruction, suffix)
+                return VAndOr().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "ashrrev":
-                return self.v_ashrrev(node, instruction, flag_of_status, suffix, output_string)
+                return VAshrrev().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "bfi":
-                return self.v_bfi(instruction, suffix)
+                return VBfi().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "cmp_eq":
-                return self.v_cmp_eq(node, instruction, flag_of_status, suffix, output_string)
+                return VCmpEq().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "cmp_ge":
-                return self.v_cmp_ge(instruction, suffix)
+                return VCmpGe().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "cmp_gt":
-                return self.v_cmp_gt(node, instruction, flag_of_status, suffix, output_string)
+                return VCmpGt().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "cmp_lg":
-                return self.v_cmp_lg(node, instruction, flag_of_status, suffix, output_string)
+                return VCmpLg().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "cmp_lt":
-                return self.v_cmp_lt(instruction, suffix)
+                return VCmpLt().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "cmpx_class":  # постоянно пишут про sdst(lane) зачем...
-                return self.v_cmpx_class(suffix)
+                return VCmpxClass().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "cmpx_eq":
-                return self.v_cmpx_eq(instruction, suffix)
+                return VCmpxEq().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "cmpx_le":
-                return self.v_cmpx_le(instruction, suffix)
+                return VCmpxLe().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "cndmask":
-                return self.v_cndmask(node, instruction, flag_of_status, suffix)
+                return VCndmask().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "cvt":
-                return self.v_cvt(instruction, suffix)
+                return VCvt().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "div_fixup":
-                return self.v_div_fixup(instruction, suffix)
+                return VDivFixup().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "fma":
-                return self.v_fma(instruction, suffix)
+                return VFma().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "lshlrev":
-                return self.v_lshlrev(node, instruction, flag_of_status, suffix, output_string)
+                return VLshlrev().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "lshrrev":
-                return self.v_lshrrev(instruction, suffix)
+                return VLshrrev().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "min":
-                return self.v_min(instruction, suffix)
+                return VMin().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "mul":
-                return self.v_mul(node, instruction, flag_of_status, suffix, output_string)
+                if suffix == "f64":
+                    return VMulF64().execute(node, instruction, flag_of_status, suffix, output_string)
+                elif suffix == "f32" or "i32_i24":
+                    return VMulF32().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "mul_hi":
-                return self.v_mul_lo(node, instruction, flag_of_status, suffix, output_string)  # I'm not sure
+                return VMulLo().execute(node, instruction, flag_of_status, suffix, output_string)  # I'm not sure
 
             elif root == "mul_lo":
-                return self.v_mul_lo(node, instruction, flag_of_status, suffix, output_string)
+                return VMulLo().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "mov":
-                return self.v_mov(node, instruction, flag_of_status, suffix, output_string)
+                return VMov().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "sub":
-                return self.v_sub(node, instruction, flag_of_status, suffix, output_string)
+                return VSub().execute(node, instruction, flag_of_status, suffix, output_string)
 
             elif root == "subb":
-                return self.v_sub(node, instruction, flag_of_status, suffix, output_string)  # probably it's not correct
+                return VSub().execute(node, instruction, flag_of_status, suffix, output_string)  # probably it's not correct
 
             elif root == "subrev":
-                return self.v_subrev(node, instruction, flag_of_status, suffix, output_string)
+                return VSubrev().execute(node, instruction, flag_of_status, suffix, output_string)
 
         else:
             self.decompiler_data.output_file.write("Not resolve yet. Maybe you lose.\n")

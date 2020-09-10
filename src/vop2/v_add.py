@@ -1,0 +1,110 @@
+from base_instruction import BaseInstruction
+from decompiler_data import DecompilerData
+from integrity import Integrity
+from register import Register
+from type_of_reg import Type
+
+
+class VAdd(BaseInstruction):
+    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+        decompiler_data = DecompilerData.Instance()
+        if suffix == "u32":
+            vdst = instruction[1]
+            sdst = instruction[2]
+            src0 = instruction[3]
+            src1 = instruction[4]
+            new_val, src0_reg, src1_reg = decompiler_data.make_op(node, src0, src1, " + ")  # may be this should be ulong
+            if flag_of_status:
+                if src0_reg and src1_reg:
+                    if node.state.registers[src0].type == Type.work_group_id_x_local_size_offset and \
+                            node.state.registers[src1].type == Type.work_item_id_x or \
+                            node.state.registers[src0].type == Type.global_offset_x and \
+                            node.state.registers[src1].type == Type.work_group_id_x_work_item_id:
+                        new_integrity = node.state.registers[src1].integrity
+                        node.state.registers[vdst] = Register("get_global_id(0)", Type.global_id_x, new_integrity)
+                    elif node.state.registers[src0].type == Type.work_group_id_y_local_size_offset and \
+                            node.state.registers[src1].type == Type.work_item_id_y or \
+                            node.state.registers[src0].type == Type.global_offset_y and \
+                            node.state.registers[src1].type == Type.work_group_id_y_work_item_id:
+                        new_integrity = node.state.registers[src1].integrity
+                        node.state.registers[vdst] = Register("get_global_id(1)", Type.global_id_y, new_integrity)
+                    elif node.state.registers[src0].type == Type.work_group_id_z_local_size_offset and \
+                            node.state.registers[src1].type == Type.work_item_id_z or \
+                            node.state.registers[src0].type == Type.global_offset_z and \
+                            node.state.registers[src1].type == Type.work_group_id_z_work_item_id or \
+                            node.state.registers[src1].type == Type.global_offset_z and \
+                            node.state.registers[src0].type == Type.work_group_id_z_work_item_id:
+                        new_integrity = node.state.registers[src1].integrity
+                        node.state.registers[vdst] = Register("get_global_id(2)", Type.global_id_z, new_integrity)
+                    elif node.state.registers[src0].type == Type.paramA:
+                        new_integrity = node.state.registers[src1].integrity
+                        if decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "int" \
+                                or decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "uint":
+                            new_value, src0_flaf, src1_flag = decompiler_data.make_op(node, src1, "4", " / ")
+                            new_val = node.state.registers[src0].val + "[" + new_value + "]"
+                            node.state.registers[vdst] = \
+                                Register(new_val, Type.param_global_id_x, new_integrity)
+                        elif decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "long" \
+                                or decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "ulong":
+                            new_value, src0_flaf, src1_flag = decompiler_data.make_op(node, src1, "8", " / ")
+                            new_val = node.state.registers[src0].val + "[" + new_value + "]"
+                            node.state.registers[vdst] = \
+                                Register(new_val, Type.param_global_id_x, new_integrity)
+                        elif decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "char" \
+                                or decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "uchar":
+                            # new_value, src0_flaf, src1_flag = self.make_op(node, src1, "8", " / ")
+                            new_val = node.state.registers[src0].val + "[" + node.state.registers[src1].val + "]"
+                            node.state.registers[vdst] = \
+                                Register(new_val, Type.param_global_id_x, new_integrity)
+                        #  make something same fo another types
+
+                    elif node.state.registers[src0].type == Type.work_group_id_x_local_size and \
+                            node.state.registers[src1].type == Type.work_item_id_x:
+                        new_integrity = node.state.registers[src1].integrity
+                        node.state.registers[vdst] = \
+                            Register("get_global_id(0) - get_global_offset(0)", Type.work_group_id_x_work_item_id,
+                                     new_integrity)
+                    elif node.state.registers[src0].type == Type.work_group_id_y_local_size and \
+                            node.state.registers[src1].type == Type.work_item_id_y:
+                        new_integrity = node.state.registers[src1].integrity
+                        node.state.registers[vdst] = \
+                            Register("get_global_id(1) - get_global_offset(1)", Type.work_group_id_y_work_item_id,
+                                     new_integrity)
+                    elif node.state.registers[src0].type == Type.work_group_id_z_local_size and \
+                            node.state.registers[src1].type == Type.work_item_id_z:
+                        new_integrity = node.state.registers[src1].integrity
+                        node.state.registers[vdst] = \
+                            Register("get_global_id(2) - get_global_offset(2)", Type.work_group_id_z_work_item_id,
+                                     new_integrity)
+                    # elif node.state.registers[src0].type == Type.global_id_y and node.state.registers[src1].type == Type.global_id_z\
+                    #         or node.state.registers[src0].type == Type.global_id_z and node.state.registers[src1].type == Type.global_id_y:
+                    #     new_integrity = node.state.registers[src1].integrity
+                    #     node.state.registers[vdst] = \
+                    #         Register(node.state.registers[src0].val + " + " + node.state.registers[src1].val,
+                    #                  Type.unknown, new_integrity)
+                    elif node.state.registers[src0].type == Type.work_group_id_x_local_size and \
+                            node.state.registers[src1].type == Type.work_item_id_x or \
+                            node.state.registers[src1].type == Type.work_group_id_x_local_size and \
+                            node.state.registers[src0].type == Type.work_item_id_x:
+                        new_integrity = node.state.registers[src1].integrity
+                        node.state.registers[vdst] = \
+                            Register("get_global_id(0) - get_global_offset(0)", Type.unknown, new_integrity)
+                    # elif node.state.registers[src0]. type == Type.param or node.state.registers[src1]. type == Type.param:
+                    else:
+                        new_integrity = node.state.registers[src1].integrity
+                        node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
+                else:
+                    type_reg = Type.int32
+                    if src0_reg:
+                        type_reg = node.state.registers[src0].type
+                    if src1_reg:
+                        type_reg = node.state.registers[src1].type
+                    node.state.registers[vdst] = Register(new_val, type_reg, Integrity.integer)
+                node.state.make_version(decompiler_data.versions, vdst)
+                if vdst in [src0, src1]:
+                    node.state.registers[vdst].make_prev()
+                node.state.registers[vdst].type_of_data = suffix
+                # elif node.state.registers[src0].type == Type.param and node.state.registers[src1].type
+                # не хватает описания sdst
+                return node
+            return output_string
