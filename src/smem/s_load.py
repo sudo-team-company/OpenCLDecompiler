@@ -6,8 +6,9 @@ from type_of_reg import Type
 
 
 class SLoad(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+    def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData.Instance()  # may be should add types, not sure
+        output_string = ""
         if suffix == 'dword':
             sdata = instruction[1]
             sbase = instruction[2]

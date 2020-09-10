@@ -3,7 +3,8 @@ from decompiler_data import DecompilerData
 
 
 class SAndSaveexec(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+    def execute(self, node, instruction, flag_of_status, suffix):
+        output_string = ""
         if suffix == 'b64':
             sdst = instruction[1]
             ssrc0 = instruction[2]

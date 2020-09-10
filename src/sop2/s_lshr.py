@@ -6,8 +6,9 @@ from type_of_reg import Type
 
 
 class SLshr(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+    def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData.Instance()
+        output_string = ""
         sdst = instruction[1]
         ssrc0 = instruction[2]
         ssrc1 = instruction[3]

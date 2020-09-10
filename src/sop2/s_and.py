@@ -2,7 +2,8 @@ from base_instruction import BaseInstruction
 
 
 class SAnd(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+    def execute(self, node, instruction, flag_of_status, suffix):
+        output_string = ""
         if suffix == 'b32' or suffix == 'b64':
             if flag_of_status:
                 sdst = instruction[1]

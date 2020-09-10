@@ -4,7 +4,8 @@ from register import Register
 
 
 class VAshrrev(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+    def execute(self, node, instruction, flag_of_status, suffix):
+        output_string = ""
         if suffix == "i32":
             vdst = instruction[1]
             src0 = instruction[2]

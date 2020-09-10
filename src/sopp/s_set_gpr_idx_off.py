@@ -3,6 +3,6 @@ from decompiler_data import DecompilerData
 
 
 class SSetGprIdxOff(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+    def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData.Instance()
         decompiler_data.output_file.write("mode = (mode & ~(1U << 27))\n")

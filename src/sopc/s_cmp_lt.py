@@ -6,8 +6,9 @@ from type_of_reg import Type
 
 
 class SCmpLt(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+    def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData.Instance()
+        output_string = ""
         if suffix == 'i32':
             ssrc0 = instruction[1]
             ssrc1 = instruction[2]

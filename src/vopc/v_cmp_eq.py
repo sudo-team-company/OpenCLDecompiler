@@ -6,8 +6,9 @@ from type_of_reg import Type
 
 
 class VCmpEq(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+    def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData.Instance()
+        output_string = ""
         if suffix == "u32" or suffix == "i32":
             sdst = instruction[1]
             src0 = instruction[2] #  if instruction[2][0] != "v" else node.state.registers[instruction[2]].val

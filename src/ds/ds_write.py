@@ -5,7 +5,7 @@ from register import Register
 
 
 class DsWrite(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+    def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData.Instance()
         if suffix == "b32":
             addr = instruction[1]

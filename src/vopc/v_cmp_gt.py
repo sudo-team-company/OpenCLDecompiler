@@ -6,8 +6,9 @@ from type_of_reg import Type
 
 
 class VCmpGt(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+    def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData.Instance()
+        output_string = ""
         if suffix == "u64":
             sdst = instruction[1]
             src0 = instruction[2]

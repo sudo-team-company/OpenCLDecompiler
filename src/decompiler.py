@@ -817,7 +817,6 @@ class Decompiler:
             self.decompiler_data.output_file.write(indent + "}\n")
 
     def to_openCL(self, node, flag_of_status):
-        tab = "    "
         output_string = ""
         if node.instruction[0][0] == ".":
             if flag_of_status:
@@ -851,244 +850,244 @@ class Decompiler:
                     root = root + "_" + part
         if prefix == "ds":
             if root == "add":
-                return DsAdd().execute(node, instruction, flag_of_status, suffix, output_string)
+                return DsAdd().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "bpermute":
-                return DsBpermute().execute(node, instruction, flag_of_status, suffix, output_string)
+                return DsBpermute().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "read":
-                return DsRead().execute(node, instruction, flag_of_status, suffix, output_string)
+                return DsRead().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "read2":
-                return DsRead2().execute(node, instruction, flag_of_status, suffix, output_string)
+                return DsRead2().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "write":
-                return DsWrite().execute(node, instruction, flag_of_status, suffix, output_string)
+                return DsWrite().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "write2":
-                return DsWrite2().execute(node, instruction, flag_of_status, suffix, output_string)
+                return DsWrite2().execute(node, instruction, flag_of_status, suffix)
 
         elif prefix == "flat":  # не очень понятное описание, особенно про inst_offset
             if root == "atomic_add":
-                return FlatAtomicAdd().execute(node, instruction, flag_of_status, suffix, output_string)
+                return FlatAtomicAdd().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "load":
-                return FlatLoad().execute(node, instruction, flag_of_status, suffix, output_string)
+                return FlatLoad().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "store":
                 if suffix == "dword" or suffix == "byte":
-                    return FlatStoreDword().execute(node, instruction, flag_of_status, suffix, output_string)
+                    return FlatStoreDword().execute(node, instruction, flag_of_status, suffix)
                 elif suffix == "dwordx2":
-                    return FlatStoreDwordx2().execute(node, instruction, flag_of_status, suffix, output_string)
+                    return FlatStoreDwordx2().execute(node, instruction, flag_of_status, suffix)
                 elif suffix == "dwordx4":
-                    return FlatStoreDwordx4().execute(node, instruction, flag_of_status, suffix, output_string)
+                    return FlatStoreDwordx4().execute(node, instruction, flag_of_status, suffix)
 
         elif prefix == 'global':  # offset - опциональная часть?
             if root == "load":
-                return GlobalLoad().execute(node, instruction, flag_of_status, suffix, output_string)
+                return GlobalLoad().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "store":
-                return GlobalStore().execute(node, instruction, flag_of_status, suffix, output_string)
+                return GlobalStore().execute(node, instruction, flag_of_status, suffix)
 
         elif prefix == 's':
             if root == 'add':
-                return SAdd().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SAdd().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'addc':
-                return SAddc().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SAddc().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'and':
-                return SAnd().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SAnd().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'and_saveexec':
-                return SAndSaveexec().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SAndSaveexec().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'andn2':
-                return SAndn2().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SAndn2().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'ashr':
-                return SAshr().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SAshr().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'barrier':
-                return SBarrier().execute(node, instruction, flag_of_status, suffix, output_string)  # this more than need arguments
+                return SBarrier().execute(node, instruction, flag_of_status, suffix)  # this more than need arguments
 
             elif root == 'bfe':
-                return SBfe().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SBfe().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'branch':
-                return SBranch().execute(node, instruction, flag_of_status, suffix, output_string)  # this more than need arguments
+                return SBranch().execute(node, instruction, flag_of_status, suffix)  # this more than need arguments
 
             elif root == 'cbranch_execz':
-                return SCbranchExecz().execute(node, instruction, flag_of_status, suffix, output_string)  # this more than need arguments
+                return SCbranchExecz().execute(node, instruction, flag_of_status, suffix)  # this more than need arguments
 
             elif root == 'cbranch_scc0':
-                return SCbranchScc0().execute(node, instruction, flag_of_status, suffix, output_string)  # this more than need arguments
+                return SCbranchScc0().execute(node, instruction, flag_of_status, suffix)  # this more than need arguments
 
             elif root == 'cbranch_scc1':
-                return SCbranchScc1().execute(node, instruction, flag_of_status, suffix, output_string)  # this more than need arguments
+                return SCbranchScc1().execute(node, instruction, flag_of_status, suffix)  # this more than need arguments
 
             elif root == 'cbranch_vccnz':
-                return SCbranchVccnz().execute(node, instruction, flag_of_status, suffix, output_string)  # this more than need arguments
+                return SCbranchVccnz().execute(node, instruction, flag_of_status, suffix)  # this more than need arguments
 
             elif root == 'cmp_eq':
-                return SCmpEq().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SCmpEq().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'cmp_ge':
-                return SCmpGe().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SCmpGe().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'cmp_lt':
-                return SCmpLt().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SCmpLt().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'cselect':
-                return SCselect().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SCselect().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'endpgm':
-                return SEndpgm().execute(node, instruction, flag_of_status, suffix, output_string)  # this more than need arguments
+                return SEndpgm().execute(node, instruction, flag_of_status, suffix)  # this more than need arguments
 
             elif root == 'getpc':
-                return SGetpc().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SGetpc().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'load':
-                return SLoad().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SLoad().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'lshl':
-                return SLshl().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SLshl().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'lshr':
-                return SLshr().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SLshr().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'mov':
-                return SMov().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SMov().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'movk':
-                return SMovk().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SMovk().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'mul':
-                return SMul().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SMul().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'mulk':
-                return SMulk().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SMulk().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'not':
-                return SNot().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SNot().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'set_gpr_idx_on':
-                return SSetGprIdxOn().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SSetGprIdxOn().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'set_gpr_idx_off':
-                return SSetGprIdxOff().execute(node, instruction, flag_of_status, suffix, output_string)  # this more than need arguments
+                return SSetGprIdxOff().execute(node, instruction, flag_of_status, suffix)  # this more than need arguments
 
             elif root == 'setpc':
-                return SSetpc().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SSetpc().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'setreg':  # возможно это неправда
-                return SSetreg().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SSetreg().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'sub':
-                return SSub().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SSub().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'subb':
-                return SSub().execute(node, instruction, flag_of_status, suffix, output_string)  # probably it's not correct
+                return SSub().execute(node, instruction, flag_of_status, suffix)  # probably it's not correct
 
             elif root == 'swappc':
-                return SSwappc().execute(node, instruction, flag_of_status, suffix, output_string)
+                return SSwappc().execute(node, instruction, flag_of_status, suffix)
 
             elif root == 'waitcnt':
-                return SWaitcnt().execute(node, instruction, flag_of_status, suffix, output_string)  # this more than need arguments
+                return SWaitcnt().execute(node, instruction, flag_of_status, suffix)  # this more than need arguments
 
         elif prefix == 'v':
             if root == "add":
-                return VAdd().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VAdd().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "addc":
-                return VAddc().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VAddc().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "alignbit":
-                return VAlignbit().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VAlignbit().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "alignbyte":
-                return VAlignbyte().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VAlignbyte().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "and":
-                return VAnd().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VAnd().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "and_or":
-                return VAndOr().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VAndOr().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "ashrrev":
-                return VAshrrev().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VAshrrev().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "bfi":
-                return VBfi().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VBfi().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "cmp_eq":
-                return VCmpEq().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VCmpEq().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "cmp_ge":
-                return VCmpGe().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VCmpGe().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "cmp_gt":
-                return VCmpGt().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VCmpGt().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "cmp_lg":
-                return VCmpLg().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VCmpLg().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "cmp_lt":
-                return VCmpLt().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VCmpLt().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "cmpx_class":  # постоянно пишут про sdst(lane) зачем...
-                return VCmpxClass().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VCmpxClass().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "cmpx_eq":
-                return VCmpxEq().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VCmpxEq().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "cmpx_le":
-                return VCmpxLe().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VCmpxLe().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "cndmask":
-                return VCndmask().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VCndmask().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "cvt":
-                return VCvt().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VCvt().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "div_fixup":
-                return VDivFixup().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VDivFixup().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "fma":
-                return VFma().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VFma().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "lshlrev":
-                return VLshlrev().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VLshlrev().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "lshrrev":
-                return VLshrrev().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VLshrrev().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "min":
-                return VMin().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VMin().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "mul":
                 if suffix == "f64":
-                    return VMulF64().execute(node, instruction, flag_of_status, suffix, output_string)
+                    return VMulF64().execute(node, instruction, flag_of_status, suffix)
                 elif suffix == "f32" or "i32_i24":
-                    return VMulF32().execute(node, instruction, flag_of_status, suffix, output_string)
+                    return VMulF32().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "mul_hi":
-                return VMulLo().execute(node, instruction, flag_of_status, suffix, output_string)  # I'm not sure
+                return VMulLo().execute(node, instruction, flag_of_status, suffix)  # I'm not sure
 
             elif root == "mul_lo":
-                return VMulLo().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VMulLo().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "mov":
-                return VMov().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VMov().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "sub":
-                return VSub().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VSub().execute(node, instruction, flag_of_status, suffix)
 
             elif root == "subb":
-                return VSub().execute(node, instruction, flag_of_status, suffix, output_string)  # probably it's not correct
+                return VSub().execute(node, instruction, flag_of_status, suffix)  # probably it's not correct
 
             elif root == "subrev":
-                return VSubrev().execute(node, instruction, flag_of_status, suffix, output_string)
+                return VSubrev().execute(node, instruction, flag_of_status, suffix)
 
         else:
             self.decompiler_data.output_file.write("Not resolve yet. Maybe you lose.\n")

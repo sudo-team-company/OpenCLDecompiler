@@ -3,7 +3,7 @@ from decompiler_data import DecompilerData
 
 
 class DsRead2(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+    def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData.Instance()
         if suffix == "b64":
             v0 = "v0" + str(decompiler_data.number_of_v0)

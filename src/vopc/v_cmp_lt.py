@@ -3,7 +3,7 @@ from decompiler_data import DecompilerData
 
 
 class VCmpLt(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+    def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData.Instance()
         if suffix == "u32":
             sdst = instruction[1]

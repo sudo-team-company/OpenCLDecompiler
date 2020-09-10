@@ -6,8 +6,9 @@ from type_of_reg import Type
 
 
 class SMovk(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+    def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData.Instance()
+        output_string = ""
         if suffix == 'i32':
             sdst = instruction[1]
             simm16 = instruction[2]

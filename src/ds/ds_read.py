@@ -5,8 +5,9 @@ from register import Register
 
 
 class DsRead(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+    def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData.Instance()
+        output_string = ""
         if suffix == "b32":
             vdst = instruction[1]
             addr = instruction[2]

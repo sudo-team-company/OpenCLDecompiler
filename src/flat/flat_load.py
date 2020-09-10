@@ -6,7 +6,7 @@ from type_of_reg import Type
 
 
 class FlatLoad(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+    def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData.Instance()
         if suffix == "dword":
             vdst = instruction[1]

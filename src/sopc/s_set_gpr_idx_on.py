@@ -3,7 +3,7 @@ from decompiler_data import DecompilerData
 
 
 class SSetGprIdxOn(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+    def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData.Instance()
         ssrc0 = instruction[1]
         imm8 = instruction[2]

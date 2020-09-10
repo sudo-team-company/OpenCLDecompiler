@@ -1,12 +1,9 @@
 from base_instruction import BaseInstruction
 from decompiler_data import DecompilerData
-from integrity import Integrity
-from register import Register
-from type_of_reg import Type
 
 
 class SSetreg(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+    def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData.Instance()
         if suffix == 'b32':
             hwreg = instruction[1]

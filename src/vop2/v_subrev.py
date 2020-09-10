@@ -5,8 +5,9 @@ from type_of_reg import Type
 
 
 class VSubrev(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix, output_string):
+    def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData.Instance()
+        output_string = ""
         if suffix == "u32":
             vdst = instruction[1]
             vcc = instruction[2]
