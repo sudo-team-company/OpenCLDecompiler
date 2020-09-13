@@ -138,6 +138,10 @@ class Decompiler:
             instruction = row.strip().replace(',', ' ').split()
             curr_node = self.make_cfg_node(instruction, last_node_state, last_node)
             # curr_node.add_parent(last_node)
+            if curr_node is None:
+                for instr in set_of_instructions:
+                    self.decompiler_data.output_file.write(instr + "\n")
+                return
             last_node_state = copy.deepcopy(curr_node.state)
             if last_node is not None and last_node.instruction != "branch" and curr_node not in last_node.children:
                 last_node.add_child(curr_node)
@@ -217,7 +221,7 @@ class Decompiler:
         self.make_output(self.decompiler_data.improve_cfg, '    ')
         self.decompiler_data.output_file.write("}\n")
         # while curr_node.children:
-        #     self.to_openCL(curr_node.children[0], False)
+        #     self.to_opencl(curr_node.children[0], False)
         #     curr_node = curr_node.children[0]
 
     def make_type(self, asm_type):
@@ -240,7 +244,7 @@ class Decompiler:
         node = Node(instruction, last_node_state)
         if last_node.instruction != "branch":
             node.add_parent(last_node)
-        return self.to_openCL(node, True)
+        return self.to_opencl(node, True)
 
     def make_version(self):
         curr_node = self.decompiler_data.cfg
@@ -546,7 +550,7 @@ class Decompiler:
                         #             last_else_region.start.state.registers[key] = last_state_if[key]
                         #     curr_node = last_else_region.start
                         #     while curr_node.children:
-                        #         node = self.to_openCL(Node(curr_node.children[0].instruction, copy.deepcopy(curr_node.state)), True)
+                        #         node = self.to_opencl(Node(curr_node.children[0].instruction, copy.deepcopy(curr_node.state)), True)
                         #         curr_node.children[0].state = copy.deepcopy(node.state)
                         #         curr_node = curr_node.children[0]
                         #     visited.extend([if_body, last_if_region, and_n2, else_start, else_body, last_else_region])
@@ -649,11 +653,11 @@ class Decompiler:
                 if region.start == self.decompiler_data.cfg:
                     reg = self.decompiler_data.cfg.children[0]
                 while reg != region.end:
-                    new_output = self.to_openCL(reg, False)
+                    new_output = self.to_opencl(reg, False)
                     if new_output != "":
                         self.decompiler_data.output_file.write(indent + new_output + ";\n")
                     reg = reg.children[0]
-                new_output = self.to_openCL(reg, False)
+                new_output = self.to_opencl(reg, False)
                 if new_output != "":
                     self.decompiler_data.output_file.write(indent + new_output + ";\n")
             else:
@@ -672,7 +676,7 @@ class Decompiler:
                         indent + self.decompiler_data.variables[key] + " = " + region.start.start.parent[0].state.registers[
                             reg].val + ";\n")
             self.decompiler_data.output_file.write(indent + "if (")
-            self.decompiler_data.output_file.write(self.to_openCL(region.start.start, False))
+            self.decompiler_data.output_file.write(self.to_opencl(region.start.start, False))
             self.decompiler_data.output_file.write(") {\n")
             self.make_output(region.start.children[0], indent + '    ')
             for key in self.decompiler_data.variables.keys():
@@ -690,7 +694,7 @@ class Decompiler:
         elif region.type == TypeNode.ifelsestatement:
             # self.output_file.write("    int variable\n")
             self.decompiler_data.output_file.write(indent + "if (")
-            self.decompiler_data.output_file.write(self.to_openCL(region.start.start, False))
+            self.decompiler_data.output_file.write(self.to_opencl(region.start.start, False))
             self.decompiler_data.output_file.write(") {\n")
             if_body = region.start.children[0]
             self.make_output(if_body, indent + '    ')
@@ -741,7 +745,7 @@ class Decompiler:
                                                region.end.start.parent[0].state.registers[reg].val + ";\n")
             self.decompiler_data.output_file.write(indent + "}\n")
 
-    def to_openCL(self, node, flag_of_status):
+    def to_opencl(self, node, flag_of_status):
         output_string = ""
         if node.instruction[0][0] == ".":
             if flag_of_status:
@@ -766,7 +770,8 @@ class Decompiler:
         if len(parts_of_operation) >= 3:
             for part in parts_of_operation[2:]:
                 if part in ["b32", 'b64', "u32", "u64", "i32", "i64", "dwordx4", "dwordx2", "dword", "f32",
-                            "f64", "i32", "i24", "byte"]:  # дописать!
+                            "f64", "i32", "i24", "byte"]:
+                    # TODO: Дописать
                     if suffix != "":
                         suffix = suffix + "_" + part
                     else:
@@ -780,5 +785,4 @@ class Decompiler:
         elif instruction_dict.get(node.instruction[0]) is not None:
             return instruction_dict[node.instruction[0]].execute(node, instruction, flag_of_status, suffix)
         else:
-            self.decompiler_data.output_file.write("Not resolve yet. Maybe you lose.\n")
-    # нет таких инструкций
+            self.decompiler_data.output_file.write("Not resolve yet.\n")
