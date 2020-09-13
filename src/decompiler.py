@@ -187,11 +187,15 @@ class Decompiler:
                                 and curr_node.state.registers[register].val.find("var") != -1 \
                                 and curr_node.state.registers[register].type_of_data is not None \
                                 and register != "vcc":
+                            vals_of_parent = curr_node.parent[0].state.registers[register].val.split()
+                            for val in vals_of_parent:
+                                if val.find("var") != -1:
+                                    var_name = val
                             if curr_node.parent[0].state.registers[register].val.find("*var") != -1:
-                                self.decompiler_data.names_of_vars[curr_node.parent[0].state.registers[register].val] = \
+                                self.decompiler_data.names_of_vars[var_name] = \
                                     curr_node.parent[0].state.registers[register].type_of_data
                             else:
-                                self.decompiler_data.names_of_vars[curr_node.parent[0].state.registers[register].val] = \
+                                self.decompiler_data.names_of_vars[var_name] = \
                                     curr_node.state.registers[register].type_of_data
                         # if register[1] != "[":
                         #     if curr_node.state.registers.get(register) is not None \
@@ -206,10 +210,11 @@ class Decompiler:
         # self.make_version()
         self.process_cfg()
         self.decompiler_data.output_file.write("{\n")
-        for var in set(self.decompiler_data.variables.values()):
-            if var in self.decompiler_data.names_of_vars.keys():
-                type_of_var = self.make_type(self.decompiler_data.names_of_vars[var])
-                self.decompiler_data.output_file.write("    " + type_of_var + " " + var + ";\n")
+        # for var in set(self.decompiler_data.variables.values()):
+        #     if var in self.decompiler_data.names_of_vars.keys():
+        for var in self.decompiler_data.names_of_vars.keys():
+            type_of_var = self.make_type(self.decompiler_data.names_of_vars[var])
+            self.decompiler_data.output_file.write("    " + type_of_var + " " + var + ";\n")
         offsets = list(self.decompiler_data.lds_vars.keys())
         offsets.append(self.decompiler_data.localsize)
         offsets.sort()
