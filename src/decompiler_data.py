@@ -49,7 +49,6 @@ class DecompilerData:
         self.size_of_work_groups = []
         self.cfg = None
         self.improve_cfg = None
-        # self.last_node = None
         self.number_of_temp = 0  # versions for asm code if decompilation is not success (версии для ассемблерного кода в случае отсутствия перевода)
         self.number_of_shift = 0
         self.number_of_length = 0
@@ -140,7 +139,6 @@ class DecompilerData:
         self.size_of_work_groups = []
         self.cfg = None
         self.improve_cfg = None
-        # self.last_node = None
         self.number_of_temp = 0  # versions for asm code if decompilation is not success (версии для ассемблерного кода в случае отсутствия перевода)
         self.number_of_shift = 0
         self.number_of_length = 0
@@ -226,9 +224,6 @@ class DecompilerData:
         self.num_of_var = 0
 
     def make_op(self, node, register0, register1, operation):
-        new_val = ""
-        new_val0 = ""
-        new_val1 = ""
         register0_flag = True
         register1_flag = True
         if register0.find("s") != -1 or register0.find("v") != -1:

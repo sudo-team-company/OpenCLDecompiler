@@ -20,7 +20,7 @@ class VDivFixup(BaseInstruction):
             decompiler_data.output_file.write("if (isnan(" + sf1 + ") && !isnan(" + sf2 + "))\n")
             decompiler_data.output_file.write(tab + vdst + " = nan(" + sf1 + ")\n")
             decompiler_data.output_file.write("else if (abs(" + sf2 + "))\n")
-            decompiler_data.output_file.write(tab + vdst + " = nan(" + sf2 + ")\n")  # nan не может принимать что-то нецелое
+            decompiler_data.output_file.write(tab + vdst + " = nan(" + sf2 + ")\n")
             decompiler_data.output_file.write("else if (" + sf1 + " == 0.0 && " + sf2 + " == 0.0)\n")
             decompiler_data.output_file.write(tab + vdst + " = NAN\n")
             decompiler_data.output_file.write("else if (abs(" + sf1 + ") == INFINITY)\n")

@@ -1,14 +1,14 @@
-/* Disassembling 'if_1.bin' */
+/* Disassembling 'branching_kernels\if_1\if_1.bin' */
 .amdcl2
 .gpu Iceland
 .64bit
 .arch_minor 0
 .arch_stepping 4
 .driver_version 200406
-.kernel localVarExample
+.kernel if_1
     .config
         .dims xy
-        .cws 16, 16, 1
+        .cws 8, 8, 1
         .sgprsnum 16
         .vgprsnum 5
         .floatmode 0xc0
@@ -30,9 +30,9 @@
     .text
 /*000000000000*/ s_load_dwordx4  s[0:3], s[4:5], 0x0
 /*000000000008*/ s_waitcnt       lgkmcnt(0)
-/*00000000000c*/ s_lshl_b32      s1, s6, 4
+/*00000000000c*/ s_lshl_b32      s1, s6, 3
 /*000000000010*/ v_add_u32       v0, vcc, s1, v0
-/*000000000014*/ s_lshl_b32      s1, s7, 4
+/*000000000014*/ s_lshl_b32      s1, s7, 3
 /*000000000018*/ s_add_u32       s1, s1, s2
 /*00000000001c*/ v_add_u32       v0, vcc, s0, v0
 /*000000000020*/ v_add_u32       v2, vcc, s1, v1

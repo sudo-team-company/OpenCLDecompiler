@@ -1,13 +1,10 @@
 from base_instruction import BaseInstruction
 from decompiler_data import DecompilerData
-from integrity import Integrity
-from register import Register
-from type_of_reg import Type
 
 
 class SLoad(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData.Instance()  # may be should add types, not sure
+        decompiler_data = DecompilerData.Instance()
         output_string = ""
         if suffix == 'dword':
             sdata = instruction[1]

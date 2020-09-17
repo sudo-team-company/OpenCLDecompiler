@@ -5,7 +5,7 @@ void copy_x(__global int *data, int x)
 	data[id] = x;
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void copy_get_global_offset(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -19,7 +19,7 @@ void copy_get_global_offset(int x, __global int *data)
 	data[id2] = g2;
 }
 
-__kernel __attribute__((reqd_work_group_size(8, 4, 4)))
+__kernel __attribute__((reqd_work_group_size(4, 4, 4)))
 void copy_get_local_id(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);
@@ -33,7 +33,7 @@ void copy_get_local_id(int x, __global int *data)
 	data[id2] = g2;
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void copy_get_group_id(int x, __global int *data)
 {
 	uint id0 = get_global_id(0);

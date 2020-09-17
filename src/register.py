@@ -12,8 +12,6 @@ class Register:
         self.type_of_data = None
 
     def add_version(self, name_version, num_version):
-        # name_version = version[:version.find("_")]
-        # num_version = version[version.find("_") + 1:]
         self.version = name_version + "_" + str(num_version + 1)
 
     def make_prev(self):

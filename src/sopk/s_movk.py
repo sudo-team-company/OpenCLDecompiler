@@ -13,7 +13,7 @@ class SMovk(BaseInstruction):
             sdst = instruction[1]
             simm16 = instruction[2]
             if flag_of_status:
-                node.state.registers[sdst] = Register(simm16, Type.unknown, Integrity.integer)  #  may be here can be not  only value
+                node.state.registers[sdst] = Register(simm16, Type.unknown, Integrity.integer)
                 if decompiler_data.versions.get(sdst) is None:
                     decompiler_data.versions[sdst] = 0
                 node.state.make_version(decompiler_data.versions, sdst)

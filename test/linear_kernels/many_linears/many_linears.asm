@@ -1,4 +1,4 @@
-/* Disassembling 'arith-Ellesmere.bin' */
+/* Disassembling 'linear_kernels\many_linears\many_linears.bin' */
 .amdcl2
 .gpu Iceland
 .64bit
@@ -122,7 +122,7 @@
 .kernel copy4
     .config
         .dims x
-        .cws 4, 16, 2
+        .cws 64, 1, 1
         .sgprsnum 13
         .vgprsnum 3
         .floatmode 0xc0
@@ -145,7 +145,7 @@
 /*000000000008*/ s_load_dwordx2  s[2:3], s[4:5], 0x38
 /*000000000010*/ s_waitcnt       lgkmcnt(0)
 /*000000000014*/ s_load_dword    s1, s[4:5], 0x30
-/*00000000001c*/ s_lshl_b32      s4, s6, 2
+/*00000000001c*/ s_lshl_b32      s4, s6, 6
 /*000000000020*/ s_add_u32       s0, s4, s0
 /*000000000024*/ v_add_u32       v0, vcc, s0, v0
 /*000000000028*/ v_mov_b32       v1, 0

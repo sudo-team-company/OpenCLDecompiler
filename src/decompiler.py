@@ -127,17 +127,21 @@ class Decompiler:
             self.decompiler_data.num_of_var += 1
             for ver in version_of_reg:
                 self.decompiler_data.variables[ver] = variable
+            self.decompiler_data.versions[reg] = max_version + 1
         return curr_node
 
     def process_src(self, name_of_program, set_of_config, set_of_instructions):
         self.process_config(set_of_config, name_of_program)
-        last_node = Node("", self.decompiler_data.initial_state)  # root
+        last_node = Node("", self.decompiler_data.initial_state)
         last_node_state = self.decompiler_data.initial_state
         self.decompiler_data.cfg = last_node
         for row in set_of_instructions:
             instruction = row.strip().replace(',', ' ').split()
             curr_node = self.make_cfg_node(instruction, last_node_state, last_node)
-            # curr_node.add_parent(last_node)
+            if curr_node is None:
+                for instr in set_of_instructions:
+                    self.decompiler_data.output_file.write(instr + "\n")
+                return
             last_node_state = copy.deepcopy(curr_node.state)
             if last_node is not None and last_node.instruction != "branch" and curr_node not in last_node.children:
                 last_node.add_child(curr_node)
@@ -156,7 +160,6 @@ class Decompiler:
                 self.decompiler_data.flag_of_else = False
             if instruction[0][0] == "." and len(curr_node.parent) > 1:
                 for reg in curr_node.parent[0].state.registers:
-                    # if reg.find("s") == -1:
                     version_of_reg = set()
                     max_version = 0
                     for parent in curr_node.parent:
@@ -183,29 +186,22 @@ class Decompiler:
                                 and curr_node.state.registers[register].val.find("var") != -1 \
                                 and curr_node.state.registers[register].type_of_data is not None \
                                 and register != "vcc":
+                            vals_of_parent = curr_node.parent[0].state.registers[register].val.split()
+                            var_name = curr_node.state.registers[register].val
+                            for val in vals_of_parent:
+                                if val.find("var") != -1:
+                                    var_name = val
                             if curr_node.parent[0].state.registers[register].val.find("*var") != -1:
-                                self.decompiler_data.names_of_vars[curr_node.parent[0].state.registers[register].val] = \
+                                self.decompiler_data.names_of_vars[var_name] = \
                                     curr_node.parent[0].state.registers[register].type_of_data
                             else:
-                                self.decompiler_data.names_of_vars[curr_node.parent[0].state.registers[register].val] = \
+                                self.decompiler_data.names_of_vars[var_name] = \
                                     curr_node.state.registers[register].type_of_data
-                        # if register[1] != "[":
-                        #     if curr_node.state.registers.get(register) is not None \
-                        #             and curr_node.state.registers[register].val.find("var") != -1:
-                        #         self.names_of_vars[curr_node.parent[0].state.registers[register].val] = curr_node.state.registers[register].type_of_data
-                        # else:
-                        #     reg = register[0] + register[2: register.find(":")]
-                        #     if curr_node.state.registers.get(reg) is not None \
-                        #             and curr_node.state.registers[reg].val.find("var") != -1:
-                        #         self.names_of_vars[curr_node.parent[0].state.registers[reg].val] = curr_node.state.registers[reg].type_of_data
-
-        # self.make_version()
         self.process_cfg()
         self.decompiler_data.output_file.write("{\n")
-        for var in set(self.decompiler_data.variables.values()):
-            if var in self.decompiler_data.names_of_vars.keys():
-                type_of_var = self.make_type(self.decompiler_data.names_of_vars[var])
-                self.decompiler_data.output_file.write("    " + type_of_var + " " + var + ";\n")
+        for var in sorted(self.decompiler_data.names_of_vars.keys()):
+            type_of_var = self.make_type(self.decompiler_data.names_of_vars[var])
+            self.decompiler_data.output_file.write("    " + type_of_var + " " + var + ";\n")
         offsets = list(self.decompiler_data.lds_vars.keys())
         offsets.append(self.decompiler_data.localsize)
         offsets.sort()
@@ -216,9 +212,6 @@ class Decompiler:
                 "    __local " + type_of_var + " " + self.decompiler_data.lds_vars[offsets[key]][0] + "[" + str(size_var) + "]" + ";\n")
         self.make_output(self.decompiler_data.improve_cfg, '    ')
         self.decompiler_data.output_file.write("}\n")
-        # while curr_node.children:
-        #     self.to_openCL(curr_node.children[0], False)
-        #     curr_node = curr_node.children[0]
 
     def make_type(self, asm_type):
         if asm_type == "u32":
@@ -240,109 +233,15 @@ class Decompiler:
         node = Node(instruction, last_node_state)
         if last_node.instruction != "branch":
             node.add_parent(last_node)
-        return self.to_openCL(node, True)
-
-    def make_version(self):
-        curr_node = self.decompiler_data.cfg
-        visited = [curr_node]
-        q = deque()
-        q.append(curr_node.children[0])
-        while q:
-            curr_node = q.popleft()
-            if curr_node not in visited:
-                visited.append(curr_node)
-                if len(curr_node.parent) == 1:
-                    for child in curr_node.children:
-                        if child not in visited:
-                            q.append(child)
-                else:
-                    if self.decompiler_data.version_wait is None:
-                        self.decompiler_data.version_wait = curr_node
-                        visited.remove(curr_node)
-                    elif self.decompiler_data.version_wait == curr_node:
-                        self.update_versions(curr_node)
-                        self.decompiler_data.version_wait = None
-                        for child in curr_node.children:
-                            if child not in visited:
-                                q.append(child)
-        q.append(curr_node)
-        visited = []
-        num_of_variable = 0
-        not_touch = []
-        local_vars = {}
-        while q:
-            curr_node = q.popleft()
-            if curr_node not in visited:
-                visited.append(curr_node)
-                if len(curr_node.instruction) > 1:
-                    for register in curr_node.instruction[1:]:
-                        if curr_node.state.registers.get(register) is not None and register[1] != "[":
-                            variants = []
-                            for l_v in local_vars.keys():
-                                if l_v.find(register) != -1:
-                                    variants.append(l_v)
-                            for reg_version in variants:
-                                if curr_node.state.registers[register].version == reg_version:
-                                    curr_node.state.registers[register].val = local_vars[reg_version]
-                                    curr_node.state.registers[register].version = None
-                                    curr_node.state.registers[register].prev_version = []
-                                    break
-                        else:
-                            reg = register[0] + register[2: register.find(":")]
-                            if curr_node.state.registers.get(reg) is not None:
-                                not_touch.append(register[0] + register[register.find(":") + 1: -1])
-                                variants = []
-                                for l_v in local_vars.keys():
-                                    if l_v.find(reg) != -1:
-                                        variants.append(l_v)
-                                for reg_version in variants:
-                                    if curr_node.state.registers[reg].version == reg_version:
-                                        curr_node.state.registers[reg].val = local_vars[reg]
-                                        curr_node.state.registers[reg].version = None
-                                        curr_node.state.registers[reg].prev_version = []
-                    # if len(curr_node.instruction) > 2:
-                    for num_of_reg in list(range(1, len(curr_node.instruction))):
-                        register = curr_node.instruction[num_of_reg]
-                        if (curr_node.instruction[0].find("flat_store") != -1 or num_of_reg > 1) and len(register) > 1:
-                            if register[1] != "[":
-                                if curr_node.state.registers.get(register) is not None \
-                                        and len(curr_node.state.registers[register].prev_version) > 1 \
-                                        and curr_node.state.registers[register].version not in not_touch:
-                                    versions = curr_node.state.registers[register].prev_version
-                                    var = "var" + str(num_of_variable)
-                                    if num_of_reg == 1 and curr_node.state.registers[register].type.param_global_id_x:
-                                        var = "*" + var
-                                    num_of_variable += 1
-                                    local_vars[curr_node.state.registers[register].version] = var
-                                    curr_node.state.registers[register].val = var
-                                    for v in versions:
-                                        self.decompiler_data.variables[v] = var
-                            else:
-                                reg = register[0] + register[2: register.find(":")]
-                                # not_touch.append(register[register.find(":") + 1 : -1])
-                                if curr_node.state.registers.get(reg) is not None and len(
-                                        curr_node.state.registers[reg].prev_version) > 1 \
-                                        and curr_node.state.registers[reg].version not in not_touch:
-                                    versions = curr_node.state.registers[reg].prev_version
-                                    var = "var" + str(num_of_variable)
-                                    if num_of_reg == 1 and curr_node.state.registers[reg].type.param_global_id_x:
-                                        var = "*" + var
-                                    num_of_variable += 1
-                                    local_vars[curr_node.state.registers[reg].version] = var
-                                    curr_node.state.registers[reg].val = var
-                                    for v in versions:
-                                        self.decompiler_data.variables[v] = var
-                for parent in curr_node.parent:
-                    if parent not in visited:
-                        q.append(parent)
+        return self.to_opencl(node, True)
 
     def update_versions(self, node):
         diff_regs = {}
         parent_0 = node.parent[0].state.registers
         parent_1 = node.parent[1].state.registers
         for key in parent_0.keys():
-            if parent_0.get(key) is not None and parent_1.get(key) is not None and parent_0[key].version != parent_1[
-                key].version and key.find("v") != -1:  # val and ver
+            if parent_0.get(key) is not None and parent_1.get(key) is not None \
+                    and parent_0[key].version != parent_1[key].version and key.find("v") != -1:
                 diff_regs[key] = [parent_0[key].version, parent_1[key].version]
         visited = []
         q = deque()
@@ -352,40 +251,12 @@ class Decompiler:
             if curr_node not in visited:
                 visited.append(curr_node)
                 for key in diff_regs:
-                    if curr_node.state.registers[key].version == diff_regs[key][
-                        1]:  # and len(curr_node.state.registers[key].prev_version) > 0:
-                        # if curr_node.state.registers[key].version == diff_regs[key][0][:diff_regs[key][0].find("_")] + "_" + str(int(diff_regs[key][0][diff_regs[key][0].find("_") + 1:]) + 1):
+                    if curr_node.state.registers[key].version == diff_regs[key][1]:
                         curr_node.state.registers[key].prev_version = diff_regs[key]
-                    # update_version = curr_node.state.registers[key].version
-                    # update_version = update_version[:update_version.find("_")] + "_" + str(int(update_version[update_version.find("_") + 1:]) + 2)
-                    # curr_node.state.registers[key].version = update_version
                     curr_node.state.registers[key].update(key)
                 for child in curr_node.children:
                     if child not in visited:
                         q.append(child)
-
-    def make_op(self, node, register0, register1, operation):
-        new_val = ""
-        new_val0 = ""
-        new_val1 = ""
-        register0_flag = True
-        register1_flag = True
-        if register0.find("s") != -1 or register0.find("v") != -1:
-            new_val0 = node.state.registers[register0].val
-        else:
-            new_val0 = register0
-            register0_flag = False
-        if register1.find("s") != -1 or register1.find("v") != -1:
-            new_val1 = node.state.registers[register1].val
-        else:
-            new_val1 = register1
-            register1_flag = False
-        if new_val0.find("-") != -1 or new_val0.find("+") != -1 or new_val0.find("*") != -1 or new_val0.find("/") != -1:
-            new_val0 = "(" + new_val0 + ")"
-        if new_val1.find("-") != -1 or new_val1.find("+") != -1 or new_val1.find("*") != -1 or new_val1.find("/") != -1:
-            new_val1 = "(" + new_val1 + ")"
-        new_val = new_val0 + operation + new_val1
-        return new_val, register0_flag, register1_flag
 
     def union_regions(self, before_region, curr_region, next_region, start_region):
         start_now = start_region
@@ -442,7 +313,6 @@ class Decompiler:
                      and curr_region.children[0].children[0] == curr_region.children[1]
                      or len(curr_region.children[1].children) > 0
                      and curr_region.children[1].children[0] == curr_region.children[0]):
-            # and curr_region.children[1].type == TypeNode.basic \
             return True
         else:
             return False
@@ -522,40 +392,6 @@ class Decompiler:
 
                     if self.check_if(curr_region):
                         last_if_region = curr_region.children[1]
-                        # if last_if_region.children and last_if_region.children[0].type == TypeNode.linear \
-                        #         and last_if_region.children[0].start == last_if_region.children[0].end \
-                        #         and last_if_region.children[0].start.instruction.find("s_andn2") != -1 \
-                        #         and last_if_region.children[0].children \
-                        #         and last_if_region.children[0].children[0] != TypeNode.linear \
-                        #         and self.check_if(last_if_region.children[0].children[0]):
-                        #     region = Region(TypeNode.ifelsestatement, curr_region)
-                        #     if_body = curr_region.children[0]
-                        #     # if isinstance(if_body.start, Node):
-                        #     last_state_if = if_body.end.state.registers
-                        #     last_if_region = curr_region.children[1]
-                        #     and_n2 = last_if_region.children[0]
-                        #     else_start = and_n2.children[0]
-                        #     else_body = else_start.children[0]
-                        #     last_state_else = else_body.end.state.registers
-                        #     last_else_region = else_start.children[1]
-                        #     for key in last_state_if:
-                        #         if last_state_else[key] is not None and last_state_if[key] is not None \
-                        #                 and last_state_else[key].val == last_state_if[key].val \
-                        #                 and last_state_else[key].type == last_state_if[key].type \
-                        #                 and last_state_else[key].integrity == last_state_if[key].integrity:
-                        #             last_else_region.start.state.registers[key] = last_state_if[key]
-                        #     curr_node = last_else_region.start
-                        #     while curr_node.children:
-                        #         node = self.to_openCL(Node(curr_node.children[0].instruction, copy.deepcopy(curr_node.state)), True)
-                        #         curr_node.children[0].state = copy.deepcopy(node.state)
-                        #         curr_node = curr_node.children[0]
-                        #     visited.extend([if_body, last_if_region, and_n2, else_start, else_body, last_else_region])
-                        #     before_r = curr_region.parent[0]
-                        #     next_r = last_else_region.children[0]
-                        #     self.add_parent_and_child(before_r, next_r, region, curr_region, last_else_region)
-                        #     start_region = self.union_regions(before_r, region, next_r, start_region)
-                        #
-                        # else:
                         region = Region(TypeNode.ifstatement, curr_region)
                         child0 = curr_region.children[0] if len(curr_region.children[0].parent) == 1 else \
                             curr_region.children[1]
@@ -583,8 +419,6 @@ class Decompiler:
                         next_r = child1.children[0] if len(child1.children) > 0 else None
                         self.add_parent_and_child(before_r, next_r, region, prev_child, region.end)
                         start_region = self.union_regions(before_r, region, next_r, start_region)
-                        # if curr_region.children:
-                        #     for child in curr_region.children:
                         if region.children:
                             for child in region.children:
                                 if child not in visited:
@@ -611,8 +445,6 @@ class Decompiler:
                                     prev_child.append(region.end)
                         self.add_parent_and_child(before_r, next_r, region, prev_child, region.end)
                         start_region = self.union_regions(before_r, region, next_r, start_region)
-                        # if curr_region.children:
-                        #     for child in curr_region.children:
                         if region.children:
                             for child in region.children:
                                 if child not in visited:
@@ -649,11 +481,11 @@ class Decompiler:
                 if region.start == self.decompiler_data.cfg:
                     reg = self.decompiler_data.cfg.children[0]
                 while reg != region.end:
-                    new_output = self.to_openCL(reg, False)
+                    new_output = self.to_opencl(reg, False)
                     if new_output != "":
                         self.decompiler_data.output_file.write(indent + new_output + ";\n")
                     reg = reg.children[0]
-                new_output = self.to_openCL(reg, False)
+                new_output = self.to_opencl(reg, False)
                 if new_output != "":
                     self.decompiler_data.output_file.write(indent + new_output + ";\n")
             else:
@@ -665,14 +497,14 @@ class Decompiler:
         elif region.type == TypeNode.ifstatement:
             for key in self.decompiler_data.variables.keys():
                 reg = key[:key.find("_")]
-                if region.start.start.parent[0].state.registers[reg] is not None and \
-                        region.start.start.parent[0].state.registers[reg].version == key and self.decompiler_data.variables[
-                    key] in self.decompiler_data.names_of_vars.keys():
+                if region.start.start.parent[0].state.registers[reg] is not None \
+                        and region.start.start.parent[0].state.registers[reg].version == key \
+                        and self.decompiler_data.variables[key] in self.decompiler_data.names_of_vars.keys():
                     self.decompiler_data.output_file.write(
-                        indent + self.decompiler_data.variables[key] + " = " + region.start.start.parent[0].state.registers[
-                            reg].val + ";\n")
+                        indent + self.decompiler_data.variables[key] + " = "
+                        + region.start.start.parent[0].state.registers[reg].val + ";\n")
             self.decompiler_data.output_file.write(indent + "if (")
-            self.decompiler_data.output_file.write(self.to_openCL(region.start.start, False))
+            self.decompiler_data.output_file.write(self.to_opencl(region.start.start, False))
             self.decompiler_data.output_file.write(") {\n")
             self.make_output(region.start.children[0], indent + '    ')
             for key in self.decompiler_data.variables.keys():
@@ -680,68 +512,52 @@ class Decompiler:
                 r_node = region.end.start
                 while not isinstance(r_node, Node):
                     r_node = r_node.start
-                if r_node.parent[0].state.registers[reg].version == key and self.decompiler_data.variables[
-                    key] in self.decompiler_data.names_of_vars.keys():
-                    self.decompiler_data.output_file.write(
-                        indent + "    " + self.decompiler_data.variables[key] + " = " + r_node.parent[0].state.registers[
-                            reg].val + ";\n")
+                if r_node.parent[0].state.registers[reg].version == key \
+                        and self.decompiler_data.variables[key] in self.decompiler_data.names_of_vars.keys() \
+                        and self.decompiler_data.variables[key] != r_node.parent[0].state.registers[reg].val:
+                    self.decompiler_data.output_file.write(indent + "    " + self.decompiler_data.variables[key] + " = "
+                                                           + r_node.parent[0].state.registers[reg].val + ";\n")
             self.make_output(region.start.children[1], indent + '    ')
             self.decompiler_data.output_file.write(indent + "}\n")
         elif region.type == TypeNode.ifelsestatement:
-            # self.output_file.write("    int variable\n")
             self.decompiler_data.output_file.write(indent + "if (")
-            self.decompiler_data.output_file.write(self.to_openCL(region.start.start, False))
+            self.decompiler_data.output_file.write(self.to_opencl(region.start.start, False))
             self.decompiler_data.output_file.write(") {\n")
             if_body = region.start.children[0]
             self.make_output(if_body, indent + '    ')
-            # if isinstance(if_body.start, Node) and if_body.end.instruction.find("store") == -1:
-            #     last_node = if_body.end
-            #     reg = last_node.instruction.split()[1][:-1]
-            #     val_of_reg = last_node.state.registers[reg].val
-            #     self.output_file.write("      variable = " + val_of_reg + "\n")
-            #     self.initial_state.registers[reg] = Register("variable", Type.program_param, Integrity.integer)
             for key in self.decompiler_data.variables.keys():
                 reg = key[:key.find("_")]
                 r_node = region.end.start
                 while not isinstance(r_node, Node):
                     r_node = r_node.start
                 if r_node.parent[1].state.registers.get(reg) is not None \
-                        and r_node.parent[1].state.registers[reg].version == key and self.decompiler_data.variables[
-                    key] in self.decompiler_data.names_of_vars.keys():
+                        and r_node.parent[1].state.registers[reg].version == key \
+                        and self.decompiler_data.variables[key] in self.decompiler_data.names_of_vars.keys():
                     if self.decompiler_data.variables[key].find("*") == -1:
-                        self.decompiler_data.output_file.write(
-                            indent + "    " + self.decompiler_data.variables[key] + " = " + r_node.parent[1].state.registers[
-                                reg].val + ";\n")
+                        self.decompiler_data.output_file.write(indent + "    " + self.decompiler_data.variables[key] +
+                                                               " = " + r_node.parent[1].state.registers[reg].val + ";\n")
                     else:
                         self.decompiler_data.output_file.write(indent + "    " + self.decompiler_data.variables[key][1:] + " = &" +
                                                r_node.parent[1].state.registers[reg].val + ";\n")
             self.decompiler_data.output_file.write(indent + "}\n")
-            # last_if_region = region.start.children[1]
-            # and_n2 = last_if_region.children[0]
-            # else_start = and_n2.children[0]
-            # else_body = else_start.children[0]
-            # last_else_region = else_start.children[1]
             else_body = region.start.children[1]
             self.decompiler_data.output_file.write(indent + "else {\n")
             self.make_output(else_body, indent + '    ')
-            # if isinstance(else_body.start, Node) and else_body.end.instruction.find("store") == -1:
-            #     reg = else_body.end.instruction.split()[1][:-1]
-            #     self.output_file.write("      variable = " + else_body.end.state.registers[reg].val + "\n")
-            #     self.initial_state.registers[reg] = Register("variable", Type.program_param, Integrity.integer)
             for key in self.decompiler_data.variables.keys():
                 reg = key[:key.find("_")]
-                if region.end.start.parent[0].state.registers[reg].version == key and self.decompiler_data.variables[
-                    key] in self.decompiler_data.names_of_vars.keys():
+                if region.end.start.parent[0].state.registers[reg].version == key \
+                        and self.decompiler_data.variables[key] in self.decompiler_data.names_of_vars.keys() \
+                        and self.decompiler_data.variables[key] != region.end.start.parent[0].state.registers[reg].val:
                     if self.decompiler_data.variables[key].find("*") == -1:
                         self.decompiler_data.output_file.write(
-                            indent + "    " + self.decompiler_data.variables[key] + " = " + region.end.start.parent[0].state.registers[
-                                reg].val + ";\n")
+                            indent + "    " + self.decompiler_data.variables[key] + " = "
+                            + region.end.start.parent[0].state.registers[reg].val + ";\n")
                     else:
-                        self.decompiler_data.output_file.write(indent + "    " + self.decompiler_data.variables[key][1:] + " = &" +
-                                               region.end.start.parent[0].state.registers[reg].val + ";\n")
+                        self.decompiler_data.output_file.write(indent + "    " + self.decompiler_data.variables[key][1:]
+                                                               + " = &" + region.end.start.parent[0].state.registers[reg].val + ";\n")
             self.decompiler_data.output_file.write(indent + "}\n")
 
-    def to_openCL(self, node, flag_of_status):
+    def to_opencl(self, node, flag_of_status):
         output_string = ""
         if node.instruction[0][0] == ".":
             if flag_of_status:
@@ -757,7 +573,6 @@ class Decompiler:
         if node.instruction == "branch":
             return output_string
         instruction = node.instruction
-        # instruction = node.instruction.strip().replace(',', ' ').split()
         operation = instruction[0]
         parts_of_operation = operation.split('_')
         prefix = parts_of_operation[0]
@@ -766,7 +581,8 @@ class Decompiler:
         if len(parts_of_operation) >= 3:
             for part in parts_of_operation[2:]:
                 if part in ["b32", 'b64', "u32", "u64", "i32", "i64", "dwordx4", "dwordx2", "dword", "f32",
-                            "f64", "i32", "i24", "byte"]:  # дописать!
+                            "f64", "i32", "i24", "byte"]:
+                    # TODO: Дописать
                     if suffix != "":
                         suffix = suffix + "_" + part
                     else:
@@ -780,5 +596,4 @@ class Decompiler:
         elif instruction_dict.get(node.instruction[0]) is not None:
             return instruction_dict[node.instruction[0]].execute(node, instruction, flag_of_status, suffix)
         else:
-            self.decompiler_data.output_file.write("Not resolve yet. Maybe you lose.\n")
-    # нет таких инструкций
+            self.decompiler_data.output_file.write("Not resolve yet.\n")

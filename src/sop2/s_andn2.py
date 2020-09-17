@@ -10,4 +10,4 @@ class SAndn2(BaseInstruction):
             ssrc1 = instruction[3]
             if flag_of_status:
                 return node
-            return output_string  # sdst = ssrc0 & ~ ssrc1
+            return output_string

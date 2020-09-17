@@ -9,6 +9,6 @@ class SAnd(BaseInstruction):
                 sdst = instruction[1]
                 ssrc0 = instruction[2]
                 ssrc1 = instruction[3]
-                node.state.registers[sdst] = node.state.registers[ssrc0] #sdst = ssrc0 & ssrc1
+                node.state.registers[sdst] = node.state.registers[ssrc0]
                 return node
             return output_string
