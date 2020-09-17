@@ -10,7 +10,7 @@ class FlatAtomicAdd(BaseInstruction):
         vdata = instruction[3]
         vm = "vm" + str(decompiler_data.number_of_vm)
         p = "p" + str(decompiler_data.number_of_p)
-        inst_offset = instruction[4]  # не очень понятно, должно ли это быть в виде INST_OFFSET:OFFSET
+        inst_offset = instruction[4]
         decompiler_data.output_file.write("uint* " + vm + " = (uint*)(" + vaddr + " + " + inst_offset + ")\n")
         decompiler_data.output_file.write(
             "uint " + p + " = *" + vm + "; *" + vm + " = *" + vm + " + " + vdata + "; "

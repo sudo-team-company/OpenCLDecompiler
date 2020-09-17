@@ -87,8 +87,6 @@ class State:
         return first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from
 
     def make_version(self, parent, reg):
-        # prev_reg = parent.state.registers
-        # self.registers[reg].add_version(reg + "_0" if prev_reg.get(reg) is None or prev_reg[reg].version is None else prev_reg[reg].version)
         par = copy.deepcopy(parent)
         self.registers[reg].add_version(reg, par[reg])
         parent[reg] += 1
@@ -129,7 +127,6 @@ class State:
     def upload(self, to_registers, from_registers, offset, parameter_of_kernel, parent):
         first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
             = self.find_first_last_num_to_from(to_registers, from_registers)
-        # prev_regs = parent.state.registers
         if self.registers[from_registers].type == Type.arguments_pointer:
             if offset == "0x0":
                 self.registers[to_registers] = Register("get_global_offset(0)", Type.global_offset_x, Integrity.integer)

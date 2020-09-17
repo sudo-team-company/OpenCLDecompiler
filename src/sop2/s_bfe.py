@@ -17,7 +17,7 @@ class SBfe(BaseInstruction):
                 if ssrc1 == "0x20010":
                     node.state.registers[sdst] = Register("get_work_dim()", Type.work_dim, Integrity.integer)
                 else:
-                    node.state.registers[sdst].val = "get_local_size(1)" # I think that it not all true
+                    node.state.registers[sdst].val = "get_local_size(1)"
                 node.state.make_version(decompiler_data.versions, sdst)
                 return node
             return output_string

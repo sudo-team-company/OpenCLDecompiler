@@ -13,7 +13,7 @@ class VCmpLg(BaseInstruction):
             sdst = instruction[1]
             src0 = instruction[2]
             src1 = instruction[3]
-            if flag_of_status:  # may be need (int)
+            if flag_of_status:
                 new_val, src0_flag, src1_flag = decompiler_data.make_op(node, src0, src1, " != ")
                 node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
                 if decompiler_data.versions.get(sdst) is None:

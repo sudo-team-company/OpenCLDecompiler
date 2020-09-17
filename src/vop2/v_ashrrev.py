@@ -1,10 +1,12 @@
 from base_instruction import BaseInstruction
+from decompiler_data import DecompilerData
 from integrity import Integrity
 from register import Register
 
 
 class VAshrrev(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
+        decompiler_data = DecompilerData.Instance()
         output_string = ""
         if suffix == "i32":
             vdst = instruction[1]
@@ -28,18 +30,16 @@ class VAshrrev(BaseInstruction):
                 if node.state.registers[from_registers].val == "0":
                     node.state.registers[from_registers].val = \
                         node.state.registers[name_of_from + str(first_from + 1)].val
+                new_val, src1_flag, src0_flag = decompiler_data.make_op(node, from_registers, str(pow(2, int(src0))),
+                                                                        " / ")
                 node.state.registers[to_registers] = \
-                    Register(node.state.registers[from_registers].val,
-                             node.state.registers[from_registers].type,
-                             Integrity.low_part)
+                    Register(new_val, node.state.registers[from_registers].type, Integrity.low_part)
                 node.state.registers[to_registers].version = \
                     node.parent[0].state.registers[to_registers].version
                 node.state.registers[to_registers].type_of_data = suffix
                 to_registers_1 = name_of_register + str(last_to)
                 node.state.registers[to_registers_1] = \
-                    Register(node.state.registers[from_registers].val,
-                             node.state.registers[from_registers].type,
-                             Integrity.high_part)
+                    Register(new_val, node.state.registers[from_registers].type, Integrity.high_part)
                 node.state.registers[to_registers_1].version = \
                     node.parent[0].state.registers[to_registers_1].version
                 node.state.registers[to_registers_1].type_of_data = suffix

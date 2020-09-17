@@ -17,9 +17,8 @@ class VCmpGt(BaseInstruction):
 
         elif suffix == "i32":
             sdst = instruction[1]
-            src0 = instruction[2] #  if instruction[2][0] != "v" and instruction[2][0] != "s" else node.state.registers[instruction[2]].val
-            src1 = instruction[3] #  if instruction[3][0] != "v" and instruction[2][0] != "s" else node.state.registers[instruction[3]].val
-            # I think that it not necessary now, check tests
+            src0 = instruction[2]
+            src1 = instruction[3]
             if flag_of_status:
                 new_val, src0_flag, src1_flag = decompiler_data.make_op(node, src0, src1, " > ")
                 node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)

@@ -15,7 +15,7 @@ class SSub(BaseInstruction):
             temp = "temp" + str(decompiler_data.number_of_temp)
             decompiler_data.output_file.write(sdst + " = " + ssrc0 + " - " + ssrc1 + "\n")
             decompiler_data.output_file.write(
-                "long " + temp + " = (long)" + ssrc0 + " - (long)" + ssrc1 + "\n")  # SEXT64 - long?
+                "long " + temp + " = (long)" + ssrc0 + " - (long)" + ssrc1 + "\n")
             decompiler_data.output_file.write("scc = " + temp + " > ((1LL << 31) - 1) || " + temp + " < (-1LL << 31)\n")
             decompiler_data.number_of_temp += 1
 
@@ -33,4 +33,3 @@ class SSub(BaseInstruction):
                 node.state.registers[sdst].type_of_data = suffix
                 return node
             return output_string
-            # may be should add "ulong"

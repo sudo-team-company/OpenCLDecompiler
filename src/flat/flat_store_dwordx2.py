@@ -17,7 +17,6 @@ class FlatStoreDwordx2(BaseInstruction):
             node.state.registers[to_registers] = \
                 Register(node.state.registers[from_registers].val, node.state.registers[from_registers].type,
                          Integrity.low_part)
-            # node.state.make_version(self.versions, to_registers)
             node.state.registers[to_registers].version = \
                 node.parent[0].state.registers[to_registers].version
             node.state.registers[to_registers].type_of_data = "dwordx2"
@@ -25,7 +24,6 @@ class FlatStoreDwordx2(BaseInstruction):
             node.state.registers[to_now] = \
                 Register(node.state.registers[second_from].val, node.state.registers[second_from].type,
                          Integrity.high_part)
-            # node.state.make_version(self.versions, to_now)
             if node.parent[0].state.registers[to_now] is not None:
                 node.state.registers[to_now].version = node.parent[0].state.registers[to_now].version
             node.state.registers[to_now].type_of_data = "dwordx2"

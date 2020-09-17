@@ -1,14 +1,14 @@
-/* Disassembling 'if_else_0_labels.bin' */
+/* Disassembling 'branching_kernels\if_else_0_labels\if_else_0_labels.bin' */
 .amdcl2
 .gpu Iceland
 .64bit
 .arch_minor 0
 .arch_stepping 4
 .driver_version 200406
-.kernel localVarExample
+.kernel if_else_0_labels
     .config
         .dims xy
-        .cws 16, 16, 1
+        .cws 8, 8, 1
         .sgprsnum 16
         .vgprsnum 7
         .floatmode 0xc0
@@ -31,12 +31,12 @@
 /*000000000000*/ s_load_dwordx4  s[0:3], s[4:5], 0x0
 /*000000000008*/ s_waitcnt       lgkmcnt(0)
 /*00000000000c*/ s_load_dword    s1, s[4:5], 0x30
-/*000000000014*/ s_lshl_b32      s3, s7, 4
+/*000000000014*/ s_lshl_b32      s3, s7, 3
 /*000000000018*/ s_add_u32       s2, s3, s2
 /*00000000001c*/ s_load_dword    s3, s[4:5], 0x40
 /*000000000024*/ v_add_u32       v1, vcc, s2, v1
 /*000000000028*/ s_load_dwordx2  s[4:5], s[4:5], 0x38
-/*000000000030*/ s_lshl_b32      s2, s6, 4
+/*000000000030*/ s_lshl_b32      s2, s6, 3
 /*000000000034*/ s_waitcnt       lgkmcnt(0)
 /*000000000038*/ v_mul_lo_u32    v2, v1, s1
 /*000000000040*/ v_add_u32       v0, vcc, s2, v0

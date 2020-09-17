@@ -20,7 +20,7 @@ void copy3(int x, __global int *data)
 	data[g0] = g1;
 }
 
-__kernel __attribute__((reqd_work_group_size(4, 16, 2)))
+__kernel __attribute__((reqd_work_group_size(64, 1, 1)))
 void copy4(int x, __global int *data)
 {
 	uint id = get_global_id(0);

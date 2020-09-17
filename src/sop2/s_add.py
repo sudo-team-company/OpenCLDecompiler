@@ -13,7 +13,7 @@ class SAdd(BaseInstruction):
             sdst = instruction[1]
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
-            new_val, ssrc0_reg, ssrc1_reg = decompiler_data.make_op(node, ssrc0, ssrc1, " + ")  # may be this should be (ulong)
+            new_val, ssrc0_reg, ssrc1_reg = decompiler_data.make_op(node, ssrc0, ssrc1, " + ")
             if flag_of_status:
                 if ssrc0_reg and ssrc1_reg:
                     if node.state.registers[ssrc0].type == Type.work_group_id_x_local_size \

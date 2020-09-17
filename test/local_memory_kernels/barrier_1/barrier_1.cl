@@ -1,5 +1,5 @@
-__kernel __attribute__((reqd_work_group_size(16, 16, 16)))
-void localVarExample(__global int *res)
+__kernel __attribute__((reqd_work_group_size(4, 4, 4)))
+void barrier_1(__global int *res)
 {
   int id0 = get_global_id(0);
   int id1 = get_global_id(1);

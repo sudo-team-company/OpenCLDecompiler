@@ -1,5 +1,5 @@
-__kernel __attribute__((reqd_work_group_size(16, 16, 1)))
-void localVarExample(int x, __global int *data, int y)
+__kernel __attribute__((reqd_work_group_size(8, 8, 1)))
+void if_1(int x, __global int *data, int y)
 {
   uint id0 = get_global_id(0);
   uint id1 = get_global_id(1);

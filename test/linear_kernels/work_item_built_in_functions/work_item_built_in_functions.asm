@@ -46,7 +46,7 @@
 .kernel copy_get_global_offset
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 17
         .vgprsnum 14
         .floatmode 0xc0
@@ -69,7 +69,7 @@
 /*000000000008*/ s_load_dwordx2  s[10:11], s[4:5], 0x10
 /*000000000010*/ s_load_dwordx2  s[4:5], s[4:5], 0x38
 /*000000000018*/ s_waitcnt       lgkmcnt(0)
-/*00000000001c*/ s_lshl_b32      s1, s6, 2
+/*00000000001c*/ s_lshl_b32      s1, s6, 1
 /*000000000020*/ s_lshl_b32      s3, s7, 4
 /*000000000024*/ s_add_u32       s1, s1, s0
 /*000000000028*/ s_lshl_b32      s6, s8, 1
@@ -101,7 +101,7 @@
 .kernel copy_get_local_id
     .config
         .dims xyz
-        .cws 8, 4, 4
+        .cws 4, 4, 4
         .sgprsnum 17
         .vgprsnum 8
         .floatmode 0xc0
@@ -124,7 +124,7 @@
 /*000000000008*/ s_load_dwordx2  s[10:11], s[4:5], 0x10
 /*000000000010*/ s_load_dwordx2  s[4:5], s[4:5], 0x38
 /*000000000018*/ s_waitcnt       lgkmcnt(0)
-/*00000000001c*/ s_lshl_b32      s1, s6, 3
+/*00000000001c*/ s_lshl_b32      s1, s6, 2
 /*000000000020*/ s_lshl_b32      s3, s7, 2
 /*000000000024*/ s_lshl_b32      s6, s8, 2
 /*000000000028*/ s_add_u32       s0, s1, s0
@@ -153,7 +153,7 @@
 .kernel copy_get_group_id
     .config
         .dims xyz
-        .cws 4, 16, 2
+        .cws 2, 16, 2
         .sgprsnum 17
         .vgprsnum 13
         .floatmode 0xc0
@@ -176,7 +176,7 @@
 /*000000000008*/ s_load_dwordx2  s[10:11], s[4:5], 0x10
 /*000000000010*/ s_load_dwordx2  s[4:5], s[4:5], 0x38
 /*000000000018*/ s_waitcnt       lgkmcnt(0)
-/*00000000001c*/ s_lshl_b32      s1, s6, 2
+/*00000000001c*/ s_lshl_b32      s1, s6, 1
 /*000000000020*/ s_lshl_b32      s3, s7, 4
 /*000000000024*/ s_add_u32       s0, s1, s0
 /*000000000028*/ s_lshl_b32      s1, s8, 1

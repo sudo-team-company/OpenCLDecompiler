@@ -18,23 +18,19 @@ class FlatLoad(BaseInstruction):
             if flag_of_status:
                 if inst_offset == "":
                     if first_to == last_to:
-                        # node.state.registers[to_registers] = \
-                        #     Register(node.state.registers[from_registers].val,
-                        #              node.state.registers[from_registers].type,
-                        #              Integrity.integer)
+                        data_type = node.state.registers[from_registers].type_of_data
                         node.state.registers[to_registers] = \
                             Register(variable, Type.program_param, Integrity.integer)
                         node.state.make_version(decompiler_data.versions, to_registers)
-                        node.state.registers[to_registers].type_of_data = node.state.registers[
-                            from_registers].type_of_data
+                        node.state.registers[to_registers].type_of_data = data_type
                         #
                         node.state.registers[to_registers].val = variable
                         decompiler_data.num_of_var += 1
                         decompiler_data.variables[node.state.registers[to_registers].version] = variable
                         decompiler_data.names_of_vars[variable] = node.state.registers[from_registers].type_of_data
                 return node
-            output_string = node.state.registers[to_registers].val + " = " + node.state.registers[
-                from_registers].val
+            output_string = node.state.registers[to_registers].val + " = " \
+                            + node.parent[0].state.registers[from_registers].val
             return output_string
 
         elif suffix == "dwordx4":

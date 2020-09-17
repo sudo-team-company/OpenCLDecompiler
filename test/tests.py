@@ -126,6 +126,7 @@ class LinearKernelsTest(unittest.TestCase):
             with open(r"linear_kernels\work_item_built_in_functions\work_item_built_in_functions_dcmpl.cl") as decompiled:
                 self.assertEqual(hands_decompilation.read(), decompiled.read())
 
+
 class LocalMemoryKernelsTest(unittest.TestCase):
     def test_barrier_1(self):
         subprocess.call(r'test.bat local_memory_kernels\barrier_1\barrier_1.bin ' +
@@ -135,46 +136,6 @@ class LocalMemoryKernelsTest(unittest.TestCase):
         with open(
                 r"local_memory_kernels\barrier_1\barrier_1_hands.cl") as hands_decompilation:
             with open(r"local_memory_kernels\barrier_1\barrier_1_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
-
-
-class RealKernelsTest(unittest.TestCase):
-    def test_binary_activate_array_kernel(self):
-        subprocess.call(r'test.bat real_kernels\binary_activate_array_kernel\binary_activate_array_kernel.bin ' +
-                        r'real_kernels\binary_activate_array_kernel\binary_activate_array_kernel.asm')
-        parser_for_instructions.main(r"real_kernels\binary_activate_array_kernel\binary_activate_array_kernel.asm",
-                                     r"real_kernels\binary_activate_array_kernel\binary_activate_array_kernel_dcmpl.cl")
-        with open(
-                r"real_kernels\binary_activate_array_kernel\binary_activate_array_kernel_hands.cl") as hands_decompilation:
-            with open(r"real_kernels\binary_activate_array_kernel\binary_activate_array_kernel_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
-
-    def test_two(self):
-        subprocess.call(r'test.bat real_kernels\binary_gradient_array_kernel\binary_gradient_array_kernel.bin ' +
-                        r'real_kernels\binary_gradient_array_kernel\binary_gradient_array_kernel.asm')
-        parser_for_instructions.main(r"real_kernels\binary_gradient_array_kernel\binary_gradient_array_kernel.asm",
-                                     r"real_kernels\binary_gradient_array_kernel\binary_gradient_array_kernel_dcmpl.cl")
-        with open(
-                r"real_kernels\binary_gradient_array_kernel\binary_gradient_array_kernel_hands.cl") as hands_decompilation:
-            with open(r"real_kernels\binary_gradient_array_kernel\binary_gradient_array_kernel_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
-
-    def test_mask_kernel(self):
-        subprocess.call(r'test.bat real_kernels\mask_kernel\mask_kernel.bin real_kernels\mask_kernel\mask_kernel.asm')
-        parser_for_instructions.main(r"real_kernels\mask_kernel\mask_kernel.asm",
-                                     r"real_kernels\mask_kernel\mask_kernel_dcmpl.cl")
-        with open(r"real_kernels\mask_kernel\mask_kernel_hands.cl") as hands_decompilation:
-            with open(r"real_kernels\mask_kernel\mask_kernel_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
-
-    def test_weighted_sum_kernel(self):
-        subprocess.call(
-            r'test.bat real_kernels\weighted_sum_kernel\weighted_sum_kernel.bin ' +
-            r'real_kernels\weighted_sum_kernel\weighted_sum_kernel.asm')
-        parser_for_instructions.main(r"real_kernels\weighted_sum_kernel\weighted_sum_kernel.asm",
-                                     r"real_kernels\weighted_sum_kernel\weighted_sum_kernel_dcmpl.cl")
-        with open(r"real_kernels\weighted_sum_kernel\weighted_sum_kernel_hands.cl") as hands_decompilation:
-            with open(r"real_kernels\weighted_sum_kernel\weighted_sum_kernel_dcmpl.cl") as decompiled:
                 self.assertEqual(hands_decompilation.read(), decompiled.read())
 
 

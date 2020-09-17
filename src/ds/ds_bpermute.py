@@ -12,7 +12,7 @@ class DsBpermute(BaseInstruction):
             addr = instruction[2]
             src = instruction[3]
             offset = instruction[4][7:]
-            decompiler_data.output_file.write("uint64 " + tmp + "\n")  # именно массив
+            decompiler_data.output_file.write("uint64 " + tmp + "\n")
             decompiler_data.output_file.write("for (short i = 0; i < 64; i++)\n")
             decompiler_data.output_file.write("{\n")
             decompiler_data.output_file.write(tab + "uint lane_id = " + addr + "[(i + (" + offset + " >> 2)) & 63]\n")

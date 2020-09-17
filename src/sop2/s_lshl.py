@@ -15,7 +15,6 @@ class SLshl(BaseInstruction):
             ssrc1 = instruction[3]
             if flag_of_status:
                 new_val, ssrc0_flag, ssrc1_flag = decompiler_data.make_op(node, ssrc0, str(pow(2, int(ssrc1))), " * ")
-                # probably we should check ssrc0_flag and ssrc1_flag. not sure
                 if node.state.registers[ssrc0].type == Type.work_group_id_x:
                     node.state.registers[sdst] = Register(new_val, Type.work_group_id_x_local_size, Integrity.integer)
                     node.state.registers["scc"] = Register(sdst + "!= 0", Type.int32, Integrity.integer)

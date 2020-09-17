@@ -37,35 +37,20 @@ class VLshlrev(BaseInstruction):
                             and node.state.registers[name_of_register + str(first_from + 1)].val == "0":
                         node.state.registers[to_registers] = \
                             Register(new_val, node.state.registers[from_registers].type, Integrity.low_part)
-                        if node.parent[0].state.registers.get(to_registers) is not None:
-                            node.state.registers[to_registers].version = \
-                                node.parent[0].state.registers[to_registers].version
-                        else:
-                            node.state.make_version(decompiler_data.versions, to_registers)
+                        node.state.make_version(decompiler_data.versions, to_registers)
                         node.state.registers[to_registers].type_of_data = suffix
-                        # node.state.make_version(self.versions, to_registers)
-                        # if to_registers == from_registers:
-                        #     node.state.registers[to_registers].make_prev()
                         node.state.registers[to_registers_1] = \
                             Register(node.state.registers[from_registers_1].val,
                                      node.state.registers[from_registers].type,
                                      Integrity.high_part)
-                        if node.parent[0].state.registers.get(to_registers_1) is not None:
-                            node.state.registers[to_registers_1].version = \
-                                node.parent[0].state.registers[to_registers_1].version
-                        else:
-                            node.state.make_version(decompiler_data.versions, to_registers_1)
+                        node.state.make_version(decompiler_data.versions, to_registers_1)
                         node.state.registers[to_registers_1].type_of_data = suffix
-                        # node.state.make_version(self.versions, to_registers_1)
-                        # if to_registers_1 == from_registers_1:
-                        #     node.state.registers[to_registers_1].make_prev()
                     else:
                         node.state.registers[to_registers] = node.state.registers[from_registers]
                         node.state.make_version(decompiler_data.versions, to_registers)
                         node.state.registers[to_registers_1] = node.state.registers[from_registers_1]
                         node.state.make_version(decompiler_data.versions, to_registers_1)
-                    # нет описания под y и z
-                else: #  should check
+                else:
                     type_reg = Type.int32
                     if src0_flag:
                         type_reg = node.state.registers[src0].type
