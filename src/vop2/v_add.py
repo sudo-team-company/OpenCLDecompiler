@@ -42,15 +42,15 @@ class VAdd(BaseInstruction):
                         if decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "int" \
                                 or decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "uint":
                             if node.state.registers[src1].val.find("1073741824") != -1:
-                                new_value, src0_flaf, src1_flag = decompiler_data.make_op(node, src1, "1073741824", " * ")
+                                new_value, src0_flag, src1_flag = decompiler_data.make_op(node, src1, "1073741824", " * ")
                             else:
-                                new_value, src0_flaf, src1_flag = decompiler_data.make_op(node, src1, "4", " / ")
+                                new_value, src0_flag, src1_flag = decompiler_data.make_op(node, src1, "4", " / ")
                             new_val = node.state.registers[src0].val + "[" + new_value + "]"
                             node.state.registers[vdst] = \
                                 Register(new_val, Type.param_global_id_x, new_integrity)
                         elif decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "long" \
                                 or decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "ulong":
-                            new_value, src0_flaf, src1_flag = decompiler_data.make_op(node, src1, "8", " / ")
+                            new_value, src0_flag, src1_flag = decompiler_data.make_op(node, src1, "8", " / ")
                             new_val = node.state.registers[src0].val + "[" + new_value + "]"
                             node.state.registers[vdst] = \
                                 Register(new_val, Type.param_global_id_x, new_integrity)
