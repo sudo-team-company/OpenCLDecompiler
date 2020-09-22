@@ -102,11 +102,16 @@ class Decompiler:
         if curr_node.parent[0].instruction[0].find("v_mov") != -1:
             last_node_state.registers[curr_node.parent[0].instruction[1]] \
                 = curr_node.state.registers[curr_node.parent[0].instruction[1]]
-        self.decompiler_data.from_node[instruction[1]].remove(curr_node)
-        if self.decompiler_data.from_node.get(instruction[1], None) is None:
-            self.decompiler_data.from_node[instruction[1]] = [self.decompiler_data.parents_of_label[0]]
+        if instruction[0].find("cbranch") != -1:
+            self.decompiler_data.from_node[instruction[1]].remove(curr_node)
+            from_node = instruction[1]
         else:
-            self.decompiler_data.from_node[instruction[1]].append(self.decompiler_data.parents_of_label[0])
+            self.decompiler_data.num_of_label += 1
+            from_node = "." + str(self.decompiler_data.num_of_label)
+        if self.decompiler_data.from_node.get(from_node, None) is None:
+            self.decompiler_data.from_node[from_node] = [self.decompiler_data.parents_of_label[0]]
+        else:
+            self.decompiler_data.from_node[from_node].append(self.decompiler_data.parents_of_label[0])
         self.decompiler_data.flag_of_else = False
         return last_node, last_node_state
 
@@ -137,6 +142,9 @@ class Decompiler:
         self.decompiler_data.cfg = last_node
         for row in set_of_instructions:
             instruction = row.strip().replace(',', ' ').split()
+            if instruction[0] == "s_mov_b64" and instruction[1] == "exec" and curr_node.instruction[0].find(".") == -1:
+                instruction = []
+                instruction.append("." + str(self.decompiler_data.num_of_label) + ":")
             curr_node = self.make_cfg_node(instruction, last_node_state, last_node)
             if curr_node is None:
                 for instr in set_of_instructions:
@@ -154,8 +162,9 @@ class Decompiler:
                 self.decompiler_data.flag_of_else = True
             elif (instruction[0].find("andn2") != -1 or instruction[0].find("v_mov") != -1) and self.decompiler_data.flag_of_else:
                 continue
-            elif instruction[0].find("cbranch") != -1 and self.decompiler_data.flag_of_else:
-                last_node, last_node_state = self.change_cfg_for_else_structure(curr_node, instruction)
+            elif self.decompiler_data.flag_of_else \
+                    and (curr_node.parent[0].instruction[0].find("andn2") != -1 or instruction[0].find("cbranch") != -1):
+                    last_node, last_node_state = self.change_cfg_for_else_structure(curr_node, instruction)
             else:
                 self.decompiler_data.flag_of_else = False
             if instruction[0][0] == "." and len(curr_node.parent) > 1:

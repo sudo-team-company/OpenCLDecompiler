@@ -44,6 +44,16 @@ class BranchingKernelsTest(unittest.TestCase):
             with open(r"branching_kernels\if_else_0_labels\if_else_0_labels_dcmpl.cl") as decompiled:
                 self.assertEqual(hands_decompilation.read(), decompiled.read())
 
+    def test_if_else_1_labels(self):
+        subprocess.call(r'test.bat branching_kernels\if_else_1_label\if_else_1_label.bin ' +
+                        r'branching_kernels\if_else_1_label\if_else_1_label.asm')
+        parser_for_instructions.main(r"branching_kernels\if_else_1_label\if_else_1_label.asm",
+                                     r"branching_kernels\if_else_1_label\if_else_1_label_dcmpl.cl")
+        with open(
+                r"branching_kernels\if_else_1_label\if_else_1_label_hands.cl") as hands_decompilation:
+            with open(r"branching_kernels\if_else_1_label\if_else_1_label_dcmpl.cl") as decompiled:
+                self.assertEqual(hands_decompilation.read(), decompiled.read())
+
     def test_if_else_2_labels(self):
         subprocess.call(r'test.bat branching_kernels\if_else_2_labels\if_else_2_labels.bin ' +
                         r'branching_kernels\if_else_2_labels\if_else_2_labels.asm')

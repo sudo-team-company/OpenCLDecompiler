@@ -132,6 +132,8 @@ class DecompilerData:
         self.lds_vars = {}
         self.lds_var_number = 0
         self.num_of_var = 0
+        self.num_of_label = 0
+        self.wait_labels = []
 
     def reset(self, output_file):
         self.output_file = output_file
@@ -222,6 +224,8 @@ class DecompilerData:
         self.lds_vars = {}
         self.lds_var_number = 0
         self.num_of_var = 0
+        self.num_of_label = 0
+        self.wait_labels = []
 
     def make_op(self, node, register0, register1, operation):
         register0_flag = True
