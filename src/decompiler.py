@@ -102,12 +102,8 @@ class Decompiler:
         if curr_node.parent[0].instruction[0].find("v_mov") != -1:
             last_node_state.registers[curr_node.parent[0].instruction[1]] \
                 = curr_node.state.registers[curr_node.parent[0].instruction[1]]
-        if instruction[0].find("cbranch") != -1:
-            self.decompiler_data.from_node[instruction[1]].remove(curr_node)
-            from_node = instruction[1]
-        else:
-            self.decompiler_data.num_of_label += 1
-            from_node = "." + str(self.decompiler_data.num_of_label)
+        self.decompiler_data.from_node[instruction[1]].remove(curr_node)
+        from_node = instruction[1]
         if self.decompiler_data.from_node.get(from_node, None) is None:
             self.decompiler_data.from_node[from_node] = [self.decompiler_data.parents_of_label[0]]
         else:
@@ -137,14 +133,18 @@ class Decompiler:
 
     def process_src(self, name_of_program, set_of_config, set_of_instructions):
         self.process_config(set_of_config, name_of_program)
-        last_node = Node("", self.decompiler_data.initial_state)
+        last_node = Node([""], self.decompiler_data.initial_state)
         last_node_state = self.decompiler_data.initial_state
         self.decompiler_data.cfg = last_node
-        for row in set_of_instructions:
+        for num in list(range(0, len(set_of_instructions))):
+            row = set_of_instructions[num]
             instruction = row.strip().replace(',', ' ').split()
+            if instruction[0].find("andn2") != -1 \
+                    and (set_of_instructions[num + 1].find("cbranch") == -1 and set_of_instructions[num + 1].find("v_mov") == -1):
+                self.decompiler_data.num_of_label += 1
+                set_of_instructions.insert(num + 1, "s_cbranch_execz ." + str(self.decompiler_data.num_of_label))
             if instruction[0] == "s_mov_b64" and instruction[1] == "exec" and curr_node.instruction[0].find(".") == -1:
-                instruction = []
-                instruction.append("." + str(self.decompiler_data.num_of_label) + ":")
+                instruction = ["." + str(self.decompiler_data.num_of_label) + ":"]
             curr_node = self.make_cfg_node(instruction, last_node_state, last_node)
             if curr_node is None:
                 for instr in set_of_instructions:
@@ -162,8 +162,7 @@ class Decompiler:
                 self.decompiler_data.flag_of_else = True
             elif (instruction[0].find("andn2") != -1 or instruction[0].find("v_mov") != -1) and self.decompiler_data.flag_of_else:
                 continue
-            elif self.decompiler_data.flag_of_else \
-                    and (curr_node.parent[0].instruction[0].find("andn2") != -1 or instruction[0].find("cbranch") != -1):
+            elif self.decompiler_data.flag_of_else and instruction[0].find("cbranch") != -1:
                     last_node, last_node_state = self.change_cfg_for_else_structure(curr_node, instruction)
             else:
                 self.decompiler_data.flag_of_else = False
