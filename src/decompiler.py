@@ -136,7 +136,8 @@ class Decompiler:
         last_node = Node([""], self.decompiler_data.initial_state)
         last_node_state = self.decompiler_data.initial_state
         self.decompiler_data.cfg = last_node
-        for num in list(range(0, len(set_of_instructions))):
+        num = 0
+        while num < len(set_of_instructions):
             row = set_of_instructions[num]
             instruction = row.strip().replace(',', ' ').split()
             if instruction[0].find("andn2") != -1 \
@@ -144,8 +145,10 @@ class Decompiler:
                 self.decompiler_data.num_of_label += 1
                 set_of_instructions.insert(num + 1, "s_cbranch_execz ." + str(self.decompiler_data.num_of_label))
             if instruction[0] == "s_mov_b64" and instruction[1] == "exec" and curr_node.instruction[0].find(".") == -1:
+                set_of_instructions.insert(num + 1, row)
                 instruction = ["." + str(self.decompiler_data.num_of_label) + ":"]
             curr_node = self.make_cfg_node(instruction, last_node_state, last_node)
+            num += 1
             if curr_node is None:
                 for instr in set_of_instructions:
                     self.decompiler_data.output_file.write(instr + "\n")
