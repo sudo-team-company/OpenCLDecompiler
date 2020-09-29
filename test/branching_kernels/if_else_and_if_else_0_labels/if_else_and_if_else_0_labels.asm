@@ -1,11 +1,11 @@
-/* Disassembling 'arith-Ellesmere.bin' */
+/* Disassembling 'branching_kernels\if_else_and_if_else_0_labels\if_else_and_if_else_0_labels.bin' */
 .amdcl2
 .gpu Iceland
 .64bit
 .arch_minor 0
 .arch_stepping 4
 .driver_version 200406
-.kernel if_else_and_if_else
+.kernel if_else_and_if_else_0_labels
     .config
         .dims xyz
         .cws 4, 4, 4
@@ -25,7 +25,7 @@
         .arg _.vqueue_pointer, "size_t", long
         .arg _.aqlwrap_pointer, "size_t", long
         .arg x, "int", int
-        .arg data, "int*", int*, global,
+        .arg data, "int*", int*, global, 
         .arg y, "int", int
     .text
 /*000000000000*/ s_load_dwordx2  s[0:1], s[4:5], 0x10

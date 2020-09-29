@@ -1,5 +1,5 @@
 __kernel __attribute__((reqd_work_group_size(4, 4, 4)))
-void if_else_in_if_else(int x, __global int *data, int y)
+void if_else_in_if_of_if_else(int x, __global int *data, int y)
 {
     uint var13;
     uint var15;
