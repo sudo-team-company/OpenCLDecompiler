@@ -95,8 +95,8 @@ class Decompiler:
         self.decompiler_data.output_file.write(")\n")
 
     def change_cfg_for_else_structure(self, curr_node, instruction):
-        self.decompiler_data.parents_of_label[0].children.remove(self.decompiler_data.label)
-        self.decompiler_data.parents_of_label[1].children.remove(self.decompiler_data.label)
+        for parents_of_label in self.decompiler_data.parents_of_label:
+            parents_of_label.children.remove(self.decompiler_data.label)
         last_node = self.decompiler_data.parents_of_label[1]
         last_node_state = copy.deepcopy(self.decompiler_data.parents_of_label[1].state)
         if curr_node.parent[0].instruction[0].find("v_mov") != -1:
@@ -105,15 +105,16 @@ class Decompiler:
         self.decompiler_data.from_node[instruction[1]].remove(curr_node)
         from_node = instruction[1]
         if self.decompiler_data.from_node.get(from_node, None) is None:
-            self.decompiler_data.from_node[from_node] = [self.decompiler_data.parents_of_label[0]]
-        else:
-            self.decompiler_data.from_node[from_node].append(self.decompiler_data.parents_of_label[0])
+            self.decompiler_data.from_node[from_node] = []
+        for parents_of_label in self.decompiler_data.parents_of_label:
+            if parents_of_label != self.decompiler_data.parents_of_label[1]:
+                self.decompiler_data.from_node[from_node].append(parents_of_label)
         self.decompiler_data.flag_of_else = False
         return last_node, last_node_state
 
     def update_reg_version(self, reg, curr_node, max_version, version_of_reg):
         if len(version_of_reg) == 1:
-            if curr_node.state.registers[reg] is None:
+            if curr_node.state.registers.get(reg) is None or curr_node.state.registers[reg] is None:
                 for p in curr_node.parent:
                     if p.state.registers[reg] is not None:
                         curr_node.state.registers[reg] = p.state.registers[reg]
@@ -150,6 +151,7 @@ class Decompiler:
             curr_node = self.make_cfg_node(instruction, last_node_state, last_node)
             num += 1
             if curr_node is None:
+                self.decompiler_data.output_file.write("Not resolve yet. " + row + "\n")
                 for instr in set_of_instructions:
                     self.decompiler_data.output_file.write(instr + "\n")
                 return
@@ -200,7 +202,7 @@ class Decompiler:
                             vals_of_parent = curr_node.parent[0].state.registers[register].val.split()
                             var_name = curr_node.state.registers[register].val
                             for val in vals_of_parent:
-                                if val.find("var") != -1:
+                                if val.find("var") != -1 and val.find("[") == -1:
                                     var_name = val
                             if curr_node.parent[0].state.registers[register].val.find("*var") != -1:
                                 self.decompiler_data.names_of_vars[var_name] = \
@@ -280,27 +282,27 @@ class Decompiler:
                     start_now = region
                 else:
                     parent = before_region.parent[0]
-                    parent.children.remove(before_region)
-                    parent.add_child(region)
+                    index = parent.children.index(before_region)
+                    parent.children[index] = region
                     region.add_parent(parent)
                 if next_region is not None:
-                    next_region.parent.remove(curr_region)
-                    next_region.add_parent(region)
+                    index = next_region.parent.index(curr_region)
+                    next_region.parent[index] = region
                     region.add_child(next_region)
-                if next_region is not None and next_region != TypeNode.basic and len(curr_region.parent) == 1:
+                if next_region is not None and next_region.type != TypeNode.basic and len(curr_region.parent) == 1:
                     region_all = Region(TypeNode.linear, before_region)
                     region_all.end = next_region
                     if start_now == region:
                         start_now = region_all
                     else:
                         parent = before_region.parent[0]
-                        parent.children.remove(region)
-                        parent.add_child(region_all)
+                        index = parent.children.index(region)
+                        parent.children[index] = region_all
                         region_all.add_parent(parent)
                     if next_region.children:
                         child = next_region.children[0]
-                        child.parent.remove(next_region)
-                        child.add_parent(region_all)
+                        index = child.parent.index(next_region)
+                        child.parent[index] = region_all
                         region_all.add_child(child)
                 return start_now
 
@@ -308,13 +310,13 @@ class Decompiler:
             region_all = Region(TypeNode.linear, curr_region)
             region_all.end = next_region
             for prev_r in before_region:
-                prev_r.children.remove(curr_region)
-                prev_r.add_child(region_all)
+                index = prev_r.children.index(curr_region)
+                prev_r.children[index] = region_all
                 region_all.add_parent(prev_r)
             if next_region.children:
                 child = next_region.children[0]
-                child.parent.remove(next_region)
-                child.add_parent(region_all)
+                index = child.parent.index(next_region)
+                child.parent[index] = region_all
                 region_all.add_child(child)
         return start_region
 
@@ -339,13 +341,27 @@ class Decompiler:
 
     def add_parent_and_child(self, before_r, next_r, region, pred_child, pred_parent):
         for i in list(range(0, len(before_r))):
-            before_r[i].children.remove(pred_child[i])
-            before_r[i].add_child(region)
+            index = before_r[i].children.index(pred_child[i])
+            before_r[i].children[index] = region
             region.add_parent(before_r[i])
         if next_r is not None:
-            next_r.parent.remove(pred_parent)
-            next_r.add_parent(region)
+            index = next_r.parent.index(pred_parent)
+            next_r.parent[index] = region
             region.add_child(next_r)
+
+    def create_new_region(self, prev_reg_1, prev_reg_2, next_reg):
+        prev_reg_1.children.remove(next_reg)
+        prev_reg_2.children.remove(next_reg)
+        position = next_reg.parent.index(prev_reg_1)
+        new_fiction_region = Region(TypeNode.linear, next_reg.start)
+        next_reg.parent[position] = new_fiction_region
+        next_reg.parent.remove(prev_reg_2)
+        prev_reg_1.children.append(new_fiction_region)
+        prev_reg_2.children.append(new_fiction_region)
+        new_fiction_region.parent.append(prev_reg_1)
+        new_fiction_region.parent.append(prev_reg_2)
+        new_fiction_region.children.append(next_reg)
+        return new_fiction_region
 
     def process_cfg(self):
         curr_node = self.decompiler_data.cfg
@@ -376,14 +392,21 @@ class Decompiler:
                     region = Region(TypeNode.basic, curr_node)
                     self.decompiler_data.starts_regions[curr_node] = region
                     self.decompiler_data.ends_regions[curr_node] = region
+                    flag_of_continue = False
                     for c_p in curr_node.parent:
-                        if c_p in visited:
-                            if self.decompiler_data.ends_regions.get(c_p) is not None:
-                                parent = self.decompiler_data.ends_regions[c_p]
-                            else:
-                                parent = self.decompiler_data.ends_regions[curr_node.parent[0].children[0]]
-                            parent.add_child(region)
-                            region.add_parent(parent)
+                        if c_p not in visited:
+                            flag_of_continue = True
+                            break
+                    if flag_of_continue:
+                        visited.remove(curr_node)
+                        continue
+                    for c_p in curr_node.parent:
+                        if self.decompiler_data.ends_regions.get(c_p) is not None:
+                            parent = self.decompiler_data.ends_regions[c_p]
+                        else:
+                            parent = self.decompiler_data.ends_regions[curr_node.parent[0].children[0]]
+                        parent.add_child(region)
+                        region.add_parent(parent)
 
                 for child in curr_node.children:
                     if child not in visited:
@@ -402,31 +425,18 @@ class Decompiler:
                 if curr_region.type != TypeNode.linear:
 
                     if self.check_if(curr_region):
-                        last_if_region = curr_region.children[1]
                         region = Region(TypeNode.ifstatement, curr_region)
                         child0 = curr_region.children[0] if len(curr_region.children[0].parent) == 1 else \
                             curr_region.children[1]
-                        child1 = curr_region.children[1] if len(curr_region.children[1].parent) == 2 else \
+                        child1 = curr_region.children[1] if len(curr_region.children[1].parent) > 1 else \
                             curr_region.children[0]
+                        before_r = [curr_region.parent[0]]
+                        prev_child = [curr_region]
+                        if len(child1.parent) > 2:
+                            child1 = self.create_new_region(curr_region, child0, child1)
                         region.end = child1
                         visited.append(child1)
                         visited.append(child0)
-                        before_r = [curr_region.parent[0]]
-                        prev_child = [curr_region]
-                        if len(child0.parent) > 1:
-                            if child0.parent[0] not in [child1, curr_region]:
-                                before_r.append(child0.parent[0])
-                                prev_child.append(child0)
-                            if child0.parent[1] not in [child1, curr_region]:
-                                before_r = child0.parent[1]
-                                prev_child.append(child0)
-                        if len(child1.parent) > 1:
-                            if child1.parent[0] not in [child0, curr_region]:
-                                before_r.append(child1.parent[0])
-                                prev_child.append(child1)
-                            if child1.parent[1] not in [child0, curr_region]:
-                                before_r.append(child1.parent[1])
-                                prev_child.append(child1)
                         next_r = child1.children[0] if len(child1.children) > 0 else None
                         self.add_parent_and_child(before_r, next_r, region, prev_child, region.end)
                         start_region = self.union_regions(before_r, region, next_r, start_region)
@@ -443,17 +453,14 @@ class Decompiler:
                         child0 = curr_region.children[0]
                         child1 = curr_region.children[1]
                         region.end = child0.children[0]
+                        if len(region.end.parent) > 2:
+                            region.end = self.create_new_region(child0, child1, child0.children[0])
                         prev_child = [curr_region]
                         visited.append(child1)
                         visited.append(child0)
                         visited.append(region.end)
                         before_r = [curr_region.parent[0]]
                         next_r = region.end.children[0]
-                        if len(region.end.parent) > 2:
-                            for p in region.end.parent:
-                                if p not in [child0, child1]:
-                                    before_r.append(p)
-                                    prev_child.append(region.end)
                         self.add_parent_and_child(before_r, next_r, region, prev_child, region.end)
                         start_region = self.union_regions(before_r, region, next_r, start_region)
                         if region.children:
@@ -538,34 +545,40 @@ class Decompiler:
             self.make_output(if_body, indent + '    ')
             for key in self.decompiler_data.variables.keys():
                 reg = key[:key.find("_")]
-                r_node = region.end.start
-                while not isinstance(r_node, Node):
-                    r_node = r_node.start
-                if r_node.parent[1].state.registers.get(reg) is not None \
-                        and r_node.parent[1].state.registers[reg].version == key \
-                        and self.decompiler_data.variables[key] in self.decompiler_data.names_of_vars.keys():
+                r_node_parent = region.end.parent[1].end
+                while not isinstance(r_node_parent, Node):
+                    r_node_parent = r_node_parent.end
+                if r_node_parent.state.registers.get(reg) is not None \
+                        and r_node_parent.state.registers[reg].version == key \
+                        and self.decompiler_data.variables[key] in self.decompiler_data.names_of_vars.keys() \
+                        and self.decompiler_data.variables[key] != r_node_parent.state.registers[reg].val:
                     if self.decompiler_data.variables[key].find("*") == -1:
                         self.decompiler_data.output_file.write(indent + "    " + self.decompiler_data.variables[key] +
-                                                               " = " + r_node.parent[1].state.registers[reg].val + ";\n")
+                                                               " = " + r_node_parent.state.registers[reg].val + ";\n")
                     else:
-                        self.decompiler_data.output_file.write(indent + "    " + self.decompiler_data.variables[key][1:] + " = &" +
-                                               r_node.parent[1].state.registers[reg].val + ";\n")
+                        self.decompiler_data.output_file.write(
+                            indent + "    " + self.decompiler_data.variables[key][1:] + " = &" +
+                            r_node_parent.state.registers[reg].val + ";\n")
             self.decompiler_data.output_file.write(indent + "}\n")
             else_body = region.start.children[1]
             self.decompiler_data.output_file.write(indent + "else {\n")
             self.make_output(else_body, indent + '    ')
             for key in self.decompiler_data.variables.keys():
                 reg = key[:key.find("_")]
-                if region.end.start.parent[0].state.registers[reg].version == key \
+                r_node_parent = region.end.parent[0].end
+                while not isinstance(r_node_parent, Node):
+                    r_node_parent = r_node_parent.end
+                if r_node_parent.state.registers.get(reg) is not None \
+                        and r_node_parent.state.registers[reg].version == key \
                         and self.decompiler_data.variables[key] in self.decompiler_data.names_of_vars.keys() \
-                        and self.decompiler_data.variables[key] != region.end.start.parent[0].state.registers[reg].val:
+                        and self.decompiler_data.variables[key] != r_node_parent.state.registers[reg].val:
                     if self.decompiler_data.variables[key].find("*") == -1:
                         self.decompiler_data.output_file.write(
                             indent + "    " + self.decompiler_data.variables[key] + " = "
-                            + region.end.start.parent[0].state.registers[reg].val + ";\n")
+                            + r_node_parent.state.registers[reg].val + ";\n")
                     else:
                         self.decompiler_data.output_file.write(indent + "    " + self.decompiler_data.variables[key][1:]
-                                                               + " = &" + region.end.start.parent[0].state.registers[reg].val + ";\n")
+                                                               + " = &" + r_node_parent.state.registers[reg].val + ";\n")
             self.decompiler_data.output_file.write(indent + "}\n")
 
     def to_opencl(self, node, flag_of_status):
@@ -607,4 +620,4 @@ class Decompiler:
         elif instruction_dict.get(node.instruction[0]) is not None:
             return instruction_dict[node.instruction[0]].execute(node, instruction, flag_of_status, suffix)
         else:
-            self.decompiler_data.output_file.write("Not resolve yet.\n")
+            return

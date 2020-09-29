@@ -84,6 +84,36 @@ class BranchingKernelsTest(unittest.TestCase):
             with open(r"branching_kernels\if_else_in_if\if_else_in_if_dcmpl.cl") as decompiled:
                 self.assertEqual(hands_decompilation.read(), decompiled.read())
 
+    def if_else_and_if_else(self):
+        subprocess.call(r'test.bat branching_kernels\if_else_and_if_else\if_else_and_if_else.bin ' +
+                        r'branching_kernels\if_else_and_if_else\if_else_and_if_else.asm')
+        parser_for_instructions.main(r"branching_kernels\if_else_and_if_else\if_else_and_if_else.asm",
+                                     r"branching_kernels\if_else_and_if_else\if_else_and_if_else_dcmpl.cl")
+        with open(
+                r"branching_kernels\if_else_and_if_else\if_else_and_if_else_hands.cl") as hands_decompilation:
+            with open(r"branching_kernels\if_else_and_if_else\if_else_and_if_else_dcmpl.cl") as decompiled:
+                self.assertEqual(hands_decompilation.read(), decompiled.read())
+
+    def if_else_and_if_else_0_labels(self):
+        subprocess.call(r'test.bat branching_kernels\if_else_and_if_else_0_labels\if_else_and_if_else_0_labels.bin ' +
+                        r'branching_kernels\if_else_and_if_else_0_labels\if_else_and_if_else_0_labels.asm')
+        parser_for_instructions.main(r"branching_kernels\if_else_and_if_else_0_labels\if_else_and_if_else_0_labels.asm",
+                                     r"branching_kernels\if_else_and_if_else_0_labels\if_else_and_if_else_0_labels_dcmpl.cl")
+        with open(
+                r"branching_kernels\if_else_and_if_else_0_labels\if_else_and_if_else_0_labels_hands.cl") as hands_decompilation:
+            with open(r"branching_kernels\if_else_and_if_else_0_labels\if_else_and_if_else_0_labels_dcmpl.cl") as decompiled:
+                self.assertEqual(hands_decompilation.read(), decompiled.read())
+
+    def if_else_in_if_of_if_else(self):
+        subprocess.call(r'test.bat branching_kernels\if_else_in_if_of_if_else\if_else_in_if_of_if_else.bin ' +
+                        r'branching_kernels\if_else_in_if_of_if_else\if_else_in_if_of_if_else.asm')
+        parser_for_instructions.main(r"branching_kernels\if_else_in_if_of_if_else\if_else_in_if_of_if_else.asm",
+                                     r"branching_kernels\if_else_in_if_of_if_else\if_else_in_if_of_if_else_dcmpl.cl")
+        with open(
+                r"branching_kernels\if_else_in_if_of_if_else\if_else_in_if_of_if_else_hands.cl") as hands_decompilation:
+            with open(r"branching_kernels\if_else_in_if_of_if_else\if_else_in_if_of_if_else_dcmpl.cl") as decompiled:
+                self.assertEqual(hands_decompilation.read(), decompiled.read())
+
 
 class LinearKernelsTest(unittest.TestCase):
     def test_addition(self):

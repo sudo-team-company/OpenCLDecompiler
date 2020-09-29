@@ -27,6 +27,7 @@ from sop2.s_bfe import SBfe
 from sop2.s_cselect import SCselect
 from sop2.s_lshl import SLshl
 from sop2.s_lshr import SLshr
+from sop2.s_min import SMin
 from sop2.s_mul import SMul
 from sop2.s_sub import SSub
 from sopc.s_cmp_eq import SCmpEq
@@ -112,6 +113,7 @@ instruction_dict = {'ds_add': DsAdd(),
                     's_load': SLoad(),
                     's_lshl': SLshl(),
                     's_lshr': SLshr(),
+                    's_min': SMin(),
                     's_mov': SMov(),
                     's_movk': SMovk(),
                     's_mul': SMul(),
