@@ -141,6 +141,17 @@ class Decompiler:
         while num < len(set_of_instructions):
             row = set_of_instructions[num]
             instruction = row.strip().replace(',', ' ').split()
+            if instruction[0].find("s_and_saveexec_b64") != -1 \
+                    and (set_of_instructions[num + 1].find("branch") == -1
+                         and set_of_instructions[num + 2].find("branch") == -1
+                         and set_of_instructions[num + 3].find("branch") == -1):
+                self.decompiler_data.num_of_label += 1
+                set_of_instructions.insert(num + 1, "s_cbranch_execz ." + str(self.decompiler_data.num_of_label))
+            if instruction[0].find("andn2") != -1 and set_of_instructions[num - 1].find(".") == -1:
+                set_of_instructions.insert(num + 1, row)
+                new_val = "." + str(self.decompiler_data.num_of_label) + ":"
+                set_of_instructions[num] = new_val
+                instruction = [new_val]
             if instruction[0].find("andn2") != -1 \
                     and (set_of_instructions[num + 1].find("cbranch") == -1 and set_of_instructions[num + 1].find("v_mov") == -1):
                 self.decompiler_data.num_of_label += 1
