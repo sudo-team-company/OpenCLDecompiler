@@ -1,5 +1,5 @@
-from base_instruction import BaseInstruction
-from decompiler_data import DecompilerData
+from src.base_instruction import BaseInstruction
+from src.decompiler_data import DecompilerData
 
 
 class VCmpxClass(BaseInstruction):

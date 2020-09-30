@@ -1,7 +1,7 @@
 import argparse
 import re
 import sys
-from decompiler import Decompiler
+from src.decompiler import Decompiler
 
 
 def main(input_par, output_par):

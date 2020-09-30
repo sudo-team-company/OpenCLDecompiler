@@ -1,5 +1,5 @@
-from integrity import Integrity
-from type_of_reg import Type
+from src.integrity import Integrity
+from src.type_of_reg import Type
 
 
 class Register:

@@ -1,13 +1,13 @@
 import copy
 from collections import deque
-from integrity import Integrity
-from node import Node
-from region import Region
-from register import Register
-from type_of_node import TypeNode
-from type_of_reg import Type
-from decompiler_data import DecompilerData
-from instruction_dict import instruction_dict
+from src.integrity import Integrity
+from src.node import Node
+from src.region import Region
+from src.register import Register
+from src.type_of_node import TypeNode
+from src.type_of_reg import Type
+from src.decompiler_data import DecompilerData
+from src.instruction_dict import instruction_dict
 
 
 class Decompiler:

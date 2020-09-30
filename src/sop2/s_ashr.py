@@ -1,8 +1,8 @@
-from base_instruction import BaseInstruction
-from decompiler_data import DecompilerData
-from integrity import Integrity
-from register import Register
-from type_of_reg import Type
+from src.base_instruction import BaseInstruction
+from src.decompiler_data import DecompilerData
+from src.integrity import Integrity
+from src.register import Register
+from src.type_of_reg import Type
 
 
 class SAshr(BaseInstruction):

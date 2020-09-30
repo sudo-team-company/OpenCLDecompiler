@@ -1,6 +1,6 @@
-from register import Register
-from integrity import Integrity
-from type_of_reg import Type
+from src.register import Register
+from src.integrity import Integrity
+from src.type_of_reg import Type
 import copy
 
 

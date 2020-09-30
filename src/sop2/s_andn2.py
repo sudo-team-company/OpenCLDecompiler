@@ -1,4 +1,4 @@
-from base_instruction import BaseInstruction
+from src.base_instruction import BaseInstruction
 
 
 class SAndn2(BaseInstruction):

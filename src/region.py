@@ -1,4 +1,4 @@
-from type_of_node import TypeNode
+from src.type_of_node import TypeNode
 
 
 class Region:
