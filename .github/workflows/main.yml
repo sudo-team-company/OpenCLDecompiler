@@ -33,5 +33,5 @@ jobs:
         pip install pytest
     - name: Test with pytest
       run: |
-        cd test
+        cd tests
         python tests.py
