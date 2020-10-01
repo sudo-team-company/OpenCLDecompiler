@@ -4,9 +4,9 @@ void if_else_in_else_of_if_else(int x, __global int *data, int y)
     uint var2;
     uint var7;
     uint var8;
+    var8 = get_global_id(0);
     if (1 == get_global_id(0)) {
         var7 = (get_global_id(1) * x) - y;
-        var8 = get_global_id(0);
     }
     else {
         data[(get_global_id(0) * 4) / 4] = get_global_id(0) * y;

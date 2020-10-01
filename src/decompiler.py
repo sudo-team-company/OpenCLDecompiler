@@ -99,7 +99,7 @@ class Decompiler:
             parents_of_label.children.remove(self.decompiler_data.label)
         last_node = self.decompiler_data.parents_of_label[1]
         last_node_state = copy.deepcopy(self.decompiler_data.parents_of_label[1].state)
-        if curr_node.parent[0].instruction[0].find("v_mov") != -1:
+        if curr_node.parent[0].instruction[0].find("andn2") == -1:
             last_node_state.registers[curr_node.parent[0].instruction[1]] \
                 = curr_node.state.registers[curr_node.parent[0].instruction[1]]
         self.decompiler_data.from_node[instruction[1]].remove(curr_node)
@@ -153,7 +153,8 @@ class Decompiler:
                 set_of_instructions[num] = new_val
                 instruction = [new_val]
             if instruction[0].find("andn2") != -1 \
-                    and (set_of_instructions[num + 1].find("cbranch") == -1 and set_of_instructions[num + 1].find("v_mov") == -1):
+                    and (set_of_instructions[num + 1].find("cbranch") == -1
+                         and set_of_instructions[num + 2].find("cbranch") == -1):
                 self.decompiler_data.num_of_label += 1
                 set_of_instructions.insert(num + 1, "s_cbranch_execz ." + str(self.decompiler_data.num_of_label))
             if instruction[0] == "s_mov_b64" and instruction[1] == "exec" and curr_node.instruction[0].find(".") == -1:
@@ -176,7 +177,7 @@ class Decompiler:
                 self.decompiler_data.label = curr_node
                 self.decompiler_data.parents_of_label = curr_node.parent
                 self.decompiler_data.flag_of_else = True
-            elif (instruction[0].find("andn2") != -1 or instruction[0].find("v_mov") != -1) and self.decompiler_data.flag_of_else:
+            elif (instruction[0].find("andn2") != -1 or (num < len(set_of_instructions) and set_of_instructions[num].find("branch") != -1)) and self.decompiler_data.flag_of_else:
                 continue
             elif self.decompiler_data.flag_of_else and instruction[0].find("cbranch") != -1:
                     last_node, last_node_state = self.change_cfg_for_else_structure(curr_node, instruction)
@@ -549,6 +550,15 @@ class Decompiler:
             self.make_output(region.start.children[1], indent + '    ')
             self.decompiler_data.output_file.write(indent + "}\n")
         elif region.type == TypeNode.ifelsestatement:
+            for key in self.decompiler_data.variables.keys():
+                reg = key[:key.find("_")]
+                if region.start.start.parent[0].state.registers[reg] is not None \
+                        and region.start.start.parent[0].state.registers[reg].version == key \
+                        and self.decompiler_data.variables[key] in self.decompiler_data.names_of_vars.keys() \
+                        and self.decompiler_data.variables[key] != region.start.start.parent[0].state.registers[reg].val:
+                    self.decompiler_data.output_file.write(
+                        indent + self.decompiler_data.variables[key] + " = "
+                        + region.start.start.parent[0].state.registers[reg].val + ";\n")
             self.decompiler_data.output_file.write(indent + "if (")
             self.decompiler_data.output_file.write(self.to_opencl(region.start.start, False))
             self.decompiler_data.output_file.write(") {\n")
@@ -556,13 +566,15 @@ class Decompiler:
             self.make_output(if_body, indent + '    ')
             for key in self.decompiler_data.variables.keys():
                 reg = key[:key.find("_")]
-                r_node_parent = region.end.parent[1].end
+                r_node_parent = region.start.children[0].end
                 while not isinstance(r_node_parent, Node):
                     r_node_parent = r_node_parent.end
                 if r_node_parent.state.registers.get(reg) is not None \
                         and r_node_parent.state.registers[reg].version == key \
                         and self.decompiler_data.variables[key] in self.decompiler_data.names_of_vars.keys() \
-                        and self.decompiler_data.variables[key] != r_node_parent.state.registers[reg].val:
+                        and self.decompiler_data.variables[key] != r_node_parent.state.registers[reg].val \
+                        and (region.start.start.parent[0].state.registers[reg] is None
+                             or r_node_parent.state.registers[reg].version != region.start.start.parent[0].state.registers[reg].version):
                     if self.decompiler_data.variables[key].find("*") == -1:
                         self.decompiler_data.output_file.write(indent + "    " + self.decompiler_data.variables[key] +
                                                                " = " + r_node_parent.state.registers[reg].val + ";\n")
@@ -576,13 +588,15 @@ class Decompiler:
             self.make_output(else_body, indent + '    ')
             for key in self.decompiler_data.variables.keys():
                 reg = key[:key.find("_")]
-                r_node_parent = region.end.parent[0].end
+                r_node_parent = region.start.children[1].end
                 while not isinstance(r_node_parent, Node):
                     r_node_parent = r_node_parent.end
                 if r_node_parent.state.registers.get(reg) is not None \
                         and r_node_parent.state.registers[reg].version == key \
                         and self.decompiler_data.variables[key] in self.decompiler_data.names_of_vars.keys() \
-                        and self.decompiler_data.variables[key] != r_node_parent.state.registers[reg].val:
+                        and self.decompiler_data.variables[key] != r_node_parent.state.registers[reg].val \
+                        and (region.start.start.parent[0].state.registers[reg] is None
+                             or r_node_parent.state.registers[reg].version != region.start.start.parent[0].state.registers[reg].version):
                     if self.decompiler_data.variables[key].find("*") == -1:
                         self.decompiler_data.output_file.write(
                             indent + "    " + self.decompiler_data.variables[key] + " = "
