@@ -124,6 +124,16 @@ class BranchingKernelsTest(unittest.TestCase):
             with open(r"branching_kernels\if_else_in_else_of_if_else\if_else_in_else_of_if_else_dcmpl.cl") as decompiled:
                 self.assertEqual(hands_decompilation.read(), decompiled.read())
 
+    def test_if_else_in_if_and_else_of_if_else(self):
+        subprocess.call(r'tests.bat branching_kernels\if_else_in_if_and_else_of_if_else\if_else_in_if_and_else_of_if_else.bin ' +
+                        r'branching_kernels\if_else_in_if_and_else_of_if_else\if_else_in_if_and_else_of_if_else.asm')
+        parser_for_instructions.main(r"branching_kernels\if_else_in_if_and_else_of_if_else\if_else_in_if_and_else_of_if_else.asm",
+                                     r"branching_kernels\if_else_in_if_and_else_of_if_else\if_else_in_if_and_else_of_if_else_dcmpl.cl")
+        with open(
+                r"branching_kernels\if_else_in_if_and_else_of_if_else\if_else_in_if_and_else_of_if_else_hands.cl") as hands_decompilation:
+            with open(r"branching_kernels\if_else_in_if_and_else_of_if_else\if_else_in_if_and_else_of_if_else_dcmpl.cl") as decompiled:
+                self.assertEqual(hands_decompilation.read(), decompiled.read())
+
 
 class LinearKernelsTest(unittest.TestCase):
     def test_addition(self):

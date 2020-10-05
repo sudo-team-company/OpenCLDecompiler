@@ -1,4 +1,5 @@
 import copy
+import re
 from collections import deque
 from src.integrity import Integrity
 from src.node import Node
@@ -211,17 +212,18 @@ class Decompiler:
                                 and curr_node.state.registers[register].val.find("var") != -1 \
                                 and curr_node.state.registers[register].type_of_data is not None \
                                 and register != "vcc":
-                            vals_of_parent = curr_node.parent[0].state.registers[register].val.split()
+                            vals_of_parent = re.split(' |\[|\]|\)|\(',curr_node.parent[0].state.registers[register].val)
                             var_name = curr_node.state.registers[register].val
                             for val in vals_of_parent:
-                                if val.find("var") != -1 and val.find("[") == -1:
+                                if val.find("var") != -1:
                                     var_name = val
-                            if curr_node.parent[0].state.registers[register].val.find("*var") != -1:
-                                self.decompiler_data.names_of_vars[var_name] = \
-                                    curr_node.parent[0].state.registers[register].type_of_data
-                            else:
-                                self.decompiler_data.names_of_vars[var_name] = \
-                                    curr_node.state.registers[register].type_of_data
+                            if var_name.find(" ") == -1 and self.decompiler_data.names_of_vars.get(var_name) is None:
+                                if curr_node.parent[0].state.registers[register].val.find("*var") != -1:
+                                    self.decompiler_data.names_of_vars[var_name] = \
+                                        curr_node.parent[0].state.registers[register].type_of_data
+                                else:
+                                    self.decompiler_data.names_of_vars[var_name] = \
+                                        curr_node.state.registers[register].type_of_data
         self.process_cfg()
         self.decompiler_data.output_file.write("{\n")
         for var in sorted(self.decompiler_data.names_of_vars.keys()):
