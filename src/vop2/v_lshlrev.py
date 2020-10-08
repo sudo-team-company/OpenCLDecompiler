@@ -60,5 +60,6 @@ class VLshlrev(BaseInstruction):
                     node.state.make_version(decompiler_data.versions, to_registers)
                     node.state.registers[to_registers_1] = Register(new_val, type_reg, Integrity.high_part)
                     node.state.make_version(decompiler_data.versions, to_registers_1)
+                node.state.registers[to_registers].type_of_data = suffix
                 return node
             return output_string

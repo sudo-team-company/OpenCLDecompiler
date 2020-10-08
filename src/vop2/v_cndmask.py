@@ -19,7 +19,7 @@ class VCndmask(BaseInstruction):
                 node.state.make_version(decompiler_data.versions, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
-                node.state.registers[vdst].type_of_date = suffix
+                node.state.registers[vdst].type_of_data = suffix
 
                 if node.state.registers[vdst].type == Type.param_global_id_x:
                     variable = "*" + variable

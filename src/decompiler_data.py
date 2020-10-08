@@ -77,6 +77,7 @@ class DecompilerData:
         self.version_wait = None
         self.type_params = {}
         self.variables = {}
+        self.checked_variables = {}
         self.versions = {
             "s0": 0,
             "s1": 0,
@@ -169,6 +170,7 @@ class DecompilerData:
         self.version_wait = None
         self.type_params = {}
         self.variables = {}
+        self.checked_variables = {}
         self.versions = {
             "s0": 0,
             "s1": 0,
