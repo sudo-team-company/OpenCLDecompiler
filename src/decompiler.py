@@ -1,6 +1,6 @@
 import copy
 from collections import deque
-from src.regions.functions_for_regions import add_parent_and_child, check_if, check_if_else, create_new_region, join_regions
+from src.regions.functions_for_regions import process_region_graph
 from src.integrity import Integrity
 from src.node import Node
 from src.regions.region import Region
@@ -9,14 +9,13 @@ from src.type_of_node import TypeNode
 from src.type_of_reg import Type
 from src.decompiler_data import DecompilerData
 from src.instruction_dict import instruction_dict
-from src.versions import Versions
+from src.versions import update_reg_version, remove_unusable_versions, change_values, check_for_many_versions
 
 
 class Decompiler:
     def __init__(self, output_file):
         self.decompiler_data = DecompilerData.Instance()
         self.decompiler_data.reset(output_file)
-        self.versions = Versions()
 
     def process_config(self, set_of_config, name_of_program):
         dimensions = set_of_config[0][6:]
@@ -180,14 +179,14 @@ class Decompiler:
                                 version_of_reg.add(par_version)
                                 if int(par_version[par_version.find("_") + 1:]) > max_version:
                                     max_version = int(par_version[par_version.find("_") + 1:])
-                    curr_node = self.versions.update_reg_version(reg, curr_node, max_version, version_of_reg)
+                    curr_node = update_reg_version(reg, curr_node, max_version, version_of_reg)
                 last_node_state = curr_node.state
-        self.versions.check_for_many_versions()
-        self.versions.remove_unusable_versions()
+        check_for_many_versions()
+        remove_unusable_versions()
         if self.decompiler_data.checked_variables != {} or self.decompiler_data.variables != {}:
-            self.versions.change_values()
+            change_values()
         self.make_region_graph_from_cfg()
-        self.process_region_graph()
+        process_region_graph()
         self.decompiler_data.output_file.write("{\n")
         for var in sorted(self.decompiler_data.names_of_vars.keys()):
             type_of_var = self.make_type(self.decompiler_data.names_of_vars[var])
@@ -280,85 +279,6 @@ class Decompiler:
                     else:
                         region.add_child(self.decompiler_data.starts_regions[child])
                         self.decompiler_data.starts_regions[child].add_parent(region)
-
-    def process_region_graph(self):
-        start_region = self.decompiler_data.starts_regions[self.decompiler_data.cfg]
-        visited = []
-        q = deque()
-        q.append(start_region)
-        while start_region.children:
-            curr_region = q.popleft()
-            if curr_region not in visited:
-                visited.append(curr_region)
-                if curr_region.type != TypeNode.linear:
-
-                    if check_if(curr_region):
-                        region = Region(TypeNode.ifstatement, curr_region)
-                        child0 = curr_region.children[0] if len(curr_region.children[0].parent) == 1 else \
-                            curr_region.children[1]
-                        child1 = curr_region.children[1] if len(curr_region.children[1].parent) > 1 else \
-                            curr_region.children[0]
-                        before_r = [curr_region.parent[0]]
-                        prev_child = [curr_region]
-                        if len(child1.parent) > 2:
-                            child1 = create_new_region(curr_region, child0, child1)
-                        region.end = child1
-                        visited.append(child1)
-                        visited.append(child0)
-                        next_r = child1.children[0] if len(child1.children) > 0 else None
-                        add_parent_and_child(before_r, next_r, region, prev_child, region.end)
-                        start_region = join_regions(before_r, region, next_r, start_region)
-                        if region.children:
-                            for child in region.children:
-                                if child not in visited:
-                                    q.append(child)
-                        else:
-                            q = deque()
-                            q.append(start_region)
-                            visited = []
-                    elif check_if_else(curr_region):
-                        region = Region(TypeNode.ifelsestatement, curr_region)
-                        child0 = curr_region.children[0]
-                        child1 = curr_region.children[1]
-                        region.end = child0.children[0]
-                        if len(region.end.parent) > 2:
-                            region.end = create_new_region(child0, child1, child0.children[0])
-                        prev_child = [curr_region]
-                        visited.append(child1)
-                        visited.append(child0)
-                        visited.append(region.end)
-                        before_r = [curr_region.parent[0]]
-                        next_r = region.end.children[0]
-                        add_parent_and_child(before_r, next_r, region, prev_child, region.end)
-                        start_region = join_regions(before_r, region, next_r, start_region)
-                        if region.children:
-                            for child in region.children:
-                                if child not in visited:
-                                    q.append(child)
-                        else:
-                            q = deque()
-                            q.append(start_region)
-                            visited = []
-                    else:
-                        if curr_region.children:
-                            for child in curr_region.children:
-                                if child not in visited:
-                                    q.append(child)
-                        else:
-                            q = deque()
-                            q.append(start_region)
-                            visited = []
-
-                else:
-                    if curr_region.children:
-                        for child in curr_region.children:
-                            if child not in visited:
-                                q.append(child)
-                    else:
-                        q = deque()
-                        q.append(start_region)
-                        visited = []
-        self.decompiler_data.improve_cfg = start_region
 
     def make_output(self, region, indent):
         if region.type == TypeNode.linear:

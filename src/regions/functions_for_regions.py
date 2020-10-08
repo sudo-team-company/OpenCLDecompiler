@@ -1,3 +1,5 @@
+from collections import deque
+from src.decompiler_data import DecompilerData
 from src.regions.region import Region
 from src.type_of_node import TypeNode
 
@@ -97,3 +99,82 @@ def join_regions(before_region, curr_region, next_region, start_region):
             child.parent[index] = region_all
             region_all.add_child(child)
     return start_region
+
+
+def process_region_graph():
+    decompiler_data = DecompilerData.Instance()
+    start_region = decompiler_data.starts_regions[decompiler_data.cfg]
+    visited = []
+    q = deque()
+    q.append(start_region)
+    while start_region.children:
+        curr_region = q.popleft()
+        if curr_region not in visited:
+            visited.append(curr_region)
+            if curr_region.type != TypeNode.linear:
+                if check_if(curr_region):
+                    region = Region(TypeNode.ifstatement, curr_region)
+                    child0 = curr_region.children[0] if len(curr_region.children[0].parent) == 1 else \
+                        curr_region.children[1]
+                    child1 = curr_region.children[1] if len(curr_region.children[1].parent) > 1 else \
+                        curr_region.children[0]
+                    before_r = [curr_region.parent[0]]
+                    prev_child = [curr_region]
+                    if len(child1.parent) > 2:
+                        child1 = create_new_region(curr_region, child0, child1)
+                    region.end = child1
+                    visited.append(child1)
+                    visited.append(child0)
+                    next_r = child1.children[0] if len(child1.children) > 0 else None
+                    add_parent_and_child(before_r, next_r, region, prev_child, region.end)
+                    start_region = join_regions(before_r, region, next_r, start_region)
+                    if region.children:
+                        for child in region.children:
+                            if child not in visited:
+                                q.append(child)
+                    else:
+                        q = deque()
+                        q.append(start_region)
+                        visited = []
+                elif check_if_else(curr_region):
+                    region = Region(TypeNode.ifelsestatement, curr_region)
+                    child0 = curr_region.children[0]
+                    child1 = curr_region.children[1]
+                    region.end = child0.children[0]
+                    if len(region.end.parent) > 2:
+                        region.end = create_new_region(child0, child1, child0.children[0])
+                    prev_child = [curr_region]
+                    visited.append(child1)
+                    visited.append(child0)
+                    visited.append(region.end)
+                    before_r = [curr_region.parent[0]]
+                    next_r = region.end.children[0]
+                    add_parent_and_child(before_r, next_r, region, prev_child, region.end)
+                    start_region = join_regions(before_r, region, next_r, start_region)
+                    if region.children:
+                        for child in region.children:
+                            if child not in visited:
+                                q.append(child)
+                    else:
+                        q = deque()
+                        q.append(start_region)
+                        visited = []
+                else:
+                    if curr_region.children:
+                        for child in curr_region.children:
+                            if child not in visited:
+                                q.append(child)
+                    else:
+                        q = deque()
+                        q.append(start_region)
+                        visited = []
+            else:
+                if curr_region.children:
+                    for child in curr_region.children:
+                        if child not in visited:
+                            q.append(child)
+                else:
+                    q = deque()
+                    q.append(start_region)
+                    visited = []
+    decompiler_data.improve_cfg = start_region
