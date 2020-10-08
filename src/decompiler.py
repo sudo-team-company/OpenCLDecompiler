@@ -9,12 +9,14 @@ from src.type_of_node import TypeNode
 from src.type_of_reg import Type
 from src.decompiler_data import DecompilerData
 from src.instruction_dict import instruction_dict
+from src.versions import Versions
 
 
 class Decompiler:
     def __init__(self, output_file):
         self.decompiler_data = DecompilerData.Instance()
         self.decompiler_data.reset(output_file)
+        self.versions = Versions()
 
     def process_config(self, set_of_config, name_of_program):
         dimensions = set_of_config[0][6:]
@@ -110,27 +112,6 @@ class Decompiler:
         self.decompiler_data.flag_of_else = False
         return last_node, last_node_state
 
-    def update_reg_version(self, reg, curr_node, max_version, version_of_reg):
-        if len(version_of_reg) == 1:
-            if curr_node.state.registers.get(reg) is None or curr_node.state.registers[reg] is None:
-                for p in curr_node.parent:
-                    if p.state.registers[reg] is not None:
-                        curr_node.state.registers[reg] = p.state.registers[reg]
-                        break
-        elif len(version_of_reg) > 1:
-            curr_node.state.registers[reg].version = reg + "_" + str(max_version + 1)
-            curr_node.state.registers[reg].prev_version = list(version_of_reg)
-            variable = "var" + str(self.decompiler_data.num_of_var)
-            if curr_node.state.registers[reg].type == Type.param_global_id_x:
-                variable = "*" + variable
-            curr_node.state.registers[reg].val = variable
-            self.decompiler_data.num_of_var += 1
-            for ver in version_of_reg:
-                self.decompiler_data.variables[ver] = variable
-            self.decompiler_data.checked_variables[curr_node.state.registers[reg].version] = variable
-            self.decompiler_data.versions[reg] = max_version + 1
-        return curr_node
-
     def process_src(self, name_of_program, set_of_config, set_of_instructions):
         self.process_config(set_of_config, name_of_program)
         last_node = Node([""], self.decompiler_data.initial_state)
@@ -199,13 +180,14 @@ class Decompiler:
                                 version_of_reg.add(par_version)
                                 if int(par_version[par_version.find("_") + 1:]) > max_version:
                                     max_version = int(par_version[par_version.find("_") + 1:])
-                    curr_node = self.update_reg_version(reg, curr_node, max_version, version_of_reg)
+                    curr_node = self.versions.update_reg_version(reg, curr_node, max_version, version_of_reg)
                 last_node_state = curr_node.state
-        self.check_for_many_versions()
-        self.remove_unusable_versions()
+        self.versions.check_for_many_versions()
+        self.versions.remove_unusable_versions()
         if self.decompiler_data.checked_variables != {} or self.decompiler_data.variables != {}:
-            self.change_values()
-        self.process_cfg()
+            self.versions.change_values()
+        self.make_region_graph_from_cfg()
+        self.process_region_graph()
         self.decompiler_data.output_file.write("{\n")
         for var in sorted(self.decompiler_data.names_of_vars.keys()):
             type_of_var = self.make_type(self.decompiler_data.names_of_vars[var])
@@ -220,160 +202,6 @@ class Decompiler:
                 "    __local " + type_of_var + " " + self.decompiler_data.lds_vars[offsets[key]][0] + "[" + str(size_var) + "]" + ";\n")
         self.make_output(self.decompiler_data.improve_cfg, '    ')
         self.decompiler_data.output_file.write("}\n")
-
-    def check_for_many_versions(self):
-        curr_node = self.decompiler_data.cfg
-        visited = [curr_node]
-        q = deque()
-        q.append(curr_node.children[0])
-        while q:
-            curr_node = q.popleft()
-            if curr_node not in visited:
-                visited.append(curr_node)
-                if len(curr_node.parent) < 2:
-                    if self.decompiler_data.checked_variables != {}:
-                        instruction = curr_node.instruction
-                        if instruction[0].find("mul_lo") != -1:
-                            print(instruction)
-                        if instruction != "branch" and len(instruction) > 1:
-                            for num_of_reg in list(range(1, len(curr_node.instruction))):
-                                register = curr_node.instruction[num_of_reg]
-                                if (curr_node.instruction[0].find("flat_store") != -1 or num_of_reg > 1) and len(register) > 1 \
-                                        and curr_node.instruction[0].find("cnd") == -1:
-                                    if register[1] == "[":
-                                        register = register[0] + register[2: register.find(":")]
-                                    first_reg = curr_node.instruction[1]
-                                    if first_reg[1] == "[":
-                                        first_reg = first_reg[0] + first_reg[2: first_reg.find(":")]
-                                    if curr_node.state.registers.get(register) is not None:
-                                        checked_version = curr_node.state.registers[register].version
-                                    else:
-                                        continue
-                                    if first_reg == register:
-                                        checked_version = curr_node.parent[0].state.registers[register].version
-                                    if curr_node.state.registers.get(register) is not None \
-                                            and self.decompiler_data.checked_variables.get(checked_version) is not None \
-                                            and curr_node.state.registers[register].type_of_data is not None \
-                                            and (register != "vcc" or instruction[0].find("and_saveexec") != -1):
-                                        var_name = self.decompiler_data.checked_variables[checked_version]
-                                        if self.decompiler_data.names_of_vars.get(var_name) is None:
-                                            if self.decompiler_data.checked_variables.get(curr_node.parent[0].state.registers[register].version) is not None:
-                                                self.decompiler_data.names_of_vars[var_name] = \
-                                                    curr_node.parent[0].state.registers[register].type_of_data
-                                            else:
-                                                self.decompiler_data.names_of_vars[var_name] = \
-                                                    curr_node.state.registers[register].type_of_data
-                else:
-                    flag_of_continue = False
-                    for c_p in curr_node.parent:
-                        if c_p not in visited:
-                            flag_of_continue = True
-                            break
-                    if flag_of_continue:
-                        visited.remove(curr_node)
-                        continue
-                for child in curr_node.children:
-                    if child not in visited:
-                        q.append(child)
-
-    def remove_unusable_versions(self):
-        keys = []
-        for key in self.decompiler_data.variables.keys():
-            if self.decompiler_data.variables[key] not in self.decompiler_data.names_of_vars.keys():
-                keys.append(key)
-        for key in keys:
-            self.decompiler_data.variables.pop(key)
-
-    def update_value_for_reg(self, first_reg, curr_node):
-        for child in curr_node.children:
-            if len(child.parent) < 2 and curr_node.state.registers[first_reg].version == child.state.registers[first_reg].version:
-                child.state.registers[first_reg] = copy.deepcopy(curr_node.state.registers[first_reg])
-                self.update_value_for_reg(first_reg, child)
-
-    def change_values(self):
-        changes = {}
-        curr_node = self.decompiler_data.cfg
-        visited = [curr_node]
-        q = deque()
-        q.append(curr_node.children[0])
-        while q:
-            curr_node = q.popleft()
-            if curr_node not in visited:
-                visited.append(curr_node)
-                if len(curr_node.parent) < 2:
-                    instruction = curr_node.instruction
-                    if instruction != "branch" and len(instruction) > 1:
-                        for num_of_reg in list(range(1, len(curr_node.instruction))):
-                            register = curr_node.instruction[num_of_reg]
-                            if (curr_node.instruction[0].find("flat_store") != -1 or num_of_reg > 1) and len(register) > 1 \
-                                    and curr_node.instruction[0].find("cnd") == -1:
-                                if register[1] == "[":
-                                    register = register[0] + register[2: register.find(":")]
-                                first_reg = curr_node.instruction[1]
-                                if first_reg[1] == "[":
-                                    first_reg = first_reg[0] + first_reg[2: first_reg.find(":")]
-                                if curr_node.state.registers.get(register) is not None:
-                                    check_version = curr_node.state.registers[register].version
-                                else:
-                                    continue
-                                if register == first_reg:
-                                    if curr_node.parent[0].state.registers.get(register) is not None:
-                                        check_version = curr_node.parent[0].state.registers[register].version
-                                    else:
-                                        continue
-                                if curr_node.state.registers.get(register) is not None \
-                                        and changes.get(check_version) \
-                                        and curr_node.state.registers[register].type_of_data is not None \
-                                        and (register != "vcc" or instruction[0].find("and_saveexec") != -1):
-                                    if instruction[0].find("flat_store") != -1:
-                                        if num_of_reg == 1:
-                                            node_registers = curr_node.parent[0].state.registers
-                                        else:
-                                            node_registers = curr_node.state.registers
-                                            first_reg = register
-                                    elif instruction[0].find("and_saveexec") != -1:
-                                        node_registers = curr_node.state.registers
-                                        first_reg = "exec"
-                                    else:
-                                        node_registers = curr_node.state.registers
-                                    copy_val_prev = copy.deepcopy(node_registers[first_reg].val)
-                                    node_registers[first_reg].val = node_registers[first_reg].val.replace(
-                                        changes[check_version][1],
-                                        changes[check_version][0])
-                                    copy_val_last = copy.deepcopy(node_registers[first_reg].val)
-                                    if copy_val_prev != copy_val_last:
-                                        changes[node_registers[first_reg].version] = [copy_val_last, copy_val_prev]
-                                        self.update_value_for_reg(first_reg, curr_node)
-                                if curr_node.state.registers.get(register) is not None \
-                                        and self.decompiler_data.variables.get(check_version) is not None \
-                                        and curr_node.state.registers[register].type_of_data is not None \
-                                        and (register != "vcc" or instruction[0].find("and_saveexec") != -1):
-                                    val_reg = curr_node.state.registers[register].val
-                                    if register == first_reg:
-                                        val_reg = curr_node.parent[0].state.registers[first_reg].val
-                                    copy_val_prev = copy.deepcopy(curr_node.state.registers[first_reg].val)
-                                    if self.decompiler_data.checked_variables.get(check_version) is not None:
-                                        curr_node.state.registers[first_reg].val = \
-                                            curr_node.state.registers[first_reg].val.replace(val_reg, self.decompiler_data.checked_variables[check_version])
-                                    else:
-                                        curr_node.state.registers[first_reg].val = \
-                                            curr_node.state.registers[first_reg].val.replace(val_reg, self.decompiler_data.variables[check_version])
-                                    copy_val_last = copy.deepcopy(curr_node.state.registers[first_reg].val)
-                                    if copy_val_prev != copy_val_last:
-                                        changes[curr_node.state.registers[first_reg].version] = [copy_val_last, copy_val_prev]
-                                        self.update_value_for_reg(first_reg, curr_node)
-                else:
-                    flag_of_continue = False
-                    for c_p in curr_node.parent:
-                        if c_p not in visited:
-                            flag_of_continue = True
-                            break
-                    if flag_of_continue:
-                        visited.remove(curr_node)
-                        continue
-                for child in curr_node.children:
-                    if child not in visited:
-                        q.append(child)
 
     def make_type(self, asm_type):
         if asm_type == "u32":
@@ -401,7 +229,7 @@ class Decompiler:
             node.add_parent(last_node)
         return self.to_opencl(node, True)
 
-    def process_cfg(self):
+    def make_region_graph_from_cfg(self):
         curr_node = self.decompiler_data.cfg
         region = Region(TypeNode.linear, curr_node)
         self.decompiler_data.starts_regions[curr_node] = region
@@ -452,6 +280,8 @@ class Decompiler:
                     else:
                         region.add_child(self.decompiler_data.starts_regions[child])
                         self.decompiler_data.starts_regions[child].add_parent(region)
+
+    def process_region_graph(self):
         start_region = self.decompiler_data.starts_regions[self.decompiler_data.cfg]
         visited = []
         q = deque()
