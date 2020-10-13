@@ -4,6 +4,25 @@ from src.type_of_reg import Type
 from src.decompiler_data import DecompilerData
 
 
+def find_max_and_prev_versions(curr_node):
+    for reg in curr_node.parent[0].state.registers:
+        version_of_reg = set()
+        max_version = 0
+        for parent in curr_node.parent:
+            if parent.state.registers.get(reg) is not None and parent.state.registers[reg] is not None \
+                    and parent.state.registers[reg].version is not None:
+                par_version = parent.state.registers[reg].version
+                if len(version_of_reg) == 0:
+                    max_version = int(par_version[par_version.find("_") + 1:])
+                    version_of_reg.add(par_version)
+                else:
+                    version_of_reg.add(par_version)
+                    if int(par_version[par_version.find("_") + 1:]) > max_version:
+                        max_version = int(par_version[par_version.find("_") + 1:])
+        curr_node = update_reg_version(reg, curr_node, max_version, version_of_reg)
+    return curr_node.state
+
+
 def update_reg_version(reg, curr_node, max_version, version_of_reg):
     decompiler_data = DecompilerData.Instance()
     if len(version_of_reg) == 1:

@@ -3,6 +3,7 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
+from src.operation_status import OperationStatus
 
 
 class VMov(BaseInstruction):
@@ -12,7 +13,7 @@ class VMov(BaseInstruction):
         if suffix == "b32":
             vdst = instruction[1]
             src0 = instruction[2]
-            if flag_of_status:
+            if flag_of_status == OperationStatus.to_fill_node:
                 if node.state.registers.get(src0) is not None:
                     node.state.registers[vdst] = \
                         Register(node.state.registers[src0].val, node.state.registers[src0].type,

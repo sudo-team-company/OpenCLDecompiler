@@ -1,5 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData
+from src.operation_status import OperationStatus
 
 
 class DsAdd(BaseInstruction):
@@ -11,7 +12,7 @@ class DsAdd(BaseInstruction):
             offset = int(instruction[3][7:]) if len(instruction) == 4 else 0
             new_value, src0_flag, src1_flag = decompiler_data.make_op(node, addr, "4", " / ")
             name = decompiler_data.lds_vars[offset][0] + "[" + new_value + "]"
-            if flag_of_status:
+            if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[name].val = \
                     node.state.registers[name].val + " + " + node.state.registers[vdata0].val
                 node.state.make_version(decompiler_data.versions, name)

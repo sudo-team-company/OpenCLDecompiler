@@ -1,4 +1,5 @@
 from src.base_instruction import BaseInstruction
+from src.operation_status import OperationStatus
 
 
 class SAndSaveexec(BaseInstruction):
@@ -7,7 +8,7 @@ class SAndSaveexec(BaseInstruction):
         if suffix == 'b64':
             sdst = instruction[1]
             ssrc0 = instruction[2]
-            if flag_of_status:
+            if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[sdst] = node.state.registers["exec"]
                 node.state.registers["exec"] = node.state.registers[ssrc0]
                 return node

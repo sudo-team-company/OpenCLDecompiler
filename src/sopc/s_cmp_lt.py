@@ -3,6 +3,7 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
+from src.operation_status import OperationStatus
 
 
 class SCmpLt(BaseInstruction):
@@ -12,7 +13,7 @@ class SCmpLt(BaseInstruction):
         if suffix == 'i32':
             ssrc0 = instruction[1]
             ssrc1 = instruction[2]
-            if flag_of_status:
+            if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers["scc"] = \
                     Register(node.state.registers[ssrc0].val + " < " + node.state.registers[ssrc1].val, Type.unknown,
                              Integrity.integer)

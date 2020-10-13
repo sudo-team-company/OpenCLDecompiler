@@ -3,6 +3,7 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
+from src.operation_status import OperationStatus
 
 
 class SLshl(BaseInstruction):
@@ -13,7 +14,7 @@ class SLshl(BaseInstruction):
             sdst = instruction[1]
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
-            if flag_of_status:
+            if flag_of_status == OperationStatus.to_fill_node:
                 new_val, ssrc0_flag, ssrc1_flag = decompiler_data.make_op(node, ssrc0, str(pow(2, int(ssrc1))), " * ")
                 if node.state.registers[ssrc0].type == Type.work_group_id_x:
                     node.state.registers[sdst] = Register(new_val, Type.work_group_id_x_local_size, Integrity.integer)
@@ -38,7 +39,7 @@ class SLshl(BaseInstruction):
             sdst = instruction[1]
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
-            if flag_of_status:
+            if flag_of_status == OperationStatus.to_fill_node:
                 first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
                     = node.state.find_first_last_num_to_from(sdst, ssrc0)
                 from_registers1 = name_of_from + str(first_from + 1)

@@ -3,6 +3,7 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
+from src.operation_status import OperationStatus
 
 
 class VAdd(BaseInstruction):
@@ -15,7 +16,7 @@ class VAdd(BaseInstruction):
             src0 = instruction[3]
             src1 = instruction[4]
             new_val, src0_reg, src1_reg = decompiler_data.make_op(node, src0, src1, " + ")
-            if flag_of_status:
+            if flag_of_status == OperationStatus.to_fill_node:
                 if src0_reg and src1_reg:
                     if node.state.registers[src0].type == Type.work_group_id_x_local_size_offset and \
                             node.state.registers[src1].type == Type.work_item_id_x or \

@@ -3,6 +3,7 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
+from src.operation_status import OperationStatus
 
 
 class SCselect(BaseInstruction):
@@ -13,7 +14,7 @@ class SCselect(BaseInstruction):
             sdst = instruction[1]
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
-            if flag_of_status:
+            if flag_of_status == OperationStatus.to_fill_node:
                 if ssrc0 == "exec":
                     ssrc0 = "1"
                 new_val = node.state.registers["scc"].val + " ? " + ssrc0 + " : " + ssrc1

@@ -2,6 +2,7 @@ from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData
 from src.register import Register
 from src.type_of_reg import Type
+from src.operation_status import OperationStatus
 
 
 class SSub(BaseInstruction):
@@ -23,7 +24,7 @@ class SSub(BaseInstruction):
             sdst = instruction[1]
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
-            if flag_of_status:
+            if flag_of_status == OperationStatus.to_fill_node:
                 new_val, src0_reg, src1_reg = decompiler_data.make_op(node, ssrc0, ssrc1, " - ")
                 new_integrity = node.state.registers[ssrc1].integrity
                 node.state.registers[sdst] = Register(new_val, Type.unknown, new_integrity)

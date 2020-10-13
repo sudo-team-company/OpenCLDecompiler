@@ -2,6 +2,7 @@ from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.register import Register
+from src.operation_status import OperationStatus
 
 
 class DsWrite(BaseInstruction):
@@ -16,7 +17,7 @@ class DsWrite(BaseInstruction):
                 decompiler_data.lds_var_number += 1
             new_value, src0_flag, src1_flag = decompiler_data.make_op(node, addr, "4", " / ")
             name = decompiler_data.lds_vars[offset][0] + "[" + new_value + "]"
-            if flag_of_status:
+            if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[name] = \
                     Register(node.state.registers[vdata0].val, node.state.registers[vdata0].type, Integrity.integer)
                 if decompiler_data.versions.get(name) is None:

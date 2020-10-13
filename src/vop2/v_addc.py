@@ -3,6 +3,7 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
+from src.operation_status import OperationStatus
 
 
 class VAddc(BaseInstruction):
@@ -16,7 +17,7 @@ class VAddc(BaseInstruction):
             src1 = instruction[4]
             ssrc2 = instruction[5]
             new_val, src0_reg, src1_reg = decompiler_data.make_op(node, src0, src1, " + ")
-            if flag_of_status:
+            if flag_of_status == OperationStatus.to_fill_node:
                 if src0_reg and src1_reg:
                     if node.state.registers[src0].type == Type.paramA \
                             and node.state.registers[src1].type == Type.global_id_x:

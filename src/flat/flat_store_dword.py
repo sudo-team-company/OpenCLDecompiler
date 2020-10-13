@@ -2,6 +2,7 @@ from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.register import Register
+from src.operation_status import OperationStatus
 
 
 class FlatStoreDword(BaseInstruction):
@@ -12,7 +13,7 @@ class FlatStoreDword(BaseInstruction):
         inst_offset = "0" if len(instruction) < 4 else instruction[3]
         first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
             = node.state.find_first_last_num_to_from(vaddr, vdata)
-        if flag_of_status:
+        if flag_of_status == OperationStatus.to_fill_node:
             if first_to == last_to:
                 node.state.registers[to_registers] = \
                     Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,

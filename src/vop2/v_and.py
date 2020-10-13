@@ -2,6 +2,7 @@ from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData
 from src.register import Register
 from src.type_of_reg import Type
+from src.operation_status import OperationStatus
 
 
 class VAnd(BaseInstruction):
@@ -12,7 +13,7 @@ class VAnd(BaseInstruction):
             vdst = instruction[1]
             src0 = instruction[2]
             src1 = instruction[3]
-            if flag_of_status:
+            if flag_of_status == OperationStatus.to_fill_node:
                 new_integrity = node.state.registers[src1].integrity
                 new_val, src0_flag, src1_flag = decompiler_data.make_op(node, src1, src0[1:], " * ")
                 node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)

@@ -1,7 +1,8 @@
 import argparse
 import re
 import sys
-from src.decompiler import Decompiler
+from src.decompiler import process_src
+from src.decompiler_data import DecompilerData
 
 
 def main(input_par, output_par):
@@ -13,18 +14,18 @@ def main(input_par, output_par):
     set_of_instructions = []
     set_of_config = []
     name_of_program = ""
+    decompiler_data = DecompilerData.Instance()
     for row in body_of_file:
         row = re.sub("/\*(.*?)\*/", '', row)
         row = row.strip()
         if row.find(".kernel ") != -1:
             if status_of_parse == "instruction":
                 status_of_parse = "kernel"
-                decompiler = Decompiler(output_file)
-                decompiler.process_src(name_of_program, set_of_config, set_of_instructions)
+                decompiler_data.reset(output_file)
+                process_src(name_of_program, set_of_config, set_of_instructions)
                 output_file.write("\n")
                 set_of_instructions = []
                 set_of_config = []
-                name_of_program = ""
             name_of_program = row.split()[1]
         if row == ".config":
             status_of_parse = "config"
@@ -36,8 +37,8 @@ def main(input_par, output_par):
             set_of_config.append(row)
         else:
             continue
-    decompiler = Decompiler(output_file)
-    decompiler.process_src(name_of_program, set_of_config, set_of_instructions)
+    decompiler_data.reset(output_file)
+    process_src(name_of_program, set_of_config, set_of_instructions)
     output_file.close()
 
 

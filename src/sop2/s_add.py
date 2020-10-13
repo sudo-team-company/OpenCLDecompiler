@@ -3,6 +3,7 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
+from src.operation_status import OperationStatus
 
 
 class SAdd(BaseInstruction):
@@ -14,7 +15,7 @@ class SAdd(BaseInstruction):
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
             new_val, ssrc0_reg, ssrc1_reg = decompiler_data.make_op(node, ssrc0, ssrc1, " + ")
-            if flag_of_status:
+            if flag_of_status == OperationStatus.to_fill_node:
                 if ssrc0_reg and ssrc1_reg:
                     if node.state.registers[ssrc0].type == Type.work_group_id_x_local_size \
                             and node.state.registers[ssrc1].type == Type.global_offset_x:

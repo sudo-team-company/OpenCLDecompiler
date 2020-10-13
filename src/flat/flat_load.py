@@ -3,6 +3,7 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
+from src.operation_status import OperationStatus
 
 
 class FlatLoad(BaseInstruction):
@@ -15,7 +16,7 @@ class FlatLoad(BaseInstruction):
             variable = "var" + str(decompiler_data.num_of_var)
             first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
                 = node.state.find_first_last_num_to_from(vdst, vaddr)
-            if flag_of_status:
+            if flag_of_status == OperationStatus.to_fill_node:
                 if inst_offset == "":
                     if first_to == last_to:
                         data_type = node.state.registers[from_registers].type_of_data

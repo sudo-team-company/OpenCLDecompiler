@@ -3,6 +3,7 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
+from src.operation_status import OperationStatus
 
 
 class SLshr(BaseInstruction):
@@ -13,7 +14,7 @@ class SLshr(BaseInstruction):
         ssrc0 = instruction[2]
         ssrc1 = instruction[3]
         if suffix == 'b32':
-            if flag_of_status:
+            if flag_of_status == OperationStatus.to_fill_node:
                 if node.state.registers[ssrc0].type == Type.global_size_x \
                         and str(pow(2, int(ssrc1))) == decompiler_data.size_of_work_groups[0]:
                     node.state.registers[sdst] = \

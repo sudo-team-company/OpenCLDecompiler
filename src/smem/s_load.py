@@ -1,5 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData
+from src.operation_status import OperationStatus
 
 
 class SLoad(BaseInstruction):
@@ -12,7 +13,7 @@ class SLoad(BaseInstruction):
             offset = instruction[3]
             first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
                 = node.state.find_first_last_num_to_from(sdata, sbase)
-            if flag_of_status:
+            if flag_of_status == OperationStatus.to_fill_node:
                 if decompiler_data.usesetup == False and sbase == "s[4:5]" \
                         or decompiler_data.usesetup == True and sbase == "s[6:7]":
                     node.state.upload(sdata, sbase, offset, decompiler_data.params, decompiler_data.versions)
@@ -28,7 +29,7 @@ class SLoad(BaseInstruction):
             offset = instruction[3]
             first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
                 = node.state.find_first_last_num_to_from(sdata, sbase)
-            if flag_of_status:
+            if flag_of_status == OperationStatus.to_fill_node:
                 if decompiler_data.usesetup == False and sbase == "s[4:5]" \
                         or decompiler_data.usesetup == True and sbase == "s[6:7]":
                     node.state.upload(sdata, sbase, offset, decompiler_data.params, decompiler_data.versions)
@@ -44,7 +45,7 @@ class SLoad(BaseInstruction):
             offset = instruction[3]
             first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
                 = node.state.find_first_last_num_to_from(sdata, sbase)
-            if flag_of_status:
+            if flag_of_status == OperationStatus.to_fill_node:
                 if decompiler_data.usesetup == False and sbase == "s[4:5]" \
                         or decompiler_data.usesetup == True and sbase == "s[6:7]":
                     node.state.upload(sdata, sbase, offset, decompiler_data.params, decompiler_data.versions)
