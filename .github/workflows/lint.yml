@@ -1,4 +1,4 @@
-name: all-lints
+name: Lint
 
 on: [push]
 
