@@ -8,7 +8,7 @@ from src.operation_status import OperationStatus
 
 class VCndmask(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData.Instance()
+        decompiler_data = DecompilerData()
         if suffix == "b32":
             vdst = instruction[1]
             src0 = instruction[2]

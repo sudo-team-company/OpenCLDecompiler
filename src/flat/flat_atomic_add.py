@@ -4,7 +4,7 @@ from src.decompiler_data import DecompilerData
 
 class FlatAtomicAdd(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData.Instance()
+        decompiler_data = DecompilerData()
         vdst = instruction[1]
         vaddr = instruction[2]
         vdata = instruction[3]

@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData
+from src.decompiler_data import DecompilerData, make_op
 from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
@@ -8,7 +8,7 @@ from src.operation_status import OperationStatus
 
 class VAddc(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData.Instance()
+        decompiler_data = DecompilerData()
         output_string = ""
         if suffix == "u32":
             vdst = instruction[1]
@@ -16,7 +16,7 @@ class VAddc(BaseInstruction):
             src0 = instruction[3]
             src1 = instruction[4]
             ssrc2 = instruction[5]
-            new_val, src0_reg, src1_reg = decompiler_data.make_op(node, src0, src1, " + ")
+            new_val, src0_reg, src1_reg = make_op(node, src0, src1, " + ")
             if flag_of_status == OperationStatus.to_fill_node:
                 if src0_reg and src1_reg:
                     if node.state.registers[src0].type == Type.paramA \

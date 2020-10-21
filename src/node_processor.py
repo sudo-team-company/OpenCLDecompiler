@@ -5,7 +5,7 @@ from src.instruction_dict import instruction_dict
 
 
 def check_realisation_for_node(curr_node, row, set_of_instructions):
-    decompiler_data = DecompilerData.Instance()
+    decompiler_data = DecompilerData()
     if curr_node is None:  # check of node
         decompiler_data.output_file.write("Not resolved yet. " + row + "\n")
         for instr in set_of_instructions:
@@ -15,7 +15,7 @@ def check_realisation_for_node(curr_node, row, set_of_instructions):
 
 
 def process_label_node(node, flag_of_status):
-    decompiler_data = DecompilerData.Instance()
+    decompiler_data = DecompilerData()
     if flag_of_status == OperationStatus.to_fill_node:
         decompiler_data.to_node[node.instruction[0][:-1]] = node
         if decompiler_data.from_node.get(node.instruction[0][:-1]) is not None:
@@ -47,12 +47,12 @@ def decode_instruction(node, flag_of_status):
             else:
                 root = root + "_" + part
     prefix_root = prefix + "_" + root
+    return_value = None
     if instruction_dict.get(prefix_root) is not None:
-        return instruction_dict[prefix_root].execute(node, instruction, flag_of_status, suffix)
+        return_value = instruction_dict[prefix_root].execute(node, instruction, flag_of_status, suffix)
     elif instruction_dict.get(node.instruction[0]) is not None:
-        return instruction_dict[node.instruction[0]].execute(node, instruction, flag_of_status, suffix)
-    else:
-        return
+        return_value = instruction_dict[node.instruction[0]].execute(node, instruction, flag_of_status, suffix)
+    return return_value
 
 
 def to_opencl(node, flag_of_status):

@@ -1,19 +1,22 @@
 def make_type(asm_type):
     if asm_type == "u32":
-        return "uint"
+        opencl_type = "uint"
     elif asm_type == "i32":
-        return "int"
+        opencl_type = "int"
     elif asm_type == "u64":
-        return "ulong"
+        opencl_type = "ulong"
     elif asm_type == "i64":
-        return "long"
+        opencl_type = "long"
     elif asm_type == "b32":
-        return "uint"
+        opencl_type = "uint"
     elif asm_type == "b64":
-        return "ulong"
+        opencl_type = "ulong"
     elif asm_type == "dword":
-        return "int"
+        opencl_type = "int"
     elif asm_type == "dwordx2":
-        return "dwordx2"
+        opencl_type = "dwordx2"
     elif asm_type == "f32":
-        return "float"
+        opencl_type = "float"
+    else:
+        opencl_type = "unknown type"
+    return opencl_type

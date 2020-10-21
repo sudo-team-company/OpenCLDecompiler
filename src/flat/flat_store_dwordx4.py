@@ -4,7 +4,7 @@ from src.decompiler_data import DecompilerData
 
 class FlatStoreDwordx4(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData.Instance()
+        decompiler_data = DecompilerData()
         vaddr = instruction[1]
         vdata = instruction[2]
         inst_offset = instruction[3]

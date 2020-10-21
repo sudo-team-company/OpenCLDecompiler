@@ -8,7 +8,7 @@ from src.operation_status import OperationStatus
 
 class SMov(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData.Instance()
+        decompiler_data = DecompilerData()
         output_string = ""
         if suffix == 'b32' or suffix == 'b64':
             sdst = instruction[1]

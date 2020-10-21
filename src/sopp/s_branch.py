@@ -4,7 +4,7 @@ from src.decompiler_data import DecompilerData
 
 class SBranch(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData.Instance()
+        decompiler_data = DecompilerData()
         reladdr = instruction[1]
         if decompiler_data.to_node.get(reladdr) is not None:
             node.add_child(decompiler_data.to_node[reladdr])

@@ -6,11 +6,11 @@ from src.decompiler_data import DecompilerData
 from src.cfg import change_cfg_for_else_structure, make_cfg_node
 from src.code_printer import create_opencl_body
 from src.config import process_config
-from src.versions import find_max_and_prev_versions, remove_unusable_versions, change_values, check_for_many_versions
+from src.versions import find_max_and_prev_versions, remove_unusable_versions, change_values, check_for_use_new_version
 
 
 def transform_instruction_set(instruction, set_of_instructions, num, row, curr_node):
-    decompiler_data = DecompilerData.Instance()
+    decompiler_data = DecompilerData()
     if instruction[0].find("s_and_saveexec_b64") != -1 \
             and (set_of_instructions[num + 1].find("branch") == -1
                  and set_of_instructions[num + 2].find("branch") == -1
@@ -33,8 +33,9 @@ def transform_instruction_set(instruction, set_of_instructions, num, row, curr_n
     return set_of_instructions, instruction
 
 
-def check_instruction_set_for_if_else(instruction, curr_node, set_of_instructions, num, row, last_node, last_node_state):
-    decompiler_data = DecompilerData.Instance()
+def check_instruction_set_for_if_else(instruction, curr_node, set_of_instructions,
+                                      num, row, last_node, last_node_state):
+    decompiler_data = DecompilerData()
     if instruction[0][0] == ".":
         decompiler_data.label = curr_node
         decompiler_data.parents_of_label = curr_node.parent
@@ -53,14 +54,14 @@ def check_instruction_set_for_if_else(instruction, curr_node, set_of_instruction
 
 
 def process_single_instruction(set_of_instructions, num, curr_node, last_node_state, last_node):
-    decompiler_data = DecompilerData.Instance()
+    decompiler_data = DecompilerData()
     row = set_of_instructions[num]
     instruction = row.strip().replace(',', ' ').split()
     set_of_instructions, instruction = transform_instruction_set(instruction, set_of_instructions, num, row, curr_node)
     curr_node = make_cfg_node(instruction, last_node_state, last_node)
     num += 1
     if not check_realisation_for_node(curr_node, row, set_of_instructions):
-        return
+        return None
     last_node_state = copy.deepcopy(curr_node.state)
     if last_node is not None and last_node.instruction != "branch" and curr_node not in last_node.children:
         last_node.add_child(curr_node)
@@ -68,14 +69,15 @@ def process_single_instruction(set_of_instructions, num, curr_node, last_node_st
     if last_node is not None and last_node.instruction == "branch":
         last_node_state = copy.deepcopy(decompiler_data.initial_state)
     set_of_instructions, last_node, last_node_state = \
-        check_instruction_set_for_if_else(instruction, curr_node, set_of_instructions, num, row, last_node, last_node_state)
+        check_instruction_set_for_if_else(instruction, curr_node, set_of_instructions,
+                                          num, row, last_node, last_node_state)
     if instruction[0][0] == "." and len(curr_node.parent) > 1:
         last_node_state = find_max_and_prev_versions(curr_node)
     return num, curr_node, set_of_instructions, last_node, last_node_state
 
 
 def process_src(name_of_program, set_of_config, set_of_instructions):
-    decompiler_data = DecompilerData.Instance()
+    decompiler_data = DecompilerData()
     process_config(set_of_config, name_of_program)
     last_node = Node([""], decompiler_data.initial_state)
     curr_node = last_node
@@ -85,7 +87,7 @@ def process_src(name_of_program, set_of_config, set_of_instructions):
     while num < len(set_of_instructions):
         num, curr_node, set_of_instructions, last_node, last_node_state = \
             process_single_instruction(set_of_instructions, num, curr_node, last_node_state, last_node)
-    check_for_many_versions()
+    check_for_use_new_version()
     remove_unusable_versions()
     if decompiler_data.checked_variables != {} or decompiler_data.variables != {}:
         change_values()

@@ -1,21 +1,22 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData
+from src.decompiler_data import DecompilerData, make_op
 from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
+from src.state import find_first_last_num_to_from
 
 
 class SLshl(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData.Instance()
+        decompiler_data = DecompilerData()
         output_string = ""
         if suffix == 'b32':
             sdst = instruction[1]
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
             if flag_of_status == OperationStatus.to_fill_node:
-                new_val, ssrc0_flag, ssrc1_flag = decompiler_data.make_op(node, ssrc0, str(pow(2, int(ssrc1))), " * ")
+                new_val, ssrc0_flag, ssrc1_flag = make_op(node, ssrc0, str(pow(2, int(ssrc1))), " * ")
                 if node.state.registers[ssrc0].type == Type.work_group_id_x:
                     node.state.registers[sdst] = Register(new_val, Type.work_group_id_x_local_size, Integrity.integer)
                     node.state.registers["scc"] = Register(sdst + "!= 0", Type.int32, Integrity.integer)
@@ -40,12 +41,16 @@ class SLshl(BaseInstruction):
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
             if flag_of_status == OperationStatus.to_fill_node:
-                first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
-                    = node.state.find_first_last_num_to_from(sdst, ssrc0)
+                first_to, last_to, name_of_to, name_of_from, first_from, last_from \
+                    = find_first_last_num_to_from(sdst, ssrc0)
+                from_registers = name_of_from + str(first_from)
+                to_registers = name_of_to + str(first_to)
                 from_registers1 = name_of_from + str(first_from + 1)
-                to_registers1 = name_of_register + str(first_to + 1)
-                new_val0, ssrc0_flag0, ssrc1_flag0 = decompiler_data.make_op(node, from_registers, str(pow(2, int(ssrc1))), " * ")
-                new_val1, ssrc0_flag1, ssrc1_flag1 = decompiler_data.make_op(node, from_registers1, str(pow(2, int(ssrc1))), " * ")
+                to_registers1 = name_of_to + str(first_to + 1)
+                new_val0, ssrc0_flag0, ssrc1_flag0 = make_op(node, from_registers,
+                                                                             str(pow(2, int(ssrc1))), " * ")
+                new_val1, ssrc0_flag1, ssrc1_flag1 = make_op(node, from_registers1,
+                                                                             str(pow(2, int(ssrc1))), " * ")
                 node.state.registers[to_registers] = \
                     Register(new_val0, node.state.registers[from_registers].type, Integrity.low_part)
                 node.state.registers[to_registers1] = \

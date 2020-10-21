@@ -102,7 +102,7 @@ def join_regions(before_region, curr_region, next_region, start_region):
 
 
 def make_region_graph_from_cfg():
-    decompiler_data = DecompilerData.Instance()
+    decompiler_data = DecompilerData()
     curr_node = decompiler_data.cfg
     region = Region(TypeNode.linear, curr_node)
     decompiler_data.starts_regions[curr_node] = region
@@ -207,7 +207,7 @@ def process_if_else_statement_region(curr_region, visited, start_region, q):
 
 
 def process_region_graph():
-    decompiler_data = DecompilerData.Instance()
+    decompiler_data = DecompilerData()
     start_region = decompiler_data.starts_regions[decompiler_data.cfg]
     visited = []
     q = deque()

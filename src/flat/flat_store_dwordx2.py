@@ -3,18 +3,21 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.register import Register
 from src.operation_status import OperationStatus
+from src.state import find_first_last_num_to_from
 
 
 class FlatStoreDwordx2(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData.Instance()
+        decompiler_data = DecompilerData()
         vaddr = instruction[1]
         vdata = instruction[2]
         inst_offset = "0" if len(instruction) < 4 else instruction[3]
-        first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
-            = node.state.find_first_last_num_to_from(vaddr, vdata)
+        first_to, last_to, name_of_to, name_of_from, first_from, last_from \
+            = find_first_last_num_to_from(vaddr, vdata)
+        from_registers = name_of_from + str(first_from)
+        to_registers = name_of_to + str(first_to)
         if flag_of_status == OperationStatus.to_fill_node:
-            to_now = name_of_register + str(first_to + 1)
+            to_now = name_of_to + str(first_to + 1)
             node.state.registers[to_registers] = \
                 Register(node.state.registers[from_registers].val, node.state.registers[from_registers].type,
                          Integrity.low_part)

@@ -7,7 +7,7 @@ from src.type_of_node import TypeNode
 
 
 def create_opencl_body():
-    decompiler_data = DecompilerData.Instance()
+    decompiler_data = DecompilerData()
     decompiler_data.output_file.write("{\n")
     for var in sorted(decompiler_data.names_of_vars.keys()):
         type_of_var = make_type(decompiler_data.names_of_vars[var])
@@ -27,7 +27,7 @@ def create_opencl_body():
 
 
 def make_output_for_linear_region(region, indent):
-    decompiler_data = DecompilerData.Instance()
+    decompiler_data = DecompilerData()
     if isinstance(region.start, Node):
         reg = region.start
         if region.start == decompiler_data.cfg:
@@ -49,7 +49,7 @@ def make_output_for_linear_region(region, indent):
 
 
 def make_output_from_if_statement_region(region, indent):
-    decompiler_data = DecompilerData.Instance()
+    decompiler_data = DecompilerData()
     for key in decompiler_data.variables.keys():
         reg = key[:key.find("_")]
         if region.start.start.parent[0].state.registers[reg] is not None \
@@ -77,7 +77,7 @@ def make_output_from_if_statement_region(region, indent):
 
 
 def make_output_from_if_else_statement_region(region, indent):
-    decompiler_data = DecompilerData.Instance()
+    decompiler_data = DecompilerData()
     for key in decompiler_data.variables.keys():
         reg = key[:key.find("_")]
         if region.start.start.parent[0].state.registers[reg] is not None \

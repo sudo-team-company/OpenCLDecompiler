@@ -21,7 +21,3 @@ class Register:
 
     def add_prev(self, prev_version):
         self.prev_version.append(prev_version)
-
-    def update(self, key):
-        self.version = self.version[:self.version.find("_")] + "_" + str(
-            int(self.version[self.version.find("_") + 1:]) + 2)

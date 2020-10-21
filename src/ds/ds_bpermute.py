@@ -4,7 +4,7 @@ from src.decompiler_data import DecompilerData
 
 class DsBpermute(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData.Instance()
+        decompiler_data = DecompilerData()
         if suffix == "b32":
             tab = "    "
             tmp = "tmp" + str(decompiler_data.number_of_tmp)

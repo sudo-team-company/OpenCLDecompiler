@@ -5,7 +5,7 @@ from src.operation_status import OperationStatus
 
 class SCbranchScc0(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData.Instance()
+        decompiler_data = DecompilerData()
         reladdr = instruction[1]
         if flag_of_status == OperationStatus.to_fill_node:
             if decompiler_data.to_node.get(reladdr) is not None:

@@ -14,9 +14,9 @@ def main(input_par, output_par):
     set_of_instructions = []
     set_of_config = []
     name_of_program = ""
-    decompiler_data = DecompilerData.Instance()
+    decompiler_data = DecompilerData()
     for row in body_of_file:
-        row = re.sub("/\*(.*?)\*/", '', row)
+        row = re.sub(r"/\*(.*?)\*/", '', row)
         row = row.strip()
         if row.find(".kernel ") != -1:
             if status_of_parse == "instruction":

@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData
+from src.decompiler_data import DecompilerData, make_op
 from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
@@ -8,13 +8,13 @@ from src.operation_status import OperationStatus
 
 class SAddc(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData.Instance()
+        decompiler_data = DecompilerData()
         output_string = ""
         if suffix == 'u32':
             sdst = instruction[1]
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
-            new_val, ssrc0_reg, ssrc1_reg = decompiler_data.make_op(node, ssrc0, ssrc1, " + ")
+            new_val, ssrc0_reg, ssrc1_reg = make_op(node, ssrc0, ssrc1, " + ")
             if flag_of_status == OperationStatus.to_fill_node:
                 if ssrc0_reg and ssrc1_reg:
                     node.state.registers[sdst] = \

@@ -1,7 +1,42 @@
+import copy
 from src.register import Register
 from src.integrity import Integrity
 from src.type_of_reg import Type
-import copy
+
+
+def find_first_last_num_to_from(to_registers, from_registers):
+    left_board_from = from_registers.find("[")
+    last_to = 0
+    first_to = 0
+    first_from = 0
+    last_from = 0
+    name_of_to = to_registers
+    name_of_from = from_registers
+    if left_board_from != -1:
+        separation_from = from_registers.index(":")
+        right_board_from = from_registers.index("]")
+        first_from = int(from_registers[(left_board_from + 1):separation_from])
+        last_from = int(from_registers[(separation_from + 1):right_board_from])
+        name_of_from = from_registers[:left_board_from]
+        from_registers = name_of_from + str(first_from)
+    else:
+        if from_registers.find("s") != -1 or from_registers.find("v") != -1:
+            name_of_from = from_registers[0]
+            first_from = int(from_registers[1:])
+            last_from = first_from
+    left_board_to = to_registers.find("[")
+    if left_board_to != -1:
+        separation_to = to_registers.index(":")
+        right_board_to = to_registers.index("]")
+        first_to = int(to_registers[(left_board_to + 1):separation_to])
+        last_to = int(to_registers[(separation_to + 1):right_board_to])
+        name_of_to = to_registers[:left_board_to]
+    else:
+        if from_registers.find("s") != -1 or from_registers.find("v") != -1:
+            name_of_to = to_registers[0]
+            first_to = int(to_registers[1:])
+            last_to = first_to
+    return first_to, last_to, name_of_to, name_of_from, first_from, last_from
 
 
 class State:
@@ -58,40 +93,12 @@ class State:
                 "exec": None
             }
 
-    def find_first_last_num_to_from(self, to_registers, from_registers):
-        left_board_from = from_registers.find("[")
-        last_to = 0
-        first_to = 0
-        first_from = 0
-        name_of_register = ""
-        name_of_from = ""
-        num_of_registers = 0
-        if left_board_from != -1:
-            separation_from = from_registers.index(":")
-            right_board_from = from_registers.index("]")
-            first_from = int(from_registers[(left_board_from + 1):separation_from])
-            last_from = int(from_registers[(separation_from + 1):right_board_from])
-            num_of_registers = last_from - first_from + 1
-            name_of_from = from_registers[:left_board_from]
-            from_registers = name_of_from + str(first_from)
-        else:
-            num_of_registers = 1
-        left_board_to = to_registers.find("[")
-        if left_board_to != -1:
-            separation_to = to_registers.index(":")
-            right_board_to = to_registers.index("]")
-            first_to = int(to_registers[(left_board_to + 1):separation_to])
-            last_to = int(to_registers[(separation_to + 1):right_board_to])
-            name_of_register = to_registers[:left_board_to]
-            to_registers = name_of_register + str(first_to)
-        return first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from
-
     def make_version(self, parent, reg):
         par = copy.deepcopy(parent)
         self.registers[reg].add_version(reg, par[reg])
         parent[reg] += 1
 
-    def upload_usesetup(self, to_registers, from_registers, offset, parameter_of_kernel, parent):
+    def upload_usesetup(self, to_registers, offset, parent):
         to_registers1 = ""
         if to_registers.find(":") != -1:
             to_registers1 = "s" + to_registers[to_registers.find(":") + 1:-1]
@@ -125,41 +132,43 @@ class State:
             self.make_version(parent, to_registers)
 
     def upload(self, to_registers, from_registers, offset, parameter_of_kernel, parent):
-        first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
-            = self.find_first_last_num_to_from(to_registers, from_registers)
+        first_to, last_to, name_of_to, name_of_from, first_from, last_from \
+            = find_first_last_num_to_from(to_registers, from_registers)
+        from_registers = name_of_from + str(first_from)
+        to_registers = name_of_to + str(first_to)
         if self.registers[from_registers].type == Type.arguments_pointer:
             if offset == "0x0":
                 self.registers[to_registers] = Register("get_global_offset(0)", Type.global_offset_x, Integrity.integer)
                 self.make_version(parent, to_registers)
-                self.registers[name_of_register + str(first_to + 1)] = Register("get_global_offset(0)",
-                                                                                Type.global_offset_x, Integrity.integer)
-                self.make_version(parent, name_of_register + str(first_to + 1))
+                self.registers[name_of_to + str(first_to + 1)] = Register("get_global_offset(0)",
+                                                                          Type.global_offset_x, Integrity.integer)
+                self.make_version(parent, name_of_to + str(first_to + 1))
                 if last_to - first_to > 1:
-                    self.registers[name_of_register + str(last_to - 1)] = \
+                    self.registers[name_of_to + str(last_to - 1)] = \
                         Register("get_global_offset(1)", Type.global_offset_y, Integrity.integer)
-                    self.make_version(parent, name_of_register + str(last_to - 1))
-                    self.registers[name_of_register + str(last_to)] = \
+                    self.make_version(parent, name_of_to + str(last_to - 1))
+                    self.registers[name_of_to + str(last_to)] = \
                         Register("get_global_offset(1)", Type.global_offset_y, Integrity.integer)
-                    self.make_version(parent, name_of_register + str(last_to))
+                    self.make_version(parent, name_of_to + str(last_to))
             if offset == "0x8":
                 self.registers[to_registers] = Register("get_global_offset(1)", Type.global_offset_y, Integrity.integer)
                 self.make_version(parent, to_registers)
-                self.registers[name_of_register + str(first_to + 1)] = \
+                self.registers[name_of_to + str(first_to + 1)] = \
                     Register("get_global_offset(1)", Type.global_offset_y, Integrity.integer)
-                self.make_version(parent, name_of_register + str(first_to + 1))
+                self.make_version(parent, name_of_to + str(first_to + 1))
                 if last_to - first_to > 1:
-                    self.registers[name_of_register + str(last_to - 1)] = \
+                    self.registers[name_of_to + str(last_to - 1)] = \
                         Register("get_global_offset(2)", Type.global_offset_z, Integrity.integer)
-                    self.make_version(parent, name_of_register + str(last_to - 1))
-                    self.registers[name_of_register + str(last_to)] = \
+                    self.make_version(parent, name_of_to + str(last_to - 1))
+                    self.registers[name_of_to + str(last_to)] = \
                         Register("get_global_offset(2)", Type.global_offset_z, Integrity.integer)
-                    self.make_version(parent, name_of_register + str(last_to))
+                    self.make_version(parent, name_of_to + str(last_to))
             if offset == "0x10":
                 self.registers[to_registers] = Register("get_global_offset(2)", Type.global_offset_z, Integrity.integer)
                 self.make_version(parent, to_registers)
-                self.registers[name_of_register + str(first_to + 1)] = Register("get_global_offset(2)",
-                                                                                Type.global_offset_z, Integrity.integer)
-                self.make_version(parent, name_of_register + str(first_to + 1))
+                self.registers[name_of_to + str(first_to + 1)] = Register("get_global_offset(2)",
+                                                                          Type.global_offset_z, Integrity.integer)
+                self.make_version(parent, name_of_to + str(first_to + 1))
             if offset == "0x30":
                 val_of_register = parameter_of_kernel["param0"]
                 if val_of_register[0] == "*":
@@ -170,9 +179,9 @@ class State:
                 if last_to - first_to >= 1:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
                     self.make_version(parent, to_registers)
-                    self.registers[name_of_register + str(first_to + 1)] = \
+                    self.registers[name_of_to + str(first_to + 1)] = \
                         Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_register + str(first_to + 1))
+                    self.make_version(parent, name_of_to + str(first_to + 1))
                 else:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
                     self.make_version(parent, to_registers)
@@ -183,12 +192,12 @@ class State:
                         val_of_register = val_of_register[1:]
                     else:
                         type_param = Type.param
-                    self.registers[name_of_register + str(last_to - 1)] = Register(val_of_register, type_param,
-                                                                                   Integrity.low_part)
-                    self.make_version(parent, name_of_register + str(last_to - 1))
-                    self.registers[name_of_register + str(last_to)] = \
+                    self.registers[name_of_to + str(last_to - 1)] = Register(val_of_register, type_param,
+                                                                             Integrity.low_part)
+                    self.make_version(parent, name_of_to + str(last_to - 1))
+                    self.registers[name_of_to + str(last_to)] = \
                         Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_register + str(last_to))
+                    self.make_version(parent, name_of_to + str(last_to))
             if offset == "0x38":
                 val_of_register = parameter_of_kernel["param1"]
                 if val_of_register[0] == "*":
@@ -199,9 +208,9 @@ class State:
                 if last_to - first_to >= 1:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
                     self.make_version(parent, to_registers)
-                    self.registers[name_of_register + str(last_to)] = \
+                    self.registers[name_of_to + str(last_to)] = \
                         Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_register + str(last_to))
+                    self.make_version(parent, name_of_to + str(last_to))
                 else:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
                     self.make_version(parent, to_registers)
@@ -215,9 +224,9 @@ class State:
                 if last_to - first_to >= 1:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
                     self.make_version(parent, to_registers)
-                    self.registers[name_of_register + str(last_to)] = \
+                    self.registers[name_of_to + str(last_to)] = \
                         Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_register + str(last_to))
+                    self.make_version(parent, name_of_to + str(last_to))
                 else:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
                     self.make_version(parent, to_registers)
@@ -233,9 +242,9 @@ class State:
                 if last_to - first_to >= 1:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
                     self.make_version(parent, to_registers)
-                    self.registers[name_of_register + str(last_to)] = \
+                    self.registers[name_of_to + str(last_to)] = \
                         Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_register + str(last_to))
+                    self.make_version(parent, name_of_to + str(last_to))
                 else:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
                     self.make_version(parent, to_registers)
@@ -249,9 +258,9 @@ class State:
                 if last_to - first_to >= 1:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
                     self.make_version(parent, to_registers)
-                    self.registers[name_of_register + str(last_to)] = \
+                    self.registers[name_of_to + str(last_to)] = \
                         Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_register + str(last_to))
+                    self.make_version(parent, name_of_to + str(last_to))
                 else:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
                     self.make_version(parent, to_registers)
@@ -267,9 +276,9 @@ class State:
                 if last_to - first_to >= 1:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
                     self.make_version(parent, to_registers)
-                    self.registers[name_of_register + str(first_to + 1)] = \
+                    self.registers[name_of_to + str(first_to + 1)] = \
                         Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_register + str(first_to + 1))
+                    self.make_version(parent, name_of_to + str(first_to + 1))
                 else:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
                     self.make_version(parent, to_registers)
@@ -283,12 +292,12 @@ class State:
                         val_of_register = val_of_register[1:]
                     else:
                         type_param = Type.param
-                    self.registers[name_of_register + str(last_to - 1)] = Register(val_of_register, type_param,
-                                                                                   Integrity.low_part)
-                    self.make_version(parent, name_of_register + str(last_to - 1))
-                    self.registers[name_of_register + str(last_to)] = \
+                    self.registers[name_of_to + str(last_to - 1)] = Register(val_of_register, type_param,
+                                                                             Integrity.low_part)
+                    self.make_version(parent, name_of_to + str(last_to - 1))
+                    self.registers[name_of_to + str(last_to)] = \
                         Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_register + str(last_to))
+                    self.make_version(parent, name_of_to + str(last_to))
             if offset == "0x50":
                 val_of_register = parameter_of_kernel["param5"] \
                     if parameter_of_kernel["param2"][0] != "*" and parameter_of_kernel["param3"][0] != "*" else \
@@ -302,9 +311,9 @@ class State:
                 if last_to - first_to >= 1:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
                     self.make_version(parent, to_registers)
-                    self.registers[name_of_register + str(first_to + 1)] = \
+                    self.registers[name_of_to + str(first_to + 1)] = \
                         Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_register + str(first_to + 1))
+                    self.make_version(parent, name_of_to + str(first_to + 1))
                 else:
                     self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
                     self.make_version(parent, to_registers)

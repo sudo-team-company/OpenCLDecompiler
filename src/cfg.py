@@ -13,7 +13,7 @@ def make_cfg_node(instruction, last_node_state, last_node):
 
 
 def change_cfg_for_else_structure(curr_node, instruction):
-    decompiler_data = DecompilerData.Instance()
+    decompiler_data = DecompilerData()
     for parents_of_label in decompiler_data.parents_of_label:
         parents_of_label.children.remove(decompiler_data.label)
     last_node = decompiler_data.parents_of_label[1]
