@@ -199,5 +199,47 @@ class LocalMemoryKernelsTest(unittest.TestCase):
                 self.assertEqual(hands_decompilation.read(), decompiled.read())
 
 
+class UnusedParams(unittest.TestCase):
+    def test_one_unused_param(self):
+        subprocess.call(r'tests.bat unused_params\one_unused_param\one_unused_param.bin ' +
+                        r'unused_params\one_unused_param\one_unused_param.asm')
+        parser_for_instructions.main(r"unused_params\one_unused_param\one_unused_param.asm",
+                                     r"unused_params\one_unused_param\one_unused_param_dcmpl.cl")
+        with open(
+                r"unused_params\one_unused_param\one_unused_param_hands.cl") as hands_decompilation:
+            with open(r"unused_params\one_unused_param\one_unused_param_dcmpl.cl") as decompiled:
+                self.assertEqual(hands_decompilation.read(), decompiled.read())
+
+    def test_two_unused_params(self):
+        subprocess.call(r'tests.bat unused_params\two_unused_params\two_unused_params.bin ' +
+                        r'unused_params\two_unused_params\two_unused_params.asm')
+        parser_for_instructions.main(r"unused_params\two_unused_params\two_unused_params.asm",
+                                     r"unused_params\two_unused_params\two_unused_params_dcmpl.cl")
+        with open(
+                r"unused_params\two_unused_params\two_unused_params_hands.cl") as hands_decompilation:
+            with open(r"unused_params\two_unused_params\two_unused_params_dcmpl.cl") as decompiled:
+                self.assertEqual(hands_decompilation.read(), decompiled.read())
+
+    def test_three_unused_params(self):
+        subprocess.call(r'tests.bat unused_params\three_unused_params\three_unused_params.bin ' +
+                        r'unused_params\three_unused_params\three_unused_params.asm')
+        parser_for_instructions.main(r"unused_params\three_unused_params\three_unused_params.asm",
+                                     r"unused_params\three_unused_params\three_unused_params_dcmpl.cl")
+        with open(
+                r"unused_params\three_unused_params\three_unused_params_hands.cl") as hands_decompilation:
+            with open(r"unused_params\three_unused_params\three_unused_params_dcmpl.cl") as decompiled:
+                self.assertEqual(hands_decompilation.read(), decompiled.read())
+
+    def test_four_unused_params(self):
+        subprocess.call(r'tests.bat unused_params\four_unused_params\four_unused_params.bin ' +
+                        r'unused_params\four_unused_params\four_unused_params.asm')
+        parser_for_instructions.main(r"unused_params\four_unused_params\four_unused_params.asm",
+                                     r"unused_params\four_unused_params\four_unused_params_dcmpl.cl")
+        with open(
+                r"unused_params\four_unused_params\four_unused_params_hands.cl") as hands_decompilation:
+            with open(r"unused_params\four_unused_params\four_unused_params_dcmpl.cl") as decompiled:
+                self.assertEqual(hands_decompilation.read(), decompiled.read())
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -22,7 +22,7 @@ class SLoad(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 if decompiler_data.usesetup == False and sbase == "s[4:5]" \
                         or decompiler_data.usesetup == True and sbase == "s[6:7]":
-                    node.state.upload(sdata, sbase, offset, decompiler_data.params, decompiler_data.versions)
+                    node.state.upload(sdata, sbase, offset, decompiler_data.kernel_params, decompiler_data.versions)
                 else:
                     node.state.upload_usesetup(sdata, offset, decompiler_data.versions)
                 node.state.registers[to_registers].type_of_data = suffix
@@ -33,7 +33,7 @@ class SLoad(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 if decompiler_data.usesetup == False and sbase == "s[4:5]" \
                         or decompiler_data.usesetup == True and sbase == "s[6:7]":
-                    node.state.upload(sdata, sbase, offset, decompiler_data.params, decompiler_data.versions)
+                    node.state.upload(sdata, sbase, offset, decompiler_data.kernel_params, decompiler_data.versions)
                 else:
                     node.state.upload_usesetup(sdata, offset, decompiler_data.versions)
                 node.state.registers[to_registers].type_of_data = suffix
@@ -44,7 +44,7 @@ class SLoad(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 if decompiler_data.usesetup == False and sbase == "s[4:5]" \
                         or decompiler_data.usesetup == True and sbase == "s[6:7]":
-                    node.state.upload(sdata, sbase, offset, decompiler_data.params, decompiler_data.versions)
+                    node.state.upload(sdata, sbase, offset, decompiler_data.kernel_params, decompiler_data.versions)
                 else:
                     node.state.upload_usesetup(sdata, offset, decompiler_data.versions)
                 node.state.registers[to_registers].type_of_data = suffix

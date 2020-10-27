@@ -71,6 +71,7 @@ class DecompilerData(metaclass=Singleton):
         self.type_params = {}
         self.variables = {}
         self.checked_variables = {}
+        self.kernel_params = {}
         self.versions = {
             "s0": 0,
             "s1": 0,
@@ -167,6 +168,7 @@ class DecompilerData(metaclass=Singleton):
         self.type_params = {}
         self.variables = {}
         self.checked_variables = {}
+        self.kernel_params = {}
         self.versions = {
             "s0": 0,
             "s1": 0,

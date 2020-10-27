@@ -7,6 +7,7 @@ from src.cfg import change_cfg_for_else_structure, make_cfg_node
 from src.code_printer import create_opencl_body
 from src.config import process_config
 from src.versions import find_max_and_prev_versions, remove_unusable_versions, change_values, check_for_use_new_version
+from src.kernel_params import process_kernel_params
 
 
 def transform_instruction_set(instruction, set_of_instructions, num, row, curr_node):
@@ -79,6 +80,7 @@ def process_single_instruction(set_of_instructions, num, curr_node, last_node_st
 def process_src(name_of_program, set_of_config, set_of_instructions):
     decompiler_data = DecompilerData()
     process_config(set_of_config, name_of_program)
+    process_kernel_params(set_of_instructions)
     last_node = Node([""], decompiler_data.initial_state)
     curr_node = last_node
     last_node_state = decompiler_data.initial_state

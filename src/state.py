@@ -131,8 +131,8 @@ class State:
             self.registers[to_registers] = Register("get_global_size(2)", Type.global_size_z, Integrity.integer)
             self.make_version(parent, to_registers)
 
-    def upload(self, to_registers, from_registers, offset, parameter_of_kernel, parent):
-        first_to, last_to, name_of_to, name_of_from, first_from, last_from \
+    def upload(self, to_registers, from_registers, offset, kernel_params, parent):
+        first_to, last_to, name_of_to, name_of_from, first_from, _ \
             = find_first_last_num_to_from(to_registers, from_registers)
         from_registers = name_of_from + str(first_from)
         to_registers = name_of_to + str(first_to)
@@ -150,7 +150,7 @@ class State:
                     self.registers[name_of_to + str(last_to)] = \
                         Register("get_global_offset(1)", Type.global_offset_y, Integrity.integer)
                     self.make_version(parent, name_of_to + str(last_to))
-            if offset == "0x8":
+            elif offset == "0x8":
                 self.registers[to_registers] = Register("get_global_offset(1)", Type.global_offset_y, Integrity.integer)
                 self.make_version(parent, to_registers)
                 self.registers[name_of_to + str(first_to + 1)] = \
@@ -163,157 +163,18 @@ class State:
                     self.registers[name_of_to + str(last_to)] = \
                         Register("get_global_offset(2)", Type.global_offset_z, Integrity.integer)
                     self.make_version(parent, name_of_to + str(last_to))
-            if offset == "0x10":
+            elif offset == "0x10":
                 self.registers[to_registers] = Register("get_global_offset(2)", Type.global_offset_z, Integrity.integer)
                 self.make_version(parent, to_registers)
                 self.registers[name_of_to + str(first_to + 1)] = Register("get_global_offset(2)",
                                                                           Type.global_offset_z, Integrity.integer)
                 self.make_version(parent, name_of_to + str(first_to + 1))
-            if offset == "0x30":
-                val_of_register = parameter_of_kernel["param0"]
-                if val_of_register[0] == "*":
-                    type_param = Type.paramA
-                    val_of_register = val_of_register[1:]
-                else:
-                    type_param = Type.param
-                if last_to - first_to >= 1:
-                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
-                    self.make_version(parent, to_registers)
-                    self.registers[name_of_to + str(first_to + 1)] = \
-                        Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_to + str(first_to + 1))
-                else:
-                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
-                    self.make_version(parent, to_registers)
-                if last_to - first_to > 2:
-                    val_of_register = parameter_of_kernel["param1"]
-                    if val_of_register[0] == "*":
+            else:
+                for (reg, val) in kernel_params[offset]:
+                    if val[0] == "*":
                         type_param = Type.paramA
-                        val_of_register = val_of_register[1:]
+                        val = val[1:]
                     else:
                         type_param = Type.param
-                    self.registers[name_of_to + str(last_to - 1)] = Register(val_of_register, type_param,
-                                                                             Integrity.low_part)
-                    self.make_version(parent, name_of_to + str(last_to - 1))
-                    self.registers[name_of_to + str(last_to)] = \
-                        Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_to + str(last_to))
-            if offset == "0x38":
-                val_of_register = parameter_of_kernel["param1"]
-                if val_of_register[0] == "*":
-                    type_param = Type.paramA
-                    val_of_register = val_of_register[1:]
-                else:
-                    type_param = Type.param
-                if last_to - first_to >= 1:
-                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
-                    self.make_version(parent, to_registers)
-                    self.registers[name_of_to + str(last_to)] = \
-                        Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_to + str(last_to))
-                else:
-                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
-                    self.make_version(parent, to_registers)
-            if offset == "0x3c":
-                val_of_register = parameter_of_kernel["param2"]
-                if val_of_register[0] == "*":
-                    type_param = Type.paramA
-                    val_of_register = val_of_register[1:]
-                else:
-                    type_param = Type.param
-                if last_to - first_to >= 1:
-                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
-                    self.make_version(parent, to_registers)
-                    self.registers[name_of_to + str(last_to)] = \
-                        Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_to + str(last_to))
-                else:
-                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
-                    self.make_version(parent, to_registers)
-            if offset == "0x40":
-                val_of_register = parameter_of_kernel["param3"] \
-                    if parameter_of_kernel["param1"][0] != "*" and parameter_of_kernel["param2"][0] != "*" else \
-                    parameter_of_kernel["param2"]
-                if val_of_register[0] == "*":
-                    type_param = Type.paramA
-                    val_of_register = val_of_register[1:]
-                else:
-                    type_param = Type.param
-                if last_to - first_to >= 1:
-                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
-                    self.make_version(parent, to_registers)
-                    self.registers[name_of_to + str(last_to)] = \
-                        Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_to + str(last_to))
-                else:
-                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
-                    self.make_version(parent, to_registers)
-            if offset == "0x44":
-                val_of_register = parameter_of_kernel["param4"]
-                if val_of_register[0] == "*":
-                    type_param = Type.paramA
-                    val_of_register = val_of_register[1:]
-                else:
-                    type_param = Type.param
-                if last_to - first_to >= 1:
-                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
-                    self.make_version(parent, to_registers)
-                    self.registers[name_of_to + str(last_to)] = \
-                        Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_to + str(last_to))
-                else:
-                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
-                    self.make_version(parent, to_registers)
-            if offset == "0x48":
-                val_of_register = parameter_of_kernel["param4"] \
-                    if parameter_of_kernel["param1"][0] != "*" and parameter_of_kernel["param2"][0] != "*" else \
-                    parameter_of_kernel["param3"]
-                if val_of_register[0] == "*":
-                    type_param = Type.paramA
-                    val_of_register = val_of_register[1:]
-                else:
-                    type_param = Type.param
-                if last_to - first_to >= 1:
-                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
-                    self.make_version(parent, to_registers)
-                    self.registers[name_of_to + str(first_to + 1)] = \
-                        Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_to + str(first_to + 1))
-                else:
-                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
-                    self.make_version(parent, to_registers)
-                if last_to - first_to > 2:
-                    val_of_register = parameter_of_kernel["param5"] \
-                        if parameter_of_kernel["param1"][0] != "*" and parameter_of_kernel["param2"][0] != "*" else \
-                        parameter_of_kernel[
-                            "param4"]
-                    if val_of_register[0] == "*":
-                        type_param = Type.paramA
-                        val_of_register = val_of_register[1:]
-                    else:
-                        type_param = Type.param
-                    self.registers[name_of_to + str(last_to - 1)] = Register(val_of_register, type_param,
-                                                                             Integrity.low_part)
-                    self.make_version(parent, name_of_to + str(last_to - 1))
-                    self.registers[name_of_to + str(last_to)] = \
-                        Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_to + str(last_to))
-            if offset == "0x50":
-                val_of_register = parameter_of_kernel["param5"] \
-                    if parameter_of_kernel["param2"][0] != "*" and parameter_of_kernel["param3"][0] != "*" else \
-                    parameter_of_kernel[
-                        "param4"]
-                if val_of_register[0] == "*":
-                    type_param = Type.paramA
-                    val_of_register = val_of_register[1:]
-                else:
-                    type_param = Type.param
-                if last_to - first_to >= 1:
-                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.low_part)
-                    self.make_version(parent, to_registers)
-                    self.registers[name_of_to + str(first_to + 1)] = \
-                        Register(val_of_register, type_param, Integrity.high_part)
-                    self.make_version(parent, name_of_to + str(first_to + 1))
-                else:
-                    self.registers[to_registers] = Register(val_of_register, type_param, Integrity.integer)
-                    self.make_version(parent, to_registers)
+                    self.registers[reg] = Register(val, type_param, Integrity.integer)
+                    self.make_version(parent, reg)
