@@ -6,7 +6,7 @@ def process_two_regs(num_of_param, first_reg, second_reg):
     changes_registers = []
     if decompiler_data.params["param" + str(num_of_param)][0] != '*':
         changes_registers.append((first_reg, decompiler_data.params["param" + str(num_of_param)]))
-        changes_registers.append((second_reg, decompiler_data.params["param" + str(num_of_param + 1)]))
+        changes_registers.append((second_reg, decompiler_data.params["param" + str(int(num_of_param) + 1)]))
         add_num = 2
     else:
         changes_registers.append((first_reg, decompiler_data.params["param" + str(num_of_param)]))
@@ -34,7 +34,7 @@ def process_dwordx4(list_instruction, num_of_param):
     changes_registers, add_num_1 = process_two_regs(num_of_param, first_reg, second_reg)
     third_reg = name_of_register + str(num_of_first_reg + 2)
     fourth_reg = name_of_register + str(num_of_first_reg + 3)
-    add_changes, add_num_2 = process_two_regs(num_of_param + 2, third_reg, fourth_reg)
+    add_changes, add_num_2 = process_two_regs(str(int(num_of_param) + add_num_1), third_reg, fourth_reg)
     changes_registers.extend(add_changes)
     add_num = add_num_1 + add_num_2
     return changes_registers, add_num

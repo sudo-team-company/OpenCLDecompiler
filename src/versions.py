@@ -1,4 +1,3 @@
-import copy
 from collections import deque
 from src.type_of_reg import Type
 from src.decompiler_data import DecompilerData
@@ -123,7 +122,7 @@ def update_value_for_reg(first_reg, curr_node):
     for child in curr_node.children:
         if len(child.parent) < 2 \
                 and curr_node.state.registers[first_reg].version == child.state.registers[first_reg].version:
-            child.state.registers[first_reg] = copy.deepcopy(curr_node.state.registers[first_reg])
+            child.state.registers[first_reg] = curr_node.state.registers[first_reg]
             update_value_for_reg(first_reg, child)
 
 
@@ -144,11 +143,11 @@ def update_val_from_changes(curr_node, register, changes, check_version, num_of_
             first_reg = "exec"
         else:
             node_registers = curr_node.state.registers
-        copy_val_prev = copy.deepcopy(node_registers[first_reg].val)
+        copy_val_prev = node_registers[first_reg].val
         node_registers[first_reg].val = node_registers[first_reg].val.replace(
             changes[check_version][1],
             changes[check_version][0])
-        copy_val_last = copy.deepcopy(node_registers[first_reg].val)
+        copy_val_last = node_registers[first_reg].val
         if copy_val_prev != copy_val_last:
             changes[node_registers[first_reg].version] = [copy_val_last, copy_val_prev]
             update_value_for_reg(first_reg, curr_node)
@@ -165,7 +164,7 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
         val_reg = curr_node.state.registers[register].val
         if register == first_reg:
             val_reg = curr_node.parent[0].state.registers[first_reg].val
-        copy_val_prev = copy.deepcopy(curr_node.state.registers[first_reg].val)
+        copy_val_prev = curr_node.state.registers[first_reg].val
         if decompiler_data.checked_variables.get(check_version) is not None:
             curr_node.state.registers[first_reg].val = \
                 curr_node.state.registers[first_reg].val.replace(val_reg,
@@ -173,7 +172,7 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
         else:
             curr_node.state.registers[first_reg].val = \
                 curr_node.state.registers[first_reg].val.replace(val_reg, decompiler_data.variables[check_version])
-        copy_val_last = copy.deepcopy(curr_node.state.registers[first_reg].val)
+        copy_val_last = curr_node.state.registers[first_reg].val
         if copy_val_prev != copy_val_last:
             changes[curr_node.state.registers[first_reg].version] = [copy_val_last, copy_val_prev]
             update_value_for_reg(first_reg, curr_node)

@@ -28,3 +28,22 @@ class VSub(BaseInstruction):
                 node.state.registers[vdst].type_of_data = suffix
                 return node
             return output_string
+
+        if suffix == "f32":
+            vdst = instruction[1]
+            src0 = instruction[2]
+            src1 = instruction[3]
+            if flag_of_status == OperationStatus.to_fill_node:
+                new_val, src0_reg, src1_reg = make_op(node, src0, src1, " - ")
+                type_reg = Type.int32
+                if src0_reg:
+                    type_reg = node.state.registers[src0].integrity
+                elif src1_reg:
+                    type_reg = node.state.registers[src1].integrity
+                node.state.registers[vdst] = Register(new_val, Type.unknown, type_reg)
+                node.state.make_version(decompiler_data.versions, vdst)
+                if vdst in [src0, src1]:
+                    node.state.registers[vdst].make_prev()
+                node.state.registers[vdst].type_of_data = suffix
+                return node
+            return output_string

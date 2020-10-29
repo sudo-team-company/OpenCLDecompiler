@@ -1,4 +1,3 @@
-import copy
 from src.register import Register
 from src.integrity import Integrity
 from src.type_of_reg import Type
@@ -94,8 +93,7 @@ class State:
             }
 
     def make_version(self, parent, reg):
-        par = copy.deepcopy(parent)
-        self.registers[reg].add_version(reg, par[reg])
+        self.registers[reg].add_version(reg, parent[reg])
         parent[reg] += 1
 
     def upload_usesetup(self, to_registers, offset, parent):

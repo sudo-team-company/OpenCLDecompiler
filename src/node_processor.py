@@ -21,9 +21,17 @@ def process_label_node(node, flag_of_status):
         if decompiler_data.from_node.get(node.instruction[0][:-1]) is not None:
             for wait_node in decompiler_data.from_node[node.instruction[0][:-1]]:
                 if node not in wait_node.children:
-                    wait_node.add_child(node)
+                    if wait_node.instruction[0].find('scc1') == -1:
+                        wait_node.add_child(node)
+                    else:
+                        children = wait_node.children
+                        wait_node.children = []
+                        wait_node.add_child(node)
+                        for child in children:
+                            wait_node.add_child(child)
                     node.add_parent(wait_node)
                     node.state = copy.deepcopy(node.parent[-1].state)
+
         return node
     return ""
 

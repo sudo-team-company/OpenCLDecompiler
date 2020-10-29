@@ -87,8 +87,12 @@ def process_src(name_of_program, set_of_config, set_of_instructions):
     decompiler_data.cfg = last_node
     num = 0
     while num < len(set_of_instructions):
-        num, curr_node, set_of_instructions, last_node, last_node_state = \
-            process_single_instruction(set_of_instructions, num, curr_node, last_node_state, last_node)
+        result_for_check = process_single_instruction(set_of_instructions, num, curr_node, last_node_state, last_node)
+        if result_for_check is not None:
+            num, curr_node, set_of_instructions, last_node, last_node_state = result_for_check
+        else:
+            return
+
     check_for_use_new_version()
     remove_unusable_versions()
     if decompiler_data.checked_variables != {} or decompiler_data.variables != {}:

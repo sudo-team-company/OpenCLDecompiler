@@ -55,6 +55,7 @@ from src.vop2.v_ashrrev import VAshrrev
 from src.vop2.v_cndmask import VCndmask
 from src.vop2.v_lshlrev import VLshlrev
 from src.vop2.v_lshrrev import VLshrrev
+from src.vop2.v_mac import VMac
 from src.vop2.v_min import VMin
 from src.vop2.v_mul_f32 import VMulF32
 from src.vop2.v_sub import VSub
@@ -75,7 +76,6 @@ from src.vopc.v_cmp_lt import VCmpLt
 from src.vopc.v_cmpx_class import VCmpxClass
 from src.vopc.v_cmpx_eq import VCmpxEq
 from src.vopc.v_cmpx_le import VCmpxLe
-
 
 instruction_dict = {'ds_add': DsAdd(),
                     'ds_bpermute': DsBpermute(),
@@ -149,6 +149,7 @@ instruction_dict = {'ds_add': DsAdd(),
                     'v_fma': VFma(),
                     'v_lshlrev': VLshlrev(),
                     'v_lshrrev': VLshrrev(),
+                    'v_mac': VMac(),
                     'v_min': VMin(),
                     'v_mul_i32_i24': VMulF32(),
                     'v_mul_f32': VMulF32(),
