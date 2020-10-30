@@ -15,7 +15,7 @@ class VAdd(BaseInstruction):
             sdst = instruction[2]
             src0 = instruction[3]
             src1 = instruction[4]
-            new_val, src0_reg, src1_reg = make_op(node, src0, src1, " + ")
+            new_val, src0_reg, src1_reg = make_op(node, src0, src1, " + ", '(ulong)', '(ulong)')
             if flag_of_status == OperationStatus.to_fill_node:
                 if src0_reg and src1_reg:
                     if node.state.registers[src0].type == Type.work_group_id_x_local_size_offset and \
@@ -43,15 +43,15 @@ class VAdd(BaseInstruction):
                         if decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "int" \
                                 or decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "uint":
                             if node.state.registers[src1].val.find("1073741824") != -1:
-                                new_value, src0_flag, src1_flag = make_op(node, src1, "1073741824", " * ")
+                                new_value, src0_flag, src1_flag = make_op(node, src1, "1073741824", " * ", '', '')
                             else:
-                                new_value, src0_flag, src1_flag = make_op(node, src1, "4", " / ")
+                                new_value, src0_flag, src1_flag = make_op(node, src1, "4", " / ", '', '')
                             new_val = node.state.registers[src0].val + "[" + new_value + "]"
                             node.state.registers[vdst] = \
                                 Register(new_val, Type.param_global_id_x, new_integrity)
                         elif decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "long" \
                                 or decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "ulong":
-                            new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ")
+                            new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
                             new_val = node.state.registers[src0].val + "[" + new_value + "]"
                             node.state.registers[vdst] = \
                                 Register(new_val, Type.param_global_id_x, new_integrity)
@@ -61,7 +61,7 @@ class VAdd(BaseInstruction):
                             node.state.registers[vdst] = \
                                 Register(new_val, Type.param_global_id_x, new_integrity)
                         elif decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "float":
-                            new_value, src0_flag, src1_flag = make_op(node, src1, "4", " / ")
+                            new_value, src0_flag, src1_flag = make_op(node, src1, "4", " / ", '', '')
                             new_val = node.state.registers[src0].val + "[" + new_value + "]"
                             node.state.registers[vdst] = \
                                 Register(new_val, Type.param_global_id_x, new_integrity)

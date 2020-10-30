@@ -15,7 +15,8 @@ class SMin(BaseInstruction):
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
             if flag_of_status == OperationStatus.to_fill_node:
-                new_val = "min(" + node.state.registers[ssrc0].val + ", " + node.state.registers[ssrc1].val + ")"
+                new_val = "min((int)" + node.state.registers[ssrc0].val + ", (int)" \
+                          + node.state.registers[ssrc1].val + ")"
                 node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
                 node.state.make_version(decompiler_data.versions, sdst)
                 if sdst in [ssrc0, ssrc1]:

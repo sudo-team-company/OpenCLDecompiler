@@ -15,7 +15,7 @@ class DsWrite(BaseInstruction):
             if decompiler_data.lds_vars.get(offset) is None:
                 decompiler_data.lds_vars[offset] = ["lds" + str(decompiler_data.lds_var_number), "u" + suffix[1:]]
                 decompiler_data.lds_var_number += 1
-            new_value, src0_flag, src1_flag = make_op(node, addr, "4", " / ")
+            new_value, src0_flag, src1_flag = make_op(node, addr, "4", " / ", '', '')
             name = decompiler_data.lds_vars[offset][0] + "[" + new_value + "]"
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[name] = \

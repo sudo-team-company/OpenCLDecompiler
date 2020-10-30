@@ -14,7 +14,7 @@ class SAddc(BaseInstruction):
             sdst = instruction[1]
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
-            new_val, ssrc0_reg, ssrc1_reg = make_op(node, ssrc0, ssrc1, " + ")
+            new_val, ssrc0_reg, ssrc1_reg = make_op(node, ssrc0, ssrc1, " + ", '(ulong)', '(ulong)')
             if flag_of_status == OperationStatus.to_fill_node:
                 if ssrc0_reg and ssrc1_reg:
                     node.state.registers[sdst] = \

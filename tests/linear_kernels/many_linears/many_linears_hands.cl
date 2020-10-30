@@ -25,13 +25,13 @@ void copy4(int x, __global int *data)
 __kernel __attribute__((reqd_work_group_size(2, 2, 4)))
 void copy5(int x, __global uint *data)
 {
-    data[(get_global_id(0) * 4) / 4] = get_global_id(2) + get_global_id(1);
+    data[(get_global_id(0) * 4) / 4] = (ulong)get_global_id(2) + (ulong)get_global_id(1);
 }
 
 __kernel __attribute__((reqd_work_group_size(2, 2, 4)))
 void copy6(int x, __global uint *data)
 {
-    data[((get_global_id(0) - get_global_offset(0)) * 4) / 4] = get_global_id(2) + get_global_id(1);
+    data[((get_global_id(0) - get_global_offset(0)) * 4) / 4] = (ulong)get_global_id(2) + (ulong)get_global_id(1);
 }
 
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))

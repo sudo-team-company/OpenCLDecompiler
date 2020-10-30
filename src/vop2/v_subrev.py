@@ -15,7 +15,7 @@ class VSubrev(BaseInstruction):
             src0 = instruction[3]
             src1 = instruction[4]
             if flag_of_status == OperationStatus.to_fill_node:
-                new_val, src0_reg, src1_reg = make_op(node, src1, src0, " - ")
+                new_val, src0_reg, src1_reg = make_op(node, src1, src0, " - ", '(ulong)', '(ulong)')
                 new_integrity = node.state.registers[src1].integrity
                 node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
                 node.state.make_version(decompiler_data.versions, vdst)

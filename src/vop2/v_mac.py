@@ -15,8 +15,8 @@ class VMac(BaseInstruction):
             src0 = instruction[2]
             src1 = instruction[3]
             if flag_of_status == OperationStatus.to_fill_node:
-                new_val, src0_reg, src1_reg = make_op(node, src0, src1, " * ")
-                end_val = new_val + " + " + node.state.registers[vdst].val
+                new_val, src0_reg, src1_reg = make_op(node, src0, src1, " * ", 'as_float(', 'as_float(')
+                end_val = new_val + " + as_float(" + node.state.registers[vdst].val + ')'
                 node.state.registers[vdst] = Register(end_val, Type.unknown, Integrity.integer)
                 node.state.make_version(decompiler_data.versions, vdst)
                 node.state.registers[vdst].make_prev()

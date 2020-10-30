@@ -15,7 +15,7 @@ class SMul(BaseInstruction):
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
             if flag_of_status == OperationStatus.to_fill_node:
-                new_val, ssrc0_reg, ssrc1_reg = make_op(node, ssrc0, ssrc1, " * ")
+                new_val, ssrc0_reg, ssrc1_reg = make_op(node, ssrc0, ssrc1, " * ", '', '')
                 if ssrc0_reg and ssrc1_reg:
                     if node.state.registers[ssrc0].type == Type.local_size_x \
                             and node.state.registers[ssrc1].type == Type.work_group_id_x:

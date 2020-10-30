@@ -16,7 +16,7 @@ class SLshl(BaseInstruction):
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
             if flag_of_status == OperationStatus.to_fill_node:
-                new_val, ssrc0_flag, ssrc1_flag = make_op(node, ssrc0, str(pow(2, int(ssrc1))), " * ")
+                new_val, ssrc0_flag, ssrc1_flag = make_op(node, ssrc0, str(pow(2, int(ssrc1))), " * ", '', '')
                 if node.state.registers[ssrc0].type == Type.work_group_id_x:
                     node.state.registers[sdst] = Register(new_val, Type.work_group_id_x_local_size, Integrity.integer)
                     node.state.registers["scc"] = Register(sdst + "!= 0", Type.int32, Integrity.integer)
@@ -48,9 +48,9 @@ class SLshl(BaseInstruction):
                 from_registers1 = name_of_from + str(first_from + 1)
                 to_registers1 = name_of_to + str(first_to + 1)
                 new_val0, ssrc0_flag0, ssrc1_flag0 = make_op(node, from_registers,
-                                                                             str(pow(2, int(ssrc1))), " * ")
+                                                             str(pow(2, int(ssrc1))), " * ", '', '')
                 new_val1, ssrc0_flag1, ssrc1_flag1 = make_op(node, from_registers1,
-                                                                             str(pow(2, int(ssrc1))), " * ")
+                                                             str(pow(2, int(ssrc1))), " * ", '', '')
                 node.state.registers[to_registers] = \
                     Register(new_val0, node.state.registers[from_registers].type, Integrity.low_part)
                 node.state.registers[to_registers1] = \

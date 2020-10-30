@@ -4,14 +4,14 @@ void if_else_in_if_of_if_else(int x, __global int *data, int y)
     uint var13;
     uint var15;
     var15 = get_global_id(0);
-    if (1 == var15) {
-        data[(var15 * 4) / 4] = (get_global_id(1) * x) - y;
+    if ((int)1 == (int)var15) {
+        data[(var15 * 4) / 4] = (ulong)(get_global_id(1) * x) - (ulong)y;
         var15 = get_global_id(2);
-        if (x < y) {
-            var13 = (get_global_offset(2) + x) + (get_global_id(2) - get_global_offset(2));
+        if ((int)x < (int)y) {
+            var13 = (ulong)((ulong)get_global_offset(2) + (ulong)x) + (ulong)(get_global_id(2) - get_global_offset(2));
         }
         else {
-            var13 = y + get_global_id(1);
+            var13 = (ulong)y + (ulong)get_global_id(1);
         }
     }
     else {

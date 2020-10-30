@@ -4,12 +4,12 @@ void if_and_if(int x, __global int *data, int y)
     uint var0;
     uint var5;
     var0 = get_global_id(0);
-    if (0 == var0) {
+    if ((int)0 == (int)var0) {
         var0 = get_global_id(1);
     }
     data[(var0 * 4) / 4] = x;
     var5 = var0;
-    if (x < y) {
+    if ((int)x < (int)y) {
         var5 = get_global_id(2);
     }
     data[(var5 * 4) / 4] = y;

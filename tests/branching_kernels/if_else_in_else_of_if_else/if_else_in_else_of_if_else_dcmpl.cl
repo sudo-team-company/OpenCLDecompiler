@@ -5,12 +5,12 @@ void if_else_in_else_of_if_else(int x, __global int *data, int y)
     uint var7;
     uint var8;
     var8 = get_global_id(0);
-    if (1 == var8) {
-        var7 = (get_global_id(1) * x) - y;
+    if ((int)1 == (int)var8) {
+        var7 = (ulong)(get_global_id(1) * x) - (ulong)y;
     }
     else {
         data[(var8 * 4) / 4] = var8 * y;
-        var2 = (x >= y ? 1 : 0) ? y + get_global_id(1) : (get_global_offset(2) + x) + (get_global_id(2) - get_global_offset(2));
+        var2 = ((int)x >= (int)y ? 1 : 0) ? (ulong)y + (ulong)get_global_id(1) : (ulong)((ulong)get_global_offset(2) + (ulong)x) + (ulong)(get_global_id(2) - get_global_offset(2));
         var7 = var2;
         var8 = get_global_id(2);
     }

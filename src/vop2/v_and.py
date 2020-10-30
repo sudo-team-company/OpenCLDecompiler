@@ -15,7 +15,7 @@ class VAnd(BaseInstruction):
             src1 = instruction[3]
             if flag_of_status == OperationStatus.to_fill_node:
                 new_integrity = node.state.registers[src1].integrity
-                new_val, src0_flag, src1_flag = make_op(node, src1, src0[1:], " * ")
+                new_val, src0_flag, src1_flag = make_op(node, src1, src0[1:], " * ", '', '')
                 node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
                 node.state.make_version(decompiler_data.versions, vdst)
                 if vdst in [src0, src1]:

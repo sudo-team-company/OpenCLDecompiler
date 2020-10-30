@@ -16,7 +16,7 @@ class VAddc(BaseInstruction):
             src0 = instruction[3]
             src1 = instruction[4]
             ssrc2 = instruction[5]
-            new_val, src0_reg, src1_reg = make_op(node, src0, src1, " + ")
+            new_val, src0_reg, src1_reg = make_op(node, src0, src1, " + ", '(ulong)', '(ulong)')
             if flag_of_status == OperationStatus.to_fill_node:
                 if src0_reg and src1_reg:
                     if node.state.registers[src0].type == Type.paramA \

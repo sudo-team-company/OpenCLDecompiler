@@ -15,8 +15,8 @@ class SCmpGe(BaseInstruction):
             ssrc1 = instruction[2]
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers["scc"] = \
-                    Register(node.state.registers[ssrc0].val + " >= " + node.state.registers[ssrc1].val, Type.unknown,
-                             Integrity.integer)
+                    Register('(int)' + node.state.registers[ssrc0].val + " >= (int)" + node.state.registers[ssrc1].val,
+                             Type.unknown, Integrity.integer)
                 node.state.make_version(decompiler_data.versions, "scc")
                 if "scc" in [ssrc0, ssrc1]:
                     node.state.registers["scc"].make_prev()

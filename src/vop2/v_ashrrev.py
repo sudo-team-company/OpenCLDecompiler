@@ -38,7 +38,7 @@ class VAshrrev(BaseInstruction):
                     node.state.registers[from_registers].val = \
                         node.state.registers[name_of_from + str(first_from + 1)].val
                 new_val, src1_flag, src0_flag = make_op(node, from_registers, str(pow(2, int(src0))),
-                                                                        " / ")
+                                                        " / ", '', '(long)')
                 node.state.registers[to_registers] = \
                     Register(new_val, node.state.registers[from_registers].type, Integrity.low_part)
                 # node.state.registers[to_registers].version = \

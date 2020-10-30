@@ -15,7 +15,7 @@ class SAshr(BaseInstruction):
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
             if flag_of_status == OperationStatus.to_fill_node:
-                new_val, ssrc0_flag, ssrc1_flag = make_op(node, ssrc0, str(pow(2, int(ssrc1))), " / ")
+                new_val, ssrc0_flag, ssrc1_flag = make_op(node, ssrc0, str(pow(2, int(ssrc1))), " / ", '(int)', '')
                 node.state.registers[sdst] = \
                     Register(new_val, Type.unknown, Integrity.integer)
                 node.state.make_version(decompiler_data.versions, sdst)

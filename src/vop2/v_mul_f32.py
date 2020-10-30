@@ -9,13 +9,28 @@ class VMulF32(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData()
         output_string = ""
-        if suffix == "f32" or suffix == "i32_i24":
+        if suffix == "f32":
             vdst = instruction[1]
             src0 = instruction[2]
             src1 = instruction[3]
             if flag_of_status == OperationStatus.to_fill_node:
                 new_integrity = node.state.registers[src1].integrity
-                new_val, src0_reg, src1_reg = make_op(node, src0, src1, " * ")
+                new_val, src0_reg, src1_reg = make_op(node, src0, src1, " * ", 'as_float(', 'as_float(')
+                node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
+                node.state.make_version(decompiler_data.versions, vdst)
+                if vdst in [src0, src1]:
+                    node.state.registers[vdst].make_prev()
+                node.state.registers[vdst].type_of_data = suffix
+                return node
+            return output_string
+
+        if suffix == "i32_i24":
+            vdst = instruction[1]
+            src0 = instruction[2]
+            src1 = instruction[3]
+            if flag_of_status == OperationStatus.to_fill_node:
+                new_integrity = node.state.registers[src1].integrity
+                new_val, src0_reg, src1_reg = make_op(node, src0, src1, " * ", '(int)', '(int)')
                 node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
                 node.state.make_version(decompiler_data.versions, vdst)
                 if vdst in [src0, src1]:

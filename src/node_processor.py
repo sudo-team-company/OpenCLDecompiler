@@ -24,11 +24,7 @@ def process_label_node(node, flag_of_status):
                     if wait_node.instruction[0].find('scc1') == -1:
                         wait_node.add_child(node)
                     else:
-                        children = wait_node.children
-                        wait_node.children = []
-                        wait_node.add_child(node)
-                        for child in children:
-                            wait_node.add_child(child)
+                        wait_node.add_first_child(node)
                     node.add_parent(wait_node)
                     node.state = copy.deepcopy(node.parent[-1].state)
 

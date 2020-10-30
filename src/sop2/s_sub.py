@@ -25,7 +25,7 @@ class SSub(BaseInstruction):
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
             if flag_of_status == OperationStatus.to_fill_node:
-                new_val, src0_reg, src1_reg = make_op(node, ssrc0, ssrc1, " - ")
+                new_val, src0_reg, src1_reg = make_op(node, ssrc0, ssrc1, " - ", '(ulong)', '(ulong)')
                 new_integrity = node.state.registers[ssrc1].integrity
                 node.state.registers[sdst] = Register(new_val, Type.unknown, new_integrity)
                 node.state.make_version(decompiler_data.versions, sdst)

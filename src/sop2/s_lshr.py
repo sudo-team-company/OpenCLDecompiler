@@ -28,7 +28,7 @@ class SLshr(BaseInstruction):
                     node.state.registers[sdst] = \
                         Register("get_num_groups(2)", node.state.registers[ssrc0].type, Integrity.integer)
                 else:
-                    new_val, ssrc0_flag, ssrc1_flag = make_op(node, ssrc0, str(pow(2, int(ssrc1))), " / ")
+                    new_val, ssrc0_flag, ssrc1_flag = make_op(node, ssrc0, str(pow(2, int(ssrc1))), " / ", '', '')
                     node.state.registers[sdst] = Register(new_val, node.state.registers[ssrc0].type, Integrity.integer)
                 node.state.make_version(decompiler_data.versions, sdst)
                 return node

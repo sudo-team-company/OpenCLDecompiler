@@ -1,7 +1,7 @@
 from src.state import State
 
 
-def make_op(node, register0, register1, operation):
+def make_op(node, register0, register1, operation, type0, type1):
     register0_flag = True
     register1_flag = True
     if register0.find("s") != -1 or register0.find("v") != -1:
@@ -18,6 +18,12 @@ def make_op(node, register0, register1, operation):
         new_val0 = "(" + new_val0 + ")"
     if new_val1.find("-") != -1 or new_val1.find("+") != -1 or new_val1.find("*") != -1 or new_val1.find("/") != -1:
         new_val1 = "(" + new_val1 + ")"
+    new_val0 = type0 + new_val0
+    new_val1 = type1 + new_val1
+    if len(type0) > 0 and type0.find(')') == -1:
+        new_val0 += ')'
+    if len(type1) > 0 and type1.find(')') == -1:
+        new_val1 += ')'
     new_val = new_val0 + operation + new_val1
     return new_val, register0_flag, register1_flag
 

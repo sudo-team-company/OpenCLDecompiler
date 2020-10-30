@@ -15,7 +15,7 @@ class VSub(BaseInstruction):
             src0 = instruction[3]
             src1 = instruction[4]
             if flag_of_status == OperationStatus.to_fill_node:
-                new_val, src0_reg, src1_reg = make_op(node, src0, src1, " - ")
+                new_val, src0_reg, src1_reg = make_op(node, src0, src1, " - ", '(ulong)', '')
                 type_reg = Type.int32
                 if src0_reg:
                     type_reg = node.state.registers[src0].integrity
@@ -34,7 +34,7 @@ class VSub(BaseInstruction):
             src0 = instruction[2]
             src1 = instruction[3]
             if flag_of_status == OperationStatus.to_fill_node:
-                new_val, src0_reg, src1_reg = make_op(node, src0, src1, " - ")
+                new_val, src0_reg, src1_reg = make_op(node, src0, src1, " - ", 'as_float(', 'as_float(')
                 type_reg = Type.int32
                 if src0_reg:
                     type_reg = node.state.registers[src0].integrity

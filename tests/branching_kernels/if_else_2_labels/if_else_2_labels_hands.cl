@@ -3,9 +3,9 @@ void if_else_2_labels(int x, __global int *data, int y)
 {
     uint *var3;
     uint var6;
-    if (1 == get_global_id(0)) {
+    if ((int)1 == (int)get_global_id(0)) {
         var3 = &data[(get_global_id(0) * 4) / 4];
-        var6 = (get_global_id(1) * x) - y;
+        var6 = (ulong)(get_global_id(1) * x) - (ulong)y;
     }
     else {
         var3 = &data[(get_global_id(0) * 4) / 4];

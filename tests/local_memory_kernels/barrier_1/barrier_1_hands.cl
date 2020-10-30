@@ -14,6 +14,6 @@ void barrier_1(__global int *res)
     barrier(CLK_LOCAL_MEM_FENCE);
     lds0[(get_global_id(0) * 4) / 4] = lds1[(get_global_id(1) * 4) / 4];
     barrier(CLK_LOCAL_MEM_FENCE);
-    res[(get_global_id(0) / 1073741824) * 1073741824] = lds0[(get_global_id(0) * 4) / 4];
-    res[(get_global_id(1) / 1073741824) * 1073741824] = lds1[(get_global_id(1) * 4) / 4];
+    res[(get_global_id(0) / (long)1073741824) * 1073741824] = lds0[(get_global_id(0) * 4) / 4];
+    res[(get_global_id(1) / (long)1073741824) * 1073741824] = lds1[(get_global_id(1) * 4) / 4];
 }
