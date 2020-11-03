@@ -29,7 +29,7 @@ class VCndmask(BaseInstruction):
                 decompiler_data.variables[node.state.registers[vdst].version] = variable
                 decompiler_data.names_of_vars[variable] = suffix
                 return node
-            if node.state.registers[ssrc2].val.find("?") != -1:
+            if "?" in node.state.registers[ssrc2].val:
                 node.state.registers[ssrc2].val = "(" + node.state.registers[ssrc2].val + ")"
             output_string = node.state.registers[vdst].val + " = " + node.state.registers[ssrc2].val \
                             + " ? " + node.parent[0].state.registers[src1].val + " : " \

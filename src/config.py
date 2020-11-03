@@ -64,8 +64,8 @@ def process_initial_state():
 def process_params(set_of_config, name_of_program):
     decompiler_data = DecompilerData()
     parameters = set_of_config[17:]
-    for num_of_setting in list(range(0, len(set_of_config))):
-        if set_of_config[num_of_setting].find(".arg") != -1 and set_of_config[num_of_setting].find("_.") == -1:
+    for num_of_setting in list(range(len(set_of_config))):
+        if ".arg" in set_of_config[num_of_setting] and "_." not in set_of_config[num_of_setting]:
             parameters = set_of_config[num_of_setting:]
             break
     decompiler_data.output_file.write("void " + name_of_program + "(")
@@ -94,7 +94,7 @@ def process_params(set_of_config, name_of_program):
 
 def process_size_of_work_groups(set_of_config):
     decompiler_data = DecompilerData()
-    if set_of_config[1].find(".cws") != -1:
+    if ".cws" in set_of_config[1]:
         decompiler_data.size_of_work_groups = set_of_config[1].replace(',', ' ').split()[1:]
         decompiler_data.output_file.write(
             "__kernel __attribute__((reqd_work_group_size(" + decompiler_data.size_of_work_groups[0] + ", "
@@ -105,7 +105,7 @@ def process_size_of_work_groups(set_of_config):
 
 def process_local_size(set_of_config):
     decompiler_data = DecompilerData()
-    if set_of_config[4].find("localsize") != -1:
+    if "localsize" in set_of_config[4]:
         decompiler_data.localsize = int(set_of_config[4][11:])
 
 

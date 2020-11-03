@@ -15,7 +15,7 @@ def create_opencl_body():
     offsets = list(decompiler_data.lds_vars.keys())
     offsets.append(decompiler_data.localsize)
     offsets.sort()
-    for key in list(range(len(offsets) - 1)):
+    for key in range(len(offsets) - 1):
         size_var = int(
             (offsets[key + 1] - offsets[key]) / (int(decompiler_data.lds_vars[offsets[key]][1][1:]) / 8))
         type_of_var = make_type(decompiler_data.lds_vars[offsets[key]][1])
@@ -104,7 +104,7 @@ def make_output_from_if_else_statement_region(region, indent):
                 and (region.start.start.parent[0].state.registers[reg] is None
                      or r_node_parent.state.registers[reg].version != region.start.start.parent[0].state.registers[
                          reg].version):
-            if decompiler_data.variables[key].find("*") == -1:
+            if '*' not in decompiler_data.variables[key]:
                 decompiler_data.output_file.write(indent + "    " + decompiler_data.variables[key] +
                                                   " = " + r_node_parent.state.registers[reg].val + ";\n")
             else:
@@ -127,7 +127,7 @@ def make_output_from_if_else_statement_region(region, indent):
                 and (region.start.start.parent[0].state.registers[reg] is None
                      or r_node_parent.state.registers[reg].version != region.start.start.parent[0].state.registers[
                          reg].version):
-            if decompiler_data.variables[key].find("*") == -1:
+            if '*' not in decompiler_data.variables[key]:
                 decompiler_data.output_file.write(
                     indent + "    " + decompiler_data.variables[key] + " = "
                     + r_node_parent.state.registers[reg].val + ";\n")

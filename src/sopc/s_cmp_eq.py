@@ -20,7 +20,7 @@ class SCmpEq(BaseInstruction):
             ssrc1 = instruction[2]
             if flag_of_status == OperationStatus.to_fill_node:
                 ssrc0 = ssrc0[0] + ssrc0[2: ssrc0.find(':')]
-                if ssrc1.find('s') != -1:
+                if 's' in ssrc1:
                     cmpr_val = node.state.registers[ssrc1].val
                 else:
                     cmpr_val = ssrc1

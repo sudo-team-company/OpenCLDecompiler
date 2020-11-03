@@ -47,12 +47,12 @@ def update_reg_version(reg, curr_node, max_version, version_of_reg):
 
 def check_for_use_new_version_in_one_instruction(curr_node, instruction):
     decompiler_data = DecompilerData()
-    for num_of_reg in list(range(1, len(curr_node.instruction))):
+    for num_of_reg in range(1, len(curr_node.instruction)):
         register = curr_node.instruction[num_of_reg]
-        if (curr_node.instruction[0].find("flat_store") != -1
+        if ("flat_store" in curr_node.instruction[0]
             or num_of_reg > 1) \
                 and len(register) > 1 \
-                and curr_node.instruction[0].find("cnd") == -1:
+                and "cnd" not in curr_node.instruction[0]:
             if register[1] == "[":
                 register = register[0] + register[2: register.find(":")]
             first_reg = curr_node.instruction[1]
@@ -67,7 +67,7 @@ def check_for_use_new_version_in_one_instruction(curr_node, instruction):
             if curr_node.state.registers.get(register) is not None \
                     and decompiler_data.checked_variables.get(checked_version) is not None \
                     and curr_node.state.registers[register].type_of_data is not None \
-                    and (register != "vcc" or instruction[0].find("and_saveexec") != -1):
+                    and (register != "vcc" or "and_saveexec" in instruction[0]):
                 var_name = decompiler_data.checked_variables[checked_version]
                 if decompiler_data.names_of_vars.get(var_name) is None:
                     if decompiler_data.checked_variables.get(
@@ -131,14 +131,14 @@ def update_val_from_changes(curr_node, register, changes, check_version, num_of_
     if curr_node.state.registers.get(register) is not None \
             and changes.get(check_version) \
             and curr_node.state.registers[register].type_of_data is not None \
-            and (register != "vcc" or instruction[0].find("and_saveexec") != -1):
-        if instruction[0].find("flat_store") != -1:
+            and (register != "vcc" or "and_saveexec" in instruction[0]):
+        if "flat_store" in instruction[0]:
             if num_of_reg == 1:
                 node_registers = curr_node.parent[0].state.registers
             else:
                 node_registers = curr_node.state.registers
                 first_reg = register
-        elif instruction[0].find("and_saveexec") != -1:
+        elif "and_saveexec" in instruction[0]:
             node_registers = curr_node.state.registers
             first_reg = "exec"
         else:
@@ -160,7 +160,7 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
     if curr_node.state.registers.get(register) is not None \
             and decompiler_data.variables.get(check_version) is not None \
             and curr_node.state.registers[register].type_of_data is not None \
-            and (register != "vcc" or instruction[0].find("and_saveexec") != -1):
+            and (register != "vcc" or "and_saveexec" in instruction[0]):
         val_reg = curr_node.state.registers[register].val
         if register == first_reg:
             val_reg = curr_node.parent[0].state.registers[first_reg].val
@@ -179,10 +179,10 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
 
 
 def change_values_for_one_instruction(curr_node, changes):
-    for num_of_reg in list(range(1, len(curr_node.instruction))):
+    for num_of_reg in range(1, len(curr_node.instruction)):
         register = curr_node.instruction[num_of_reg]
-        if (curr_node.instruction[0].find("flat_store") != -1 or num_of_reg > 1) and len(register) > 1 \
-                and curr_node.instruction[0].find("cnd") == -1:
+        if ("flat_store" in curr_node.instruction[0] or num_of_reg > 1) and len(register) > 1 \
+                and "cnd" not in curr_node.instruction[0]:
             if register[1] == "[":
                 register = register[0] + register[2: register.find(":")]
             first_reg = curr_node.instruction[1]

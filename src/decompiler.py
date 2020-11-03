@@ -12,23 +12,23 @@ from src.kernel_params import process_kernel_params
 
 def transform_instruction_set(instruction, set_of_instructions, num, row, curr_node):
     decompiler_data = DecompilerData()
-    if instruction[0].find("s_and_saveexec_b64") != -1 \
-            and (set_of_instructions[num + 1].find("branch") == -1
-                 and set_of_instructions[num + 2].find("branch") == -1
-                 and set_of_instructions[num + 3].find("branch") == -1):
+    if "s_and_saveexec_b64" in instruction[0] \
+            and ("branch" not in set_of_instructions[num + 1]
+                 and "branch" not in set_of_instructions[num + 2]
+                 and "branch" not in set_of_instructions[num + 3]):
         decompiler_data.num_of_label += 1
         set_of_instructions.insert(num + 1, "s_cbranch_execz ." + str(decompiler_data.num_of_label))
-    if instruction[0].find("andn2") != -1 and set_of_instructions[num - 1].find(".") == -1:
+    if 'andn2' in instruction[0] and "." not in set_of_instructions[num - 1]:
         set_of_instructions.insert(num + 1, row)
         new_val = "." + str(decompiler_data.num_of_label) + ":"
         set_of_instructions[num] = new_val
         instruction = [new_val]
-    if instruction[0].find("andn2") != -1 \
-            and (set_of_instructions[num + 1].find("cbranch") == -1
-                 and set_of_instructions[num + 2].find("cbranch") == -1):
+    if "andn2" in instruction[0] \
+            and ("cbranch" not in set_of_instructions[num + 1]
+                 and "cbranch" not in set_of_instructions[num + 2]):
         decompiler_data.num_of_label += 1
         set_of_instructions.insert(num + 1, "s_cbranch_execz ." + str(decompiler_data.num_of_label))
-    if instruction[0] == "s_mov_b64" and instruction[1] == "exec" and curr_node.instruction[0].find(".") == -1:
+    if instruction[0] == "s_mov_b64" and instruction[1] == "exec" and "." not in curr_node.instruction[0]:
         set_of_instructions.insert(num + 1, row)
         instruction = ["." + str(decompiler_data.num_of_label) + ":"]
     return set_of_instructions, instruction
@@ -41,13 +41,13 @@ def check_instruction_set_for_if_else(instruction, curr_node, set_of_instruction
         decompiler_data.label = curr_node
         decompiler_data.parents_of_label = curr_node.parent
         decompiler_data.flag_of_else = True
-    elif (instruction[0].find("andn2") != -1 or
-          (num < len(set_of_instructions) and set_of_instructions[num].find("branch") != -1)) \
+    elif ("andn2" in instruction[0] or
+          (num < len(set_of_instructions) and "branch" in set_of_instructions[num])) \
             and decompiler_data.flag_of_else:
-        if instruction[0].find("andn2") == -1 and set_of_instructions[num].find("branch") != -1:
+        if "andn2" not in instruction[0] and "branch" in set_of_instructions[num]:
             set_of_instructions.insert(num + 1, row)
         return set_of_instructions, last_node, last_node_state
-    elif decompiler_data.flag_of_else and instruction[0].find("cbranch") != -1:
+    elif decompiler_data.flag_of_else and "cbranch" in instruction[0]:
         last_node, last_node_state = change_cfg_for_else_structure(curr_node, instruction)
     else:
         decompiler_data.flag_of_else = False

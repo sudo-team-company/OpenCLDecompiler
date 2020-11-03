@@ -4,25 +4,25 @@ from src.state import State
 def make_op(node, register0, register1, operation, type0, type1):
     register0_flag = True
     register1_flag = True
-    if register0.find("s") != -1 or register0.find("v") != -1:
+    if "s" in register0 or "v" in register0:
         new_val0 = node.state.registers[register0].val
     else:
         new_val0 = register0
         register0_flag = False
-    if register1.find("s") != -1 or register1.find("v") != -1:
+    if "s" in register1 or "v" in register1:
         new_val1 = node.state.registers[register1].val
     else:
         new_val1 = register1
         register1_flag = False
-    if new_val0.find("-") != -1 or new_val0.find("+") != -1 or new_val0.find("*") != -1 or new_val0.find("/") != -1:
+    if "-" in new_val0 or "+" in new_val0 or "*" in new_val0 or "/" in new_val0:
         new_val0 = "(" + new_val0 + ")"
-    if new_val1.find("-") != -1 or new_val1.find("+") != -1 or new_val1.find("*") != -1 or new_val1.find("/") != -1:
+    if "-" in new_val1 or "+" in new_val1 or "*" in new_val1 or "/" in new_val1:
         new_val1 = "(" + new_val1 + ")"
     new_val0 = type0 + new_val0
     new_val1 = type1 + new_val1
-    if len(type0) > 0 and type0.find(')') == -1:
+    if len(type0) > 0 and ')' not in type0:
         new_val0 += ')'
-    if len(type1) > 0 and type1.find(')') == -1:
+    if len(type1) > 0 and ')' not in type1:
         new_val1 += ')'
     new_val = new_val0 + operation + new_val1
     return new_val, register0_flag, register1_flag

@@ -3,38 +3,29 @@ from src.integrity import Integrity
 from src.type_of_reg import Type
 
 
+def extract_from_regs(registers, left_board):
+    last = 0
+    first = 0
+    name = registers
+    if left_board != -1:
+        separation = registers.index(":")
+        right_board = registers.index("]")
+        first = int(registers[(left_board + 1):separation])
+        last = int(registers[(separation + 1):right_board])
+        name = registers[:left_board]
+    else:
+        if "s" in registers or "v" in registers:
+            name = registers[0]
+            first = int(registers[1:])
+            last = first
+    return first, last, name
+
+
 def find_first_last_num_to_from(to_registers, from_registers):
     left_board_from = from_registers.find("[")
-    last_to = 0
-    first_to = 0
-    first_from = 0
-    last_from = 0
-    name_of_to = to_registers
-    name_of_from = from_registers
-    if left_board_from != -1:
-        separation_from = from_registers.index(":")
-        right_board_from = from_registers.index("]")
-        first_from = int(from_registers[(left_board_from + 1):separation_from])
-        last_from = int(from_registers[(separation_from + 1):right_board_from])
-        name_of_from = from_registers[:left_board_from]
-        from_registers = name_of_from + str(first_from)
-    else:
-        if from_registers.find("s") != -1 or from_registers.find("v") != -1:
-            name_of_from = from_registers[0]
-            first_from = int(from_registers[1:])
-            last_from = first_from
+    first_from, last_from, name_of_from = extract_from_regs(from_registers, left_board_from)
     left_board_to = to_registers.find("[")
-    if left_board_to != -1:
-        separation_to = to_registers.index(":")
-        right_board_to = to_registers.index("]")
-        first_to = int(to_registers[(left_board_to + 1):separation_to])
-        last_to = int(to_registers[(separation_to + 1):right_board_to])
-        name_of_to = to_registers[:left_board_to]
-    else:
-        if from_registers.find("s") != -1 or from_registers.find("v") != -1:
-            name_of_to = to_registers[0]
-            first_to = int(to_registers[1:])
-            last_to = first_to
+    first_to, last_to, name_of_to = extract_from_regs(to_registers, left_board_to)
     return first_to, last_to, name_of_to, name_of_from, first_from, last_from
 
 
@@ -98,9 +89,10 @@ class State:
 
     def upload_usesetup(self, to_registers, offset, parent):
         to_registers1 = ""
-        if to_registers.find(":") != -1:
-            to_registers1 = "s" + to_registers[to_registers.find(":") + 1:-1]
-            to_registers = "s" + to_registers[2:to_registers.find(":")]
+        separation = to_registers.find(":")
+        if separation != -1:
+            to_registers1 = "s" + to_registers[separation + 1:-1]
+            to_registers = "s" + to_registers[2:separation]
         if offset == "0x0":
             self.registers[to_registers] = Register(to_registers, Type.general_setup, Integrity.integer)
             self.make_version(parent, to_registers)

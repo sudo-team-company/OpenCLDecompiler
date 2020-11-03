@@ -29,7 +29,7 @@ class VLshlrev(BaseInstruction):
             src1 = instruction[3]
             first_to, last_to, name_of_to, name_of_from, first_from, last_from \
                 = find_first_last_num_to_from(vdst, src1)
-            if name_of_from.find("s") != -1 or name_of_from.find("v") != -1:
+            if "s" in name_of_from or "v" in name_of_from:
                 from_registers = name_of_from + str(first_from)
             else:
                 from_registers = src1

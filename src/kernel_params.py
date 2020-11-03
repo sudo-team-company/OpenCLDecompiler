@@ -40,6 +40,20 @@ def process_dwordx4(list_instruction, num_of_param):
     return changes_registers, add_num
 
 
+def process_dwordx8(list_instruction, num_of_param):
+    registers = list_instruction[1]
+    name_of_register = registers[0]
+    num_of_first_reg = int(registers[2:registers.find(':')])
+    changes_registers, add_num_1 = process_dwordx4(list_instruction, num_of_param)
+    fifth_reg = str(num_of_first_reg + 4)
+    eighth_reg = str(num_of_first_reg + 7)
+    list_instruction[1] = name_of_register + '[' + fifth_reg + ':' + eighth_reg + ']'
+    add_changes, add_num_2 = process_dwordx4(list_instruction, str(int(num_of_param) + add_num_1))
+    changes_registers.extend(add_changes)
+    add_num = add_num_1 + add_num_2
+    return changes_registers, add_num
+
+
 def get_offsets_to_regs():
     decompiler_data = DecompilerData()
     offset_num = {}
@@ -63,7 +77,7 @@ def get_offsets_to_regs():
                     if last_offset[-1] < '8':
                         offset_num[last_offset[:-1] + '8'] = num_of_param
                     else:
-                        curr_offset = '0x' + str(int(last_offset[2:]) + 2)
+                        curr_offset = '0x' + str(int(last_offset[2:-1]) + 1) + '0'
                         offset_num[curr_offset] = num_of_param
                 else:
                     if last_offset[-1] == '0':
@@ -73,7 +87,7 @@ def get_offsets_to_regs():
                     elif last_offset[-1] == '8':
                         offset_num[last_offset[:-1] + 'c'] = num_of_param
                     elif last_offset[-1] == 'c':
-                        curr_offset = '0x' + str(int(last_offset[2:]) + 2)
+                        curr_offset = '0x' + str(int(last_offset[2:-1]) + 1) + '0'
                         offset_num[curr_offset] = num_of_param
     return offset_num
 
@@ -83,7 +97,7 @@ def process_kernel_params(set_of_instructions):
     offsets_of_kernel_params = {}
     for instruction in set_of_instructions:
         list_instruction = instruction.strip().replace(',', ' ').split()
-        if list_instruction[0].find("s_load_dword") != -1 and len(list_instruction[3]) == 4 \
+        if "s_load_dword" in list_instruction[0] and len(list_instruction[3]) == 4 \
                 and list_instruction[3] >= '0x30':
             offsets_of_kernel_params[list_instruction[3]] = list_instruction
     offset_num = get_offsets_to_regs()
@@ -101,3 +115,7 @@ def process_kernel_params(set_of_instructions):
         elif instr[-1] == '4':
             decompiler_data.kernel_params[offset], _ = \
                 process_dwordx4(offsets_of_kernel_params[key], offset_num[offset])
+
+        elif instr[-1] == '8':
+            decompiler_data.kernel_params[offset], _ = \
+                process_dwordx8(offsets_of_kernel_params[key], offset_num[offset])

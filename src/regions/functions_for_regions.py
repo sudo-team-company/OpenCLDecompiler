@@ -5,7 +5,7 @@ from src.type_of_node import TypeNode
 
 
 def add_parent_and_child(before_r, next_r, region, pred_child, pred_parent):
-    for i in list(range(0, len(before_r))):
+    for i in range(len(before_r)):
         index = before_r[i].children.index(pred_child[i])
         before_r[i].children[index] = region
         region.add_parent(before_r[i])

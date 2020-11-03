@@ -42,7 +42,7 @@ class VAdd(BaseInstruction):
                         new_integrity = node.state.registers[src1].integrity
                         if decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "int" \
                                 or decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "uint":
-                            if node.state.registers[src1].val.find("1073741824") != -1:
+                            if "1073741824" in node.state.registers[src1].val:
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "1073741824", " * ", '', '')
                             else:
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "4", " / ", '', '')

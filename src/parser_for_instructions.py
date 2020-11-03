@@ -18,7 +18,7 @@ def main(input_par, output_par):
     for row in body_of_file:
         row = re.sub(r"/\*(.*?)\*/", '', row)
         row = row.strip()
-        if row.find(".kernel ") != -1:
+        if ".kernel " in row:
             if status_of_parse == "instruction":
                 status_of_parse = "kernel"
                 decompiler_data.reset(output_file)
