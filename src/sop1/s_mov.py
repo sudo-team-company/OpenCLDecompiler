@@ -20,8 +20,6 @@ class SMov(BaseInstruction):
                         Register(node.state.registers[ssrc0].val, node.state.registers[ssrc0].type, Integrity.integer)
                 else:
                     node.state.registers[sdst] = Register(ssrc0, Type.int32, Integrity.integer)
-                if decompiler_data.versions.get(sdst) is None:
-                    decompiler_data.versions[sdst] = 0
                 make_version(node.state, decompiler_data.versions, sdst)
                 node.state.registers[sdst].type_of_data = suffix
                 return node

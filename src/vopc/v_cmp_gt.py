@@ -23,8 +23,6 @@ class VCmpGt(BaseInstruction):
                 src1 = name_of_from + str(first_from)
                 new_val, src0_flag, src1_flag = make_op(node, src0, src1, " > ", '(ulong)', '(uint)')
                 node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
-                if decompiler_data.versions.get(sdst) is None:
-                    decompiler_data.versions[sdst] = 0
                 make_version(node.state, decompiler_data.versions, sdst)
                 if sdst in [src0, src1]:
                     node.state.registers[sdst].make_prev()

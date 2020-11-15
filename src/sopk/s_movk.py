@@ -16,8 +16,6 @@ class SMovk(BaseInstruction):
             simm16 = instruction[2]
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[sdst] = Register(simm16, Type.unknown, Integrity.integer)
-                if decompiler_data.versions.get(sdst) is None:
-                    decompiler_data.versions[sdst] = 0
                 make_version(node.state, decompiler_data.versions, sdst)
                 node.state.registers[sdst].type_of_data = suffix
                 return node

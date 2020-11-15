@@ -36,8 +36,6 @@ class VAddc(BaseInstruction):
                     if src1_reg:
                         type_reg = node.state.registers[src1].type
                     node.state.registers[vdst] = Register(new_val, type_reg, Integrity.integer)
-                if vdst not in decompiler_data.versions:
-                    decompiler_data.versions[vdst] = 0
                 make_version(node.state, decompiler_data.versions, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()

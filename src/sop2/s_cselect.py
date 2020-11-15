@@ -20,8 +20,6 @@ class SCselect(BaseInstruction):
                     ssrc0 = "1"
                 new_val = node.state.registers["scc"].val + " ? " + ssrc0 + " : " + ssrc1
                 node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
-                if decompiler_data.versions.get(sdst) is None:
-                    decompiler_data.versions[sdst] = 0
                 make_version(node.state, decompiler_data.versions, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()
