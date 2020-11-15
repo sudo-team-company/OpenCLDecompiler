@@ -3,6 +3,7 @@ from src.decompiler_data import DecompilerData, make_op
 from src.integrity import Integrity
 from src.register import Register
 from src.operation_status import OperationStatus
+from src.versions import make_version
 
 
 class DsWrite(BaseInstruction):
@@ -22,7 +23,7 @@ class DsWrite(BaseInstruction):
                     Register(node.state.registers[vdata0].val, node.state.registers[vdata0].type, Integrity.integer)
                 if decompiler_data.versions.get(name) is None:
                     decompiler_data.versions[name] = 0
-                node.state.make_version(decompiler_data.versions, name)
+                make_version(node.state, decompiler_data.versions, name)
                 node.state.registers[name].type_of_data = "u" + suffix[1:]
                 return node
             output_string = name + " = " + node.state.registers[name].val

@@ -4,6 +4,7 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
+from src.versions import make_version
 
 
 class VAddc(BaseInstruction):
@@ -35,7 +36,9 @@ class VAddc(BaseInstruction):
                     if src1_reg:
                         type_reg = node.state.registers[src1].type
                     node.state.registers[vdst] = Register(new_val, type_reg, Integrity.integer)
-                node.state.make_version(decompiler_data.versions, vdst)
+                if vdst not in decompiler_data.versions:
+                    decompiler_data.versions[vdst] = 0
+                make_version(node.state, decompiler_data.versions, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
                 node.state.registers[vdst].type_of_data = suffix

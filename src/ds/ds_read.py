@@ -3,6 +3,7 @@ from src.decompiler_data import DecompilerData, make_op
 from src.integrity import Integrity
 from src.register import Register
 from src.operation_status import OperationStatus
+from src.versions import make_version
 
 
 class DsRead(BaseInstruction):
@@ -17,7 +18,7 @@ class DsRead(BaseInstruction):
             name = decompiler_data.lds_vars[offset][0] + "[" + new_value + "]"
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[vdst] = Register(name, node.state.registers[name].type, Integrity.integer)
-                node.state.make_version(decompiler_data.versions, vdst)
+                make_version(node.state, decompiler_data.versions, vdst)
                 node.state.registers[vdst].type_of_data = "u" + suffix[1:]
                 return node
             return output_string
@@ -29,7 +30,7 @@ class DsRead(BaseInstruction):
             name = decompiler_data.lds_vars[offset][0] + "[" + node.state.registers[addr].var + "]"
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[vdst] = Register(name, node.state.registers[name].type, Integrity.integer)
-                node.state.make_version(decompiler_data.versions, vdst)
+                make_version(node.state, decompiler_data.versions, vdst)
                 node.state.registers[vdst].type_of_data = "u" + suffix[1:]
                 return node
             return output_string

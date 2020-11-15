@@ -4,6 +4,7 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
+from src.versions import make_version
 
 
 class SMovk(BaseInstruction):
@@ -17,7 +18,7 @@ class SMovk(BaseInstruction):
                 node.state.registers[sdst] = Register(simm16, Type.unknown, Integrity.integer)
                 if decompiler_data.versions.get(sdst) is None:
                     decompiler_data.versions[sdst] = 0
-                node.state.make_version(decompiler_data.versions, sdst)
+                make_version(node.state, decompiler_data.versions, sdst)
                 node.state.registers[sdst].type_of_data = suffix
                 return node
             return output_string

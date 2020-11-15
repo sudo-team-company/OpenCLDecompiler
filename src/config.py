@@ -64,8 +64,8 @@ def process_initial_state():
 def process_params(set_of_config, name_of_program):
     decompiler_data = DecompilerData()
     parameters = set_of_config[17:]
-    for num_of_setting in list(range(len(set_of_config))):
-        if ".arg" in set_of_config[num_of_setting] and "_." not in set_of_config[num_of_setting]:
+    for num_of_setting, set_of_config_num in enumerate(set_of_config):
+        if ".arg" in set_of_config_num and "_." not in set_of_config_num:
             parameters = set_of_config[num_of_setting:]
             break
     decompiler_data.output_file.write("void " + name_of_program + "(")

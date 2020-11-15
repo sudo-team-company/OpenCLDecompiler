@@ -263,5 +263,27 @@ class RealKernels(unittest.TestCase):
                 self.assertEqual(hands_decompilation.read(), decompiled.read())
 
 
+class DifferentTypes(unittest.TestCase):
+    def test_uint8_type_test(self):
+        subprocess.call(r'tests.bat different_types\uint8_type_test\uint8_type_test.bin ' +
+                        r'different_types\uint8_type_test\uint8_type_test.asm')
+        parser_for_instructions.main(r"different_types\uint8_type_test\uint8_type_test.asm",
+                                     r"different_types\uint8_type_test\uint8_type_test_dcmpl.cl")
+        with open(
+                r"different_types\uint8_type_test\uint8_type_test_hands.cl") as hands_decompilation:
+            with open(r"different_types\uint8_type_test\uint8_type_test_dcmpl.cl") as decompiled:
+                self.assertEqual(hands_decompilation.read(), decompiled.read())
+
+    def test_big_type_test(self):
+        subprocess.call(r'tests.bat different_types\big_type_test\big_type_test.bin ' +
+                        r'different_types\big_type_test\big_type_test.asm')
+        parser_for_instructions.main(r"different_types\big_type_test\big_type_test.asm",
+                                     r"different_types\big_type_test\big_type_test_dcmpl.cl")
+        with open(
+                r"different_types\big_type_test\big_type_test_hands.cl") as hands_decompilation:
+            with open(r"different_types\big_type_test\big_type_test_dcmpl.cl") as decompiled:
+                self.assertEqual(hands_decompilation.read(), decompiled.read())
+
+
 if __name__ == '__main__':
     unittest.main()

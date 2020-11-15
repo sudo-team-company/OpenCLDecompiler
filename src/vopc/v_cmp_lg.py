@@ -4,6 +4,7 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
+from src.versions import make_version
 
 
 class VCmpLg(BaseInstruction):
@@ -19,7 +20,7 @@ class VCmpLg(BaseInstruction):
                 node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
                 if decompiler_data.versions.get(sdst) is None:
                     decompiler_data.versions[sdst] = 0
-                node.state.make_version(decompiler_data.versions, sdst)
+                make_version(node.state, decompiler_data.versions, sdst)
                 if sdst in [src0, src1]:
                     node.state.registers[sdst].make_prev()
                 node.state.registers[sdst].type_of_data = suffix

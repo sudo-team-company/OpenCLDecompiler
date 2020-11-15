@@ -4,7 +4,8 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
-from src.state import find_first_last_num_to_from
+from src.upload import find_first_last_num_to_from
+from src.versions import make_version
 
 
 class FlatLoad(BaseInstruction):
@@ -25,7 +26,7 @@ class FlatLoad(BaseInstruction):
                         data_type = node.state.registers[from_registers].type_of_data
                         node.state.registers[to_registers] = \
                             Register(variable, Type.program_param, Integrity.integer)
-                        node.state.make_version(decompiler_data.versions, to_registers)
+                        make_version(node.state, decompiler_data.versions, to_registers)
                         node.state.registers[to_registers].type_of_data = data_type
                         node.state.registers[to_registers].val = variable
                         decompiler_data.num_of_var += 1

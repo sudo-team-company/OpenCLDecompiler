@@ -3,6 +3,7 @@ from src.decompiler_data import DecompilerData, make_op
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
+from src.versions import make_version
 
 
 class SSub(BaseInstruction):
@@ -28,7 +29,7 @@ class SSub(BaseInstruction):
                 new_val, src0_reg, src1_reg = make_op(node, ssrc0, ssrc1, " - ", '(ulong)', '(ulong)')
                 new_integrity = node.state.registers[ssrc1].integrity
                 node.state.registers[sdst] = Register(new_val, Type.unknown, new_integrity)
-                node.state.make_version(decompiler_data.versions, sdst)
+                make_version(node.state, decompiler_data.versions, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()
                 node.state.registers[sdst].type_of_data = suffix

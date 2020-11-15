@@ -16,24 +16,18 @@ def add_parent_and_child(before_r, next_r, region, pred_child, pred_parent):
 
 
 def check_if(curr_region):
-    if curr_region.type == TypeNode.basic and len(curr_region.children) == 2 \
+    return curr_region.type == TypeNode.basic and len(curr_region.children) == 2 \
             and (len(curr_region.children[0].children) > 0
                  and curr_region.children[0].children[0] == curr_region.children[1]
                  or len(curr_region.children[1].children) > 0
-                 and curr_region.children[1].children[0] == curr_region.children[0]):
-        return True
-    else:
-        return False
+                 and curr_region.children[1].children[0] == curr_region.children[0])
 
 
 def check_if_else(curr_region):
-    if curr_region.type == TypeNode.basic and len(curr_region.children) == 2 \
+    return curr_region.type == TypeNode.basic and len(curr_region.children) == 2 \
             and len(curr_region.children[0].children) > 0 \
             and len(curr_region.children[1].children) > 0 \
-            and curr_region.children[0].children[0] == curr_region.children[1].children[0]:
-        return True
-    else:
-        return False
+            and curr_region.children[0].children[0] == curr_region.children[1].children[0]
 
 
 def create_new_region(prev_reg_1, prev_reg_2, next_reg):

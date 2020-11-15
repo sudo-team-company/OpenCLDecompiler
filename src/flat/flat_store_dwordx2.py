@@ -3,7 +3,7 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.register import Register
 from src.operation_status import OperationStatus
-from src.state import find_first_last_num_to_from
+from src.upload import find_first_last_num_to_from
 
 
 class FlatStoreDwordx2(BaseInstruction):

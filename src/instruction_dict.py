@@ -43,7 +43,9 @@ from src.sopp.s_cbranch_execz import SCbranchExecz
 from src.sopp.s_cbranch_scc0 import SCbranchScc0
 from src.sopp.s_cbranch_scc1 import SCbranchScc1
 from src.sopp.s_cbranch_vccnz import SCbranchVccnz
+from src.sopp.s_cbranch_vccz import SCbranchVccz
 from src.sopp.s_endpgm import SEndpgm
+from src.sopp.s_nop import SNop
 from src.sopp.s_set_gpr_idx_off import SSetGprIdxOff
 from src.sopp.s_waitcnt import SWaitcnt
 from src.vop1.v_cvt import VCvt
@@ -104,6 +106,7 @@ instruction_dict = {'ds_add': DsAdd(),
                     's_cbranch_scc0': SCbranchScc0(),
                     's_cbranch_scc1': SCbranchScc1(),
                     's_cbranch_vccnz': SCbranchVccnz(),
+                    's_cbranch_vccz': SCbranchVccz(),
                     's_cmp_eq': SCmpEq(),
                     's_cmp_ge': SCmpGe(),
                     's_cmp_lt': SCmpLt(),
@@ -119,6 +122,7 @@ instruction_dict = {'ds_add': DsAdd(),
                     's_mul': SMul(),
                     's_mulk': SMulk(),
                     's_not': SNot(),
+                    's_nop': SNop(),
                     's_set_gpr_idx_on': SSetGprIdxOn(),
                     's_set_gpr_idx_off': SSetGprIdxOff(),
                     's_setpc': SSetpc(),

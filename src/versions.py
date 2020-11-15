@@ -3,12 +3,20 @@ from src.type_of_reg import Type
 from src.decompiler_data import DecompilerData
 
 
+def make_version(state, parent, reg):
+    decompiler_data = DecompilerData()
+    if reg not in decompiler_data.versions:
+        decompiler_data.versions[reg] = 0
+    state.registers[reg].add_version(reg, parent[reg])
+    parent[reg] += 1
+
+
 def find_max_and_prev_versions(curr_node):
     for reg in curr_node.parent[0].state.registers:
         version_of_reg = set()
         max_version = 0
         for parent in curr_node.parent:
-            if parent.state.registers.get(reg) is not None and parent.state.registers[reg] is not None \
+            if parent.state.registers.get(reg) is not None \
                     and parent.state.registers[reg].version is not None:
                 par_version = parent.state.registers[reg].version
                 if len(version_of_reg) == 0:

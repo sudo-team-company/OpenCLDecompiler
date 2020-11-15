@@ -3,6 +3,7 @@ from src.decompiler_data import DecompilerData, make_op
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
+from src.versions import make_version
 
 
 class VMulF32(BaseInstruction):
@@ -17,7 +18,7 @@ class VMulF32(BaseInstruction):
                 new_integrity = node.state.registers[src1].integrity
                 new_val, src0_reg, src1_reg = make_op(node, src0, src1, " * ", 'as_float(', 'as_float(')
                 node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
-                node.state.make_version(decompiler_data.versions, vdst)
+                make_version(node.state, decompiler_data.versions, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
                 node.state.registers[vdst].type_of_data = suffix
@@ -32,7 +33,7 @@ class VMulF32(BaseInstruction):
                 new_integrity = node.state.registers[src1].integrity
                 new_val, src0_reg, src1_reg = make_op(node, src0, src1, " * ", '(int)', '(int)')
                 node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
-                node.state.make_version(decompiler_data.versions, vdst)
+                make_version(node.state, decompiler_data.versions, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
                 node.state.registers[vdst].type_of_data = suffix

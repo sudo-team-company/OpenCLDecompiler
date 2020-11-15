@@ -4,6 +4,7 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
+from src.versions import make_version
 
 
 class VMac(BaseInstruction):
@@ -18,7 +19,7 @@ class VMac(BaseInstruction):
                 new_val, src0_reg, src1_reg = make_op(node, src0, src1, " * ", 'as_float(', 'as_float(')
                 end_val = new_val + " + as_float(" + node.state.registers[vdst].val + ')'
                 node.state.registers[vdst] = Register(end_val, Type.unknown, Integrity.integer)
-                node.state.make_version(decompiler_data.versions, vdst)
+                make_version(node.state, decompiler_data.versions, vdst)
                 node.state.registers[vdst].make_prev()
                 node.state.registers[vdst].type_of_data = suffix
                 return node

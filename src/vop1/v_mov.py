@@ -4,6 +4,7 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
+from src.versions import make_version
 
 
 class VMov(BaseInstruction):
@@ -20,7 +21,7 @@ class VMov(BaseInstruction):
                                  Integrity.integer)
                 else:
                     node.state.registers[vdst] = Register(src0, Type.int32, Integrity.integer)
-                node.state.make_version(decompiler_data.versions, vdst)
+                make_version(node.state, decompiler_data.versions, vdst)
                 if vdst in [src0]:
                     node.state.registers[vdst].make_prev()
                 node.state.registers[vdst].type_of_data = suffix

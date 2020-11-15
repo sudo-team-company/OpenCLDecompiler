@@ -4,6 +4,7 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
+from src.versions import make_version
 
 
 class SCmpEq(BaseInstruction):
@@ -27,7 +28,7 @@ class SCmpEq(BaseInstruction):
                 node.state.registers["scc"] = \
                     Register(node.state.registers[ssrc0].val + " == " + cmpr_val, Type.unknown,
                              Integrity.integer)
-                node.state.make_version(decompiler_data.versions, "scc")
+                make_version(node.state, decompiler_data.versions, "scc")
                 if "scc" in [ssrc0, ssrc1]:
                     node.state.registers["scc"].make_prev()
                 node.state.registers["scc"].type_of_data = suffix

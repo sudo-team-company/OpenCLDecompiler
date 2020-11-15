@@ -3,7 +3,8 @@ from src.decompiler_data import DecompilerData, make_op
 from src.integrity import Integrity
 from src.register import Register
 from src.operation_status import OperationStatus
-from src.state import find_first_last_num_to_from
+from src.upload import find_first_last_num_to_from
+from src.versions import make_version
 
 
 class VAshrrev(BaseInstruction):
@@ -18,7 +19,7 @@ class VAshrrev(BaseInstruction):
                 node.state.registers[vdst] = \
                     Register(node.state.registers[src1].val, node.state.registers[src1].type, Integrity.integer)
                 # node.state.registers[vdst].version = node.parent[0].state.registers[vdst].version
-                node.state.make_version(decompiler_data.versions, vdst)
+                make_version(node.state, decompiler_data.versions, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
                 node.state.registers[vdst].type_of_data = suffix
@@ -43,14 +44,14 @@ class VAshrrev(BaseInstruction):
                     Register(new_val, node.state.registers[from_registers].type, Integrity.low_part)
                 # node.state.registers[to_registers].version = \
                 #     node.parent[0].state.registers[to_registers].version
-                node.state.make_version(decompiler_data.versions, to_registers)
+                make_version(node.state, decompiler_data.versions, to_registers)
                 node.state.registers[to_registers].type_of_data = suffix
                 to_registers_1 = name_of_to + str(last_to)
                 node.state.registers[to_registers_1] = \
                     Register(new_val, node.state.registers[from_registers].type, Integrity.high_part)
                 # node.state.registers[to_registers_1].version = \
                 #     node.parent[0].state.registers[to_registers_1].version
-                node.state.make_version(decompiler_data.versions, to_registers_1)
+                make_version(node.state, decompiler_data.versions, to_registers_1)
                 node.state.registers[to_registers_1].type_of_data = suffix
                 return node
             return output_string

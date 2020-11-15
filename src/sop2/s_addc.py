@@ -4,6 +4,7 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
+from src.versions import make_version
 
 
 class SAddc(BaseInstruction):
@@ -27,7 +28,7 @@ class SAddc(BaseInstruction):
                         type_reg = node.state.registers[ssrc1].type
                     node.state.registers[sdst] = \
                         Register(new_val, type_reg, Integrity.integer)
-                node.state.make_version(decompiler_data.versions, sdst)
+                make_version(node.state, decompiler_data.versions, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()
                 node.state.registers[sdst].type_of_data = suffix

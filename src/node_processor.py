@@ -42,7 +42,7 @@ def decode_instruction(node, flag_of_status):
     if len(parts_of_operation) >= 3:
         for part in parts_of_operation[2:]:
             if part in ["b32", 'b64', "u32", "u64", "i32", "i64", "dwordx4", "dwordx2", "dword", "f32",
-                        "f64", "i32", "i24", "byte"]:
+                        "f64", "i32", "i24", "byte", "dwordx8"]:
                 # TODO: Дописать
                 if suffix != "":
                     suffix = suffix + "_" + part
@@ -52,9 +52,9 @@ def decode_instruction(node, flag_of_status):
                 root = root + "_" + part
     prefix_root = prefix + "_" + root
     return_value = None
-    if instruction_dict.get(prefix_root) is not None:
+    if instruction_dict.get(prefix_root):
         return_value = instruction_dict[prefix_root].execute(node, instruction, flag_of_status, suffix)
-    elif instruction_dict.get(node.instruction[0]) is not None:
+    elif instruction_dict.get(node.instruction[0]):
         return_value = instruction_dict[node.instruction[0]].execute(node, instruction, flag_of_status, suffix)
     return return_value
 
