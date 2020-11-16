@@ -6,6 +6,7 @@ name: Test
 # events but only for the master branch
 on: push
 
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -29,5 +30,6 @@ jobs:
         pip install pytest
     - name: Test with pytest
       run: |
+
         cd tests
         pytest tests.py
