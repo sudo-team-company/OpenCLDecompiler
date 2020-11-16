@@ -1,29 +1,33 @@
-from base_instruction import BaseInstruction
-from decompiler_data import DecompilerData
-from integrity import Integrity
-from register import Register
-from type_of_reg import Type
+from src.base_instruction import BaseInstruction
+from src.decompiler_data import DecompilerData
+from src.integrity import Integrity
+from src.register import Register
+from src.type_of_reg import Type
+from src.operation_status import OperationStatus
+from src.upload import find_first_last_num_to_from
+from src.versions import make_version
 
 
 class FlatLoad(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData.Instance()
+        decompiler_data = DecompilerData()
         if suffix == "dword":
             vdst = instruction[1]
             vaddr = instruction[2]
             inst_offset = instruction[3] if len(instruction) > 3 else ""
             variable = "var" + str(decompiler_data.num_of_var)
-            first_to, last_to, num_of_registers, from_registers, to_registers, name_of_register, name_of_from, first_from \
-                = node.state.find_first_last_num_to_from(vdst, vaddr)
-            if flag_of_status:
+            first_to, last_to, name_of_to, name_of_from, first_from, last_from \
+                = find_first_last_num_to_from(vdst, vaddr)
+            from_registers = name_of_from + str(first_from)
+            to_registers = name_of_to + str(first_to)
+            if flag_of_status == OperationStatus.to_fill_node:
                 if inst_offset == "":
                     if first_to == last_to:
                         data_type = node.state.registers[from_registers].type_of_data
                         node.state.registers[to_registers] = \
                             Register(variable, Type.program_param, Integrity.integer)
-                        node.state.make_version(decompiler_data.versions, to_registers)
+                        make_version(node.state, decompiler_data.versions, to_registers)
                         node.state.registers[to_registers].type_of_data = data_type
-                        #
                         node.state.registers[to_registers].val = variable
                         decompiler_data.num_of_var += 1
                         decompiler_data.variables[node.state.registers[to_registers].version] = variable

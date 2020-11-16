@@ -1,55 +1,53 @@
-from state import State
+from src.state import State
 
 
-class Singleton:
-    """
-    A non-thread-safe helper class to ease implementing singletons.
-    This should be used as a decorator -- not a metaclass -- to the
-    class that should be a singleton.
-
-    The decorated class can define one `__init__` function that
-    takes only the `self` argument. Other than that, there are
-    no restrictions that apply to the decorated class.
-
-    To get the singleton instance, use the `Instance` method. Trying
-    to use `__call__` will result in a `TypeError` being raised.
-
-    Limitations: The decorated class cannot be inherited from.
-
-    """
-
-    def __init__(self, decorated):
-        self._decorated = decorated
-
-    def Instance(self):
-        """
-        Returns the singleton instance. Upon its first call, it creates a
-        new instance of the decorated class and calls its `__init__` method.
-        On all subsequent calls, the already created instance is returned.
-
-        """
-        try:
-            return self._instance
-        except AttributeError:
-            self._instance = self._decorated()
-            return self._instance
-
-    def __call__(self):
-        raise TypeError('Singletons must be accessed through `Instance()`.')
-
-    def __instancecheck__(self, inst):
-        return isinstance(inst, self._decorated)
+def make_op(node, register0, register1, operation, type0, type1):
+    register0_flag = True
+    register1_flag = True
+    if "s" in register0 or "v" in register0:
+        new_val0 = node.state.registers[register0].val
+    else:
+        new_val0 = register0
+        register0_flag = False
+    if "s" in register1 or "v" in register1:
+        new_val1 = node.state.registers[register1].val
+    else:
+        new_val1 = register1
+        register1_flag = False
+    if "-" in new_val0 or "+" in new_val0 or "*" in new_val0 or "/" in new_val0:
+        new_val0 = "(" + new_val0 + ")"
+    if "-" in new_val1 or "+" in new_val1 or "*" in new_val1 or "/" in new_val1:
+        new_val1 = "(" + new_val1 + ")"
+    new_val0 = type0 + new_val0
+    new_val1 = type1 + new_val1
+    if len(type0) > 0 and ')' not in type0:
+        new_val0 += ')'
+    if len(type1) > 0 and ')' not in type1:
+        new_val1 += ')'
+    new_val = new_val0 + operation + new_val1
+    return new_val, register0_flag, register1_flag
 
 
-@Singleton
-class DecompilerData:
+class Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            instance = super().__call__(*args, **kwargs)
+            cls._instances[cls] = instance
+        return cls._instances[cls]
+
+
+class DecompilerData(metaclass=Singleton):
     def __init__(self):
         self.output_file = ""
         self.usesetup = False
         self.size_of_work_groups = []
         self.cfg = None
         self.improve_cfg = None
-        self.number_of_temp = 0  # versions for asm code if decompilation is not success (версии для ассемблерного кода в случае отсутствия перевода)
+        self.number_of_temp = 0
+        # versions for asm code if decompilation is not success
+        # (версии для ассемблерного кода в случае отсутствия перевода)
         self.number_of_shift = 0
         self.number_of_length = 0
         self.number_of_mask = 0
@@ -68,7 +66,8 @@ class DecompilerData:
         self.vgprsnum = 0  # number of v registers used by system (количество v регистров, используемых системой)
         self.params = {}
         self.to_node = {}  # the label at which the block starts -> node (метка, с которой начинается блок -> вершина)
-        self.from_node = {}  # the label the vertex is expecting -> node (метка, которую ожидает вершина -> вершина ("лист ожидания"))
+        self.from_node = {}
+        # the label the vertex is expecting -> node (метка, которую ожидает вершина -> вершина ("лист ожидания"))
         self.starts_regions = {}  # Node or Region -> Region
         self.ends_regions = {}  # Node or Region -> Region
         self.label = None
@@ -77,6 +76,8 @@ class DecompilerData:
         self.version_wait = None
         self.type_params = {}
         self.variables = {}
+        self.checked_variables = {}
+        self.kernel_params = {}
         self.versions = {
             "s0": 0,
             "s1": 0,
@@ -132,6 +133,8 @@ class DecompilerData:
         self.lds_vars = {}
         self.lds_var_number = 0
         self.num_of_var = 0
+        self.num_of_label = 0
+        self.wait_labels = []
 
     def reset(self, output_file):
         self.output_file = output_file
@@ -139,7 +142,9 @@ class DecompilerData:
         self.size_of_work_groups = []
         self.cfg = None
         self.improve_cfg = None
-        self.number_of_temp = 0  # versions for asm code if decompilation is not success (версии для ассемблерного кода в случае отсутствия перевода)
+        self.number_of_temp = 0
+        # versions for asm code if decompilation is not success
+        # (версии для ассемблерного кода в случае отсутствия перевода)
         self.number_of_shift = 0
         self.number_of_length = 0
         self.number_of_mask = 0
@@ -158,7 +163,8 @@ class DecompilerData:
         self.vgprsnum = 0  # number of v registers used by system (количество v регистров, используемых системой)
         self.params = {}
         self.to_node = {}  # the label at which the block starts -> node (метка, с которой начинается блок -> вершина)
-        self.from_node = {}  # the label the vertex is expecting -> node (метка, которую ожидает вершина -> вершина ("лист ожидания"))
+        self.from_node = {}
+        # the label the vertex is expecting -> node (метка, которую ожидает вершина -> вершина ("лист ожидания"))
         self.starts_regions = {}  # Node or Region -> Region
         self.ends_regions = {}  # Node or Region -> Region
         self.label = None
@@ -167,6 +173,8 @@ class DecompilerData:
         self.version_wait = None
         self.type_params = {}
         self.variables = {}
+        self.checked_variables = {}
+        self.kernel_params = {}
         self.versions = {
             "s0": 0,
             "s1": 0,
@@ -222,23 +230,5 @@ class DecompilerData:
         self.lds_vars = {}
         self.lds_var_number = 0
         self.num_of_var = 0
-
-    def make_op(self, node, register0, register1, operation):
-        register0_flag = True
-        register1_flag = True
-        if register0.find("s") != -1 or register0.find("v") != -1:
-            new_val0 = node.state.registers[register0].val
-        else:
-            new_val0 = register0
-            register0_flag = False
-        if register1.find("s") != -1 or register1.find("v") != -1:
-            new_val1 = node.state.registers[register1].val
-        else:
-            new_val1 = register1
-            register1_flag = False
-        if new_val0.find("-") != -1 or new_val0.find("+") != -1 or new_val0.find("*") != -1 or new_val0.find("/") != -1:
-            new_val0 = "(" + new_val0 + ")"
-        if new_val1.find("-") != -1 or new_val1.find("+") != -1 or new_val1.find("*") != -1 or new_val1.find("/") != -1:
-            new_val1 = "(" + new_val1 + ")"
-        new_val = new_val0 + operation + new_val1
-        return new_val, register0_flag, register1_flag
+        self.num_of_label = 0
+        self.wait_labels = []

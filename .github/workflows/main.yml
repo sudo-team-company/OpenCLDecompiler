@@ -1,14 +1,11 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Test
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
-on:
-  push:
-    branches: [ master, dev ]
-  pull_request:
-    branches: [ master ]
+on: push
+
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -33,4 +30,6 @@ jobs:
         pip install pytest
     - name: Test with pytest
       run: |
-        pytest test\tests.py
+
+        cd tests
+        pytest tests.py

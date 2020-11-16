@@ -1,10 +1,10 @@
-from base_instruction import BaseInstruction
-from decompiler_data import DecompilerData
+from src.base_instruction import BaseInstruction
+from src.decompiler_data import DecompilerData
 
 
 class VMulF64(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData.Instance()
+        decompiler_data = DecompilerData()
         vdst = instruction[1]
         src0 = instruction[2]
         src1 = instruction[3]

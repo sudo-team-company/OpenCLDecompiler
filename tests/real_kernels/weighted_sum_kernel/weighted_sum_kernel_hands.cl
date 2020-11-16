@@ -1,0 +1,19 @@
+__kernel void weighted_sum_kernel(int n, __global float *a, __global float *b, __global float *s, __global float *c)
+{
+    uint var0;
+    uint var3;
+    uint var4;
+    uint var5;
+    if (b == 0) {
+        var3 = 0;
+    }
+    else {
+        var0 = b[(((ulong)(((ulong)((ulong)get_global_offset(1) + (ulong)(get_global_size(1) * get_global_id(2))) + (ulong)(get_global_id(1) - get_global_offset(1))) * get_global_size(0)) + (ulong)get_global_id(0)) * 4) / 4];
+        var3 = var0;
+    }
+    if ((int)n > (int)((ulong)(((ulong)((ulong)get_global_offset(1) + (ulong)(get_global_size(1) * get_global_id(2))) + (ulong)(get_global_id(1) - get_global_offset(1))) * get_global_size(0)) + (ulong)get_global_id(0))) {
+        var4 = a[(((ulong)(((ulong)((ulong)get_global_offset(1) + (ulong)(get_global_size(1) * get_global_id(2))) + (ulong)(get_global_id(1) - get_global_offset(1))) * get_global_size(0)) + (ulong)get_global_id(0)) * 4) / 4];
+        var5 = s[(((ulong)(((ulong)((ulong)get_global_offset(1) + (ulong)(get_global_size(1) * get_global_id(2))) + (ulong)(get_global_id(1) - get_global_offset(1))) * get_global_size(0)) + (ulong)get_global_id(0)) * 4) / 4];
+        c[(((ulong)(((ulong)((ulong)get_global_offset(1) + (ulong)(get_global_size(1) * get_global_id(2))) + (ulong)(get_global_id(1) - get_global_offset(1))) * get_global_size(0)) + (ulong)get_global_id(0)) * 4) / 4] = as_float(var5) * as_float(var4) + as_float(as_float(var3) * as_float((as_float(1.0) - as_float(var5))));
+    }
+}

@@ -1,5 +1,5 @@
-from integrity import Integrity
-from type_of_reg import Type
+from src.integrity import Integrity
+from src.type_of_reg import Type
 
 
 class Register:
@@ -21,7 +21,3 @@ class Register:
 
     def add_prev(self, prev_version):
         self.prev_version.append(prev_version)
-
-    def update(self, key):
-        self.version = self.version[:self.version.find("_")] + "_" + str(
-            int(self.version[self.version.find("_") + 1:]) + 2)

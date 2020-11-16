@@ -1,10 +1,10 @@
-from base_instruction import BaseInstruction
-from decompiler_data import DecompilerData
+from src.base_instruction import BaseInstruction
+from src.decompiler_data import DecompilerData
 
 
 class DsRead2(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData.Instance()
+        decompiler_data = DecompilerData()
         if suffix == "b64":
             v0 = "v0" + str(decompiler_data.number_of_v0)
             v1 = "v1" + str(decompiler_data.number_of_v1)
