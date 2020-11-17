@@ -3,7 +3,6 @@ from src.decompiler_data import DecompilerData, make_op
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
-from src.versions import make_version
 
 
 class VSub(BaseInstruction):
@@ -23,7 +22,7 @@ class VSub(BaseInstruction):
                 elif src1_reg:
                     type_reg = node.state.registers[src1].integrity
                 node.state.registers[vdst] = Register(new_val, Type.unknown, type_reg)
-                make_version(node.state, decompiler_data.versions, vdst)
+                decompiler_data.make_version(node.state, decompiler_data.versions, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
                 node.state.registers[vdst].type_of_data = suffix
@@ -42,7 +41,7 @@ class VSub(BaseInstruction):
                 elif src1_reg:
                     type_reg = node.state.registers[src1].integrity
                 node.state.registers[vdst] = Register(new_val, Type.unknown, type_reg)
-                make_version(node.state, decompiler_data.versions, vdst)
+                decompiler_data.make_version(node.state, decompiler_data.versions, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
                 node.state.registers[vdst].type_of_data = suffix

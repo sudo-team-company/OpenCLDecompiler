@@ -10,11 +10,11 @@ class GlobalLoad(BaseInstruction):
             vaddr = instruction[2]
             saddr = "0" if instruction[3] == "off" else instruction[3]
             inst_offset = "0" if len(instruction) == 4 else instruction[4]
-            decompiler_data.output_file.write(vdst + " = *(uint*)(" + vaddr + " + " + saddr + " + " + inst_offset + ")\n")
+            decompiler_data.write(vdst + " = *(uint*)(" + vaddr + " + " + saddr + " + " + inst_offset + ")\n")
 
         elif suffix == "dwordx2":
             vdst = instruction[1]
             vaddr = instruction[2]
             saddr = "0" if instruction[3] == "off" else instruction[3]
             inst_offset = "0" if len(instruction) == 4 else instruction[4]
-            decompiler_data.output_file.write(vdst + " = *(ulong*)(" + vaddr + " + " + saddr + " + " + inst_offset + ")\n")
+            decompiler_data.write(vdst + " = *(ulong*)(" + vaddr + " + " + saddr + " + " + inst_offset + ")\n")

@@ -1,7 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData, make_op
 from src.operation_status import OperationStatus
-from src.versions import make_version
 
 
 class DsAdd(BaseInstruction):
@@ -16,7 +15,7 @@ class DsAdd(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[name].val = \
                     node.state.registers[name].val + " + " + node.state.registers[vdata0].val
-                make_version(node.state, decompiler_data.versions, name)
+                decompiler_data.make_version(node.state, decompiler_data.versions, name)
                 node.state.registers[name].type_of_data = suffix
                 return node
             output_string = name + " += " + node.state.registers[vdata0].val

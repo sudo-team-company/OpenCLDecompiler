@@ -7,6 +7,6 @@ class SSetGprIdxOn(BaseInstruction):
         decompiler_data = DecompilerData()
         ssrc0 = instruction[1]
         imm8 = instruction[2]
-        decompiler_data.output_file.write("mode = (mode & ~(1U << 27)) | (1U << 27)\n")
-        decompiler_data.output_file.write(
+        decompiler_data.write("mode = (mode & ~(1U << 27)) | (1U << 27)\n")
+        decompiler_data.write(
             "m0 = (m0 & 0xffff0f00) | ((" + imm8 + " & 15) << 12) | (" + ssrc0 + " & 0xff)\n")

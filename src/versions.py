@@ -3,14 +3,6 @@ from src.type_of_reg import Type
 from src.decompiler_data import DecompilerData
 
 
-def make_version(state, parent, reg):
-    decompiler_data = DecompilerData()
-    if reg not in decompiler_data.versions:
-        decompiler_data.versions[reg] = 0
-    state.registers[reg].add_version(reg, parent[reg])
-    parent[reg] += 1
-
-
 def find_max_and_prev_versions(curr_node):
     for reg in curr_node.parent[0].state.registers:
         version_of_reg = set()
@@ -45,11 +37,7 @@ def update_reg_version(reg, curr_node, max_version, version_of_reg):
         if curr_node.state.registers[reg].type == Type.param_global_id_x:
             variable = "*" + variable
         curr_node.state.registers[reg].val = variable
-        decompiler_data.num_of_var += 1
-        for ver in version_of_reg:
-            decompiler_data.variables[ver] = variable
-        decompiler_data.checked_variables[curr_node.state.registers[reg].version] = variable
-        decompiler_data.versions[reg] = max_version + 1
+        decompiler_data.update_reg_version(version_of_reg, variable, curr_node, reg, max_version)
     return curr_node
 
 
@@ -80,11 +68,10 @@ def check_for_use_new_version_in_one_instruction(curr_node, instruction):
                 if decompiler_data.names_of_vars.get(var_name) is None:
                     if decompiler_data.checked_variables.get(
                             curr_node.parent[0].state.registers[register].version) is not None:
-                        decompiler_data.names_of_vars[var_name] = \
-                            curr_node.parent[0].state.registers[register].type_of_data
+                        decompiler_data.set_name_of_vars(var_name,
+                                                         curr_node.parent[0].state.registers[register].type_of_data)
                     else:
-                        decompiler_data.names_of_vars[var_name] = \
-                            curr_node.state.registers[register].type_of_data
+                        decompiler_data.set_name_of_vars(var_name, curr_node.state.registers[register].type_of_data)
 
 
 def check_for_use_new_version():
@@ -118,12 +105,7 @@ def check_for_use_new_version():
 
 def remove_unusable_versions():
     decompiler_data = DecompilerData()
-    keys = []
-    for key in decompiler_data.variables.keys():
-        if decompiler_data.variables[key] not in decompiler_data.names_of_vars.keys():
-            keys.append(key)
-    for key in keys:
-        decompiler_data.variables.pop(key)
+    decompiler_data.remove_unusable_versions()
 
 
 def update_value_for_reg(first_reg, curr_node):

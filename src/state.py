@@ -1,3 +1,8 @@
+from src.integrity import Integrity
+from src.register import Register
+from src.type_of_reg import Type
+
+
 class State:
     def __init__(self):
         self.registers = \
@@ -51,3 +56,19 @@ class State:
                 "vcc": None,
                 "exec": None
             }
+
+    def init_work_group(self, dim, g_id_dim, version_g_id, version_v):
+        v_dim = "v" + str(dim)
+        if dim == 0:
+            type_g = Type.work_group_id_x
+            type_v = Type.work_item_id_x
+        elif dim == 1:
+            type_g = Type.work_group_id_y
+            type_v = Type.work_item_id_y
+        else:
+            type_g = Type.work_group_id_z
+            type_v = Type.work_item_id_z
+        self.registers[g_id_dim] = Register("get_group_id(" + str(dim) + ")", type_g, Integrity.integer)
+        self.registers[g_id_dim].add_version(g_id_dim, version_g_id)
+        self.registers[v_dim] = Register("get_local_id(" + str(dim) + ")", type_v, Integrity.integer)
+        self.registers[v_dim].add_version(v_dim, version_v)

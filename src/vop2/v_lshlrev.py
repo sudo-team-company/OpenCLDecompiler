@@ -5,7 +5,6 @@ from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
 from src.upload import find_first_last_num_to_from
-from src.versions import make_version
 
 
 class VLshlrev(BaseInstruction):
@@ -45,19 +44,19 @@ class VLshlrev(BaseInstruction):
                             and node.state.registers[name_of_to + str(first_from + 1)].val == "0":
                         node.state.registers[to_registers] = \
                             Register(new_val, node.state.registers[from_registers].type, Integrity.low_part)
-                        make_version(node.state, decompiler_data.versions, to_registers)
+                        decompiler_data.make_version(node.state, decompiler_data.versions, to_registers)
                         node.state.registers[to_registers].type_of_data = suffix
                         node.state.registers[to_registers_1] = \
                             Register(node.state.registers[from_registers_1].val,
                                      node.state.registers[from_registers].type,
                                      Integrity.high_part)
-                        make_version(node.state, decompiler_data.versions, to_registers_1)
+                        decompiler_data.make_version(node.state, decompiler_data.versions, to_registers_1)
                         node.state.registers[to_registers_1].type_of_data = suffix
                     else:
                         node.state.registers[to_registers] = node.state.registers[from_registers]
-                        make_version(node.state, decompiler_data.versions, to_registers)
+                        decompiler_data.make_version(node.state, decompiler_data.versions, to_registers)
                         node.state.registers[to_registers_1] = node.state.registers[from_registers_1]
-                        make_version(node.state, decompiler_data.versions, to_registers_1)
+                        decompiler_data.make_version(node.state, decompiler_data.versions, to_registers_1)
                 else:
                     type_reg = Type.int32
                     if src0_flag:
@@ -65,9 +64,9 @@ class VLshlrev(BaseInstruction):
                     if src1_flag:
                         type_reg = node.state.registers[from_registers].type
                     node.state.registers[to_registers] = Register(new_val, type_reg, Integrity.low_part)
-                    make_version(node.state, decompiler_data.versions, to_registers)
+                    decompiler_data.make_version(node.state, decompiler_data.versions, to_registers)
                     node.state.registers[to_registers_1] = Register(new_val, type_reg, Integrity.high_part)
-                    make_version(node.state, decompiler_data.versions, to_registers_1)
+                    decompiler_data.make_version(node.state, decompiler_data.versions, to_registers_1)
                 node.state.registers[to_registers].type_of_data = suffix
                 return node
             return output_string

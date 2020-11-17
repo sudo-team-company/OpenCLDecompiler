@@ -12,8 +12,8 @@ class SSetreg(BaseInstruction):
             bitsize = instruction[4]
             sdst = instruction[5]
             mask = "mask" + str(decompiler_data.number_of_mask)
-            decompiler_data.output_file.write("uint " + mask + " = (1U << " + bitsize + ") - 1U) << " + bitoffset + "\n")
-            decompiler_data.output_file.write(
+            decompiler_data.write("uint " + mask + " = (1U << " + bitsize + ") - 1U) << " + bitoffset + "\n")
+            decompiler_data.write(
                 hwreg + " = (" + hwreg + "& ~" + mask + ") | ((" + sdst + " << " + bitoffset + ") & " + mask
                 + ")\n")
             decompiler_data.number_of_mask += 1

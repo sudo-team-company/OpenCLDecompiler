@@ -4,7 +4,6 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
-from src.versions import make_version
 
 
 class SCmpEq(BaseInstruction):
@@ -14,7 +13,7 @@ class SCmpEq(BaseInstruction):
         if suffix == 'i32' or suffix == 'u32':
             ssrc0 = instruction[1]
             ssrc1 = instruction[2]
-            decompiler_data.output_file.write("scc = " + ssrc0 + " == " + ssrc1 + "\n")
+            decompiler_data.write("scc = " + ssrc0 + " == " + ssrc1 + "\n")
 
         if suffix == 'u64':
             ssrc0 = instruction[1]
@@ -28,7 +27,7 @@ class SCmpEq(BaseInstruction):
                 node.state.registers["scc"] = \
                     Register(node.state.registers[ssrc0].val + " == " + cmpr_val, Type.unknown,
                              Integrity.integer)
-                make_version(node.state, decompiler_data.versions, "scc")
+                decompiler_data.make_version(node.state, decompiler_data.versions, "scc")
                 if "scc" in [ssrc0, ssrc1]:
                     node.state.registers["scc"].make_prev()
                 node.state.registers["scc"].type_of_data = suffix

@@ -9,5 +9,5 @@ class VCmpxEq(BaseInstruction):
             sdst = instruction[1]
             src0 = instruction[2]
             src1 = instruction[3]
-            decompiler_data.output_file.write(sdst + " = as_double(" + src0 + ") == as_double(" + src1 + ")\n")
-            decompiler_data.output_file.write("exec = " + sdst + "\n")
+            decompiler_data.write(sdst + " = as_double(" + src0 + ") == as_double(" + src1 + ")\n")
+            decompiler_data.write("exec = " + sdst + "\n")

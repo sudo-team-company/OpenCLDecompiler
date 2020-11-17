@@ -4,7 +4,6 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
-from src.versions import make_version
 
 
 class SBfe(BaseInstruction):
@@ -22,7 +21,7 @@ class SBfe(BaseInstruction):
                     node.state.registers[sdst] = Register("get_local_size(1)", Type.local_size_y, Integrity.integer)
                 else:
                     print("Unknown pattern in s_bfe")
-                make_version(node.state, decompiler_data.versions, sdst)
+                decompiler_data.make_version(node.state, decompiler_data.versions, sdst)
                 return node
             return output_string
 
