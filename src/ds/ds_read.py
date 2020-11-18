@@ -17,7 +17,7 @@ class DsRead(BaseInstruction):
             name = decompiler_data.lds_vars[offset][0] + "[" + new_value + "]"
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[vdst] = Register(name, node.state.registers[name].type, Integrity.integer)
-                decompiler_data.make_version(node.state, decompiler_data.versions, vdst)
+                decompiler_data.make_version(node.state, vdst)
                 node.state.registers[vdst].type_of_data = "u" + suffix[1:]
                 return node
             return output_string
@@ -29,7 +29,7 @@ class DsRead(BaseInstruction):
             name = decompiler_data.lds_vars[offset][0] + "[" + node.state.registers[addr].var + "]"
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[vdst] = Register(name, node.state.registers[name].type, Integrity.integer)
-                decompiler_data.make_version(node.state, decompiler_data.versions, vdst)
+                decompiler_data.make_version(node.state, vdst)
                 node.state.registers[vdst].type_of_data = "u" + suffix[1:]
                 return node
             return output_string

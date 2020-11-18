@@ -15,7 +15,7 @@ class DsAdd(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[name].val = \
                     node.state.registers[name].val + " + " + node.state.registers[vdata0].val
-                decompiler_data.make_version(node.state, decompiler_data.versions, name)
+                decompiler_data.make_version(node.state, name)
                 node.state.registers[name].type_of_data = suffix
                 return node
             output_string = name + " += " + node.state.registers[vdata0].val

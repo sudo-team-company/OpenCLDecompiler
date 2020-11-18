@@ -20,7 +20,7 @@ class VMov(BaseInstruction):
                                  Integrity.integer)
                 else:
                     node.state.registers[vdst] = Register(src0, Type.int32, Integrity.integer)
-                decompiler_data.make_version(node.state, decompiler_data.versions, vdst)
+                decompiler_data.make_version(node.state, vdst)
                 if vdst in [src0]:
                     node.state.registers[vdst].make_prev()
                 node.state.registers[vdst].type_of_data = suffix

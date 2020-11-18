@@ -21,7 +21,7 @@ class SBfe(BaseInstruction):
                     node.state.registers[sdst] = Register("get_local_size(1)", Type.local_size_y, Integrity.integer)
                 else:
                     print("Unknown pattern in s_bfe")
-                decompiler_data.make_version(node.state, decompiler_data.versions, sdst)
+                decompiler_data.make_version(node.state, sdst)
                 return node
             return output_string
 

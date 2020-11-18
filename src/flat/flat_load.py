@@ -25,14 +25,14 @@ class FlatLoad(BaseInstruction):
                         data_type = node.state.registers[from_registers].type_of_data
                         node.state.registers[to_registers] = \
                             Register(variable, Type.program_param, Integrity.integer)
-                        decompiler_data.make_version(node.state, decompiler_data.versions, to_registers)
+                        decompiler_data.make_version(node.state, to_registers)
                         node.state.registers[to_registers].type_of_data = data_type
                         node.state.registers[to_registers].val = variable
                         decompiler_data.make_var(node.state.registers[to_registers].version, variable,
                                                  node.state.registers[from_registers].type_of_data)
                 return node
-            output_string = node.state.registers[to_registers].val + " = " \
-                            + node.parent[0].state.registers[from_registers].val
+            output_string = node.state.registers[to_registers].val + " = " + \
+                node.parent[0].state.registers[from_registers].val
             return output_string
 
         elif suffix == "dwordx4":

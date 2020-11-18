@@ -33,7 +33,7 @@ class SMul(BaseInstruction):
                         node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
                 else:
                     node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
-                decompiler_data.make_version(node.state, decompiler_data.versions, sdst)
+                decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()
                 node.state.registers[sdst].type_of_data = suffix

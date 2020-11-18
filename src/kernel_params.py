@@ -61,6 +61,8 @@ def get_offsets_to_regs():
             offset_num['0x30'] = name_of_param
             visited = True
         else:
+            # according to the algorithm first call to get_current_offset_for_not_first_param does not use last_name
+            # noinspection PyUnboundLocalVariable
             curr_offset = get_current_offset_for_not_first_param(offset_num, last_name, name_of_param, num_of_param)
             offset_num[curr_offset] = name_of_param
         last_name = name_of_param

@@ -18,7 +18,7 @@ class SMin(BaseInstruction):
                 new_val = "min((int)" + node.state.registers[ssrc0].val + ", (int)" \
                           + node.state.registers[ssrc1].val + ")"
                 node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
-                decompiler_data.make_version(node.state, decompiler_data.versions, sdst)
+                decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()
                 node.state.registers[sdst].type_of_data = suffix

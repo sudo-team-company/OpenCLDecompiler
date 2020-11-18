@@ -30,6 +30,6 @@ class SLshr(BaseInstruction):
                 else:
                     new_val, ssrc0_flag, ssrc1_flag = make_op(node, ssrc0, str(pow(2, int(ssrc1))), " / ", '', '')
                     node.state.registers[sdst] = Register(new_val, node.state.registers[ssrc0].type, Integrity.integer)
-                decompiler_data.make_version(node.state, decompiler_data.versions, sdst)
+                decompiler_data.make_version(node.state, sdst)
                 return node
             return output_string

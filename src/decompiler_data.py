@@ -236,14 +236,15 @@ class DecompilerData(metaclass=Singleton):
         self.num_of_label = 0
         self.wait_labels = []
 
-    def write(self, output): # посмотреть
+    def write(self, output):
+        # noinspection PyUnresolvedReferences
         self.output_file.write(output)
 
-    def make_version(self, state, parent, reg):
+    def make_version(self, state, reg):
         if reg not in self.versions:
             self.versions[reg] = 0
-        state.registers[reg].add_version(reg, parent[reg])
-        parent[reg] += 1
+        state.registers[reg].add_version(reg, self.versions[reg])
+        self.versions[reg] += 1
 
     def init_work_group(self, dimensions, usesetup):
         self.usesetup = usesetup

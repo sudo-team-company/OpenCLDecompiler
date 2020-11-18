@@ -27,7 +27,7 @@ class SCmpEq(BaseInstruction):
                 node.state.registers["scc"] = \
                     Register(node.state.registers[ssrc0].val + " == " + cmpr_val, Type.unknown,
                              Integrity.integer)
-                decompiler_data.make_version(node.state, decompiler_data.versions, "scc")
+                decompiler_data.make_version(node.state, "scc")
                 if "scc" in [ssrc0, ssrc1]:
                     node.state.registers["scc"].make_prev()
                 node.state.registers["scc"].type_of_data = suffix

@@ -17,7 +17,7 @@ class VCndmask(BaseInstruction):
             variable = "var" + str(decompiler_data.num_of_var)
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[vdst] = Register(variable, Type.program_param, Integrity.integer)
-                decompiler_data.make_version(node.state, decompiler_data.versions, vdst)
+                decompiler_data.make_version(node.state, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
                 node.state.registers[vdst].type_of_data = suffix

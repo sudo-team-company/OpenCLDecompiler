@@ -16,7 +16,7 @@ class SMulk(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val, sdst_flag, simm16_flag = make_op(node, sdst, simm16, " * ", '', '')
                 node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
-                decompiler_data.make_version(node.state, decompiler_data.versions, sdst)
+                decompiler_data.make_version(node.state, sdst)
                 node.state.registers[sdst].make_prev()
                 node.state.registers[sdst].type_of_data = suffix
                 return node

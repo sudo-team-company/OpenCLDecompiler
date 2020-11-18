@@ -22,7 +22,7 @@ class VCmpEq(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val, src0_flag, src1_flag = make_op(node, src0, src1, " == ", new_as_type, new_as_type)
                 node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
-                decompiler_data.make_version(node.state, decompiler_data.versions, sdst)
+                decompiler_data.make_version(node.state, sdst)
                 if sdst in [src0, src1]:
                     node.state.registers[sdst].make_prev()
                 node.state.registers[sdst].type_of_data = suffix

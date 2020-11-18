@@ -28,7 +28,7 @@ class SSub(BaseInstruction):
                 new_val, src0_reg, src1_reg = make_op(node, ssrc0, ssrc1, " - ", '(ulong)', '(ulong)')
                 new_integrity = node.state.registers[ssrc1].integrity
                 node.state.registers[sdst] = Register(new_val, Type.unknown, new_integrity)
-                decompiler_data.make_version(node.state, decompiler_data.versions, sdst)
+                decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()
                 node.state.registers[sdst].type_of_data = suffix

@@ -4,8 +4,8 @@ from src.decompiler_data import DecompilerData
 def process_dimensions(set_of_config):
     decompiler_data = DecompilerData()
     dimensions = set_of_config[0][6:]
-    usesetup = ".usesetup" in set_of_config
-    decompiler_data.init_work_group(dimensions, usesetup)
+    use_setup = ".usesetup" in set_of_config
+    decompiler_data.init_work_group(dimensions, use_setup)
 
 
 def process_params(set_of_config, name_of_program):
@@ -46,16 +46,14 @@ def process_size_of_work_groups(set_of_config):
 
 def process_local_size(set_of_config):
     decompiler_data = DecompilerData()
-    localsize = "localsize" in set_of_config[4]
-    decompiler_data.process_local_size(localsize, set_of_config[4])
+    local_size = "localsize" in set_of_config[4]
+    decompiler_data.process_local_size(local_size, set_of_config[4])
 
 
 def process_config(set_of_config, name_of_program):
     decompiler_data = DecompilerData()
     process_dimensions(set_of_config)
     process_size_of_work_groups(set_of_config)
-    # decompiler_data.sgprsnum = int(set_of_config[2][10:])
-    # decompiler_data.vgprsnum = int(set_of_config[3][10:])
     process_local_size(set_of_config)
     decompiler_data.process_initial_state()
     process_params(set_of_config, name_of_program)

@@ -70,7 +70,7 @@ def make_output_from_if_statement_region(region, indent):
                 and decompiler_data.variables[key] in decompiler_data.names_of_vars.keys() \
                 and decompiler_data.variables[key] != r_node.parent[0].state.registers[reg].val:
             decompiler_data.write(indent + "    " + decompiler_data.variables[key] + " = "
-                                              + r_node.parent[0].state.registers[reg].val + ";\n")
+                                  + r_node.parent[0].state.registers[reg].val + ";\n")
     make_output_from_region(region.start.children[1], indent + '    ')
     decompiler_data.write(indent + "}\n")
 
@@ -105,7 +105,7 @@ def make_output_from_if_else_statement_region(region, indent):
                          reg].version):
             if '*' not in decompiler_data.variables[key]:
                 decompiler_data.write(indent + "    " + decompiler_data.variables[key] +
-                                                  " = " + r_node_parent.state.registers[reg].val + ";\n")
+                                      " = " + r_node_parent.state.registers[reg].val + ";\n")
             else:
                 decompiler_data.write(
                     indent + "    " + decompiler_data.variables[key][1:] + " = &" +
@@ -132,7 +132,7 @@ def make_output_from_if_else_statement_region(region, indent):
                     + r_node_parent.state.registers[reg].val + ";\n")
             else:
                 decompiler_data.write(indent + "    " + decompiler_data.variables[key][1:]
-                                                  + " = &" + r_node_parent.state.registers[reg].val + ";\n")
+                                      + " = &" + r_node_parent.state.registers[reg].val + ";\n")
     decompiler_data.write(indent + "}\n")
 
 

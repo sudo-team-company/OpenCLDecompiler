@@ -27,7 +27,7 @@ class SAddc(BaseInstruction):
                         type_reg = node.state.registers[ssrc1].type
                     node.state.registers[sdst] = \
                         Register(new_val, type_reg, Integrity.integer)
-                decompiler_data.make_version(node.state, decompiler_data.versions, sdst)
+                decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()
                 node.state.registers[sdst].type_of_data = suffix

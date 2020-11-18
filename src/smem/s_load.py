@@ -23,9 +23,9 @@ class SLoad(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 if decompiler_data.usesetup is False and sbase == "s[4:5]" \
                         or decompiler_data.usesetup is True and sbase == "s[6:7]":
-                    upload(node.state, sdata, sbase, offset, decompiler_data.kernel_params, decompiler_data.versions)
+                    upload(node.state, sdata, sbase, offset, decompiler_data.kernel_params)
                 else:
-                    upload_usesetup(node.state, sdata, offset, decompiler_data.versions)
+                    upload_usesetup(node.state, sdata, offset)
                 node.state.registers[to_registers].type_of_data = suffix
                 return node
             return output_string
@@ -34,9 +34,9 @@ class SLoad(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 if decompiler_data.usesetup is False and sbase == "s[4:5]" \
                         or decompiler_data.usesetup is True and sbase == "s[6:7]":
-                    upload(node.state, sdata, sbase, offset, decompiler_data.kernel_params, decompiler_data.versions)
+                    upload(node.state, sdata, sbase, offset, decompiler_data.kernel_params)
                 else:
-                    upload_usesetup(node.state, sdata, offset, decompiler_data.versions)
+                    upload_usesetup(node.state, sdata, offset)
                 node.state.registers[to_registers].type_of_data = suffix
                 return node
             return output_string
@@ -45,9 +45,9 @@ class SLoad(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 if decompiler_data.usesetup is False and sbase == "s[4:5]" \
                         or decompiler_data.usesetup is True and sbase == "s[6:7]":
-                    upload(node.state, sdata, sbase, offset, decompiler_data.kernel_params, decompiler_data.versions)
+                    upload(node.state, sdata, sbase, offset, decompiler_data.kernel_params)
                 else:
-                    upload_usesetup(node.state, sdata, offset, decompiler_data.versions)
+                    upload_usesetup(node.state, sdata, offset)
                 node.state.registers[to_registers].type_of_data = suffix
                 return node
             return output_string

@@ -18,7 +18,7 @@ class VAshrrev(BaseInstruction):
                 node.state.registers[vdst] = \
                     Register(node.state.registers[src1].val, node.state.registers[src1].type, Integrity.integer)
                 # node.state.registers[vdst].version = node.parent[0].state.registers[vdst].version
-                decompiler_data.make_version(node.state, decompiler_data.versions, vdst)
+                decompiler_data.make_version(node.state, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
                 node.state.registers[vdst].type_of_data = suffix
@@ -43,14 +43,14 @@ class VAshrrev(BaseInstruction):
                     Register(new_val, node.state.registers[from_registers].type, Integrity.low_part)
                 # node.state.registers[to_registers].version = \
                 #     node.parent[0].state.registers[to_registers].version
-                decompiler_data.make_version(node.state, decompiler_data.versions, to_registers)
+                decompiler_data.make_version(node.state, to_registers)
                 node.state.registers[to_registers].type_of_data = suffix
                 to_registers_1 = name_of_to + str(last_to)
                 node.state.registers[to_registers_1] = \
                     Register(new_val, node.state.registers[from_registers].type, Integrity.high_part)
                 # node.state.registers[to_registers_1].version = \
                 #     node.parent[0].state.registers[to_registers_1].version
-                decompiler_data.make_version(node.state, decompiler_data.versions, to_registers_1)
+                decompiler_data.make_version(node.state, to_registers_1)
                 node.state.registers[to_registers_1].type_of_data = suffix
                 return node
             return output_string
