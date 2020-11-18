@@ -5,7 +5,6 @@ from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
 from src.upload import find_first_last_num_to_from
-from src.versions import make_version
 
 
 class SLshl(BaseInstruction):
@@ -29,9 +28,9 @@ class SLshl(BaseInstruction):
                     node.state.registers["scc"] = Register(sdst + "!= 0", Type.int32, Integrity.integer)
                 else:
                     node.state.registers[sdst] = Register(new_val, node.state.registers[ssrc0].type, Integrity.integer)
-                make_version(node.state, decompiler_data.versions, sdst)
+                decompiler_data.make_version(node.state, sdst)
                 node.state.registers[sdst].type_of_data = suffix
-                make_version(node.state, decompiler_data.versions, "scc")
+                decompiler_data.make_version(node.state, "scc")
                 node.state.registers["scc"].type_of_data = suffix
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()
@@ -56,11 +55,11 @@ class SLshl(BaseInstruction):
                     Register(new_val0, node.state.registers[from_registers].type, Integrity.low_part)
                 node.state.registers[to_registers1] = \
                     Register(new_val1, node.state.registers[from_registers1].type, Integrity.high_part)
-                make_version(node.state, decompiler_data.versions, to_registers)
+                decompiler_data.make_version(node.state, to_registers)
                 node.state.registers[to_registers].type_of_data = suffix
                 if to_registers in [from_registers, ssrc1]:
                     node.state.registers[to_registers].make_prev()
-                make_version(node.state, decompiler_data.versions, to_registers1)
+                decompiler_data.make_version(node.state, to_registers1)
                 node.state.registers[to_registers1].type_of_data = suffix
                 if to_registers1 in [from_registers1, ssrc1]:
                     node.state.registers[to_registers1].make_prev()

@@ -61,6 +61,8 @@ def get_offsets_to_regs():
             offset_num['0x30'] = name_of_param
             visited = True
         else:
+            # according to the algorithm first call to get_current_offset_for_not_first_param does not use last_name
+            # noinspection PyUnboundLocalVariable
             curr_offset = get_current_offset_for_not_first_param(offset_num, last_name, name_of_param, num_of_param)
             offset_num[curr_offset] = name_of_param
         last_name = name_of_param
@@ -82,16 +84,15 @@ def get_kernel_params(offsets_of_kernel_params, offset_num):
         name_of_reg = registers[0]
         offset_num_keys = sorted(offset_num.keys())
         curr_num_offset = offset_num_keys.index(key)
-        decompiler_data.kernel_params[key] = []
         while curr_reg < num_output_regs:
             curr_offset = offset_num_keys[curr_num_offset]
             name_of_param = offset_num[curr_offset]
-            decompiler_data.kernel_params[key].append((name_of_reg + str(first_num_of_reg + curr_reg), name_of_param))
+            decompiler_data.add_to_kernel_params(key, (name_of_reg + str(first_num_of_reg + curr_reg), name_of_param))
             curr_reg += 1
             if name_of_param[0] == "*" or (decompiler_data.type_params.get(name_of_param)
                                            and 'long' in decompiler_data.type_params.get(name_of_param)):
-                decompiler_data.kernel_params[key].append(
-                    (name_of_reg + str(first_num_of_reg + curr_reg), name_of_param))
+                decompiler_data.add_to_kernel_params(key,
+                                                     (name_of_reg + str(first_num_of_reg + curr_reg), name_of_param))
                 curr_reg += 1
             curr_num_offset += 1
 

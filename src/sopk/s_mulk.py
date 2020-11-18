@@ -4,7 +4,6 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
-from src.versions import make_version
 
 
 class SMulk(BaseInstruction):
@@ -17,7 +16,7 @@ class SMulk(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val, sdst_flag, simm16_flag = make_op(node, sdst, simm16, " * ", '', '')
                 node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
-                make_version(node.state, decompiler_data.versions, sdst)
+                decompiler_data.make_version(node.state, sdst)
                 node.state.registers[sdst].make_prev()
                 node.state.registers[sdst].type_of_data = suffix
                 return node

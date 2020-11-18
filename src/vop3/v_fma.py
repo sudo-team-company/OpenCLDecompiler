@@ -10,5 +10,5 @@ class VFma(BaseInstruction):
             src0 = instruction[2]
             src1 = instruction[3]
             src2 = instruction[4]
-            decompiler_data.output_file.write(
+            decompiler_data.write(
                 vdst + " = " + "as_double(" + src0 + ") * as_double(" + src1 + ") + as_double(" + src2 + ")\n")

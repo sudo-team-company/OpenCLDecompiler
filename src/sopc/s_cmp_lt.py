@@ -4,7 +4,6 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
-from src.versions import make_version
 
 
 class SCmpLt(BaseInstruction):
@@ -18,7 +17,7 @@ class SCmpLt(BaseInstruction):
                 node.state.registers["scc"] = \
                     Register('(int)' + node.state.registers[ssrc0].val + " < (int)" + node.state.registers[ssrc1].val,
                              Type.unknown, Integrity.integer)
-                make_version(node.state, decompiler_data.versions, "scc")
+                decompiler_data.make_version(node.state, "scc")
                 if "scc" in [ssrc0, ssrc1]:
                     node.state.registers["scc"].make_prev()
                 node.state.registers["scc"].type_of_data = suffix

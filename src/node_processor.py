@@ -7,9 +7,9 @@ from src.instruction_dict import instruction_dict
 def check_realisation_for_node(curr_node, row, set_of_instructions):
     decompiler_data = DecompilerData()
     if curr_node is None:  # check of node
-        decompiler_data.output_file.write("Not resolved yet. " + row + "\n")
+        decompiler_data.write("Not resolved yet. " + row + "\n")
         for instr in set_of_instructions:
-            decompiler_data.output_file.write(instr + "\n")
+            decompiler_data.write(instr + "\n")
         return False
     return True
 
@@ -17,7 +17,7 @@ def check_realisation_for_node(curr_node, row, set_of_instructions):
 def process_label_node(node, flag_of_status):
     decompiler_data = DecompilerData()
     if flag_of_status == OperationStatus.to_fill_node:
-        decompiler_data.to_node[node.instruction[0][:-1]] = node
+        decompiler_data.set_to_node(node.instruction[0][:-1], node)
         if decompiler_data.from_node.get(node.instruction[0][:-1]) is not None:
             for wait_node in decompiler_data.from_node[node.instruction[0][:-1]]:
                 if node not in wait_node.children:

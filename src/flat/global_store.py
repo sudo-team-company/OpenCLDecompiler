@@ -10,7 +10,7 @@ class GlobalStore(BaseInstruction):
             vdata = instruction[2]
             saddr = 0 if instruction[3] == "off" else instruction[3]
             inst_offset = 0 if len(instruction) == 4 else instruction[4]
-            decompiler_data.output_file.write(
+            decompiler_data.write(
                 "*(uint*)(" + vaddr + " + " + saddr + " + " + inst_offset + ") = " + vdata + "\n")
 
         elif suffix == "dwordx2":
@@ -18,5 +18,5 @@ class GlobalStore(BaseInstruction):
             vdata = instruction[2]
             saddr = 0 if instruction[3] == "off" else instruction[3]
             inst_offset = 0 if len(instruction) == 4 else instruction[4]
-            decompiler_data.output_file.write(
+            decompiler_data.write(
                 "*(ulong*)(" + vaddr + " + " + saddr + " + " + inst_offset + ") = " + vdata + "\n")

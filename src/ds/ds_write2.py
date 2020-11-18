@@ -13,11 +13,11 @@ class DsWrite2(BaseInstruction):
             vdata1 = instruction[3]
             offset0 = instruction[4][8:]
             offset1 = instruction[5][8:]
-            decompiler_data.output_file.write(
+            decompiler_data.write(
                 "ulong* " + v0 + " = (ulong*)(ds + (" + addr + " + " + offset0 + " * 8) & ~7)\n")
-            decompiler_data.output_file.write(
+            decompiler_data.write(
                 "ulong* " + v1 + " = (ulong*)(ds + (" + addr + " + " + offset1 + " * 8) & ~7)\n")
-            decompiler_data.output_file.write("*" + v0 + " = " + vdata0 + "\n")
-            decompiler_data.output_file.write("*" + v1 + " = " + vdata1 + "\n")
+            decompiler_data.write("*" + v0 + " = " + vdata0 + "\n")
+            decompiler_data.write("*" + v1 + " = " + vdata1 + "\n")
             decompiler_data.number_of_v0 += 1
             decompiler_data.number_of_v1 += 1

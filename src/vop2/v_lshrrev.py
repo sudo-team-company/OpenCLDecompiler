@@ -9,4 +9,4 @@ class VLshrrev(BaseInstruction):
             vdst = instruction[1]
             src0 = instruction[2]
             src1 = instruction[3]
-            decompiler_data.output_file.write(vdst + " = " + src1 + " >> (" + src0 + " & 63)\n")
+            decompiler_data.write(vdst + " = " + src1 + " >> (" + src0 + " & 63)\n")

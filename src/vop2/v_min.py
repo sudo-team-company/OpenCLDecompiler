@@ -9,4 +9,4 @@ class VMin(BaseInstruction):
             vdst = instruction[1]
             src0 = instruction[2]
             src1 = instruction[3]
-            decompiler_data.output_file.write(vdst + " = min(" + src0 + ", " + src1 + ")\n")
+            decompiler_data.write(vdst + " = min(" + src0 + ", " + src1 + ")\n")

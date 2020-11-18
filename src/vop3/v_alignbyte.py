@@ -10,5 +10,5 @@ class VAlignbyte(BaseInstruction):
             src0 = instruction[2]
             src1 = instruction[3]
             src2 = instruction[4]
-            decompiler_data.output_file.write(
+            decompiler_data.write(
                 vdst + " = (((ulong)" + src0 + ") << 32) | " + src1 + ") >> ((" + src2 + " & 3) * 8)\n")

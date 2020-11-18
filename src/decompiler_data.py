@@ -1,4 +1,7 @@
 from src.state import State
+from src.integrity import Integrity
+from src.register import Register
+from src.type_of_reg import Type
 
 
 def make_op(node, register0, register1, operation, type0, type1):
@@ -232,3 +235,146 @@ class DecompilerData(metaclass=Singleton):
         self.num_of_var = 0
         self.num_of_label = 0
         self.wait_labels = []
+
+    def write(self, output):
+        # noinspection PyUnresolvedReferences
+        self.output_file.write(output)
+
+    def make_version(self, state, reg):
+        if reg not in self.versions:
+            self.versions[reg] = 0
+        state.registers[reg].add_version(reg, self.versions[reg])
+        self.versions[reg] += 1
+
+    def init_work_group(self, dimensions, usesetup):
+        self.usesetup = usesetup
+        if usesetup:
+            g_id = ["s8", "s9", "s10"]
+        else:
+            g_id = ["s6", "s7", "s8"]
+        if ',' in dimensions:
+            dimensions = dimensions.split(',')
+            max_dim = dimensions[0]
+            for dim in dimensions:
+                if len(dim) > len(max_dim):
+                    max_dim = dim
+            dimensions = max_dim
+        for dim in range(len(dimensions)):
+            g_id_dim = g_id[dim]
+            v_dim = "v" + str(dim)
+            self.initial_state.init_work_group(dim, g_id_dim, self.versions[g_id_dim], self.versions[v_dim])
+            self.versions[g_id_dim] += 1
+            self.versions[v_dim] += 1
+
+    def process_initial_state(self):
+        if self.usesetup:
+            self.initial_state.registers["s6"] = Register("s6", Type.arguments_pointer, Integrity.low_part)
+            self.initial_state.registers["s6"].add_version("s6", self.versions["s6"])
+            self.versions["s6"] += 1
+            self.initial_state.registers["s7"] = Register("s7", Type.arguments_pointer, Integrity.high_part)
+            self.initial_state.registers["s7"].add_version("s7", self.versions["s7"])
+            self.versions["s7"] += 1
+        else:
+            self.initial_state.registers["s4"] = Register("s4", Type.arguments_pointer, Integrity.low_part)
+            self.initial_state.registers["s4"].add_version("s4", self.versions["s4"])
+            self.versions["s4"] += 1
+            self.initial_state.registers["s5"] = Register("s5", Type.arguments_pointer, Integrity.high_part)
+            self.initial_state.registers["s5"].add_version("s5", self.versions["s5"])
+            self.versions["s5"] += 1
+
+    def make_params(self, num_of_param, name_param, type_param):
+        self.params["param" + str(num_of_param)] = name_param
+        self.type_params[name_param] = type_param
+
+    def process_size_of_work_groups(self, cws, set_of_config_1):
+        if cws:
+            self.size_of_work_groups = set_of_config_1.replace(',', ' ').split()[1:]
+            self.write(
+                "__kernel __attribute__((reqd_work_group_size(" + self.size_of_work_groups[0] + ", "
+                + self.size_of_work_groups[1] + ", " + self.size_of_work_groups[2] + ")))\n")
+        else:
+            self.write("__kernel ")
+
+    def process_local_size(self, localsize, set_of_config_4):
+        if localsize:
+            self.localsize = int(set_of_config_4[11:])
+
+    def remove_unusable_versions(self):
+        keys = []
+        for key in self.variables:
+            if self.variables[key] not in self.names_of_vars:
+                keys.append(key)
+        for key in keys:
+            self.variables.pop(key)
+
+    def update_reg_version(self, version_of_reg, variable, curr_node, reg, max_version):
+        self.num_of_var += 1
+        for ver in version_of_reg:
+            self.variables[ver] = variable
+        self.checked_variables[curr_node.state.registers[reg].version] = variable
+        self.versions[reg] = max_version + 1
+
+    def set_name_of_vars(self, var_name, val):
+        self.names_of_vars[var_name] = val
+
+    def check_lds_vars(self, offset, suffix):
+        if self.lds_vars.get(offset) is None:
+            self.lds_vars[offset] = ["lds" + str(self.lds_var_number), "u" + suffix[1:]]
+            self.lds_var_number += 1
+
+    def make_var(self, register_version, variable, type_of_data):
+        self.num_of_var += 1
+        self.variables[register_version] = variable
+        self.names_of_vars[variable] = type_of_data
+
+    def set_starts_regions(self, node, region):
+        self.starts_regions[node] = region
+
+    def set_ends_regions(self, node, region):
+        self.ends_regions[node] = region
+
+    def set_parent_for_starts_regions(self, child, region):
+        self.starts_regions[child].add_parent(region)
+
+    def set_flag_of_else(self, flag):
+        self.flag_of_else = flag
+
+    def set_cfg(self, node):
+        self.cfg = node
+
+    def set_to_node(self, label, node):
+        self.to_node[label] = node
+
+    def add_to_kernel_params(self, key, val):
+        if self.kernel_params.get(key) is None:
+            self.kernel_params[key] = []
+        self.kernel_params[key].append(val)
+
+    def increase_num_of_label(self):
+        self.num_of_label += 1
+
+    def make_label(self, node):
+        self.label = node
+        self.parents_of_label = node.parent
+        self.flag_of_else = True
+
+    def change_cfg_for_else_structure(self, instruction, curr_node, from_node):
+        self.from_node[instruction[1]].remove(curr_node)
+        if self.from_node.get(from_node) is None:
+            self.from_node[from_node] = []
+        for parents_of_label in self.parents_of_label:
+            if parents_of_label != self.parents_of_label[1]:
+                self.from_node[from_node].append(parents_of_label)
+        self.flag_of_else = False
+
+    def to_fill_node(self, node, instruction):
+        reladdr = instruction[1]
+        if self.to_node.get(reladdr) is not None:
+            node.add_child(self.to_node[reladdr])
+            self.to_node[reladdr].add_parent(node)
+        else:
+            if self.from_node.get(reladdr) is None:
+                self.from_node[reladdr] = [node]
+            else:
+                self.from_node[reladdr].append(node)
+        return node

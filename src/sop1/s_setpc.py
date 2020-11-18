@@ -7,4 +7,4 @@ class SSetpc(BaseInstruction):
         decompiler_data = DecompilerData()
         if suffix == 'b64':
             ssrc0 = instruction[1]
-            decompiler_data.output_file.write("pc = " + ssrc0 + "\n")
+            decompiler_data.write("pc = " + ssrc0 + "\n")

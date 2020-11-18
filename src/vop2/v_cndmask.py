@@ -4,7 +4,6 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
-from src.versions import make_version
 
 
 class VCndmask(BaseInstruction):
@@ -18,7 +17,7 @@ class VCndmask(BaseInstruction):
             variable = "var" + str(decompiler_data.num_of_var)
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[vdst] = Register(variable, Type.program_param, Integrity.integer)
-                make_version(node.state, decompiler_data.versions, vdst)
+                decompiler_data.make_version(node.state, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
                 node.state.registers[vdst].type_of_data = suffix
@@ -26,9 +25,7 @@ class VCndmask(BaseInstruction):
                 if node.state.registers[vdst].type == Type.param_global_id_x:
                     variable = "*" + variable
                 node.state.registers[vdst].val = variable
-                decompiler_data.num_of_var += 1
-                decompiler_data.variables[node.state.registers[vdst].version] = variable
-                decompiler_data.names_of_vars[variable] = suffix
+                decompiler_data.make_var(node.state.registers[vdst].version, variable, suffix)
                 return node
             if "?" in node.state.registers[ssrc2].val:
                 node.state.registers[ssrc2].val = "(" + node.state.registers[ssrc2].val + ")"

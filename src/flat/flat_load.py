@@ -5,7 +5,6 @@ from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
 from src.upload import find_first_last_num_to_from
-from src.versions import make_version
 
 
 class FlatLoad(BaseInstruction):
@@ -26,15 +25,14 @@ class FlatLoad(BaseInstruction):
                         data_type = node.state.registers[from_registers].type_of_data
                         node.state.registers[to_registers] = \
                             Register(variable, Type.program_param, Integrity.integer)
-                        make_version(node.state, decompiler_data.versions, to_registers)
+                        decompiler_data.make_version(node.state, to_registers)
                         node.state.registers[to_registers].type_of_data = data_type
                         node.state.registers[to_registers].val = variable
-                        decompiler_data.num_of_var += 1
-                        decompiler_data.variables[node.state.registers[to_registers].version] = variable
-                        decompiler_data.names_of_vars[variable] = node.state.registers[from_registers].type_of_data
+                        decompiler_data.make_var(node.state.registers[to_registers].version, variable,
+                                                 node.state.registers[from_registers].type_of_data)
                 return node
-            output_string = node.state.registers[to_registers].val + " = " \
-                            + node.parent[0].state.registers[from_registers].val
+            output_string = node.state.registers[to_registers].val + " = " + \
+                node.parent[0].state.registers[from_registers].val
             return output_string
 
         elif suffix == "dwordx4":
@@ -42,9 +40,9 @@ class FlatLoad(BaseInstruction):
             vaddr = instruction[2]
             inst_offset = instruction[3]
             vm = "vm" + str(decompiler_data.number_of_vm)
-            decompiler_data.output_file.write("short* " + vm + " = (" + vaddr + " + " + inst_offset + ")\n")
-            decompiler_data.output_file.write(vdst + "[0] = *(uint*)" + vm + "\n")
-            decompiler_data.output_file.write(vdst + "[1] = *(uint*)(" + vm + " + 4)\n")
-            decompiler_data.output_file.write(vdst + "[2] = *(uint*)(" + vm + " + 8)\n")
-            decompiler_data.output_file.write(vdst + "[3] = *(uint*)(" + vm + " + 12)\n")
+            decompiler_data.write("short* " + vm + " = (" + vaddr + " + " + inst_offset + ")\n")
+            decompiler_data.write(vdst + "[0] = *(uint*)" + vm + "\n")
+            decompiler_data.write(vdst + "[1] = *(uint*)(" + vm + " + 4)\n")
+            decompiler_data.write(vdst + "[2] = *(uint*)(" + vm + " + 8)\n")
+            decompiler_data.write(vdst + "[3] = *(uint*)(" + vm + " + 12)\n")
             decompiler_data.number_of_vm += 1

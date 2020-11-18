@@ -4,7 +4,6 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
-from src.versions import make_version
 
 
 class SCselect(BaseInstruction):
@@ -20,10 +19,10 @@ class SCselect(BaseInstruction):
                     ssrc0 = "1"
                 new_val = node.state.registers["scc"].val + " ? " + ssrc0 + " : " + ssrc1
                 node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
-                make_version(node.state, decompiler_data.versions, sdst)
+                decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()
                 node.state.registers[sdst].type_of_data = suffix
                 return node
             return output_string
-            # decompiler_data.output_file.write(sdst + " = scc ? " + ssrc0 + " : " + ssrc1 + "\n")
+            # decompiler_data.write(sdst + " = scc ? " + ssrc0 + " : " + ssrc1 + "\n")

@@ -8,5 +8,5 @@ class SSwappc(BaseInstruction):
         if suffix == 'b64':
             sdst = instruction[1]
             ssrc0 = instruction[2]
-            decompiler_data.output_file.write(sdst + " = pc + 4\n")
-            decompiler_data.output_file.write("pc = " + ssrc0 + "\n")
+            decompiler_data.write(sdst + " = pc + 4\n")
+            decompiler_data.write("pc = " + ssrc0 + "\n")

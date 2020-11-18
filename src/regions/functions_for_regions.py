@@ -99,8 +99,8 @@ def make_region_graph_from_cfg():
     decompiler_data = DecompilerData()
     curr_node = decompiler_data.cfg
     region = Region(TypeNode.linear, curr_node)
-    decompiler_data.starts_regions[curr_node] = region
-    decompiler_data.ends_regions[curr_node] = region
+    decompiler_data.set_starts_regions(curr_node, region)
+    decompiler_data.set_ends_regions(curr_node, region)
     visited = [curr_node]
     q = deque()
     q.append(curr_node.children[0])
@@ -112,18 +112,18 @@ def make_region_graph_from_cfg():
                 if decompiler_data.ends_regions[curr_node.parent[0]].type == TypeNode.linear:
                     region = decompiler_data.ends_regions.pop(curr_node.parent[0])
                     region.end = curr_node
-                    decompiler_data.ends_regions[curr_node] = region
+                    decompiler_data.set_ends_regions(curr_node, region)
                 else:
                     region = Region(TypeNode.linear, curr_node)
-                    decompiler_data.starts_regions[curr_node] = region
-                    decompiler_data.ends_regions[curr_node] = region
+                    decompiler_data.set_starts_regions(curr_node, region)
+                    decompiler_data.set_ends_regions(curr_node, region)
                     parent = decompiler_data.ends_regions[curr_node.parent[0]]
                     parent.add_child(region)
                     region.add_parent(parent)
             else:
                 region = Region(TypeNode.basic, curr_node)
-                decompiler_data.starts_regions[curr_node] = region
-                decompiler_data.ends_regions[curr_node] = region
+                decompiler_data.set_starts_regions(curr_node, region)
+                decompiler_data.set_ends_regions(curr_node, region)
                 flag_of_continue = False
                 for c_p in curr_node.parent:
                     if c_p not in visited:
@@ -144,7 +144,7 @@ def make_region_graph_from_cfg():
                     q.append(child)
                 else:
                     region.add_child(decompiler_data.starts_regions[child])
-                    decompiler_data.starts_regions[child].add_parent(region)
+                    decompiler_data.set_parent_for_starts_regions(child, region)
                         
 
 def process_if_statement_region(curr_region, visited, start_region, q):

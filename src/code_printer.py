@@ -8,10 +8,10 @@ from src.type_of_node import TypeNode
 
 def create_opencl_body():
     decompiler_data = DecompilerData()
-    decompiler_data.output_file.write("{\n")
+    decompiler_data.write("{\n")
     for var in sorted(decompiler_data.names_of_vars.keys()):
         type_of_var = make_type(decompiler_data.names_of_vars[var])
-        decompiler_data.output_file.write("    " + type_of_var + " " + var + ";\n")
+        decompiler_data.write("    " + type_of_var + " " + var + ";\n")
     offsets = list(decompiler_data.lds_vars.keys())
     offsets.append(decompiler_data.localsize)
     offsets.sort()
@@ -19,11 +19,10 @@ def create_opencl_body():
         size_var = int(
             (offsets[key + 1] - offsets[key]) / (int(decompiler_data.lds_vars[offsets[key]][1][1:]) / 8))
         type_of_var = make_type(decompiler_data.lds_vars[offsets[key]][1])
-        decompiler_data.output_file.write(
-            "    __local " + type_of_var + " " + decompiler_data.lds_vars[offsets[key]][0] + "[" + str(
-                size_var) + "]" + ";\n")
+        decompiler_data.write("    __local " + type_of_var + " " + decompiler_data.lds_vars[offsets[key]][0] + "["
+                              + str(size_var) + "]" + ";\n")
     make_output_from_region(decompiler_data.improve_cfg, '    ')
-    decompiler_data.output_file.write("}\n")
+    decompiler_data.write("}\n")
 
 
 def make_output_for_linear_region(region, indent):
@@ -35,11 +34,11 @@ def make_output_for_linear_region(region, indent):
         while reg != region.end:
             new_output = to_opencl(reg, OperationStatus.to_print)
             if new_output != "":
-                decompiler_data.output_file.write(indent + new_output + ";\n")
+                decompiler_data.write(indent + new_output + ";\n")
             reg = reg.children[0]
         new_output = to_opencl(reg, OperationStatus.to_print)
         if new_output != "":
-            decompiler_data.output_file.write(indent + new_output + ";\n")
+            decompiler_data.write(indent + new_output + ";\n")
     else:
         reg = region.start
         make_output_from_region(reg, indent)
@@ -55,12 +54,12 @@ def make_output_from_if_statement_region(region, indent):
         if region.start.start.parent[0].state.registers[reg] is not None \
                 and region.start.start.parent[0].state.registers[reg].version == key \
                 and decompiler_data.variables[key] in decompiler_data.names_of_vars.keys():
-            decompiler_data.output_file.write(
+            decompiler_data.write(
                 indent + decompiler_data.variables[key] + " = "
                 + region.start.start.parent[0].state.registers[reg].val + ";\n")
-    decompiler_data.output_file.write(indent + "if (")
-    decompiler_data.output_file.write(to_opencl(region.start.start, OperationStatus.to_print))
-    decompiler_data.output_file.write(") {\n")
+    decompiler_data.write(indent + "if (")
+    decompiler_data.write(to_opencl(region.start.start, OperationStatus.to_print))
+    decompiler_data.write(") {\n")
     make_output_from_region(region.start.children[0], indent + '    ')
     for key in decompiler_data.variables.keys():
         reg = key[:key.find("_")]
@@ -70,10 +69,10 @@ def make_output_from_if_statement_region(region, indent):
         if r_node.parent[0].state.registers[reg].version == key \
                 and decompiler_data.variables[key] in decompiler_data.names_of_vars.keys() \
                 and decompiler_data.variables[key] != r_node.parent[0].state.registers[reg].val:
-            decompiler_data.output_file.write(indent + "    " + decompiler_data.variables[key] + " = "
-                                              + r_node.parent[0].state.registers[reg].val + ";\n")
+            decompiler_data.write(indent + "    " + decompiler_data.variables[key] + " = "
+                                  + r_node.parent[0].state.registers[reg].val + ";\n")
     make_output_from_region(region.start.children[1], indent + '    ')
-    decompiler_data.output_file.write(indent + "}\n")
+    decompiler_data.write(indent + "}\n")
 
 
 def make_output_from_if_else_statement_region(region, indent):
@@ -84,12 +83,12 @@ def make_output_from_if_else_statement_region(region, indent):
                 and region.start.start.parent[0].state.registers[reg].version == key \
                 and decompiler_data.variables[key] in decompiler_data.names_of_vars.keys() \
                 and decompiler_data.variables[key] != region.start.start.parent[0].state.registers[reg].val:
-            decompiler_data.output_file.write(
+            decompiler_data.write(
                 indent + decompiler_data.variables[key] + " = "
                 + region.start.start.parent[0].state.registers[reg].val + ";\n")
-    decompiler_data.output_file.write(indent + "if (")
-    decompiler_data.output_file.write(to_opencl(region.start.start, OperationStatus.to_print))
-    decompiler_data.output_file.write(") {\n")
+    decompiler_data.write(indent + "if (")
+    decompiler_data.write(to_opencl(region.start.start, OperationStatus.to_print))
+    decompiler_data.write(") {\n")
     if_body = region.start.children[0]
     make_output_from_region(if_body, indent + '    ')
     for key in decompiler_data.variables.keys():
@@ -105,15 +104,15 @@ def make_output_from_if_else_statement_region(region, indent):
                      or r_node_parent.state.registers[reg].version != region.start.start.parent[0].state.registers[
                          reg].version):
             if '*' not in decompiler_data.variables[key]:
-                decompiler_data.output_file.write(indent + "    " + decompiler_data.variables[key] +
-                                                  " = " + r_node_parent.state.registers[reg].val + ";\n")
+                decompiler_data.write(indent + "    " + decompiler_data.variables[key] +
+                                      " = " + r_node_parent.state.registers[reg].val + ";\n")
             else:
-                decompiler_data.output_file.write(
+                decompiler_data.write(
                     indent + "    " + decompiler_data.variables[key][1:] + " = &" +
                     r_node_parent.state.registers[reg].val + ";\n")
-    decompiler_data.output_file.write(indent + "}\n")
+    decompiler_data.write(indent + "}\n")
     else_body = region.start.children[1]
-    decompiler_data.output_file.write(indent + "else {\n")
+    decompiler_data.write(indent + "else {\n")
     make_output_from_region(else_body, indent + '    ')
     for key in decompiler_data.variables.keys():
         reg = key[:key.find("_")]
@@ -128,13 +127,13 @@ def make_output_from_if_else_statement_region(region, indent):
                      or r_node_parent.state.registers[reg].version != region.start.start.parent[0].state.registers[
                          reg].version):
             if '*' not in decompiler_data.variables[key]:
-                decompiler_data.output_file.write(
+                decompiler_data.write(
                     indent + "    " + decompiler_data.variables[key] + " = "
                     + r_node_parent.state.registers[reg].val + ";\n")
             else:
-                decompiler_data.output_file.write(indent + "    " + decompiler_data.variables[key][1:]
-                                                  + " = &" + r_node_parent.state.registers[reg].val + ";\n")
-    decompiler_data.output_file.write(indent + "}\n")
+                decompiler_data.write(indent + "    " + decompiler_data.variables[key][1:]
+                                      + " = &" + r_node_parent.state.registers[reg].val + ";\n")
+    decompiler_data.write(indent + "}\n")
 
 
 def make_output_from_region(region, indent):

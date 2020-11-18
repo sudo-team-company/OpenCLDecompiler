@@ -4,7 +4,6 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
-from src.versions import make_version
 
 
 class VCmpLg(BaseInstruction):
@@ -18,7 +17,7 @@ class VCmpLg(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val, src0_flag, src1_flag = make_op(node, src0, src1, " != ", '(int)', '(int)')
                 node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
-                make_version(node.state, decompiler_data.versions, sdst)
+                decompiler_data.make_version(node.state, sdst)
                 if sdst in [src0, src1]:
                     node.state.registers[sdst].make_prev()
                 node.state.registers[sdst].type_of_data = suffix
@@ -29,4 +28,4 @@ class VCmpLg(BaseInstruction):
             sdst = instruction[1]
             src0 = instruction[2]
             src1 = instruction[3]
-            decompiler_data.output_file.write(sdst + " = (uint)" + src0 + " != (uint)" + src1 + "\n")
+            decompiler_data.write(sdst + " = (uint)" + src0 + " != (uint)" + src1 + "\n")

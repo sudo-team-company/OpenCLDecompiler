@@ -11,8 +11,8 @@ class FlatAtomicAdd(BaseInstruction):
         vm = "vm" + str(decompiler_data.number_of_vm)
         p = "p" + str(decompiler_data.number_of_p)
         inst_offset = instruction[4]
-        decompiler_data.output_file.write("uint* " + vm + " = (uint*)(" + vaddr + " + " + inst_offset + ")\n")
-        decompiler_data.output_file.write(
+        decompiler_data.write("uint* " + vm + " = (uint*)(" + vaddr + " + " + inst_offset + ")\n")
+        decompiler_data.write(
             "uint " + p + " = *" + vm + "; *" + vm + " = *" + vm + " + " + vdata + "; "
             + vdst + " = (glc) ? " + p + " : " + vdst + '\n')
         decompiler_data.number_of_vm += 1

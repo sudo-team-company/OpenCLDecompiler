@@ -16,7 +16,7 @@ def transform_instruction_set(instruction, set_of_instructions, num, row, curr_n
             and ("branch" not in set_of_instructions[num + 1]
                  and "branch" not in set_of_instructions[num + 2]
                  and "branch" not in set_of_instructions[num + 3]):
-        decompiler_data.num_of_label += 1
+        decompiler_data.increase_num_of_label()
         set_of_instructions.insert(num + 1, "s_cbranch_execz ." + str(decompiler_data.num_of_label))
     if 'andn2' in instruction[0] and "." not in set_of_instructions[num - 1]:
         set_of_instructions.insert(num + 1, row)
@@ -26,7 +26,7 @@ def transform_instruction_set(instruction, set_of_instructions, num, row, curr_n
     if "andn2" in instruction[0] \
             and ("cbranch" not in set_of_instructions[num + 1]
                  and "cbranch" not in set_of_instructions[num + 2]):
-        decompiler_data.num_of_label += 1
+        decompiler_data.increase_num_of_label()
         set_of_instructions.insert(num + 1, "s_cbranch_execz ." + str(decompiler_data.num_of_label))
     if instruction[0] == "s_mov_b64" and instruction[1] == "exec" and "." not in curr_node.instruction[0]:
         set_of_instructions.insert(num + 1, row)
@@ -38,9 +38,7 @@ def check_instruction_set_for_if_else(instruction, curr_node, set_of_instruction
                                       num, row, last_node, last_node_state):
     decompiler_data = DecompilerData()
     if instruction[0][0] == ".":
-        decompiler_data.label = curr_node
-        decompiler_data.parents_of_label = curr_node.parent
-        decompiler_data.flag_of_else = True
+        decompiler_data.make_label(curr_node)
     elif ("andn2" in instruction[0] or
           (num < len(set_of_instructions) and "branch" in set_of_instructions[num])) \
             and decompiler_data.flag_of_else:
@@ -50,7 +48,7 @@ def check_instruction_set_for_if_else(instruction, curr_node, set_of_instruction
     elif decompiler_data.flag_of_else and "cbranch" in instruction[0]:
         last_node, last_node_state = change_cfg_for_else_structure(curr_node, instruction)
     else:
-        decompiler_data.flag_of_else = False
+        decompiler_data.set_flag_of_else(False)
     return set_of_instructions, last_node, last_node_state
 
 
@@ -84,7 +82,7 @@ def process_src(name_of_program, set_of_config, set_of_instructions):
     last_node = Node([""], decompiler_data.initial_state)
     curr_node = last_node
     last_node_state = decompiler_data.initial_state
-    decompiler_data.cfg = last_node
+    decompiler_data.set_cfg(last_node)
     num = 0
     while num < len(set_of_instructions):
         result_for_check = process_single_instruction(set_of_instructions, num, curr_node, last_node_state, last_node)

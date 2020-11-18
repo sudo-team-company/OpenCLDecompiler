@@ -7,4 +7,4 @@ class SGetpc(BaseInstruction):
         decompiler_data = DecompilerData()
         if suffix == 'b64':
             sdst = instruction[1]
-            decompiler_data.output_file.write(sdst + " = pc + 4\n")
+            decompiler_data.write(sdst + " = pc + 4\n")
