@@ -103,11 +103,6 @@ def check_for_use_new_version():
                     queue.append(child)
 
 
-def remove_unusable_versions():
-    decompiler_data = DecompilerData()
-    decompiler_data.remove_unusable_versions()
-
-
 def update_value_for_reg(first_reg, curr_node):
     for child in curr_node.children:
         if len(child.parent) < 2 \

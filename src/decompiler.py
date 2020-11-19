@@ -6,7 +6,7 @@ from src.decompiler_data import DecompilerData
 from src.cfg import change_cfg_for_else_structure, make_cfg_node
 from src.code_printer import create_opencl_body
 from src.config import process_config
-from src.versions import find_max_and_prev_versions, remove_unusable_versions, change_values, check_for_use_new_version
+from src.versions import find_max_and_prev_versions, change_values, check_for_use_new_version
 from src.kernel_params import process_kernel_params
 
 
@@ -92,7 +92,7 @@ def process_src(name_of_program, set_of_config, set_of_instructions):
             return
 
     check_for_use_new_version()
-    remove_unusable_versions()
+    decompiler_data.remove_unusable_versions()
     if decompiler_data.checked_variables != {} or decompiler_data.variables != {}:
         change_values()
     make_region_graph_from_cfg()
