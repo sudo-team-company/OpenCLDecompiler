@@ -24,7 +24,7 @@ class FlatLoad(BaseInstruction):
             from_registers = name_of_from + str(first_from)
             to_registers = name_of_to + str(first_to)
             if flag_of_status == OperationStatus.to_fill_node:
-                if inst_offset == "":
+                if inst_offset == "0":
                     if first_to == last_to:
                         data_type = node.state.registers[from_registers].type_of_data
                         node.state.registers[to_registers] = \
