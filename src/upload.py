@@ -103,7 +103,7 @@ def upload(state, to_registers, from_registers, offset, kernel_params):
             state.registers[to_registers] = Register("get_global_offset(2)", Type.global_offset_z, Integrity.integer)
             decompiler_data.make_version(state, to_registers)
             state.registers[name_of_to + str(first_to + 1)] = Register("get_global_offset(2)",
-                                                                      Type.global_offset_z, Integrity.integer)
+                                                                       Type.global_offset_z, Integrity.integer)
             decompiler_data.make_version(state, name_of_to + str(first_to + 1))
         else:
             for (reg, val) in kernel_params[offset]:
@@ -114,3 +114,9 @@ def upload(state, to_registers, from_registers, offset, kernel_params):
                     type_param = Type.param
                 state.registers[reg] = Register(val, type_param, Integrity.integer)
                 decompiler_data.make_version(state, reg)
+    else:
+        for i in range(first_to, last_to + 1):
+            to_registers = name_of_to + str(i)
+            val = state.registers[from_registers].val + '[' + offset + ']'
+            type_reg = state.registers[from_registers].type
+            state.registers[to_registers] = Register(val, type_reg, Integrity.integer)

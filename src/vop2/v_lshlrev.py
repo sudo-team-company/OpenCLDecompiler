@@ -15,6 +15,9 @@ class VLshlrev(BaseInstruction):
             vdst = instruction[1]
             src0 = instruction[2]
             src1 = instruction[3]
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                decompiler_data.write(vdst + " = " + src1 + " << (" + src0 + "&31) // v_lshlrev_b32 \n")
+                return node
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val, src0_flag, src1_flag = make_op(node, src1, str(pow(2, int(src0))), " * ", '', '')
                 node.state.registers[vdst] = Register(new_val, node.state.registers[src1].type, Integrity.integer)
@@ -27,6 +30,9 @@ class VLshlrev(BaseInstruction):
             vdst = instruction[1]
             src0 = instruction[2]
             src1 = instruction[3]
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                decompiler_data.write(vdst + " = " + src1 + " << (" + src0 + "&63) // v_lshlrev_b64 \n")
+                return node
             first_to, last_to, name_of_to, name_of_from, first_from, last_from \
                 = find_first_last_num_to_from(vdst, src1)
             if "s" in name_of_from or "v" in name_of_from:
@@ -69,4 +75,4 @@ class VLshlrev(BaseInstruction):
                     decompiler_data.make_version(node.state, to_registers_1)
                 node.state.registers[to_registers].type_of_data = suffix
                 return node
-            return output_string
+            return output_string  # из vop3

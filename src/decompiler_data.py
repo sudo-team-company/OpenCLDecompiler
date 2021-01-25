@@ -4,19 +4,19 @@ from src.register import Register
 from src.type_of_reg import Type
 
 
+def check_reg_for_val(node, register):
+    register_flag = True
+    if "s" in register or "v" in register:
+        new_val = node.state.registers[register].val
+    else:
+        new_val = register
+        register_flag = False
+    return new_val, register_flag
+
+
 def make_op(node, register0, register1, operation, type0, type1):
-    register0_flag = True
-    register1_flag = True
-    if "s" in register0 or "v" in register0:
-        new_val0 = node.state.registers[register0].val
-    else:
-        new_val0 = register0
-        register0_flag = False
-    if "s" in register1 or "v" in register1:
-        new_val1 = node.state.registers[register1].val
-    else:
-        new_val1 = register1
-        register1_flag = False
+    new_val0, register0_flag = check_reg_for_val(node, register0)
+    new_val1, register1_flag = check_reg_for_val(node, register1)
     if "-" in new_val0 or "+" in new_val0 or "*" in new_val0 or "/" in new_val0:
         new_val0 = "(" + new_val0 + ")"
     if "-" in new_val1 or "+" in new_val1 or "*" in new_val1 or "/" in new_val1:
@@ -138,6 +138,7 @@ class DecompilerData(metaclass=Singleton):
         self.num_of_var = 0
         self.num_of_label = 0
         self.wait_labels = []
+        self.circles = []
 
     def reset(self, output_file):
         self.output_file = output_file
@@ -235,6 +236,7 @@ class DecompilerData(metaclass=Singleton):
         self.num_of_var = 0
         self.num_of_label = 0
         self.wait_labels = []
+        self.circles = []
 
     def write(self, output):
         # noinspection PyUnresolvedReferences
@@ -372,6 +374,7 @@ class DecompilerData(metaclass=Singleton):
         if self.to_node.get(reladdr) is not None:
             node.add_child(self.to_node[reladdr])
             self.to_node[reladdr].add_parent(node)
+            self.circles.append(self.to_node[reladdr])
         else:
             if self.from_node.get(reladdr) is None:
                 self.from_node[reladdr] = [node]

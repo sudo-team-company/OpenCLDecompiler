@@ -13,6 +13,9 @@ class VMov(BaseInstruction):
         if suffix == "b32":
             vdst = instruction[1]
             src0 = instruction[2]
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                decompiler_data.write(vdst + " = " + src0 + " // v_mov_b32 \n")
+                return node
             if flag_of_status == OperationStatus.to_fill_node:
                 if node.state.registers.get(src0) is not None:
                     node.state.registers[vdst] = \

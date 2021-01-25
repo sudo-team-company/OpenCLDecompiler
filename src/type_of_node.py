@@ -6,3 +6,4 @@ class TypeNode(Enum):
     linear = auto()
     ifstatement = auto()
     ifelsestatement = auto()
+    circle = auto()

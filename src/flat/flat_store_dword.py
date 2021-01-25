@@ -12,6 +12,14 @@ class FlatStoreDword(BaseInstruction):
         vaddr = instruction[1]
         vdata = instruction[2]
         inst_offset = "0" if len(instruction) < 4 else instruction[3]
+        if flag_of_status == OperationStatus.to_print_unresolved:
+            decompiler_data.write("*(uint32*)(" + vaddr + " + " + inst_offset
+                                  + ") = " + vdata + " // flat_store_dword \n")
+            # decompiler_data.write(to_registers + " = " + vdata + "\n")
+            # if first_to != last_to:
+            #     to_now = name_of_to + str(first_to + 1)
+            #     decompiler_data.write(to_now + " = " + vdata + "\n")
+            return node
         first_to, last_to, name_of_to, name_of_from, first_from, last_from \
             = find_first_last_num_to_from(vaddr, vdata)
         from_registers = name_of_from + str(first_from)

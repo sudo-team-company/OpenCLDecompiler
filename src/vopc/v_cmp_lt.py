@@ -1,5 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData
+from src.operation_status import OperationStatus
 
 
 class VCmpLt(BaseInstruction):
@@ -9,4 +10,6 @@ class VCmpLt(BaseInstruction):
             sdst = instruction[1]
             src0 = instruction[2]
             src1 = instruction[3]
-            decompiler_data.write(sdst + " = (uint)" + src0 + " < (uint)" + src1 + "\n")
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                decompiler_data.write(sdst + " = (uint)" + src0 + " < (uint)" + src1 + " // v_cmp_lt_u32 \n")
+                return node

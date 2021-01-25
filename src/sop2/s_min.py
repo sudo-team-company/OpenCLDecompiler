@@ -14,6 +14,10 @@ class SMin(BaseInstruction):
             sdst = instruction[1]
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                decompiler_data.write(sdst + " = min((int)" + ssrc0 + ", (int)" + ssrc1 + ") // s_min_i32 \n")
+                decompiler_data.write("scc = (int)" + ssrc0 + " < (int)" + ssrc1 + "\n")
+                return node
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val = "min((int)" + node.state.registers[ssrc0].val + ", (int)" \
                           + node.state.registers[ssrc1].val + ")"

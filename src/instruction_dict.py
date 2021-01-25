@@ -62,6 +62,7 @@ from src.vop2.v_min import VMin
 from src.vop2.v_mul_f32 import VMulF32
 from src.vop2.v_sub import VSub
 from src.vop2.v_subrev import VSubrev
+from src.vop2.v_xor import VXor
 from src.vop3.v_alignbit import VAlignbit
 from src.vop3.v_alignbyte import VAlignbyte
 from src.vop3.v_and_or import VAndOr
@@ -163,5 +164,6 @@ instruction_dict = {'ds_add': DsAdd(),
                     'v_mov': VMov(),
                     'v_sub': VSub(),
                     'v_subb': VSub(),
-                    'v_subrev': VSubrev()
+                    'v_subrev': VSubrev(),
+                    'v_xor': VXor()
                     }

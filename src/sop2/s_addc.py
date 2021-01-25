@@ -14,6 +14,14 @@ class SAddc(BaseInstruction):
             sdst = instruction[1]
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                temp = "temp" + str(decompiler_data.number_of_temp)
+                decompiler_data.write("ulong " + temp + " = (ulong)" + ssrc0
+                                      + " + (ulong)" + ssrc1 + " + scc // s_addc_u32 \n")
+                decompiler_data.write(sdst + " = " + temp + "\n")
+                decompiler_data.write("scc = " + temp + " >> 32\n")
+                decompiler_data.number_of_temp += 1
+                return node
             new_val, ssrc0_reg, ssrc1_reg = make_op(node, ssrc0, ssrc1, " + ", '(ulong)', '(ulong)')
             if flag_of_status == OperationStatus.to_fill_node:
                 if ssrc0_reg and ssrc1_reg:

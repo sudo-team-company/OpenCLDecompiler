@@ -16,6 +16,21 @@ class VAddc(BaseInstruction):
             src0 = instruction[3]
             src1 = instruction[4]
             ssrc2 = instruction[5]
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                temp = "temp" + str(decompiler_data.number_of_temp)
+                mask = "mask" + str(decompiler_data.number_of_mask)
+                cc = "cc" + str(decompiler_data.number_of_cc)
+                decompiler_data.write("ulong " + mask + " = (1ULL<<LANEID) // v_addc_u32 \n")
+                decompiler_data.write("uchar " + cc + " = ((" + ssrc2 + "&" + mask + " ? 1 : 0)\n")
+                decompiler_data.write("uint " + temp + " = (ulong)" + src0 + " + (ulong)" + src1 + " + " + cc + "\n")
+                decompiler_data.write(sdst + " = 0\n")
+                decompiler_data.write(vdst + " = CLAMP ? min(" + temp + ", 0xffffffff) : " + temp + "\n")
+                decompiler_data.write(sdst + " = (" + sdst + "&~" + mask + ") | (("
+                                      + temp + " >> 32) ? " + mask + " : 0)\n")
+                decompiler_data.number_of_temp += 1
+                decompiler_data.number_of_mask += 1
+                decompiler_data.number_of_cc += 1
+                return node
             new_val, src0_reg, src1_reg = make_op(node, src0, src1, " + ", '(ulong)', '(ulong)')
             if flag_of_status == OperationStatus.to_fill_node:
                 if src0_reg and src1_reg:

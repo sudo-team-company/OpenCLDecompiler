@@ -126,7 +126,7 @@ def make_region_graph_from_cfg():
                 decompiler_data.set_ends_regions(curr_node, region)
                 flag_of_continue = False
                 for c_p in curr_node.parent:
-                    if c_p not in visited:
+                    if c_p not in visited and curr_node not in decompiler_data.circles:
                         flag_of_continue = True
                         break
                 if flag_of_continue:

@@ -13,17 +13,26 @@ class SSub(BaseInstruction):
             sdst = instruction[1]
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
-            temp = "temp" + str(decompiler_data.number_of_temp)
-            decompiler_data.write(sdst + " = " + ssrc0 + " - " + ssrc1 + "\n")
-            decompiler_data.write(
-                "long " + temp + " = (long)" + ssrc0 + " - (long)" + ssrc1 + "\n")
-            decompiler_data.write("scc = " + temp + " > ((1LL << 31) - 1) || " + temp + " < (-1LL << 31)\n")
-            decompiler_data.number_of_temp += 1
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                temp = "temp" + str(decompiler_data.number_of_temp)
+                decompiler_data.write(sdst + " = " + ssrc0 + " - " + ssrc1 + " // s_sub_i32 \n")
+                decompiler_data.write("long " + temp + " = (long)" + ssrc0 + " - (long)" + ssrc1 + "\n")
+                decompiler_data.write("scc = " + temp + " > ((1LL << 31) - 1) || " + temp + " < (-1LL << 31)\n")
+                decompiler_data.number_of_temp += 1
+                return node
 
         elif suffix == 'u32':
             sdst = instruction[1]
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                temp = "temp" + str(decompiler_data.number_of_temp)
+                decompiler_data.write("ulong " + temp + " = (ulong)" + ssrc0
+                                      + " - (ulong)" + ssrc1 + " // s_sub_u32 \n")
+                decompiler_data.write(sdst + " = " + temp + "\n")
+                decompiler_data.write("scc = (" + temp + ">>32)!=0\n")
+                decompiler_data.number_of_temp += 1
+                return node
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val, src0_reg, src1_reg = make_op(node, ssrc0, ssrc1, " - ", '(ulong)', '(ulong)')
                 new_integrity = node.state.registers[ssrc1].integrity

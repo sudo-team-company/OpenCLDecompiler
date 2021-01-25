@@ -20,6 +20,9 @@ class SLoad(BaseInstruction):
             to_registers = name_of_to + str(first_to)
 
         if suffix == 'dword':
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                decompiler_data.write(sdata + " = *(uint*)(smem + (" + offset + " & ~3)) // s_load_dword \n")
+                return node
             if flag_of_status == OperationStatus.to_fill_node:
                 if decompiler_data.usesetup is False and sbase == "s[4:5]" \
                         or decompiler_data.usesetup is True and sbase == "s[6:7]":
@@ -31,6 +34,9 @@ class SLoad(BaseInstruction):
             return output_string
 
         elif suffix == 'dwordx2':
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                decompiler_data.write(sdata + " = *(ulong*)(smem + (" + offset + " & ~3)) // s_load_dwordx2 \n")
+                return node
             if flag_of_status == OperationStatus.to_fill_node:
                 if decompiler_data.usesetup is False and sbase == "s[4:5]" \
                         or decompiler_data.usesetup is True and sbase == "s[6:7]":
@@ -42,6 +48,11 @@ class SLoad(BaseInstruction):
             return output_string
 
         elif suffix == 'dwordx4' or suffix == 'dwordx8':
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                i_cnt = suffix[-1]
+                decompiler_data.write("for (BYTE i = 0; i < " + i_cnt + "; i++) // s_load_dword" + i_cnt + " \n")
+                decompiler_data.write("    " + sdata + "[i] = *(uint*)(SMEM + i*4 + (" + offset + " & ~3))\n")
+                return node
             if flag_of_status == OperationStatus.to_fill_node:
                 if decompiler_data.usesetup is False and sbase == "s[4:5]" \
                         or decompiler_data.usesetup is True and sbase == "s[6:7]":

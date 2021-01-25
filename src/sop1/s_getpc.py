@@ -1,5 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData
+from src.operation_status import OperationStatus
 
 
 class SGetpc(BaseInstruction):
@@ -7,4 +8,6 @@ class SGetpc(BaseInstruction):
         decompiler_data = DecompilerData()
         if suffix == 'b64':
             sdst = instruction[1]
-            decompiler_data.write(sdst + " = pc + 4\n")
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                decompiler_data.write(sdst + " = pc + 4 // s_getpc_b64 \n")
+                return node

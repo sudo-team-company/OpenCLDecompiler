@@ -13,7 +13,11 @@ class FlatLoad(BaseInstruction):
         if suffix == "dword":
             vdst = instruction[1]
             vaddr = instruction[2]
-            inst_offset = instruction[3] if len(instruction) > 3 else ""
+            inst_offset = instruction[3] if len(instruction) > 3 else "0"
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                decompiler_data.write(vdst + " = *(uint*)(" + vaddr + " + " + inst_offset + ") // flat_load_dword \n")
+                # decompiler_data.write(instruction + "  # " + to_registers + " = " + variable + "\n")
+                return node
             variable = "var" + str(decompiler_data.num_of_var)
             first_to, last_to, name_of_to, name_of_from, first_from, last_from \
                 = find_first_last_num_to_from(vdst, vaddr)
@@ -38,11 +42,14 @@ class FlatLoad(BaseInstruction):
         elif suffix == "dwordx4":
             vdst = instruction[1]
             vaddr = instruction[2]
-            inst_offset = instruction[3]
-            vm = "vm" + str(decompiler_data.number_of_vm)
-            decompiler_data.write("short* " + vm + " = (" + vaddr + " + " + inst_offset + ")\n")
-            decompiler_data.write(vdst + "[0] = *(uint*)" + vm + "\n")
-            decompiler_data.write(vdst + "[1] = *(uint*)(" + vm + " + 4)\n")
-            decompiler_data.write(vdst + "[2] = *(uint*)(" + vm + " + 8)\n")
-            decompiler_data.write(vdst + "[3] = *(uint*)(" + vm + " + 12)\n")
-            decompiler_data.number_of_vm += 1
+            inst_offset = instruction[3] if len(instruction) > 3 else ""
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                vm = "vm" + str(decompiler_data.number_of_vm)
+                decompiler_data.write("short* " + vm + " = (" + vaddr + " + "
+                                      + inst_offset + ") // flat_load_dwordx4 \n")
+                decompiler_data.write(vdst + "[0] = *(uint*)" + vm + "\n")
+                decompiler_data.write(vdst + "[1] = *(uint*)(" + vm + " + 4)\n")
+                decompiler_data.write(vdst + "[2] = *(uint*)(" + vm + " + 8)\n")
+                decompiler_data.write(vdst + "[3] = *(uint*)(" + vm + " + 12)\n")
+                decompiler_data.number_of_vm += 1
+                return node
