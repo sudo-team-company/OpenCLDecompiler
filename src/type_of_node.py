@@ -7,3 +7,8 @@ class TypeNode(Enum):
     ifstatement = auto()
     ifelsestatement = auto()
     circle = auto()
+    startcircle = auto()
+    backedge = ()
+    breakregion = ()
+    continueregion = ()
+    returnregion = ()

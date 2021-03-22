@@ -29,9 +29,11 @@ from src.sop2.s_lshl import SLshl
 from src.sop2.s_lshr import SLshr
 from src.sop2.s_min import SMin
 from src.sop2.s_mul import SMul
+from src.sop2.s_or import SOr
 from src.sop2.s_sub import SSub
 from src.sopc.s_cmp_eq import SCmpEq
 from src.sopc.s_cmp_ge import SCmpGe
+from src.sopc.s_cmp_gt import SCmpGt
 from src.sopc.s_cmp_lt import SCmpLt
 from src.sopc.s_set_gpr_idx_on import SSetGprIdxOn
 from src.sopk.s_movk import SMovk
@@ -110,6 +112,7 @@ instruction_dict = {'ds_add': DsAdd(),
                     's_cbranch_vccz': SCbranchVccz(),
                     's_cmp_eq': SCmpEq(),
                     's_cmp_ge': SCmpGe(),
+                    's_cmp_gt': SCmpGt(),
                     's_cmp_lt': SCmpLt(),
                     's_cselect': SCselect(),
                     's_endpgm': SEndpgm(),
@@ -124,6 +127,7 @@ instruction_dict = {'ds_add': DsAdd(),
                     's_mulk': SMulk(),
                     's_not': SNot(),
                     's_nop': SNop(),
+                    's_or': SOr(),
                     's_set_gpr_idx_on': SSetGprIdxOn(),
                     's_set_gpr_idx_off': SSetGprIdxOff(),
                     's_setpc': SSetpc(),

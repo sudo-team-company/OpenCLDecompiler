@@ -5,39 +5,34 @@ from src.decompiler_data import DecompilerData
 
 def find_max_and_prev_versions(curr_node):
     for reg in curr_node.parent[0].state.registers:
-        version_of_reg = set()
+        prev_versions_of_reg = set()
         max_version = 0
         for parent in curr_node.parent:
             if parent.state.registers.get(reg) is not None \
                     and parent.state.registers[reg].version is not None:
-                par_version = parent.state.registers[reg].version
-                if len(version_of_reg) == 0:
-                    max_version = int(par_version[par_version.find("_") + 1:])
-                    version_of_reg.add(par_version)
-                else:
-                    version_of_reg.add(par_version)
-                    if int(par_version[par_version.find("_") + 1:]) > max_version:
-                        max_version = int(par_version[par_version.find("_") + 1:])
-        curr_node = update_reg_version(reg, curr_node, max_version, version_of_reg)
+                parent_version = parent.state.registers[reg].version
+                prev_versions_of_reg.add(parent_version)
+                if len(prev_versions_of_reg) == 0:
+                    max_version = int(parent_version[parent_version.find("_") + 1:])
+                elif int(parent_version[parent_version.find("_") + 1:]) > max_version:
+                    max_version = int(parent_version[parent_version.find("_") + 1:])
+        curr_node = update_reg_version(reg, curr_node, max_version, prev_versions_of_reg)
     return curr_node.state
 
 
-def update_reg_version(reg, curr_node, max_version, version_of_reg):
+def update_reg_version(reg, curr_node, max_version, prev_versions_of_reg):
     decompiler_data = DecompilerData()
-    if len(version_of_reg) == 1:
-        if curr_node.state.registers.get(reg) is None or curr_node.state.registers[reg] is None:
-            for parent in curr_node.parent:
-                if parent.state.registers[reg] is not None:
-                    curr_node.state.registers[reg] = parent.state.registers[reg]
-                    break
-    elif len(version_of_reg) > 1:
+    if len(prev_versions_of_reg) == 1:
+        if curr_node.state.registers.get(reg) is None or curr_node.state.registers[reg] is None:  # probably not needed
+            curr_node.state.registers[reg] = prev_versions_of_reg.pop()
+    elif len(prev_versions_of_reg) > 1:
         curr_node.state.registers[reg].version = reg + "_" + str(max_version + 1)
-        curr_node.state.registers[reg].prev_version = list(version_of_reg)
+        curr_node.state.registers[reg].prev_version = list(prev_versions_of_reg)
         variable = "var" + str(decompiler_data.num_of_var)
         if curr_node.state.registers[reg].type == Type.param_global_id_x:
             variable = "*" + variable
         curr_node.state.registers[reg].val = variable
-        decompiler_data.update_reg_version(version_of_reg, variable, curr_node, reg, max_version)
+        decompiler_data.update_reg_version(prev_versions_of_reg, variable, curr_node, reg, max_version)
     return curr_node
 
 
@@ -134,6 +129,8 @@ def update_val_from_changes(curr_node, register, changes, check_version, num_of_
             changes[check_version][0])
         copy_val_last = node_registers[first_reg].val
         if copy_val_prev != copy_val_last:
+            if changes.get(node_registers[first_reg].version) is not None:
+                copy_val_prev = changes[node_registers[first_reg].version][1]
             changes[node_registers[first_reg].version] = [copy_val_last, copy_val_prev]
             update_value_for_reg(first_reg, curr_node)
     return changes
@@ -166,12 +163,17 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
 def change_values_for_one_instruction(curr_node, changes):
     for num_of_reg in range(1, len(curr_node.instruction)):
         register = curr_node.instruction[num_of_reg]
-        if ("flat_store" in curr_node.instruction[0] or num_of_reg > 1) and len(register) > 1 \
+        if ("flat_store" in curr_node.instruction[0] or num_of_reg > 1 or "s_cmp" in curr_node.instruction[0]) \
+                and len(register) > 1 \
                 and "cnd" not in curr_node.instruction[0]:
-            if register[1] == "[":
+            if register[1] == "[" and "s_or" not in curr_node.instruction[0] \
+                    and 's_and' not in curr_node.instruction[0]:
                 register = register[0] + register[2: register.find(":")]
             first_reg = curr_node.instruction[1]
-            if first_reg[1] == "[":
+            if "s_cmp" in curr_node.instruction[0]:
+                first_reg = "scc"
+            if first_reg[1] == "[" and "s_or" not in curr_node.instruction[0] \
+                    and 's_and' not in curr_node.instruction[0]:
                 first_reg = first_reg[0] + first_reg[2: first_reg.find(":")]
             if curr_node.state.registers.get(register) is not None:
                 check_version = curr_node.state.registers[register].version
@@ -185,6 +187,11 @@ def change_values_for_one_instruction(curr_node, changes):
             changes = update_val_from_changes(curr_node, register, changes, check_version, num_of_reg,
                                               first_reg)
             update_val_from_checked_variables(curr_node, register, check_version, first_reg, changes)
+    if "select" in curr_node.instruction[0]:
+        first_reg = curr_node.instruction[1]
+        check_version = curr_node.state.registers["scc"].version
+        changes = update_val_from_changes(curr_node, "scc", changes, check_version, 0, first_reg)
+        update_val_from_checked_variables(curr_node, "scc", check_version, first_reg, changes)
 
 
 def change_values():
@@ -200,12 +207,12 @@ def change_values():
             visited.append(curr_node)
             if len(curr_node.parent) < 2:
                 instruction = curr_node.instruction
-                if instruction != "branch" and len(instruction) > 1:
+                if (instruction != "branch" or curr_node in decompiler_data.back_edges) and len(instruction) > 1:
                     change_values_for_one_instruction(curr_node, changes)
             else:
                 flag_of_continue = False
                 for c_p in curr_node.parent:
-                    if c_p not in visited:
+                    if c_p not in visited and curr_node not in decompiler_data.circles:
                         flag_of_continue = True
                         break
                 if flag_of_continue:

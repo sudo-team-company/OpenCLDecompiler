@@ -30,7 +30,7 @@ def process_label_node(node, flag_of_status):
 
         return node
     if flag_of_status == OperationStatus.to_print_unresolved:
-        decompiler_data.write(node.instruction)
+        decompiler_data.write(node.instruction[0])
         return node
     return ""
 

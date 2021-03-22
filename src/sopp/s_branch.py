@@ -15,6 +15,7 @@ class SBranch(BaseInstruction):
             node.add_child(decompiler_data.to_node[reladdr])
             decompiler_data.to_node[reladdr].add_parent(node)
             decompiler_data.circles.append(decompiler_data.to_node[reladdr])
+            decompiler_data.back_edges.append(node)
         else:
             if decompiler_data.from_node.get(reladdr) is None:
                 decompiler_data.from_node[reladdr] = [node]

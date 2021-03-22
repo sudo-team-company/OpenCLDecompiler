@@ -25,26 +25,41 @@ def create_opencl_body():
     decompiler_data.write("}\n")
 
 
+def make_output_for_circle_vars(curr_node, indent):
+    decompiler_data = DecompilerData()
+    key = decompiler_data.circles_nodes_for_variables[curr_node]
+    reg = key[:key.find("_")]
+    decompiler_data.write(indent + decompiler_data.circles_variables[key] + " = "
+                          + curr_node.state.registers[reg].val + ";\n")
+
+
 def make_output_for_linear_region(region, indent):
     decompiler_data = DecompilerData()
     if isinstance(region.start, Node):
-        reg = region.start
         if region.start == decompiler_data.cfg:
-            reg = decompiler_data.cfg.children[0]
-        while reg != region.end:
-            new_output = to_opencl(reg, OperationStatus.to_print)
+            curr_node = decompiler_data.cfg.children[0]
+        else:
+            curr_node = region.start
+        while True:
+            new_output = to_opencl(curr_node, OperationStatus.to_print)
             if new_output != "":
                 decompiler_data.write(indent + new_output + ";\n")
-            reg = reg.children[0]
-        new_output = to_opencl(reg, OperationStatus.to_print)
-        if new_output != "":
-            decompiler_data.write(indent + new_output + ";\n")
+            if decompiler_data.circles_nodes_for_variables.get(curr_node):
+                make_output_for_circle_vars(curr_node, indent)
+            if curr_node == region.end:
+                break
+            curr_node = curr_node.children[0]
+        # new_output = to_opencl(curr_node, OperationStatus.to_print)
+        # if new_output != "":
+        #     decompiler_data.write(indent + new_output + ";\n")
+        # else:
+        #     make_output_for_circle_vars(curr_node, indent)
     else:
-        reg = region.start
-        make_output_from_region(reg, indent)
-        while reg != region.end:
-            reg = reg.children[0]
-            make_output_from_region(reg, indent)
+        curr_region = region.start
+        make_output_from_region(curr_region, indent)
+        while curr_region != region.end:
+            curr_region = curr_region.children[0]
+            make_output_from_region(curr_region, indent)
 
 
 def make_output_from_if_statement_region(region, indent):
@@ -136,10 +151,43 @@ def make_output_from_if_else_statement_region(region, indent):
     decompiler_data.write(indent + "}\n")
 
 
+def make_output_from_circle_region(region, indent):
+    decompiler_data = DecompilerData()
+    for key in decompiler_data.variables.keys():
+        reg = key[:key.find("_")]
+        if region.start.start.parent[0].state.registers[reg] is not None \
+                and decompiler_data.variables[key] in decompiler_data.names_of_vars.keys():
+            decompiler_data.write(
+                indent + decompiler_data.variables[key] + " = "
+                + region.start.start.parent[0].state.registers[reg].val + ";\n")
+    decompiler_data.write(indent + "do {\n")
+    make_output_from_region(region.start.children[0], indent + '    ')
+    # for key in decompiler_data.circles_variables.keys():
+    #     reg = key[:key.find("_")]
+    #     r_node = region.end.start
+    #     while not isinstance(r_node, Node):
+    #         r_node = r_node.start
+    #     if r_node.parent[0].state.registers[reg].version == key \
+    #             and decompiler_data.circles_variables[key] in decompiler_data.names_of_vars.keys() \
+    #             and decompiler_data.circles_variables[key] != r_node.parent[0].state.registers[reg].val:
+    #         decompiler_data.write(indent + "    " + decompiler_data.circles_variables[key] + " = "
+    #                               + r_node.parent[0].state.registers[reg].val + ";\n")
+    decompiler_data.write(indent + "} while (")
+    decompiler_data.write(to_opencl(region.end.start, OperationStatus.to_print))
+    decompiler_data.write(");\n")
+
+
 def make_output_from_region(region, indent):
+    decompiler_data = DecompilerData()
     if region.type == TypeNode.linear:
         make_output_for_linear_region(region, indent)
     elif region.type == TypeNode.ifstatement:
         make_output_from_if_statement_region(region, indent)
     elif region.type == TypeNode.ifelsestatement:
         make_output_from_if_else_statement_region(region, indent)
+    elif region.type == TypeNode.circle:
+        make_output_from_circle_region(region, indent)
+    elif region.type == TypeNode.continueregion:
+        decompiler_data.write(indent + "continue;\n")
+    elif region.type == TypeNode.breakregion:
+        decompiler_data.write(indent + "break;\n")

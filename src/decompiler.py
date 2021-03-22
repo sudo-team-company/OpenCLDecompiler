@@ -109,8 +109,9 @@ def process_src(name_of_program, set_of_config, set_of_instructions):
 
     check_for_use_new_version()
     decompiler_data.remove_unusable_versions()
-    if decompiler_data.checked_variables != {} or decompiler_data.variables != {}:
-        change_values()
+
     make_region_graph_from_cfg()
     process_region_graph()
+    if decompiler_data.checked_variables != {} or decompiler_data.variables != {}:
+        change_values()
     create_opencl_body()

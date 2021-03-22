@@ -139,6 +139,9 @@ class DecompilerData(metaclass=Singleton):
         self.num_of_label = 0
         self.wait_labels = []
         self.circles = []
+        self.back_edges = []
+        self.circles_variables = {}
+        self.circles_nodes_for_variables = {}
 
     def reset(self, output_file):
         self.output_file = output_file
@@ -237,6 +240,9 @@ class DecompilerData(metaclass=Singleton):
         self.num_of_label = 0
         self.wait_labels = []
         self.circles = []
+        self.back_edges = []
+        self.circles_variables = {}
+        self.circles_nodes_for_variables = {}
 
     def write(self, output):
         # noinspection PyUnresolvedReferences
@@ -309,15 +315,15 @@ class DecompilerData(metaclass=Singleton):
         for key in keys:
             self.variables.pop(key)
 
-    def update_reg_version(self, version_of_reg, variable, curr_node, reg, max_version):
+    def update_reg_version(self, prev_versions_of_reg, variable, curr_node, reg, max_version):
         self.num_of_var += 1
-        for ver in version_of_reg:
-            self.variables[ver] = variable
+        for prev_version in prev_versions_of_reg:
+            self.variables[prev_version] = variable
         self.checked_variables[curr_node.state.registers[reg].version] = variable
         self.versions[reg] = max_version + 1
 
-    def set_name_of_vars(self, var_name, val):
-        self.names_of_vars[var_name] = val
+    def set_name_of_vars(self, var_name, type_of_var):
+        self.names_of_vars[var_name] = type_of_var
 
     def check_lds_vars(self, offset, suffix):
         if self.lds_vars.get(offset) is None:
@@ -375,6 +381,7 @@ class DecompilerData(metaclass=Singleton):
             node.add_child(self.to_node[reladdr])
             self.to_node[reladdr].add_parent(node)
             self.circles.append(self.to_node[reladdr])
+            self.back_edges.append(node)
         else:
             if self.from_node.get(reladdr) is None:
                 self.from_node[reladdr] = [node]
