@@ -14,7 +14,7 @@ class VMulF32(BaseInstruction):
             src0 = instruction[2]
             src1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(vdst + " = as_float(" + src0 + ") * as_float(" + src1 + ") // v_mul_f32 \n")
+                decompiler_data.write(vdst + " = as_float(" + src0 + ") * as_float(" + src1 + ") // v_mul_f32\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 new_integrity = node.state.registers[src1].integrity
@@ -35,7 +35,7 @@ class VMulF32(BaseInstruction):
                 v0 = "V0" + str(decompiler_data.number_of_v0)
                 v1 = "V1" + str(decompiler_data.number_of_v1)
                 decompiler_data.write("int " + v0 + " (int)((" + src0 + "&0x7fffff) | ("
-                                      + src0 + "&0x800000 ? 0xff800000 : 0)) // v_mul_i32_i24 \n")
+                                      + src0 + "&0x800000 ? 0xff800000 : 0)) // v_mul_i32_i24\n")
                 decompiler_data.write("int " + v1 + " (int)((" + src1 + "&0x7fffff) | ("
                                       + src1 + "&0x800000 ? 0xff800000 : 0))\n")
                 decompiler_data.write(vdst + " = " + v0 + " * " + v1 + "\n")

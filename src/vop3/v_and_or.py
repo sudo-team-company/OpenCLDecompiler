@@ -12,5 +12,5 @@ class VAndOr(BaseInstruction):
             src1 = instruction[3]
             src2 = instruction[4]
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(vdst + " = (" + src0 + " & " + src1 + ") | " + src2 + " // v_and_or_b32 \n")
+                decompiler_data.write(vdst + " = (" + src0 + " & " + src1 + ") | " + src2 + " // v_and_or_b32\n")
                 return node

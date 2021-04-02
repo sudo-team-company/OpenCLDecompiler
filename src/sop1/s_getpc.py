@@ -9,5 +9,5 @@ class SGetpc(BaseInstruction):
         if suffix == 'b64':
             sdst = instruction[1]
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(sdst + " = pc + 4 // s_getpc_b64 \n")
+                decompiler_data.write(sdst + " = pc + 4 // s_getpc_b64\n")
                 return node

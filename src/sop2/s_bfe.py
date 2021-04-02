@@ -18,7 +18,7 @@ class SBfe(BaseInstruction):
                 tab = "    "
                 shift = "shift" + str(decompiler_data.number_of_shift)
                 length = "length" + str(decompiler_data.number_of_length)
-                decompiler_data.write("uchar " + shift + " = " + ssrc1 + " & 31 // s_bfe_u32 \n")
+                decompiler_data.write("uchar " + shift + " = " + ssrc1 + " & 31 // s_bfe_u32\n")
                 decompiler_data.write("uchar " + length + " = (" + ssrc1 + ">>16) & 07xf\n")
                 decompiler_data.write("if (" + length + "==0)\n")
                 decompiler_data.write(tab + sdst + " = 0\n")
@@ -50,7 +50,7 @@ class SBfe(BaseInstruction):
                 tab = "    "
                 shift = "shift" + str(decompiler_data.number_of_shift)
                 length = "length" + str(decompiler_data.number_of_length)
-                decompiler_data.write("uchar " + shift + " = " + ssrc1 + " & 31 // s_bfe_i32 \n")
+                decompiler_data.write("uchar " + shift + " = " + ssrc1 + " & 31 // s_bfe_i32\n")
                 decompiler_data.write("uchar " + length + " = (" + ssrc1 + ">>16) & 07xf\n")
                 decompiler_data.write("if (" + length + "==0)\n")
                 decompiler_data.write(tab + sdst + " = 0\n")

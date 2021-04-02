@@ -8,6 +8,7 @@ from src.code_printer import create_opencl_body
 from src.config import process_config
 from src.versions import find_max_and_prev_versions, change_values, check_for_use_new_version
 from src.kernel_params import process_kernel_params
+from src.type_of_flag import TypeOfFlag
 
 
 def transform_instruction_set(instruction, set_of_instructions, num, row, curr_node):
@@ -99,11 +100,16 @@ def process_src(name_of_program, set_of_config, set_of_instructions):
     last_node_state = decompiler_data.initial_state
     decompiler_data.set_cfg(last_node)
     num = 0
+    if decompiler_data.flag_for_parsing == TypeOfFlag.only_clrx:
+        process_src_with_unresolved_instruction(initial_set_of_instructions)
+        return
     while num < len(set_of_instructions):
         result_for_check = process_single_instruction(set_of_instructions, num, curr_node, last_node_state, last_node)
         if result_for_check is not None:
             num, curr_node, set_of_instructions, last_node, last_node_state = result_for_check
         else:
+            if decompiler_data.flag_for_parsing == TypeOfFlag.only_opencl:
+                break
             process_src_with_unresolved_instruction(initial_set_of_instructions)
             return
 

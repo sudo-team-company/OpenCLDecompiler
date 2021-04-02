@@ -14,7 +14,7 @@ class SCmpLt(BaseInstruction):
             ssrc0 = instruction[1]
             ssrc1 = instruction[2]
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write("scc = (int)" + ssrc0 + " < (int)" + ssrc1 + " // s_cmp_lt_i32 \n")
+                decompiler_data.write("scc = (int)" + ssrc0 + " < (int)" + ssrc1 + " // s_cmp_lt_i32\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers["scc"] = \

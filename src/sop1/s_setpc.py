@@ -9,5 +9,5 @@ class SSetpc(BaseInstruction):
         if suffix == 'b64':
             ssrc0 = instruction[1]
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write("pc = " + ssrc0 + " // s_setpc_b64 \n")
+                decompiler_data.write("pc = " + ssrc0 + " // s_setpc_b64\n")
                 return node

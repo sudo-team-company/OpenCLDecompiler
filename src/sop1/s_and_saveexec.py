@@ -11,7 +11,7 @@ class SAndSaveexec(BaseInstruction):
             sdst = instruction[1]
             ssrc0 = instruction[2]
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(sdst + " = " + "exec // s_and_saveexec_b64 \n")
+                decompiler_data.write(sdst + " = " + "exec // s_and_saveexec_b64\n")
                 decompiler_data.write("exec = " + ssrc0 + " & exec\n")
                 decompiler_data.write("scc = exec != 0\n")
                 return node

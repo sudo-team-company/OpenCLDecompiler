@@ -11,7 +11,7 @@ class FlatStoreDwordx4(BaseInstruction):
         inst_offset = instruction[3] if len(instruction) > 3 else "0"
         if flag_of_status == OperationStatus.to_print_unresolved:
             vm = "vm" + str(decompiler_data.number_of_vm)
-            decompiler_data.write("short* " + vm + " = (" + vaddr + " + " + inst_offset + ") // flat_store_dwordx4 \n")
+            decompiler_data.write("short* " + vm + " = (" + vaddr + " + " + inst_offset + ") // flat_store_dwordx4\n")
             decompiler_data.write("*(uint*)(" + vm + ") = " + vdata + "[0]\n")
             decompiler_data.write("*(uint*)(" + vm + " + 4) = " + vdata + "[1]\n")
             decompiler_data.write("*(uint*)(" + vm + " + 8) = " + vdata + "[2]\n")

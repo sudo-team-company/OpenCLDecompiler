@@ -22,11 +22,11 @@ class VCmpEq(BaseInstruction):
             if flag_of_status == OperationStatus.to_print_unresolved:
                 if suffix != 'f32':
                     decompiler_data.write(sdst + "(LANEID) = " + new_as_type + src0
-                                          + " == " + new_as_type + src1 + " // v_cmp_eq_" + suffix + " \n")
+                                          + " == " + new_as_type + src1 + " // v_cmp_eq_" + suffix + "\n")
                     return node
                 else:
                     decompiler_data.write(sdst + "(LANEID) = as_float(" + src0 + ") == as_float("
-                                          + src1 + ") // v_cmp_eq_" + suffix + " \n")
+                                          + src1 + ") // v_cmp_eq_" + suffix + "\n")
                     return node
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val, src0_flag, src1_flag = make_op(node, src0, src1, " == ", new_as_type, new_as_type)

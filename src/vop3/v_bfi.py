@@ -13,5 +13,5 @@ class VBfi(BaseInstruction):
             src2 = instruction[4]
             if flag_of_status == OperationStatus.to_print_unresolved:
                 decompiler_data.write(vdst + " = (" + src0 + " & " + src1 + ") | (~"
-                                      + src0 + " & " + src2 + ") // v_bfi_b32 \n")
+                                      + src0 + " & " + src2 + ") // v_bfi_b32\n")
                 return node

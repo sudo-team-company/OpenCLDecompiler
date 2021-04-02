@@ -15,7 +15,7 @@ class VMin(BaseInstruction):
             src0 = instruction[2]
             src1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(vdst + " = min(" + src0 + ", " + src1 + ") // v_min_u32 \n")
+                decompiler_data.write(vdst + " = min(" + src0 + ", " + src1 + ") // v_min_u32\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 src0, _ = check_reg_for_val(node, src0)

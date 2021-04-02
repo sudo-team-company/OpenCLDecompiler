@@ -11,5 +11,5 @@ class VLshrrev(BaseInstruction):
             src0 = instruction[2]
             src1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(vdst + " = " + src1 + " >> (" + src0 + " & 63) // v_lshrrev_b64 \n")
+                decompiler_data.write(vdst + " = " + src1 + " >> (" + src0 + " & 63) // v_lshrrev_b64\n")
                 return node

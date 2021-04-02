@@ -10,5 +10,5 @@ class VMulF64(BaseInstruction):
         src0 = instruction[2]
         src1 = instruction[3]
         if flag_of_status == OperationStatus.to_print_unresolved:
-            decompiler_data.write(vdst + " = as_double(" + src0 + ") * as_double(" + src1 + ") // v_mul_f64 \n")
+            decompiler_data.write(vdst + " = as_double(" + src0 + ") * as_double(" + src1 + ") // v_mul_f64\n")
             return node

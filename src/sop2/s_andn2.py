@@ -12,7 +12,7 @@ class SAndn2(BaseInstruction):
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(sdst + " = " + ssrc0 + " & ~" + ssrc1 + " // s_andn2_b64 \n")
+                decompiler_data.write(sdst + " = " + ssrc0 + " & ~" + ssrc1 + " // s_andn2_b64\n")
                 decompiler_data.write("scc" + " = " + sdst + " != 0\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:

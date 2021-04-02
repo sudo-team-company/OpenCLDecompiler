@@ -15,7 +15,7 @@ class SAshr(BaseInstruction):
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(sdst + " = (int)" + ssrc0 + " >> (" + ssrc1 + " & 31) // s_ashr_i32 \n")
+                decompiler_data.write(sdst + " = (int)" + ssrc0 + " >> (" + ssrc1 + " & 31) // s_ashr_i32\n")
                 decompiler_data.write("scc = " + sdst + "!=0\n")
                 return node
             new_val, ssrc0_flag, ssrc1_flag = \

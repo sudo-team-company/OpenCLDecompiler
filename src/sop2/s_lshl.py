@@ -16,7 +16,7 @@ class SLshl(BaseInstruction):
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(sdst + " = " + ssrc0 + " << (" + ssrc1 + " & 31) // s_lshl_b32 \n")
+                decompiler_data.write(sdst + " = " + ssrc0 + " << (" + ssrc1 + " & 31) // s_lshl_b32\n")
                 decompiler_data.write("scc = " + sdst + "!= 0\n")
                 return node
             new_val, ssrc0_flag, ssrc1_flag = make_op(node, ssrc0, str(pow(2, int(ssrc1))), " * ", '', '')
@@ -46,7 +46,7 @@ class SLshl(BaseInstruction):
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(sdst + " = " + ssrc0 + " << (" + ssrc1 + " & 63) // s_lshl_b64 \n")
+                decompiler_data.write(sdst + " = " + ssrc0 + " << (" + ssrc1 + " & 63) // s_lshl_b64\n")
                 decompiler_data.write("scc = " + sdst + "!= 0\n")
                 return node
             first_to, last_to, name_of_to, name_of_from, first_from, last_from \

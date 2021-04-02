@@ -13,7 +13,7 @@ class GlobalStore(BaseInstruction):
             inst_offset = "0" if len(instruction) == 4 else instruction[4]
             if flag_of_status == OperationStatus.to_print_unresolved:
                 decompiler_data.write("*(uint*)(" + vaddr + " + " + saddr + " + " + inst_offset
-                                      + ") = " + vdata + " // global_store_dword \n")
+                                      + ") = " + vdata + " // global_store_dword\n")
                 return node
 
         elif suffix == "dwordx2":
@@ -23,5 +23,5 @@ class GlobalStore(BaseInstruction):
             inst_offset = "0" if len(instruction) == 4 else instruction[4]
             if flag_of_status == OperationStatus.to_print_unresolved:
                 decompiler_data.write("*(ulong*)(" + vaddr + " + " + saddr + " + " + inst_offset
-                                      + ") = " + vdata + " // global_store_dwordx2 \n")
+                                      + ") = " + vdata + " // global_store_dwordx2\n")
                 return node

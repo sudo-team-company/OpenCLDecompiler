@@ -15,7 +15,7 @@ class SLshr(BaseInstruction):
         ssrc1 = instruction[3]
         if suffix == 'b32':
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(sdst + " = " + ssrc0 + " >> (" + ssrc1 + " & 31) // s_lshr_b32 \n")
+                decompiler_data.write(sdst + " = " + ssrc0 + " >> (" + ssrc1 + " & 31) // s_lshr_b32\n")
                 decompiler_data.write("scc = " + sdst + "!= 0\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:

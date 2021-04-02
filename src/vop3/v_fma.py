@@ -28,6 +28,6 @@ class VFma(BaseInstruction):
                 return node
             if flag_of_status == OperationStatus.to_print_unresolved:
                 decompiler_data.write(vdst + " = " + "as_double(" + src0 + ") * as_double("
-                                      + src1 + ") + as_double(" + src2 + ") // v_fma_f32 \n")
+                                      + src1 + ") + as_double(" + src2 + ") // v_fma_f32\n")
                 return node
             return output_string

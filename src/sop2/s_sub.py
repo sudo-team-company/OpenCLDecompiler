@@ -15,7 +15,7 @@ class SSub(BaseInstruction):
             ssrc1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
                 temp = "temp" + str(decompiler_data.number_of_temp)
-                decompiler_data.write(sdst + " = " + ssrc0 + " - " + ssrc1 + " // s_sub_i32 \n")
+                decompiler_data.write(sdst + " = " + ssrc0 + " - " + ssrc1 + " // s_sub_i32\n")
                 decompiler_data.write("long " + temp + " = (long)" + ssrc0 + " - (long)" + ssrc1 + "\n")
                 decompiler_data.write("scc = " + temp + " > ((1LL << 31) - 1) || " + temp + " < (-1LL << 31)\n")
                 decompiler_data.number_of_temp += 1
@@ -28,7 +28,7 @@ class SSub(BaseInstruction):
             if flag_of_status == OperationStatus.to_print_unresolved:
                 temp = "temp" + str(decompiler_data.number_of_temp)
                 decompiler_data.write("ulong " + temp + " = (ulong)" + ssrc0
-                                      + " - (ulong)" + ssrc1 + " // s_sub_u32 \n")
+                                      + " - (ulong)" + ssrc1 + " // s_sub_u32\n")
                 decompiler_data.write(sdst + " = " + temp + "\n")
                 decompiler_data.write("scc = (" + temp + ">>32)!=0\n")
                 decompiler_data.number_of_temp += 1

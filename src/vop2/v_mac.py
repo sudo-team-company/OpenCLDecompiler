@@ -16,7 +16,7 @@ class VMac(BaseInstruction):
             src1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
                 decompiler_data.write(vdst + " = as_float(" + src0 + ") * as_float("
-                                      + src1 + ") + as_float(" + vdst + ") // v_mac_f32 \n")
+                                      + src1 + ") + as_float(" + vdst + ") // v_mac_f32\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val, src0_reg, src1_reg = make_op(node, src0, src1, " * ", 'as_float(', 'as_float(')

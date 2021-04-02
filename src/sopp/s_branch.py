@@ -8,7 +8,7 @@ class SBranch(BaseInstruction):
         decompiler_data = DecompilerData()
         reladdr = instruction[1]
         if flag_of_status == OperationStatus.to_print_unresolved:
-            decompiler_data.write("pc = " + reladdr + " // s_branch \n")
+            decompiler_data.write("pc = " + reladdr + " // s_branch\n")
             decompiler_data.write("goto " + reladdr + "\n")
             return node
         if decompiler_data.to_node.get(reladdr) is not None:

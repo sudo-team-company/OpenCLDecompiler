@@ -20,7 +20,7 @@ class VAddc(BaseInstruction):
                 temp = "temp" + str(decompiler_data.number_of_temp)
                 mask = "mask" + str(decompiler_data.number_of_mask)
                 cc = "cc" + str(decompiler_data.number_of_cc)
-                decompiler_data.write("ulong " + mask + " = (1ULL<<LANEID) // v_addc_u32 \n")
+                decompiler_data.write("ulong " + mask + " = (1ULL<<LANEID) // v_addc_u32\n")
                 decompiler_data.write("uchar " + cc + " = ((" + ssrc2 + "&" + mask + " ? 1 : 0)\n")
                 decompiler_data.write("uint " + temp + " = (ulong)" + src0 + " + (ulong)" + src1 + " + " + cc + "\n")
                 decompiler_data.write(sdst + " = 0\n")

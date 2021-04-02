@@ -5,7 +5,7 @@ from src.decompiler import process_src
 from src.decompiler_data import DecompilerData
 
 
-def main(input_par, output_par):
+def main(input_par, output_par, flag_for_parsing):
     output_file = open(output_par, 'w')
 
     with open(input_par, 'r') as file:
@@ -21,7 +21,7 @@ def main(input_par, output_par):
         if ".kernel " in row:
             if status_of_parse == "instruction":
                 status_of_parse = "kernel"
-                decompiler_data.reset(output_file)
+                decompiler_data.reset(output_file, flag_for_parsing)
                 process_src(name_of_program, set_of_config, set_of_instructions)
                 output_file.write("\n")
                 set_of_instructions = []
@@ -37,7 +37,7 @@ def main(input_par, output_par):
             set_of_config.append(row)
         else:
             continue
-    decompiler_data.reset(output_file)
+    decompiler_data.reset(output_file, flag_for_parsing)
     process_src(name_of_program, set_of_config, set_of_instructions)
     output_file.close()
 
@@ -46,13 +46,14 @@ def create_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--input', help='path to .asm input file')
     parser.add_argument('-o', '--output', help='path to .cl output file')
-
+    parser.add_argument('-f', '--flag', help='approach to parse', nargs='?',
+                        choices=['auto_parse', 'only_opencl', 'only_clrx'], default='auto_parse')
     return parser
 
 
-if __name__ == "__main__":
+def start_point():
     namespace = create_parser().parse_args(sys.argv[1:])
-
+    print(namespace.flag)
     if not (namespace.input or namespace.output):
         print("""
             Missing some parameters 
@@ -61,4 +62,8 @@ if __name__ == "__main__":
               'python parser_for_instructions.py -i <input_file.asm> -o <output_file.cl>'
             """)
     else:
-        main(namespace.input, namespace.output)
+        main(namespace.input, namespace.output, namespace.flag)
+
+
+if __name__ == "__main__":
+    start_point()

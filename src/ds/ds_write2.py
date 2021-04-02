@@ -16,7 +16,7 @@ class DsWrite2(BaseInstruction):
                 v0 = "V0" + str(decompiler_data.number_of_v0)
                 v1 = "V1" + str(decompiler_data.number_of_v1)
                 decompiler_data.write(
-                    "ulong* " + v0 + " = (ulong*)(ds + (" + addr + " + " + offset0 + " * 8) & ~7) // ds_write2_b64 \n")
+                    "ulong* " + v0 + " = (ulong*)(ds + (" + addr + " + " + offset0 + " * 8) & ~7) // ds_write2_b64\n")
                 decompiler_data.write(
                     "ulong* " + v1 + " = (ulong*)(ds + (" + addr + " + " + offset1 + " * 8) & ~7)\n")
                 decompiler_data.write("*" + v0 + " = " + vdata0 + "\n")

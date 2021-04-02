@@ -8,5 +8,5 @@ class SCbranchVccnz(BaseInstruction):
         decompiler_data = DecompilerData()
         reladdr = instruction[1]
         if flag_of_status == OperationStatus.to_print_unresolved:
-            decompiler_data.write("pc = vcc != 0 ? " + reladdr + " : pc + 4 // s_cbranch_vccnz \n")
+            decompiler_data.write("pc = vcc != 0 ? " + reladdr + " : pc + 4 // s_cbranch_vccnz\n")
             return node

@@ -15,7 +15,7 @@ class VAshrrev(BaseInstruction):
             src0 = instruction[2]
             src1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(vdst + " = (int)" + src1 + " >> (" + src0 + "&31) // v_ashrrev_i32 \n")
+                decompiler_data.write(vdst + " = (int)" + src1 + " >> (" + src0 + "&31) // v_ashrrev_i32\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[vdst] = \
@@ -37,7 +37,7 @@ class VAshrrev(BaseInstruction):
             from_registers = name_of_from + str(first_from)
             to_registers = name_of_to + str(first_to)
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(vdst + " = (long)" + src1 + " >> (" + src0 + "&63) // v_ashrrev_i64 \n")
+                decompiler_data.write(vdst + " = (long)" + src1 + " >> (" + src0 + "&63) // v_ashrrev_i64\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 if node.state.registers[from_registers].val == "0":

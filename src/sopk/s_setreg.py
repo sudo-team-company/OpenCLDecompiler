@@ -15,7 +15,7 @@ class SSetreg(BaseInstruction):
             if flag_of_status == OperationStatus.to_print_unresolved:
                 mask = "mask" + str(decompiler_data.number_of_mask)
                 decompiler_data.write("uint " + mask + " = (1U << " + bitsize
-                                      + ") - 1U) << " + bitoffset + " // s_setreg_b32 \n")
+                                      + ") - 1U) << " + bitoffset + " // s_setreg_b32\n")
                 decompiler_data.write(hwreg + " = (" + hwreg + "& ~" + mask + ") | (("
                                       + sdst + " << " + bitoffset + ") & " + mask + ")\n")
                 decompiler_data.number_of_mask += 1

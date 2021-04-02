@@ -14,7 +14,7 @@ class VXor(BaseInstruction):
             src0 = instruction[2]
             src1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(vdst + " = " + src0 + " ^ " + src1 + " // v_xor_b32 \n")
+                decompiler_data.write(vdst + " = " + src0 + " ^ " + src1 + " // v_xor_b32\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 new_integrity = node.state.registers[src1].integrity

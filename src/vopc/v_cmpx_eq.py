@@ -12,6 +12,6 @@ class VCmpxEq(BaseInstruction):
             src1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
                 decompiler_data.write(sdst + " = as_double(" + src0 + ") == as_double("
-                                      + src1 + ") // v_cmpx_eq_f64 \n")
+                                      + src1 + ") // v_cmpx_eq_f64\n")
                 decompiler_data.write("exec = " + sdst + "\n")
                 return node

@@ -14,7 +14,7 @@ class FlatStoreDword(BaseInstruction):
         inst_offset = "0" if len(instruction) < 4 else instruction[3]
         if flag_of_status == OperationStatus.to_print_unresolved:
             decompiler_data.write("*(uint32*)(" + vaddr + " + " + inst_offset
-                                  + ") = " + vdata + " // flat_store_dword \n")
+                                  + ") = " + vdata + " // flat_store_dword\n")
             # decompiler_data.write(to_registers + " = " + vdata + "\n")
             # if first_to != last_to:
             #     to_now = name_of_to + str(first_to + 1)

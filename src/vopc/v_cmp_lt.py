@@ -11,5 +11,5 @@ class VCmpLt(BaseInstruction):
             src0 = instruction[2]
             src1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(sdst + " = (uint)" + src0 + " < (uint)" + src1 + " // v_cmp_lt_u32 \n")
+                decompiler_data.write(sdst + " = (uint)" + src0 + " < (uint)" + src1 + " // v_cmp_lt_u32\n")
                 return node

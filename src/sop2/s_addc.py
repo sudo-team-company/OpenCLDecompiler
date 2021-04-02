@@ -17,7 +17,7 @@ class SAddc(BaseInstruction):
             if flag_of_status == OperationStatus.to_print_unresolved:
                 temp = "temp" + str(decompiler_data.number_of_temp)
                 decompiler_data.write("ulong " + temp + " = (ulong)" + ssrc0
-                                      + " + (ulong)" + ssrc1 + " + scc // s_addc_u32 \n")
+                                      + " + (ulong)" + ssrc1 + " + scc // s_addc_u32\n")
                 decompiler_data.write(sdst + " = " + temp + "\n")
                 decompiler_data.write("scc = " + temp + " >> 32\n")
                 decompiler_data.number_of_temp += 1

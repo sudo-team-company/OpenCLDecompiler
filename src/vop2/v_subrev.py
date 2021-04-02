@@ -18,7 +18,7 @@ class VSubrev(BaseInstruction):
                 temp = "temp" + str(decompiler_data.number_of_temp)
                 mask = "mask" + str(decompiler_data.number_of_mask)
                 decompiler_data.write("ulong " + temp + " = (ulong)" + src1
-                                      + " - (ulong)" + src0 + " // v_subrev_u32 \n")
+                                      + " - (ulong)" + src0 + " // v_subrev_u32\n")
                 decompiler_data.write(vdst + " = CLAMP ? (" + temp + ">>32 ? 0 : " + temp + ") : " + temp + "\n")
                 decompiler_data.write(vcc + " = 0\n")  # vop2, sdst
                 decompiler_data.write("ulong " + mask + " = (1ULL<<LANEID)\n")

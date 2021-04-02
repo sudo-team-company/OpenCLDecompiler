@@ -10,6 +10,6 @@ class SNot(BaseInstruction):
             sdst = instruction[1]
             ssrc0 = instruction[2]
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(sdst + " = ~" + ssrc0 + " // s_not_b64 \n")
+                decompiler_data.write(sdst + " = ~" + ssrc0 + " // s_not_b64\n")
                 decompiler_data.write("scc = " + sdst + " != 0\n")
                 return node

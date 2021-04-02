@@ -15,7 +15,7 @@ class FlatLoad(BaseInstruction):
             vaddr = instruction[2]
             inst_offset = instruction[3] if len(instruction) > 3 else "0"
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(vdst + " = *(uint*)(" + vaddr + " + " + inst_offset + ") // flat_load_dword \n")
+                decompiler_data.write(vdst + " = *(uint*)(" + vaddr + " + " + inst_offset + ") // flat_load_dword\n")
                 # decompiler_data.write(instruction + "  # " + to_registers + " = " + variable + "\n")
                 return node
             variable = "var" + str(decompiler_data.num_of_var)
@@ -46,7 +46,7 @@ class FlatLoad(BaseInstruction):
             if flag_of_status == OperationStatus.to_print_unresolved:
                 vm = "vm" + str(decompiler_data.number_of_vm)
                 decompiler_data.write("short* " + vm + " = (" + vaddr + " + "
-                                      + inst_offset + ") // flat_load_dwordx4 \n")
+                                      + inst_offset + ") // flat_load_dwordx4\n")
                 decompiler_data.write(vdst + "[0] = *(uint*)" + vm + "\n")
                 decompiler_data.write(vdst + "[1] = *(uint*)(" + vm + " + 4)\n")
                 decompiler_data.write(vdst + "[2] = *(uint*)(" + vm + " + 8)\n")

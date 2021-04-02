@@ -18,7 +18,7 @@ class VAdd(BaseInstruction):
             if flag_of_status == OperationStatus.to_print_unresolved:
                 temp = "temp" + str(decompiler_data.number_of_temp)
                 mask = "mask" + str(decompiler_data.number_of_mask)
-                decompiler_data.write("uint " + temp + " = (ulong)" + src0 + " + (ulong)" + src1 + " // v_add_u32 \n")
+                decompiler_data.write("uint " + temp + " = (ulong)" + src0 + " + (ulong)" + src1 + " // v_add_u32\n")
                 decompiler_data.write(vdst + " = CLAMP ? min(" + temp + ", 0xffffffff) : " + temp + "\n")
                 decompiler_data.write(sdst + " = 0\n")
                 decompiler_data.write("ulong " + mask + " = (1ULL<<LANEID)\n")

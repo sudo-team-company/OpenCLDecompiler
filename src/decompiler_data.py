@@ -2,6 +2,7 @@ from src.state import State
 from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
+from src.type_of_flag import TypeOfFlag
 
 
 def check_reg_for_val(node, register):
@@ -142,8 +143,9 @@ class DecompilerData(metaclass=Singleton):
         self.back_edges = []
         self.circles_variables = {}
         self.circles_nodes_for_variables = {}
+        self.flag_for_parsing = None
 
-    def reset(self, output_file):
+    def reset(self, output_file, flag_for_parsing):
         self.output_file = output_file
         self.usesetup = False
         self.size_of_work_groups = []
@@ -243,6 +245,12 @@ class DecompilerData(metaclass=Singleton):
         self.back_edges = []
         self.circles_variables = {}
         self.circles_nodes_for_variables = {}
+        if flag_for_parsing == "auto_parse":
+            self.flag_for_parsing = TypeOfFlag.auto_parse
+        elif flag_for_parsing == "only_opencl":
+            self.flag_for_parsing = TypeOfFlag.only_opencl
+        else:
+            self.flag_for_parsing = TypeOfFlag.only_clrx
 
     def write(self, output):
         # noinspection PyUnresolvedReferences

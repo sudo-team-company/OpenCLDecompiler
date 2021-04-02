@@ -17,7 +17,7 @@ class VCndmask(BaseInstruction):
             variable = "var" + str(decompiler_data.num_of_var)
             if flag_of_status == OperationStatus.to_print_unresolved:
                 decompiler_data.write(vdst + " = " + ssrc2 + "&(1ULL<<LANEID) ? "
-                                      + src1 + " : " + src0 + " // v_cndmask_b32 \n")
+                                      + src1 + " : " + src0 + " // v_cndmask_b32\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[vdst] = Register(variable, Type.program_param, Integrity.integer)

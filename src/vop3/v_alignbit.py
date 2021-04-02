@@ -17,7 +17,7 @@ class VAlignbit(BaseInstruction):
             src2 = instruction[4]
             if flag_of_status == OperationStatus.to_print_unresolved:
                 decompiler_data.write(vdst + " = (((ulong)" + src0 + ") << 32) | " + src1
-                                      + ") >> (" + src2 + " & 31) // v_alignbit_b32 \n")
+                                      + ") >> (" + src2 + " & 31) // v_alignbit_b32\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 src0, _ = check_reg_for_val(node, src0)

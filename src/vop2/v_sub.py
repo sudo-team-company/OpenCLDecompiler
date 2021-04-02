@@ -17,7 +17,7 @@ class VSub(BaseInstruction):
             if flag_of_status == OperationStatus.to_print_unresolved:
                 temp = "temp" + str(decompiler_data.number_of_temp)
                 mask = "mask" + str(decompiler_data.number_of_mask)
-                decompiler_data.write("ulong " + temp + " = (ulong)" + src0 + " - (ulong)" + src1 + " // v_sub_u32 \n")
+                decompiler_data.write("ulong " + temp + " = (ulong)" + src0 + " - (ulong)" + src1 + " // v_sub_u32\n")
                 decompiler_data.write(vdst + " = CLAMP ? (" + temp + ">>32 ? 0 : " + temp + ") : " + temp + "\n")
                 decompiler_data.write(vcc + " = 0\n")  # vop2, sdst
                 decompiler_data.write("ulong " + mask + " = (1ULL<<LANEID)\n")
@@ -46,7 +46,7 @@ class VSub(BaseInstruction):
             src0 = instruction[2]
             src1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(vdst + " = as_float(" + src0 + ") - as_float(" + src1 + ") // v_sub_f32 \n")
+                decompiler_data.write(vdst + " = as_float(" + src0 + ") - as_float(" + src1 + ") // v_sub_f32\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val, src0_reg, src1_reg = make_op(node, src0, src1, " - ", 'as_float(', 'as_float(')

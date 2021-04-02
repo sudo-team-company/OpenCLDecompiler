@@ -15,7 +15,7 @@ class SCselect(BaseInstruction):
             ssrc0 = instruction[2]
             ssrc1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(sdst + " = scc ? " + ssrc0 + " : " + ssrc1 + " // s_cselect_b64 \n")
+                decompiler_data.write(sdst + " = scc ? " + ssrc0 + " : " + ssrc1 + " // s_cselect_b64\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 if ssrc0 == "exec":

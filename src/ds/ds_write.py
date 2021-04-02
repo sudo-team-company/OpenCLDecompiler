@@ -14,7 +14,7 @@ class DsWrite(BaseInstruction):
             offset = int(instruction[3][7:]) if len(instruction) == 4 else 0
             if flag_of_status == OperationStatus.to_print_unresolved:
                 v = "V" + str(decompiler_data.number_of_v)
-                decompiler_data.write("uint* " + v + " // ds_write_b32 \n")
+                decompiler_data.write("uint* " + v + " // ds_write_b32\n")
                 decompiler_data.write(v + " = (uint*)(ds + ((" + addr + " + " + str(offset) + ") & ~3))\n")
                 decompiler_data.write("*" + v + " = " + vdata0 + "\n")
                 decompiler_data.number_of_v += 1
@@ -35,10 +35,10 @@ class DsWrite(BaseInstruction):
         elif suffix == "b64":
             addr = instruction[1]
             vdata0 = instruction[2]
-            offset = instruction[3][7:]
+            offset = instruction[3][7:] if len(instruction) > 3 else "0"
             if flag_of_status == OperationStatus.to_print_unresolved:
                 v = "V" + str(decompiler_data.number_of_v)
-                decompiler_data.write("ulong* " + v + " // ds_write_b64 \n")
+                decompiler_data.write("ulong* " + v + " // ds_write_b64\n")
                 decompiler_data.write(v + " = (ulong*)(ds + ((" + addr + " + " + offset + ") & ~7))\n")
                 decompiler_data.write("*" + v + " = " + vdata0 + "\n")
                 decompiler_data.number_of_v += 1
