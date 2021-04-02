@@ -8,8 +8,6 @@ def template(self, path_to_dir, dir_name, flag=None):
     if flag:
         flag_option = f' -f {flag}'
     subprocess.call(fr'tests.bat {path_to_dir}\{dir_name}\{dir_name}.bin {path_to_dir}\{dir_name}\{dir_name}.asm')
-    print(fr"python {path_to_exec_file} -i {path_to_dir}\{dir_name}\{dir_name}.asm" +
-          fr"-o {path_to_dir}\{dir_name}\{dir_name}_dcmpl.cl" + flag_option)
     subprocess.check_call(fr"python {path_to_exec_file} -i {path_to_dir}\{dir_name}\{dir_name}.asm" +
                     fr" -o {path_to_dir}\{dir_name}\{dir_name}_dcmpl.cl" + flag_option)
 

@@ -53,7 +53,6 @@ def create_parser():
 
 def start_point():
     namespace = create_parser().parse_args(sys.argv[1:])
-    print(namespace.flag)
     if not (namespace.input or namespace.output):
         print("""
             Missing some parameters 
