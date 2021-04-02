@@ -143,9 +143,9 @@ class DecompilerData(metaclass=Singleton):
         self.back_edges = []
         self.circles_variables = {}
         self.circles_nodes_for_variables = {}
-        self.flag_for_parsing = None
+        self.flag_for_decompilation = None
 
-    def reset(self, output_file, flag_for_parsing):
+    def reset(self, output_file, flag_for_decompilation):
         self.output_file = output_file
         self.usesetup = False
         self.size_of_work_groups = []
@@ -245,12 +245,12 @@ class DecompilerData(metaclass=Singleton):
         self.back_edges = []
         self.circles_variables = {}
         self.circles_nodes_for_variables = {}
-        if flag_for_parsing == "auto_parse":
-            self.flag_for_parsing = TypeOfFlag.auto_parse
-        elif flag_for_parsing == "only_opencl":
-            self.flag_for_parsing = TypeOfFlag.only_opencl
+        if flag_for_decompilation == "auto_parse":
+            self.flag_for_decompilation = TypeOfFlag.auto_parse
+        elif flag_for_decompilation == "only_opencl":
+            self.flag_for_decompilation = TypeOfFlag.only_opencl
         else:
-            self.flag_for_parsing = TypeOfFlag.only_clrx
+            self.flag_for_decompilation = TypeOfFlag.only_clrx
 
     def write(self, output):
         # noinspection PyUnresolvedReferences

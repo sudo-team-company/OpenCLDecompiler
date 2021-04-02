@@ -5,7 +5,7 @@ from src.decompiler import process_src
 from src.decompiler_data import DecompilerData
 
 
-def main(input_par, output_par, flag_for_parsing):
+def main(input_par, output_par, flag_for_decompilation):
     output_file = open(output_par, 'w')
 
     with open(input_par, 'r') as file:
@@ -21,7 +21,7 @@ def main(input_par, output_par, flag_for_parsing):
         if ".kernel " in row:
             if status_of_parse == "instruction":
                 status_of_parse = "kernel"
-                decompiler_data.reset(output_file, flag_for_parsing)
+                decompiler_data.reset(output_file, flag_for_decompilation)
                 process_src(name_of_program, set_of_config, set_of_instructions)
                 output_file.write("\n")
                 set_of_instructions = []
@@ -37,7 +37,7 @@ def main(input_par, output_par, flag_for_parsing):
             set_of_config.append(row)
         else:
             continue
-    decompiler_data.reset(output_file, flag_for_parsing)
+    decompiler_data.reset(output_file, flag_for_decompilation)
     process_src(name_of_program, set_of_config, set_of_instructions)
     output_file.close()
 
