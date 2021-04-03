@@ -2,6 +2,6 @@ from enum import Enum, auto
 
 
 class TypeOfFlag(Enum):
-    auto_parse = auto()
+    auto_decompilation = auto()
     only_opencl = auto()
     only_clrx = auto()

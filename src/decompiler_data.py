@@ -245,8 +245,8 @@ class DecompilerData(metaclass=Singleton):
         self.back_edges = []
         self.circles_variables = {}
         self.circles_nodes_for_variables = {}
-        if flag_for_decompilation == "auto_parse":
-            self.flag_for_decompilation = TypeOfFlag.auto_parse
+        if flag_for_decompilation == "auto_decompilation":
+            self.flag_for_decompilation = TypeOfFlag.auto_decompilation
         elif flag_for_decompilation == "only_opencl":
             self.flag_for_decompilation = TypeOfFlag.only_opencl
         else:

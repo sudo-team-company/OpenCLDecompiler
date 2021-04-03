@@ -111,8 +111,8 @@ class DifferentTypes(unittest.TestCase):
 
 
 class DifferentFlags(unittest.TestCase):
-    def test_flag_auto_parse(self):
-        template(self, 'different_flags', 'flag_auto_parse')
+    def test_flag_auto_decompilation(self):
+        template(self, 'different_flags', 'flag_auto_decompilation')
 
     def test_flag_only_clrx(self):
         template(self, 'different_flags', 'flag_only_clrx', 'only_clrx')

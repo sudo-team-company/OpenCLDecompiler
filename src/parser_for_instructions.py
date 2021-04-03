@@ -47,7 +47,7 @@ def create_parser():
     parser.add_argument('-i', '--input', help='path to .asm input file')
     parser.add_argument('-o', '--output', help='path to .cl output file')
     parser.add_argument('-f', '--flag', help='approach to parse', nargs='?',
-                        choices=['auto_parse', 'only_opencl', 'only_clrx'], default='auto_parse')
+                        choices=['auto_decompilation', 'only_opencl', 'only_clrx'], default='auto_decompilation')
     return parser
 
 

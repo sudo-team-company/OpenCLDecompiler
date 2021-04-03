@@ -39,11 +39,19 @@ Next - decompiler work.
 **Sample usages**
 
 ```
-python3 parser_for_instructions.py --input <input_file.asm> --output <output_file.cl>
-python3 parser_for_instructions.py -i <input_file.asm> -o <output_file.cl>
+python3 parser_for_instructions.py --input <input_file.asm> --output <output_file.cl> --flag <flag_for_decompilation>
+python3 parser_for_instructions.py -i <input_file.asm> -o <output_file.cl> -f <flag_for_decompilation>
 ```
-Where _input_file.asm_ - an AMD GCN assembler file; _output_file.cl_ - decompiled OpenCL
-To get _input_file.asm_ you need to use CLRX disassembler. 
+Where _input_file.asm_ - an AMD GCN assembler file; _output_file.cl_ - decompiled OpenCL.  
+To get _input_file.asm_ you need to use CLRX disassembler.  
+_flag_for_decompilation_ is an optional parameter. It can be _auto_decompilation_ or _only_clrx_ or _only_opencl_.
+The default is _auto_decompilation_. Other flag values are not allowed.  
+* _auto_decompilation_. If the decompilation was successful, the result of the program execution will be the OpenCL code. 
+Otherwise, the program returns the OpenCL code obtained by translating the assembler using the site (http://clrx.nativeboinc.org/wiki2/wiki/wiki/GcnIsa).
+Also it prints unresolved command before the body of the OpenCL program.  
+* _only_clrx_. The program always returns the OpenCL code obtained by translating the assembler using the site (http://clrx.nativeboinc.org/wiki2/wiki/wiki/GcnIsa).
+* _only_opencl_. The program always returns OpenCL code (without the "clrx translation").
+If the decompilation was not successful, the program prints unresolved command before the decompiled body of the OpenCL program. 
 
 ## Examples
 
