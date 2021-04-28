@@ -155,7 +155,8 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
                                                                      decompiler_data.checked_variables[check_version])
             elif "flat_store" in instruction[0]:
                 curr_node.state.registers[register].val = \
-                    curr_node.state.registers[register].val.replace(val_reg, decompiler_data.checked_variables[check_version])
+                    curr_node.state.registers[register].val.replace(val_reg,
+                                                                    decompiler_data.checked_variables[check_version])
 
                 curr_node.state.registers[first_reg].val = curr_node.state.registers[register].val
         elif curr_node.state.registers[first_reg].val.find(val_reg) != -1:
