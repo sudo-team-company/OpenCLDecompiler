@@ -15,7 +15,9 @@ def get_gdata_number(instruction):
     if position == -1:
         return 0
     else:
-        end_position = instruction.find("[", position)
+        end_position = position + 5
+        while end_position < len(instruction) and '0' <= instruction[end_position] <= '9':
+            end_position += 1
         return int(instruction[position + 5:end_position])
 
 

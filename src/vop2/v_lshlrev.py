@@ -73,6 +73,12 @@ class VLshlrev(BaseInstruction):
                     decompiler_data.make_version(node.state, to_registers)
                     node.state.registers[to_registers_1] = Register(new_val, type_reg, Integrity.high_part)
                     decompiler_data.make_version(node.state, to_registers_1)
+                if node.is_gdata_next:
+                    if src0_flag:
+                        suffix = 'i64' if src1 == '3' else 'i32'
+                    else:
+                        suffix = 'i64' if src0 == '3' else 'i32'
                 node.state.registers[to_registers].type_of_data = suffix
+                node.state.registers[to_registers_1].type_of_data = suffix
                 return node
             return output_string  # из vop3

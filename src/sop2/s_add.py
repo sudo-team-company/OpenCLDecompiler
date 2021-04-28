@@ -4,6 +4,7 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
+from src.global_data import get_gdata_number
 
 
 class SAdd(BaseInstruction):
@@ -38,10 +39,22 @@ class SAdd(BaseInstruction):
                         node.state.registers[sdst] = \
                             Register(new_val, Type.work_group_id_z_local_size_offset, Integrity.integer)
                     elif node.state.registers[ssrc0].type == Type.global_data_pointer:
-                        new_value, src0_flag, src1_flag = make_op(node, ssrc1, "8", " / ", '', '')
-                        new_val = node.state.registers[ssrc0].val + "[" + new_value + "]"
-                        node.state.registers[sdst] = \
-                            Register(new_val, Type.global_data_pointer, Integrity.integer)
+                        index = get_gdata_number(node.state.registers[ssrc0].val)
+                        name = "gdata" + str(index)
+                        if node.state.registers[ssrc1].type_of_data == 'i32':
+                            decompiler_data.type_gdata[name] = 'int'
+                            new_value, src0_flag, src1_flag = make_op(node, ssrc1, "4", " / ", '', '')
+                            new_val = node.state.registers[ssrc0].val + "[" + new_value + "]"
+                            node.state.registers[sdst] = \
+                                Register(new_val, Type.global_data_pointer, Integrity.integer)
+                            suffix = 'i32'
+                        else:
+                            decompiler_data.type_gdata[name] = 'long'
+                            new_value, src0_flag, src1_flag = make_op(node, ssrc1, "8", " / ", '', '')
+                            new_val = node.state.registers[ssrc0].val + "[" + new_value + "]"
+                            node.state.registers[sdst] = \
+                                Register(new_val, Type.global_data_pointer, Integrity.integer)
+                            suffix = 'i64'
                     elif node.state.registers[ssrc0].type == Type.param \
                             or node.state.registers[ssrc1].type == Type.param:
                         node.state.registers[sdst] = \
@@ -60,9 +73,7 @@ class SAdd(BaseInstruction):
                 decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()
-                if node.state.registers[ssrc0].type == Type.global_data_pointer:
-                    node.state.registers[sdst].type_of_data = node.state.registers[ssrc0].type_of_data
-                else:
+                if not (node.state.registers[ssrc0].type == Type.global_data_pointer):
                     node.state.registers[sdst].type_of_data = suffix
                 return node
             return output_string
