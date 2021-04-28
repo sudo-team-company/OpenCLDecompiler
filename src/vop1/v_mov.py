@@ -20,9 +20,9 @@ class VMov(BaseInstruction):
                 if node.state.registers.get(src0) is not None:
                     node.state.registers[vdst] = \
                         Register(node.state.registers[src0].val, node.state.registers[src0].type,
-                                 Integrity.integer)
+                                 Integrity.entire)
                 else:
-                    node.state.registers[vdst] = Register(src0, Type.int32, Integrity.integer)
+                    node.state.registers[vdst] = Register(src0, Type.int32, Integrity.entire)
                 decompiler_data.make_version(node.state, vdst)
                 if vdst in [src0]:
                     node.state.registers[vdst].make_prev()

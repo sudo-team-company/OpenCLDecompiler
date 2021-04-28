@@ -20,7 +20,7 @@ class VCndmask(BaseInstruction):
                                       + src1 + " : " + src0 + " // v_cndmask_b32\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
-                node.state.registers[vdst] = Register(variable, Type.program_param, Integrity.integer)
+                node.state.registers[vdst] = Register(variable, Type.program_param, Integrity.entire)
                 decompiler_data.make_version(node.state, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()

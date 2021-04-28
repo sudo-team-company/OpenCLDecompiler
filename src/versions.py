@@ -1,3 +1,4 @@
+import copy
 from collections import deque
 from src.type_of_reg import Type
 from src.decompiler_data import DecompilerData
@@ -102,7 +103,7 @@ def update_value_for_reg(first_reg, curr_node):
     for child in curr_node.children:
         if len(child.parent) < 2 \
                 and curr_node.state.registers[first_reg].version == child.state.registers[first_reg].version:
-            child.state.registers[first_reg] = curr_node.state.registers[first_reg]
+            child.state.registers[first_reg] = copy.deepcopy(curr_node.state.registers[first_reg])
             update_value_for_reg(first_reg, child)
 
 
@@ -148,12 +149,22 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
             val_reg = curr_node.parent[0].state.registers[first_reg].val
         copy_val_prev = curr_node.state.registers[first_reg].val
         if decompiler_data.checked_variables.get(check_version) is not None:
-            curr_node.state.registers[first_reg].val = \
-                curr_node.state.registers[first_reg].val.replace(val_reg,
-                                                                 decompiler_data.checked_variables[check_version])
-        else:
+            if curr_node.state.registers[first_reg].val.find(val_reg) != -1:
+                curr_node.state.registers[first_reg].val = \
+                    curr_node.state.registers[first_reg].val.replace(val_reg,
+                                                                     decompiler_data.checked_variables[check_version])
+            elif "flat_store" in instruction[0]:
+                curr_node.state.registers[register].val = \
+                    curr_node.state.registers[register].val.replace(val_reg, decompiler_data.checked_variables[check_version])
+
+                curr_node.state.registers[first_reg].val = curr_node.state.registers[register].val
+        elif curr_node.state.registers[first_reg].val.find(val_reg) != -1:
             curr_node.state.registers[first_reg].val = \
                 curr_node.state.registers[first_reg].val.replace(val_reg, decompiler_data.variables[check_version])
+        elif "flat_store" in instruction[0]:
+            curr_node.state.registers[register].val = \
+                curr_node.state.registers[register].val.replace(val_reg, decompiler_data.variables[check_version])
+            curr_node.state.registers[first_reg].val = curr_node.state.registers[register].val
         copy_val_last = curr_node.state.registers[first_reg].val
         if copy_val_prev != copy_val_last:
             changes[curr_node.state.registers[first_reg].version] = [copy_val_last, copy_val_prev]

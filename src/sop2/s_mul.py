@@ -23,19 +23,19 @@ class SMul(BaseInstruction):
                     if node.state.registers[ssrc0].type == Type.local_size_x \
                             and node.state.registers[ssrc1].type == Type.work_group_id_x:
                         node.state.registers[sdst] = \
-                            Register(new_val, Type.work_group_id_x_local_size, Integrity.integer)
+                            Register(new_val, Type.work_group_id_x_local_size, Integrity.entire)
                     elif node.state.registers[ssrc0].type == Type.local_size_y \
                             and node.state.registers[ssrc1].type == Type.work_group_id_y:
                         node.state.registers[sdst] = \
-                            Register(new_val, Type.work_group_id_y_local_size, Integrity.integer)
+                            Register(new_val, Type.work_group_id_y_local_size, Integrity.entire)
                     elif node.state.registers[ssrc0].type == Type.local_size_z \
                             and node.state.registers[ssrc1].type == Type.work_group_id_z:
                         node.state.registers[sdst] = \
-                            Register(new_val, Type.work_group_id_z_local_size, Integrity.integer)
+                            Register(new_val, Type.work_group_id_z_local_size, Integrity.entire)
                     else:
-                        node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
+                        node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.entire)
                 else:
-                    node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
+                    node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()

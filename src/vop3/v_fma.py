@@ -20,7 +20,7 @@ class VFma(BaseInstruction):
                 src1, _ = check_reg_for_val(node, src1)
                 src2, _ = check_reg_for_val(node, src2)
                 new_val = "fma(" + src0 + ", " + src1 + ', ' + src2 + ")"
-                node.state.registers[vdst] = Register(new_val, Type.unknown, Integrity.integer)
+                node.state.registers[vdst] = Register(new_val, Type.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, vdst)
                 if vdst in [src0, src1, src2]:
                     node.state.registers[vdst].make_prev()

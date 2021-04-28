@@ -26,7 +26,7 @@ class SAddc(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 if ssrc0_reg and ssrc1_reg:
                     node.state.registers[sdst] = \
-                        Register(new_val, Type.unknown, Integrity.integer)
+                        Register(new_val, Type.unknown, Integrity.entire)
                 else:
                     type_reg = Type.int32
                     if ssrc0_reg:
@@ -34,7 +34,7 @@ class SAddc(BaseInstruction):
                     if ssrc1_reg:
                         type_reg = node.state.registers[ssrc1].type
                     node.state.registers[sdst] = \
-                        Register(new_val, type_reg, Integrity.integer)
+                        Register(new_val, type_reg, Integrity.entire)
                 decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()

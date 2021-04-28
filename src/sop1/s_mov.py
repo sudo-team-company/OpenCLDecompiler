@@ -19,9 +19,9 @@ class SMov(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 if node.state.registers.get(ssrc0) is not None:
                     node.state.registers[sdst] = \
-                        Register(node.state.registers[ssrc0].val, node.state.registers[ssrc0].type, Integrity.integer)
+                        Register(node.state.registers[ssrc0].val, node.state.registers[ssrc0].type, Integrity.entire)
                 else:
-                    node.state.registers[sdst] = Register(ssrc0, Type.int32, Integrity.integer)
+                    node.state.registers[sdst] = Register(ssrc0, Type.int32, Integrity.entire)
                 decompiler_data.make_version(node.state, sdst)
                 node.state.registers[sdst].type_of_data = suffix
                 return node

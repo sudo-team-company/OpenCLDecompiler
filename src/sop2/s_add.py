@@ -28,22 +28,22 @@ class SAdd(BaseInstruction):
                     if node.state.registers[ssrc0].type == Type.work_group_id_x_local_size \
                             and node.state.registers[ssrc1].type == Type.global_offset_x:
                         node.state.registers[sdst] = \
-                            Register(new_val, Type.work_group_id_x_local_size_offset, Integrity.integer)
+                            Register(new_val, Type.work_group_id_x_local_size_offset, Integrity.entire)
                     elif node.state.registers[ssrc0].type == Type.work_group_id_y_local_size \
                             and node.state.registers[ssrc1].type == Type.global_offset_y:
                         node.state.registers[sdst] = \
-                            Register(new_val, Type.work_group_id_y_local_size_offset, Integrity.integer)
+                            Register(new_val, Type.work_group_id_y_local_size_offset, Integrity.entire)
                     elif node.state.registers[ssrc0].type == Type.work_group_id_z_local_size \
                             and node.state.registers[ssrc1].type == Type.global_offset_z:
                         node.state.registers[sdst] = \
-                            Register(new_val, Type.work_group_id_z_local_size_offset, Integrity.integer)
+                            Register(new_val, Type.work_group_id_z_local_size_offset, Integrity.entire)
                     elif node.state.registers[ssrc0].type == Type.param \
                             or node.state.registers[ssrc1].type == Type.param:
                         node.state.registers[sdst] = \
-                            Register(new_val, Type.param, Integrity.integer)
+                            Register(new_val, Type.param, Integrity.entire)
                     else:
                         node.state.registers[sdst] = \
-                            Register(new_val, Type.unknown, Integrity.integer)
+                            Register(new_val, Type.unknown, Integrity.entire)
                 else:
                     type_reg = Type.int32
                     if ssrc0_reg:
@@ -51,7 +51,7 @@ class SAdd(BaseInstruction):
                     if ssrc1_reg:
                         type_reg = node.state.registers[ssrc1].type
                     node.state.registers[sdst] = \
-                        Register(new_val, type_reg, Integrity.integer)
+                        Register(new_val, type_reg, Integrity.entire)
                 decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()

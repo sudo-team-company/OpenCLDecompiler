@@ -17,7 +17,7 @@ class SMovk(BaseInstruction):
                 decompiler_data.write("scc = " + simm16 + " // s_movk_i32\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
-                node.state.registers[sdst] = Register(simm16, Type.unknown, Integrity.integer)
+                node.state.registers[sdst] = Register(simm16, Type.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, sdst)
                 node.state.registers[sdst].type_of_data = suffix
                 return node

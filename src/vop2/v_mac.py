@@ -21,7 +21,7 @@ class VMac(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val, src0_reg, src1_reg = make_op(node, src0, src1, " * ", 'as_float(', 'as_float(')
                 end_val = new_val + " + as_float(" + node.state.registers[vdst].val + ')'
-                node.state.registers[vdst] = Register(end_val, Type.unknown, Integrity.integer)
+                node.state.registers[vdst] = Register(end_val, Type.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, vdst)
                 node.state.registers[vdst].make_prev()
                 node.state.registers[vdst].type_of_data = suffix

@@ -21,7 +21,7 @@ class SMin(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val = "min((int)" + node.state.registers[ssrc0].val + ", (int)" \
                           + node.state.registers[ssrc1].val + ")"
-                node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
+                node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()
