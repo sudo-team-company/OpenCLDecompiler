@@ -4,6 +4,7 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
+from src.global_data import get_gdata_offset
 
 
 class VAdd(BaseInstruction):
@@ -77,7 +78,27 @@ class VAdd(BaseInstruction):
                             new_val = node.state.registers[src0].val + "[" + new_value + "]"
                             node.state.registers[vdst] = \
                                 Register(new_val, Type.param_global_id_x, new_integrity)
-
+                    elif node.state.registers[src0].type == Type.global_data_pointer:
+                        index = get_gdata_offset(node.state.registers[src0].val)
+                        name = "gdata" + str(index)
+                        if decompiler_data.type_gdata[name] == 'int'\
+                                or decompiler_data.type_gdata[name] == 'uint':
+                            new_value, src0_flag, src1_flag = make_op(node, src1, "4", " / ", '', '')
+                            new_val = node.state.registers[src0].val + "[" + new_value + "]"
+                            node.state.registers[vdst] = \
+                                Register(new_val, Type.global_data_pointer, Integrity.integer)
+                        elif decompiler_data.type_gdata[name] == 'long'\
+                                or decompiler_data.type_gdata[name] == 'ulong':
+                            new_value, src0_flag, src1_flag = make_op(node, src1, "4", " / ", '', '')
+                            new_val = node.state.registers[src0].val + "[" + new_value + "]"
+                            node.state.registers[vdst] = \
+                                Register(new_val, Type.global_data_pointer, Integrity.integer)
+                        else:
+                            # FIX_IT
+                            new_value, src0_flag, src1_flag = make_op(node, src1, "4", " / ", '', '')
+                            new_val = node.state.registers[src0].val + "[" + new_value + "]"
+                            node.state.registers[vdst] = \
+                                Register(new_val, Type.global_data_pointer, Integrity.integer)
                     elif node.state.registers[src0].type == Type.work_group_id_x_local_size and \
                             node.state.registers[src1].type == Type.work_item_id_x:
                         new_integrity = node.state.registers[src1].integrity
@@ -116,6 +137,10 @@ class VAdd(BaseInstruction):
                 decompiler_data.make_version(node.state, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
-                node.state.registers[vdst].type_of_data = suffix
+                if src0 in node.state.registers and node.state.registers[src0] is not None \
+                        and node.state.registers[src0].type == Type.global_data_pointer:
+                    node.state.registers[vdst].type_of_data = node.state.registers[src0].type_of_data
+                else:
+                    node.state.registers[vdst].type_of_data = suffix
                 return node
             return output_string

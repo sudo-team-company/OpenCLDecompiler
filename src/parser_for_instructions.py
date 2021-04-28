@@ -12,7 +12,9 @@ def main(input_par, output_par, flag_for_decompilation):
         body_of_file = file.read().splitlines()
     status_of_parse = "start"
     set_of_instructions = []
+    set_of_global_data_instruction = []
     set_of_config = []
+    set_of_global_data_bytes = []
     name_of_program = ""
     decompiler_data = DecompilerData()
     for row in body_of_file:
@@ -22,7 +24,7 @@ def main(input_par, output_par, flag_for_decompilation):
             if status_of_parse == "instruction":
                 status_of_parse = "kernel"
                 decompiler_data.reset(output_file, flag_for_decompilation)
-                process_src(name_of_program, set_of_config, set_of_instructions)
+                process_src(name_of_program, set_of_config, set_of_instructions, set_of_global_data_bytes, set_of_global_data_instruction)
                 output_file.write("\n")
                 set_of_instructions = []
                 set_of_config = []
@@ -31,14 +33,30 @@ def main(input_par, output_par, flag_for_decompilation):
             status_of_parse = "config"
         elif row == ".text":
             status_of_parse = "instruction"
+        elif row == ".gdata:":
+            status_of_parse = "global_data"
         elif status_of_parse == "instruction":
+            if ".gdata" in row:
+                set_of_global_data_instruction.append(row)
             set_of_instructions.append(row)
         elif status_of_parse == "config":
             set_of_config.append(row)
+        elif status_of_parse == "global_data":
+            line_of_bytes = row.split()
+            if line_of_bytes.pop(0) == ".fill":
+                amount = line_of_bytes[0]
+                value = line_of_bytes[2]
+                expand_list = [value for _ in range(int(amount))]
+                set_of_global_data_bytes += expand_list
+            else:
+                for i, elem in enumerate(line_of_bytes):
+                    line_of_bytes[i] = re.sub(',', '', elem)
+                set_of_global_data_bytes += line_of_bytes
+
         else:
             continue
     decompiler_data.reset(output_file, flag_for_decompilation)
-    process_src(name_of_program, set_of_config, set_of_instructions)
+    process_src(name_of_program, set_of_config, set_of_instructions, set_of_global_data_bytes, set_of_global_data_instruction)
     output_file.close()
 
 

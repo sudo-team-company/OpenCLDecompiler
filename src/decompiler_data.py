@@ -3,6 +3,7 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.type_of_flag import TypeOfFlag
+from src.opencl_types import make_type
 
 
 def check_reg_for_val(node, register):
@@ -69,6 +70,7 @@ class DecompilerData(metaclass=Singleton):
         self.sgprsnum = 0  # number of s registers used by system (количество s регистров, используемых системой)
         self.vgprsnum = 0  # number of v registers used by system (количество v регистров, используемых системой)
         self.params = {}
+        self.gdata = {}
         self.to_node = {}  # the label at which the block starts -> node (метка, с которой начинается блок -> вершина)
         self.from_node = {}
         # the label the vertex is expecting -> node (метка, которую ожидает вершина -> вершина ("лист ожидания"))
@@ -79,9 +81,11 @@ class DecompilerData(metaclass=Singleton):
         self.flag_of_else = False
         self.version_wait = None
         self.type_params = {}
+        self.type_gdata = {}
         self.variables = {}
         self.checked_variables = {}
         self.kernel_params = {}
+        self.global_data = {}
         self.versions = {
             "s0": 0,
             "s1": 0,
@@ -171,6 +175,7 @@ class DecompilerData(metaclass=Singleton):
         self.sgprsnum = 0  # number of s registers used by system (количество s регистров, используемых системой)
         self.vgprsnum = 0  # number of v registers used by system (количество v регистров, используемых системой)
         self.params = {}
+        self.gdata = {}
         self.to_node = {}  # the label at which the block starts -> node (метка, с которой начинается блок -> вершина)
         self.from_node = {}
         # the label the vertex is expecting -> node (метка, которую ожидает вершина -> вершина ("лист ожидания"))
@@ -181,9 +186,11 @@ class DecompilerData(metaclass=Singleton):
         self.flag_of_else = False
         self.version_wait = None
         self.type_params = {}
+        self.type_gdata = {}
         self.variables = {}
         self.checked_variables = {}
         self.kernel_params = {}
+        self.global_data = {}
         self.versions = {
             "s0": 0,
             "s1": 0,
@@ -255,6 +262,30 @@ class DecompilerData(metaclass=Singleton):
     def write(self, output):
         # noinspection PyUnresolvedReferences
         self.output_file.write(output)
+
+    def evaluate_from_hex(self, global_data, size):
+        typed_global_data = []
+        for element in range(int(len(global_data) / size)):
+            array_of_bytes = global_data[element * size: element * size + size]
+            string_of_bytes = ''.join(elem[2:] + ' ' for elem in array_of_bytes)
+            value = int("".join(string_of_bytes.split()[::-1]), 16)
+            typed_global_data.append(value)
+        return typed_global_data
+
+    def write_global_data(self):
+        for key, var in self.type_gdata.items():
+            type_of_var = make_type(var)
+            if type_of_var == 'uint' or type_of_var == 'int':
+                list_of_gdata_values = self.evaluate_from_hex(self.global_data[key], 4)
+            else:
+                list_of_gdata_values = self.evaluate_from_hex(self.global_data[key], 8)
+            self.write("__constant " + type_of_var + " " + key + "[] = {")
+            for index, element in enumerate(list_of_gdata_values):
+                if index:
+                    self.write(', ' + str(element))
+                else:
+                    self.write(str(element))
+            self.write("};\n")
 
     def make_version(self, state, reg):
         if reg not in self.versions:

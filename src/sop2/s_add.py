@@ -37,6 +37,11 @@ class SAdd(BaseInstruction):
                             and node.state.registers[ssrc1].type == Type.global_offset_z:
                         node.state.registers[sdst] = \
                             Register(new_val, Type.work_group_id_z_local_size_offset, Integrity.integer)
+                    elif node.state.registers[ssrc0].type == Type.global_data_pointer:
+                        new_value, src0_flag, src1_flag = make_op(node, ssrc1, "8", " / ", '', '')
+                        new_val = node.state.registers[ssrc0].val + "[" + new_value + "]"
+                        node.state.registers[sdst] = \
+                            Register(new_val, Type.global_data_pointer, Integrity.integer)
                     elif node.state.registers[ssrc0].type == Type.param \
                             or node.state.registers[ssrc1].type == Type.param:
                         node.state.registers[sdst] = \
@@ -55,6 +60,9 @@ class SAdd(BaseInstruction):
                 decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()
-                node.state.registers[sdst].type_of_data = suffix
+                if node.state.registers[ssrc0].type == Type.global_data_pointer:
+                    node.state.registers[sdst].type_of_data = node.state.registers[ssrc0].type_of_data
+                else:
+                    node.state.registers[sdst].type_of_data = suffix
                 return node
             return output_string

@@ -17,6 +17,17 @@ def template(self, path_to_dir, dir_name, flag=None):
             unittest.TestCase.assertEqual(self, first=hands_decompilation.read(), second=decompiled.read())
 
 
+class GlobalDataTest(unittest.TestCase):
+    def test_int_array(self):
+        template(self, 'global_data_usage', 'int_kernels')
+
+    def test_long_array(self):
+        template(self, 'global_data_usage', 'long_kernels')
+
+    def test_mixed_array(self):
+        template(self, 'global_data_usage', 'mixed_kernels')
+
+
 class BranchingKernelsTest(unittest.TestCase):
     def test_if_first(self):
         template(self, 'branching_kernels', 'if_1')

@@ -23,6 +23,7 @@ def create_opencl_body():
                               + str(size_var) + "]" + ";\n")
     make_output_from_region(decompiler_data.improve_cfg, '    ')
     decompiler_data.write("}\n")
+    decompiler_data.write_global_data()
 
 
 def make_output_for_circle_vars(curr_node, indent):
@@ -42,7 +43,7 @@ def make_output_for_linear_region(region, indent):
             curr_node = region.start
         while True:
             new_output = to_opencl(curr_node, OperationStatus.to_print)
-            if new_output != "":
+            if new_output != "" and new_output is not None:
                 decompiler_data.write(indent + new_output + ";\n")
             if decompiler_data.circles_nodes_for_variables.get(curr_node):
                 make_output_for_circle_vars(curr_node, indent)
