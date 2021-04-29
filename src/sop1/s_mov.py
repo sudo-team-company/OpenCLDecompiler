@@ -29,9 +29,6 @@ class SMov(BaseInstruction):
                     else:
                         node.state.registers[sdst] = Register(ssrc0, Type.int32, Integrity.entire)
                 decompiler_data.make_version(node.state, sdst)
-                if ".gdata" in ssrc0:
-                    node.state.registers[sdst].type_of_data = 'undefined_type'
-                else:
-                    node.state.registers[sdst].type_of_data = suffix
+                node.state.registers[sdst].type_of_data = suffix
                 return node
             return output_string

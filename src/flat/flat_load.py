@@ -5,7 +5,6 @@ from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
 from src.upload import find_first_last_num_to_from
-from src.global_data import get_gdata_number, get_gdata_offset
 
 
 class FlatLoad(BaseInstruction):
@@ -28,11 +27,6 @@ class FlatLoad(BaseInstruction):
                 if inst_offset == "0":
                     if first_to == last_to:
                         data_type = node.state.registers[from_registers].type_of_data
-                        id = get_gdata_offset(node.state.registers[from_registers].val)
-                        if data_type == 'undefined_type' \
-                                and decompiler_data.type_gdata['gdata' + str(id)] == 'undefined_type':
-                            decompiler_data.type_gdata['gdata' + str(id)] = 'u32'
-                            data_type = 'u32'
                         node.state.registers[to_registers] = \
                             Register(variable, Type.program_param, Integrity.entire)
                         decompiler_data.make_version(node.state, to_registers)
@@ -60,13 +54,8 @@ class FlatLoad(BaseInstruction):
                 if inst_offset == "0":
                     if first_to == last_to:
                         data_type = node.state.registers[from_registers].type_of_data
-                        id = get_gdata_number(node.state.registers[from_registers].val)
-                        if data_type == 'undefined_type' and decompiler_data.type_gdata[
-                            'gdata' + str(id)] == 'undefined_type':
-                            decompiler_data.type_gdata['gdata' + str(id)] = 'i64'
-                            data_type = 'i64'
                         node.state.registers[to_registers] = \
-                            Register(variable, Type.program_param, Integrity.integer)
+                            Register(variable, Type.program_param, Integrity.entire)
                         decompiler_data.make_version(node.state, to_registers)
                         node.state.registers[to_registers].type_of_data = data_type
                         node.state.registers[to_registers].val = variable
@@ -74,13 +63,8 @@ class FlatLoad(BaseInstruction):
                                                  data_type)
                     else:
                         data_type = node.state.registers[from_registers].type_of_data
-                        id = get_gdata_number(node.state.registers[from_registers].val)
-                        if data_type == 'undefined_type' and decompiler_data.type_gdata[
-                            'gdata' + str(id)] == 'undefined_type':
-                            decompiler_data.type_gdata['gdata' + str(id)] = 'i64'
-                            data_type = 'i64'
                         node.state.registers[to_registers] = \
-                            Register(variable, Type.program_param, Integrity.integer)
+                            Register(variable, Type.program_param, Integrity.entire)
                         decompiler_data.make_version(node.state, to_registers)
                         node.state.registers[to_registers].type_of_data = data_type
                         node.state.registers[to_registers].val = variable

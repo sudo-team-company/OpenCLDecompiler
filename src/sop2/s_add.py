@@ -4,7 +4,6 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
-from src.global_data import get_gdata_number
 
 
 class SAdd(BaseInstruction):
@@ -39,19 +38,18 @@ class SAdd(BaseInstruction):
                         node.state.registers[sdst] = \
                             Register(new_val, Type.work_group_id_z_local_size_offset, Integrity.entire)
                     elif node.state.registers[ssrc0].type == Type.global_data_pointer:
-                        index = get_gdata_number(node.state.registers[ssrc0].val)
-                        name = "gdata" + str(index)
+                        name = node.state.registers[ssrc0].val
                         if node.state.registers[ssrc1].type_of_data == 'i32':
                             decompiler_data.type_gdata[name] = 'int'
                             new_value, src0_flag, src1_flag = make_op(node, ssrc1, "4", " / ", '', '')
-                            new_val = node.state.registers[ssrc0].val + "[" + new_value + "]"
+                            new_val = name + "[" + new_value + "]"
                             node.state.registers[sdst] = \
                                 Register(new_val, Type.global_data_pointer, Integrity.entire)
                             suffix = 'i32'
                         else:
                             decompiler_data.type_gdata[name] = 'long'
                             new_value, src0_flag, src1_flag = make_op(node, ssrc1, "8", " / ", '', '')
-                            new_val = node.state.registers[ssrc0].val + "[" + new_value + "]"
+                            new_val = name + "[" + new_value + "]"
                             node.state.registers[sdst] = \
                                 Register(new_val, Type.global_data_pointer, Integrity.entire)
                             suffix = 'i64'

@@ -1,10 +1,9 @@
 class Node:
-    def __init__(self, instruction, state, is_gdata_next):
+    def __init__(self, instruction, state):
         self.instruction = instruction
         self.children = []
         self.parent = []
         self.state = state
-        self.is_gdata_next = is_gdata_next
 
     def add_child(self, child):
         self.children.append(child)

@@ -3,7 +3,6 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.type_of_flag import TypeOfFlag
-from src.opencl_types import make_type
 
 
 def check_reg_for_val(node, register):
@@ -271,20 +270,6 @@ class DecompilerData(metaclass=Singleton):
             value = int("".join(string_of_bytes.split()[::-1]), 16)
             typed_global_data.append(value)
         return typed_global_data
-
-    def write_global_data(self):
-        for key, var in self.type_gdata.items():
-            if var == 'uint' or var == 'int':
-                list_of_gdata_values = self.evaluate_from_hex(self.global_data[key], 4)
-            else:
-                list_of_gdata_values = self.evaluate_from_hex(self.global_data[key], 8)
-            self.write("__constant " + var + " " + key + "[] = {")
-            for index, element in enumerate(list_of_gdata_values):
-                if index:
-                    self.write(', ' + str(element))
-                else:
-                    self.write(str(element))
-            self.write("};\n")
 
     def make_version(self, state, reg):
         if reg not in self.versions:

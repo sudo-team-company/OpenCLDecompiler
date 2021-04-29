@@ -57,8 +57,6 @@ def check_instruction_set_for_if_else(instruction, curr_node, set_of_instruction
 def process_single_instruction(set_of_instructions, num, curr_node, last_node_state, last_node):
     decompiler_data = DecompilerData()
     row = set_of_instructions[num]
-    if ('s_lshl_b64' in row or 'v_lshlrev_b64' in row) and len(decompiler_data.global_data) != 0:
-        last_node.is_gdata_next = True
     instruction = row.strip().replace(',', ' ').split()
     set_of_instructions, instruction = transform_instruction_set(instruction, set_of_instructions, num, row, curr_node)
     curr_node = make_cfg_node(instruction, last_node_state, last_node)
@@ -99,7 +97,7 @@ def process_src(name_of_program, set_of_config, set_of_instructions, set_of_glob
     process_global_data(set_of_global_data_instruction, set_of_global_data_bytes)
     process_config(set_of_config, name_of_program)
     process_kernel_params(set_of_instructions)
-    last_node = Node([""], decompiler_data.initial_state, False)
+    last_node = Node([""], decompiler_data.initial_state)
     curr_node = last_node
     last_node_state = decompiler_data.initial_state
     decompiler_data.set_cfg(last_node)

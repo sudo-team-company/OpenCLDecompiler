@@ -6,14 +6,14 @@ from src.operation_status import OperationStatus
 
 
 def make_cfg_node(instruction, last_node_state, last_node):
-    node = Node(instruction, last_node_state, last_node.is_gdata_next)
+    node = Node(instruction, last_node_state)
     if last_node.instruction != "branch":
         node.add_parent(last_node)
     return to_opencl(node, OperationStatus.to_fill_node)
 
 
 def make_unresolved_node(instruction, last_node_state):
-    node = Node(instruction, last_node_state, False)
+    node = Node(instruction, last_node_state)
     return to_opencl(node, OperationStatus.to_print_unresolved)
 
 

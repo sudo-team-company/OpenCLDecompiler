@@ -40,10 +40,6 @@ class SLoad(BaseInstruction):
                     from_registers].type == Type.global_data_pointer):
                     data_type = node.state.registers[from_registers].type_of_data
                     id = get_gdata_offset(node.state.registers[from_registers].val)
-                    if data_type == 'undefined_type' \
-                            and decompiler_data.type_gdata['gdata' + str(id)] == 'undefined_type':
-                        decompiler_data.type_gdata['gdata' + str(id)] = suffix
-                        data_type = 'i64'
                 else:
                     node.state.registers[to_registers].type_of_data = suffix
                 return node
@@ -65,10 +61,6 @@ class SLoad(BaseInstruction):
                     from_registers].type == Type.global_data_pointer):
                     data_type = node.state.registers[from_registers].type_of_data
                     id = get_gdata_offset(node.state.registers[from_registers].val)
-                    if data_type == 'undefined_type' \
-                            and decompiler_data.type_gdata['gdata' + str(id)] == 'undefined_type':
-                        decompiler_data.type_gdata['gdata' + str(id)] = suffix
-                        data_type = 'i64'
                 else:
                     node.state.registers[to_registers].type_of_data = suffix
                 return node
