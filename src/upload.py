@@ -114,6 +114,11 @@ def upload(state, to_registers, from_registers, offset, kernel_params):
                     type_param = Type.param
                 state.registers[reg] = Register(val, type_param, Integrity.entire)
                 decompiler_data.make_version(state, reg)
+    elif state.registers[from_registers].type == Type.global_data_pointer:
+        new_val = state.registers[from_registers].val
+        state.registers[to_registers] = \
+            Register(new_val, Type.global_data_pointer, Integrity.entire)
+        decompiler_data.make_version(state, to_registers)
     else:
         for i in range(first_to, last_to + 1):
             to_registers = name_of_to + str(i)

@@ -14,7 +14,7 @@ def make_type(asm_type):
     elif asm_type == "dword":
         opencl_type = "int"
     elif asm_type == "dwordx2":
-        opencl_type = "dwordx2"
+        opencl_type = "long"
     elif asm_type == "f32":
         opencl_type = "float"
     else:

@@ -1,7 +1,9 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData
 from src.operation_status import OperationStatus
-from src.upload import upload_usesetup, upload
+from src.upload import upload_usesetup, upload, find_first_last_num_to_from
+from src.type_of_reg import Type
+from src.global_data import get_gdata_offset
 
 
 class SLoad(BaseInstruction):
@@ -13,6 +15,9 @@ class SLoad(BaseInstruction):
         offset = instruction[3]
         to_registers = sdata
         left_board_to = to_registers.find("[")
+        first_to, last_to, name_of_to, name_of_from, first_from, last_from \
+            = find_first_last_num_to_from(sdata, sbase)
+        from_registers = name_of_from + str(first_from)
         if left_board_to != -1:
             separation_to = to_registers.index(":")
             first_to = int(to_registers[(left_board_to + 1):separation_to])
@@ -24,12 +29,19 @@ class SLoad(BaseInstruction):
                 decompiler_data.write(sdata + " = *(uint*)(smem + (" + offset + " & ~3)) // s_load_dword\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
-                if decompiler_data.usesetup is False and sbase == "s[4:5]" \
+                if node.state.registers[from_registers] is not None \
+                        and node.state.registers[from_registers].type == Type.global_data_pointer \
+                        or decompiler_data.usesetup is False and sbase == "s[4:5]" \
                         or decompiler_data.usesetup is True and sbase == "s[6:7]":
                     upload(node.state, sdata, sbase, offset, decompiler_data.kernel_params)
                 else:
                     upload_usesetup(node.state, sdata, offset)
-                node.state.registers[to_registers].type_of_data = suffix
+                if node.state.registers[from_registers] is not None\
+                        and node.state.registers[from_registers].type == Type.global_data_pointer:
+                    data_type = node.state.registers[from_registers].type_of_data
+                    node.state.registers[to_registers].type_of_data = data_type
+                else:
+                    node.state.registers[to_registers].type_of_data = suffix
                 return node
             return output_string
 
@@ -38,12 +50,19 @@ class SLoad(BaseInstruction):
                 decompiler_data.write(sdata + " = *(ulong*)(smem + (" + offset + " & ~3)) // s_load_dwordx2\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
-                if decompiler_data.usesetup is False and sbase == "s[4:5]" \
+                if node.state.registers[from_registers] is not None \
+                        and node.state.registers[from_registers].type == Type.global_data_pointer \
+                        or decompiler_data.usesetup is False and sbase == "s[4:5]" \
                         or decompiler_data.usesetup is True and sbase == "s[6:7]":
                     upload(node.state, sdata, sbase, offset, decompiler_data.kernel_params)
                 else:
                     upload_usesetup(node.state, sdata, offset)
-                node.state.registers[to_registers].type_of_data = suffix
+                if node.state.registers[from_registers] is not None \
+                        and node.state.registers[from_registers].type == Type.global_data_pointer:
+                    data_type = node.state.registers[from_registers].type_of_data
+                    node.state.registers[to_registers].type_of_data = data_type
+                else:
+                    node.state.registers[to_registers].type_of_data = suffix
                 return node
             return output_string
 

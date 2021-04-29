@@ -77,7 +77,22 @@ class VAdd(BaseInstruction):
                             new_val = node.state.registers[src0].val + "[" + new_value + "]"
                             node.state.registers[vdst] = \
                                 Register(new_val, Type.param_global_id_x, new_integrity)
-
+                    elif node.state.registers[src0].type == Type.global_data_pointer:
+                        name = node.state.registers[src0].val
+                        if node.state.registers[src1].type_of_data == 'i32':
+                            decompiler_data.type_gdata[name] = 'int'
+                            new_value, src0_flag, src1_flag = make_op(node, src1, "4", " / ", '', '')
+                            new_val = name + "[" + new_value + "]"
+                            node.state.registers[vdst] = \
+                                Register(new_val, Type.global_data_pointer, Integrity.entire)
+                            suffix = 'i32'
+                        else:
+                            decompiler_data.type_gdata[name] = 'long'
+                            new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
+                            new_val = name + "[" + new_value + "]"
+                            node.state.registers[vdst] = \
+                                Register(new_val, Type.global_data_pointer, Integrity.entire)
+                            suffix = 'i64'
                     elif node.state.registers[src0].type == Type.work_group_id_x_local_size and \
                             node.state.registers[src1].type == Type.work_item_id_x:
                         new_integrity = node.state.registers[src1].integrity

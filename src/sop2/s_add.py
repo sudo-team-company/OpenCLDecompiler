@@ -37,6 +37,22 @@ class SAdd(BaseInstruction):
                             and node.state.registers[ssrc1].type == Type.global_offset_z:
                         node.state.registers[sdst] = \
                             Register(new_val, Type.work_group_id_z_local_size_offset, Integrity.entire)
+                    elif node.state.registers[ssrc0].type == Type.global_data_pointer:
+                        name = node.state.registers[ssrc0].val
+                        if node.state.registers[ssrc1].type_of_data == 'i32':
+                            decompiler_data.type_gdata[name] = 'int'
+                            new_value, src0_flag, src1_flag = make_op(node, ssrc1, "4", " / ", '', '')
+                            new_val = name + "[" + new_value + "]"
+                            node.state.registers[sdst] = \
+                                Register(new_val, Type.global_data_pointer, Integrity.entire)
+                            suffix = 'i32'
+                        else:
+                            decompiler_data.type_gdata[name] = 'long'
+                            new_value, src0_flag, src1_flag = make_op(node, ssrc1, "8", " / ", '', '')
+                            new_val = name + "[" + new_value + "]"
+                            node.state.registers[sdst] = \
+                                Register(new_val, Type.global_data_pointer, Integrity.entire)
+                            suffix = 'i64'
                     elif node.state.registers[ssrc0].type == Type.param \
                             or node.state.registers[ssrc1].type == Type.param:
                         node.state.registers[sdst] = \
@@ -55,6 +71,7 @@ class SAdd(BaseInstruction):
                 decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()
-                node.state.registers[sdst].type_of_data = suffix
+                if not (node.state.registers[ssrc0].type == Type.global_data_pointer):
+                    node.state.registers[sdst].type_of_data = suffix
                 return node
             return output_string

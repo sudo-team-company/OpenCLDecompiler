@@ -79,9 +79,11 @@ class DecompilerData(metaclass=Singleton):
         self.flag_of_else = False
         self.version_wait = None
         self.type_params = {}
+        self.type_gdata = {}
         self.variables = {}
         self.checked_variables = {}
         self.kernel_params = {}
+        self.global_data = {}
         self.versions = {
             "s0": 0,
             "s1": 0,
@@ -182,9 +184,11 @@ class DecompilerData(metaclass=Singleton):
         self.flag_of_else = False
         self.version_wait = None
         self.type_params = {}
+        self.type_gdata = {}
         self.variables = {}
         self.checked_variables = {}
         self.kernel_params = {}
+        self.global_data = {}
         self.versions = {
             "s0": 0,
             "s1": 0,
@@ -257,6 +261,15 @@ class DecompilerData(metaclass=Singleton):
     def write(self, output):
         # noinspection PyUnresolvedReferences
         self.output_file.write(output)
+
+    def evaluate_from_hex(self, global_data, size):
+        typed_global_data = []
+        for element in range(int(len(global_data) / size)):
+            array_of_bytes = global_data[element * size: element * size + size]
+            string_of_bytes = ''.join(elem[2:] + ' ' for elem in array_of_bytes)
+            value = int("".join(string_of_bytes.split()[::-1]), 16)
+            typed_global_data.append(value)
+        return typed_global_data
 
     def make_version(self, state, reg):
         if reg not in self.versions:

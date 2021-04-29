@@ -9,6 +9,7 @@ from src.config import process_config
 from src.versions import find_max_and_prev_versions, change_values, check_for_use_new_version
 from src.kernel_params import process_kernel_params
 from src.type_of_flag import TypeOfFlag
+from src.global_data import process_global_data
 
 
 def transform_instruction_set(instruction, set_of_instructions, num, row, curr_node):
@@ -90,9 +91,10 @@ def process_src_with_unresolved_instruction(set_of_instructions):
         # result_for_check = process_single_instruction(set_of_instructions, num, curr_node, last_node_state, last_node)
 
 
-def process_src(name_of_program, set_of_config, set_of_instructions):
+def process_src(name_of_program, set_of_config, set_of_instructions, set_of_global_data_bytes, set_of_global_data_instruction):
     decompiler_data = DecompilerData()
     initial_set_of_instructions = set_of_instructions
+    process_global_data(set_of_global_data_instruction, set_of_global_data_bytes)
     process_config(set_of_config, name_of_program)
     process_kernel_params(set_of_instructions)
     last_node = Node([""], decompiler_data.initial_state)
