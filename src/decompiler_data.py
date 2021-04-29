@@ -143,6 +143,7 @@ class DecompilerData(metaclass=Singleton):
         self.back_edges = []
         self.circles_variables = {}
         self.circles_nodes_for_variables = {}
+        self.configuration_output = ""
         self.flag_for_decompilation = None
 
     def reset(self, output_file, flag_for_decompilation):
@@ -245,6 +246,7 @@ class DecompilerData(metaclass=Singleton):
         self.back_edges = []
         self.circles_variables = {}
         self.circles_nodes_for_variables = {}
+        self.configuration_output = ""
         if flag_for_decompilation == "auto_decompilation":
             self.flag_for_decompilation = TypeOfFlag.auto_decompilation
         elif flag_for_decompilation == "only_opencl":
@@ -305,11 +307,11 @@ class DecompilerData(metaclass=Singleton):
     def process_size_of_work_groups(self, cws, set_of_config_1):
         if cws:
             self.size_of_work_groups = set_of_config_1.replace(',', ' ').split()[1:]
-            self.write(
-                "__kernel __attribute__((reqd_work_group_size(" + self.size_of_work_groups[0] + ", "
-                + self.size_of_work_groups[1] + ", " + self.size_of_work_groups[2] + ")))\n")
+            self.configuration_output += "__kernel __attribute__((reqd_work_group_size(" \
+                + self.size_of_work_groups[0] + ", " + self.size_of_work_groups[1] \
+                + ", " + self.size_of_work_groups[2] + ")))\n"
         else:
-            self.write("__kernel ")
+            self.configuration_output += "__kernel "
 
     def process_local_size(self, localsize, set_of_config_4):
         if localsize:

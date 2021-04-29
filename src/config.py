@@ -15,14 +15,14 @@ def process_params(set_of_config, name_of_program):
         if ".arg" in set_of_config_num and "_." not in set_of_config_num:
             parameters = set_of_config[num_of_setting:]
             break
-    decompiler_data.write("void " + name_of_program + "(")
+    decompiler_data.configuration_output += "void " + name_of_program + "("
     num_of_param = 0
     flag_start = False
     for param in parameters:
         if not flag_start:
             flag_start = True
         else:
-            decompiler_data.write(", ")
+            decompiler_data.configuration_output += ", "
         set_of_param = param.strip().replace(',', ' ').split()
         name_param = set_of_param[1]
         type_param = set_of_param[3]
@@ -33,9 +33,9 @@ def process_params(set_of_config, name_of_program):
             name_param = "*" + name_param
             type_param = type_param[:-1]
         decompiler_data.make_params(num_of_param, name_param, type_param)
-        decompiler_data.write(flag_param + type_param + " " + name_param)
+        decompiler_data.configuration_output += flag_param + type_param + " " + name_param
         num_of_param += 1
-    decompiler_data.write(")\n")
+    decompiler_data.configuration_output += ")\n"
 
 
 def process_size_of_work_groups(set_of_config):

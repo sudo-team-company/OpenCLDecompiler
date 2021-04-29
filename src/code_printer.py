@@ -8,6 +8,7 @@ from src.type_of_node import TypeNode
 
 def create_opencl_body():
     decompiler_data = DecompilerData()
+    decompiler_data.write(decompiler_data.configuration_output)
     decompiler_data.write("{\n")
     for var in sorted(decompiler_data.names_of_vars.keys()):
         type_of_var = make_type(decompiler_data.names_of_vars[var])
