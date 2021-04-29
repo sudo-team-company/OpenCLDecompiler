@@ -32,6 +32,16 @@ def make_op(node, register0, register1, operation, type0, type1):
     return new_val, register0_flag, register1_flag
 
 
+def evaluate_from_hex(global_data, size):
+    typed_global_data = []
+    for element in range(int(len(global_data) / size)):
+        array_of_bytes = global_data[element * size: element * size + size]
+        string_of_bytes = ''.join(elem[2:] + ' ' for elem in array_of_bytes)
+        value = int("".join(string_of_bytes.split()[::-1]), 16)
+        typed_global_data.append(value)
+    return typed_global_data
+
+
 class Singleton(type):
     _instances = {}
 
@@ -261,15 +271,6 @@ class DecompilerData(metaclass=Singleton):
     def write(self, output):
         # noinspection PyUnresolvedReferences
         self.output_file.write(output)
-
-    def evaluate_from_hex(self, global_data, size):
-        typed_global_data = []
-        for element in range(int(len(global_data) / size)):
-            array_of_bytes = global_data[element * size: element * size + size]
-            string_of_bytes = ''.join(elem[2:] + ' ' for elem in array_of_bytes)
-            value = int("".join(string_of_bytes.split()[::-1]), 16)
-            typed_global_data.append(value)
-        return typed_global_data
 
     def make_version(self, state, reg):
         if reg not in self.versions:

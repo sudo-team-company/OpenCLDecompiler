@@ -518,7 +518,7 @@ valid-metaclass-classmethod-first-arg=cls
 max-args=7
 
 # Maximum number of attributes for a class (see R0902).
-max-attributes=49
+max-attributes=51
 
 # Maximum number of boolean expressions in an if statement (see R0916).
 max-bool-expr=6
@@ -527,7 +527,7 @@ max-bool-expr=6
 max-branches=14
 
 # Maximum number of locals for function / method body.
-max-locals=17
+max-locals=20
 
 # Maximum number of parents for a class (see R0901).
 max-parents=7
@@ -539,7 +539,7 @@ max-public-methods=24
 max-returns=6
 
 # Maximum number of statements in function / method body.
-max-statements=55
+max-statements=57
 
 # Minimum number of public methods for a class (see R0903).
 min-public-methods=1
