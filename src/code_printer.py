@@ -8,6 +8,7 @@ from src.type_of_node import TypeNode
 
 def create_opencl_body():
     decompiler_data = DecompilerData()
+    write_global_data()
     decompiler_data.write(decompiler_data.configuration_output)
     decompiler_data.write("{\n")
     for var in sorted(decompiler_data.names_of_vars.keys()):
@@ -24,15 +25,14 @@ def create_opencl_body():
                               + str(size_var) + "]" + ";\n")
     make_output_from_region(decompiler_data.improve_cfg, '    ')
     decompiler_data.write("}\n")
-    write_global_data()
 
 
 def write_global_data():
     decompiler_data = DecompilerData()
-    for key, var in decompiler_data.type_gdata.items():
+    for key, var in sorted(decompiler_data.type_gdata.items()):
         if var == 'uint' or var == 'int':
             list_of_gdata_values = decompiler_data.evaluate_from_hex(decompiler_data.global_data[key], 4)
-        else:
+        elif var == 'ulong' or var == 'long':
             list_of_gdata_values = decompiler_data.evaluate_from_hex(decompiler_data.global_data[key], 8)
         decompiler_data.write("__constant " + var + " " + key + "[] = {")
         for index, element in enumerate(list_of_gdata_values):
@@ -40,7 +40,7 @@ def write_global_data():
                 decompiler_data.write(', ' + str(element))
             else:
                 decompiler_data.write(str(element))
-        decompiler_data.write("};\n")
+        decompiler_data.write("};\n\n")
 
 
 def make_output_for_circle_vars(curr_node, indent):

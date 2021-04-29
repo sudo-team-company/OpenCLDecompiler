@@ -115,11 +115,9 @@ def upload(state, to_registers, from_registers, offset, kernel_params):
                 state.registers[reg] = Register(val, type_param, Integrity.entire)
                 decompiler_data.make_version(state, reg)
     elif state.registers[from_registers].type == Type.global_data_pointer:
-        data_type = state.registers[from_registers].type_of_data
         new_val = state.registers[from_registers].val
         state.registers[to_registers] = \
             Register(new_val, Type.global_data_pointer, Integrity.entire)
-        state.registers[to_registers].type_of_data = data_type
         decompiler_data.make_version(state, to_registers)
     else:
         for i in range(first_to, last_to + 1):

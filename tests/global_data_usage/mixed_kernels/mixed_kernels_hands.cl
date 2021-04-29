@@ -1,3 +1,7 @@
+__constant int gdata0[] = {1, 2, 3, 4, 5, 6, 7, 0};
+
+__constant long gdata32[] = {8, 9, 10, 11};
+
 __kernel __attribute__((reqd_work_group_size(8, 8, 1)))
 void some_array_test(__global long *out, int i)
 {
@@ -8,5 +12,3 @@ void some_array_test(__global long *out, int i)
     out[(get_global_id(0) * 8) / 8] = var0;
     out[(get_global_id(1) * 8) / 8] = var1;
 }
-__constant int gdata0[] = {1, 2, 3, 4, 5, 6, 7, 0};
-__constant long gdata32[] = {8, 9, 10, 11};

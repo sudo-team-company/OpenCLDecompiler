@@ -29,17 +29,17 @@ class SLoad(BaseInstruction):
                 decompiler_data.write(sdata + " = *(uint*)(smem + (" + offset + " & ~3)) // s_load_dword\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
-                if (node.state.registers[from_registers] is not None and node.state.registers[
-                    from_registers].type == Type.global_data_pointer) \
+                if node.state.registers[from_registers] is not None \
+                        and node.state.registers[from_registers].type == Type.global_data_pointer \
                         or decompiler_data.usesetup is False and sbase == "s[4:5]" \
                         or decompiler_data.usesetup is True and sbase == "s[6:7]":
                     upload(node.state, sdata, sbase, offset, decompiler_data.kernel_params)
                 else:
                     upload_usesetup(node.state, sdata, offset)
-                if (node.state.registers[from_registers] is not None and node.state.registers[
-                    from_registers].type == Type.global_data_pointer):
+                if node.state.registers[from_registers] is not None\
+                        and node.state.registers[from_registers].type == Type.global_data_pointer:
                     data_type = node.state.registers[from_registers].type_of_data
-                    id = get_gdata_offset(node.state.registers[from_registers].val)
+                    node.state.registers[to_registers].type_of_data = data_type
                 else:
                     node.state.registers[to_registers].type_of_data = suffix
                 return node
@@ -50,17 +50,17 @@ class SLoad(BaseInstruction):
                 decompiler_data.write(sdata + " = *(ulong*)(smem + (" + offset + " & ~3)) // s_load_dwordx2\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
-                if (node.state.registers[from_registers] is not None and node.state.registers[
-                    from_registers].type == Type.global_data_pointer) \
+                if node.state.registers[from_registers] is not None \
+                        and node.state.registers[from_registers].type == Type.global_data_pointer \
                         or decompiler_data.usesetup is False and sbase == "s[4:5]" \
                         or decompiler_data.usesetup is True and sbase == "s[6:7]":
                     upload(node.state, sdata, sbase, offset, decompiler_data.kernel_params)
                 else:
                     upload_usesetup(node.state, sdata, offset)
-                if (node.state.registers[from_registers] is not None and node.state.registers[
-                    from_registers].type == Type.global_data_pointer):
+                if node.state.registers[from_registers] is not None \
+                        and node.state.registers[from_registers].type == Type.global_data_pointer:
                     data_type = node.state.registers[from_registers].type_of_data
-                    id = get_gdata_offset(node.state.registers[from_registers].val)
+                    node.state.registers[to_registers].type_of_data = data_type
                 else:
                     node.state.registers[to_registers].type_of_data = suffix
                 return node

@@ -71,8 +71,8 @@ class FlatLoad(BaseInstruction):
                         decompiler_data.make_var(node.state.registers[to_registers].version, variable,
                                                  data_type)
                 return node
-            output_string = node.state.registers[to_registers].val + " = " + \
-                            node.parent[0].state.registers[from_registers].val
+            output_string = node.state.registers[to_registers].val + " = " +\
+                node.parent[0].state.registers[from_registers].val
             return output_string
         elif suffix == "dwordx4":
             vdst = instruction[1]
