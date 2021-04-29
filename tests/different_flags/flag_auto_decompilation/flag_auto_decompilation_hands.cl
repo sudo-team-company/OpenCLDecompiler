@@ -1,4 +1,3 @@
-__kernel void sum(__global short *A, __global ulong *C, uint size, __local ulong *L)
 Not resolved yet. v_cmp_gt_u32    vcc, s1, v0
 m0 = 0x10000 // s_mov_b32
 s0 = *(uint*)(smem + (0x4 & ~3)) // s_load_dword

@@ -68,7 +68,7 @@ class State:
         else:
             type_g = Type.work_group_id_z
             type_v = Type.work_item_id_z
-        self.registers[g_id_dim] = Register("get_group_id(" + str(dim) + ")", type_g, Integrity.integer)
+        self.registers[g_id_dim] = Register("get_group_id(" + str(dim) + ")", type_g, Integrity.entire)
         self.registers[g_id_dim].add_version(g_id_dim, version_g_id)
-        self.registers[v_dim] = Register("get_local_id(" + str(dim) + ")", type_v, Integrity.integer)
+        self.registers[v_dim] = Register("get_local_id(" + str(dim) + ")", type_v, Integrity.entire)
         self.registers[v_dim].add_version(v_dim, version_v)

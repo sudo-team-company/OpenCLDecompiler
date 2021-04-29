@@ -22,7 +22,7 @@ class SAshr(BaseInstruction):
                 make_op(node, ssrc0, str(pow(2, int(ssrc1))), " / ", '(int)', '')
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[sdst] = \
-                    Register(new_val, Type.unknown, Integrity.integer)
+                    Register(new_val, Type.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()

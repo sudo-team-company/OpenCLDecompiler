@@ -34,7 +34,7 @@ class FlatLoad(BaseInstruction):
                             decompiler_data.type_gdata['gdata' + str(id)] = 'u32'
                             data_type = 'u32'
                         node.state.registers[to_registers] = \
-                            Register(variable, Type.program_param, Integrity.integer)
+                            Register(variable, Type.program_param, Integrity.entire)
                         decompiler_data.make_version(node.state, to_registers)
                         node.state.registers[to_registers].type_of_data = data_type
                         node.state.registers[to_registers].val = variable

@@ -19,7 +19,7 @@ class SCmpGt(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers["scc"] = \
                     Register('(int)' + node.state.registers[ssrc0].val + " > (int)" + node.state.registers[ssrc1].val,
-                             Type.unknown, Integrity.integer)
+                             Type.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, "scc")
                 if "scc" in [ssrc0, ssrc1]:
                     node.state.registers["scc"].make_prev()
@@ -36,7 +36,7 @@ class SCmpGt(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers["scc"] = \
                     Register(node.state.registers[ssrc0].val + " > " + ssrc1,
-                             Type.unknown, Integrity.integer)
+                             Type.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, "scc")
                 if "scc" in [ssrc0, ssrc1]:
                     node.state.registers["scc"].make_prev()

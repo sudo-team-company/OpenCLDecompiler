@@ -21,7 +21,7 @@ class SCselect(BaseInstruction):
                 if ssrc0 == "exec":
                     ssrc0 = "1"
                 new_val = node.state.registers["scc"].val + " ? " + ssrc0 + " : " + ssrc1
-                node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.integer)
+                node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()

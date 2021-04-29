@@ -20,7 +20,7 @@ class VLshlrev(BaseInstruction):
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val, src0_flag, src1_flag = make_op(node, src1, str(pow(2, int(src0))), " * ", '', '')
-                node.state.registers[vdst] = Register(new_val, node.state.registers[src1].type, Integrity.integer)
+                node.state.registers[vdst] = Register(new_val, node.state.registers[src1].type, Integrity.entire)
                 node.state.registers[vdst].version = node.parent[0].state.registers[src1].version
                 node.state.registers[vdst].type_of_data = suffix
                 return node

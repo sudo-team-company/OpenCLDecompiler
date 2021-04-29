@@ -14,7 +14,7 @@ def compare_in_s_cmp_eq(ssrc0, ssrc1, node, suffix):
         cmpr_val = ssrc1
     node.state.registers["scc"] = \
         Register(node.state.registers[ssrc0].val + " == " + cmpr_val, Type.unknown,
-                 Integrity.integer)
+                 Integrity.entire)
     decompiler_data.make_version(node.state, "scc")
     if "scc" in [ssrc0, ssrc1]:
         node.state.registers["scc"].make_prev()

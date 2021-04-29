@@ -28,7 +28,7 @@ class FlatStoreDword(BaseInstruction):
             if first_to == last_to:
                 node.state.registers[to_registers] = \
                     Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
-                             Integrity.integer)
+                             Integrity.entire)
                 node.state.registers[to_registers].version = node.parent[0].state.registers[to_registers].version
                 node.state.registers[to_registers].type_of_data = suffix
             else:

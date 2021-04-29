@@ -33,9 +33,9 @@ class SBfe(BaseInstruction):
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 if ssrc1 == "0x20010":
-                    node.state.registers[sdst] = Register("get_work_dim()", Type.work_dim, Integrity.integer)
+                    node.state.registers[sdst] = Register("get_work_dim()", Type.work_dim, Integrity.entire)
                 elif ssrc1 == '0x100010':
-                    node.state.registers[sdst] = Register("get_local_size(1)", Type.local_size_y, Integrity.integer)
+                    node.state.registers[sdst] = Register("get_local_size(1)", Type.local_size_y, Integrity.entire)
                 else:
                     print("Unknown pattern in s_bfe")
                 decompiler_data.make_version(node.state, sdst)

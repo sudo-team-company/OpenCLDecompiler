@@ -19,7 +19,7 @@ class VAshrrev(BaseInstruction):
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[vdst] = \
-                    Register(node.state.registers[src1].val, node.state.registers[src1].type, Integrity.integer)
+                    Register(node.state.registers[src1].val, node.state.registers[src1].type, Integrity.entire)
                 # node.state.registers[vdst].version = node.parent[0].state.registers[vdst].version
                 decompiler_data.make_version(node.state, vdst)
                 if vdst in [src0, src1]:
