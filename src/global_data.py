@@ -5,9 +5,8 @@ def get_gdata_offset(instruction):
     position = instruction.find("(.gdata+")
     if position == -1:
         return 0
-    else:
-        end_position = instruction.find(")", position)
-        return int(instruction[position + 8:end_position])
+    end_position = instruction.find(")", position)
+    return int(instruction[position + 8:end_position])
 
 
 def process_global_data(set_of_global_data_instruction, set_of_global_data_bytes):

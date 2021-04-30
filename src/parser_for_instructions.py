@@ -20,11 +20,12 @@ def main(input_par, output_par, flag_for_decompilation):
         for row in body_of_file:
             row = re.sub(r"/\*(.*?)\*/", '', row)
             row = row.strip()
-            if ".kernel " in row: 
+            if ".kernel " in row:
                 if status_of_parse == "instruction":
                     status_of_parse = "kernel"
                     decompiler_data.reset(output_file, flag_for_decompilation)
-                    process_src(name_of_program, set_of_config, set_of_instructions, set_of_global_data_bytes, set_of_global_data_instruction)
+                    process_src(name_of_program, set_of_config, set_of_instructions, set_of_global_data_bytes,
+                                set_of_global_data_instruction)
                     output_file.write("\n")
                     set_of_instructions = []
                     set_of_config = []
@@ -56,8 +57,9 @@ def main(input_par, output_par, flag_for_decompilation):
             else:
                 continue
         decompiler_data.reset(output_file, flag_for_decompilation)
-        process_src(name_of_program, set_of_config, set_of_instructions, set_of_global_data_bytes, set_of_global_data_instruction)
-        
+        process_src(name_of_program, set_of_config, set_of_instructions, set_of_global_data_bytes,
+                    set_of_global_data_instruction)
+
 
 def create_parser():
     parser = argparse.ArgumentParser()
