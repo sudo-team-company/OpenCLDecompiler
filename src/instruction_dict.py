@@ -52,6 +52,8 @@ from src.sopp.s_set_gpr_idx_off import SSetGprIdxOff
 from src.sopp.s_waitcnt import SWaitcnt
 from src.vop1.v_cvt import VCvt
 from src.vop1.v_mov import VMov
+from src.vop1.v_trunc import VTrunc
+from src.vop1.v_floor import VFloor
 from src.vop2.v_add import VAdd
 from src.vop2.v_addc import VAddc
 from src.vop2.v_and import VAnd
@@ -73,6 +75,7 @@ from src.vop3.v_div_fixup import VDivFixup
 from src.vop3.v_fma import VFma
 from src.vop3.v_mul_f64 import VMulF64
 from src.vop3.v_mul_lo import VMulLo
+from src.vop3.v_ldexp import VLDEXP
 from src.vopc.v_cmp_eq import VCmpEq
 from src.vopc.v_cmp_ge import VCmpGe
 from src.vopc.v_cmp_gt import VCmpGt
@@ -165,7 +168,10 @@ instruction_dict = {'ds_add': DsAdd(),
                     'v_mul_f64': VMulF64(),
                     'v_mul_hi': VMulLo(),
                     'v_mul_lo': VMulLo(),
+                    'v_ldexp': VLDEXP(),
                     'v_mov': VMov(),
+                    'v_trunc': VTrunc(),
+                    'v_floor': VFloor(),
                     'v_sub': VSub(),
                     'v_subb': VSub(),
                     'v_subrev': VSubrev(),

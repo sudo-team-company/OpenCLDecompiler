@@ -1,6 +1,6 @@
 __kernel void three_unused_params(int n, int w, int z, __global int *data, int ww, __global int *data1, int x, int y)
 {
-    uint var3;
+    int var3;
     if ((int)n > (int)get_global_id(0)) {
         data[(get_global_id(0) * 4) / 4] = x;
     }

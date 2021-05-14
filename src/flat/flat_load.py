@@ -27,6 +27,7 @@ class FlatLoad(BaseInstruction):
                 if inst_offset == "0":
                     if first_to == last_to:
                         data_type = node.state.registers[from_registers].type_of_data
+                        decompiler_data.var_value[variable] = node.state.registers[from_registers].val
                         node.state.registers[to_registers] = \
                             Register(variable, Type.program_param, Integrity.entire)
                         decompiler_data.make_version(node.state, to_registers)
@@ -54,15 +55,16 @@ class FlatLoad(BaseInstruction):
                 if inst_offset == "0":
                     if first_to == last_to:
                         data_type = node.state.registers[from_registers].type_of_data
+                        decompiler_data.var_value[variable] = node.state.registers[from_registers].val
                         node.state.registers[to_registers] = \
                             Register(variable, Type.program_param, Integrity.entire)
                         decompiler_data.make_version(node.state, to_registers)
                         node.state.registers[to_registers].type_of_data = data_type
                         node.state.registers[to_registers].val = variable
-                        decompiler_data.make_var(node.state.registers[to_registers].version, variable,
-                                                 data_type)
+                        decompiler_data.make_var(node.state.registers[to_registers].version, variable, data_type)
                     else:
                         data_type = node.state.registers[from_registers].type_of_data
+                        decompiler_data.var_value[variable] = node.state.registers[from_registers].val
                         node.state.registers[to_registers] = \
                             Register(variable, Type.program_param, Integrity.entire)
                         decompiler_data.make_version(node.state, to_registers)

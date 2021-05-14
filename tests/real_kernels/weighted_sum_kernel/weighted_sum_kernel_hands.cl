@@ -1,9 +1,9 @@
 __kernel void weighted_sum_kernel(int n, __global float *a, __global float *b, __global float *s, __global float *c)
 {
-    uint var0;
-    uint var3;
-    uint var4;
-    uint var5;
+    float var0;
+    float var3;
+    float var4;
+    float var5;
     if (b == 0) {
         var3 = 0;
     }

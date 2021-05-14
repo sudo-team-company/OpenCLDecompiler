@@ -27,6 +27,27 @@ class GlobalDataTest(unittest.TestCase):
     def test_mixed_array(self):
         template(self, 'global_data_usage', 'mixed_kernels')
 
+    def test_float_array(self):
+        template(self, 'global_data_usage', 'float_kernels')
+
+    def test_double_array(self):
+        template(self, 'global_data_usage', 'double_kernels')
+
+    def test_cvt_i32_f32(self):
+        template(self, 'global_data_usage', 'cvt_i32_f32')
+
+    def test_cvt_f32_i32(self):
+        template(self, 'global_data_usage', 'cvt_f32_i32')
+
+    def test_cvt_i32_f64(self):
+        template(self, 'global_data_usage', 'cvt_i32_f64')
+
+    def test_cvt_f64_i32(self):
+        template(self, 'global_data_usage', 'cvt_f64_i32')
+
+    def test_cvt_f64_i64(self):
+        template(self, 'global_data_usage', 'cvt_f64_i64')
+
 
 class BranchingKernelsTest(unittest.TestCase):
     def test_if_first(self):

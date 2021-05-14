@@ -4,6 +4,7 @@ from src.integrity import Integrity
 from src.register import Register
 from src.operation_status import OperationStatus
 from src.upload import find_first_last_num_to_from
+from src.opencl_types import make_type
 
 
 class FlatStoreDword(BaseInstruction):
@@ -34,17 +35,39 @@ class FlatStoreDword(BaseInstruction):
             else:
                 to_now = name_of_to + str(first_to + 1)
                 if node.state.registers.get(vdata):
+                    if node.state.registers[from_registers].type_of_data in ('4 bytes', '8 bytes'):
+                        node.state.registers[from_registers].type_of_data = \
+                            node.state.registers[to_registers].type_of_data
+                        if node.state.registers[from_registers].type_of_data != node.state.registers[
+                            to_registers].type_of_data:
+                            if node.state.registers[from_registers].val in decompiler_data.names_of_vars:
+                                val = node.state.registers[from_registers].val
+                                node.state.registers[from_registers].val = '(' + make_type(
+                                    node.state.registers[to_registers].type_of_data) + ')' + node.state.registers[
+                                                                               from_registers].val
+                                decompiler_data.names_of_vars[val] = node.state.registers[from_registers].type_of_data
+                        decompiler_data.names_of_vars[node.state.registers[from_registers].val] = \
+                            node.state.registers[to_registers].type_of_data
+                    else:
+                        if node.state.registers[from_registers].type_of_data != node.state.registers[
+                            to_registers].type_of_data:
+                            if node.state.registers[from_registers].val in decompiler_data.names_of_vars:
+                                val = node.state.registers[from_registers].val
+                                node.state.registers[from_registers].val = '(' + make_type(
+                                    node.state.registers[to_registers].type_of_data) + ')' + node.state.registers[
+                                                                               from_registers].val
+                                decompiler_data.names_of_vars[val] = node.state.registers[from_registers].type_of_data
                     node.state.registers[to_registers] = \
                         Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
                                  Integrity.low_part)
                     node.state.registers[to_registers].version = \
                         node.parent[0].state.registers[to_registers].version
-                    node.state.registers[to_registers].type_of_data = suffix
                     node.state.registers[to_now] = \
                         Register(node.state.registers[vdata].val, node.state.registers[from_registers].type,
                                  Integrity.high_part)
                     if node.parent[0].state.registers[to_now] is not None:
                         node.state.registers[to_now].version = node.parent[0].state.registers[to_now].version
+                    node.state.registers[to_registers].type_of_data = suffix
                     node.state.registers[to_now].type_of_data = suffix
                 else:
                     return node

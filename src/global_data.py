@@ -1,4 +1,5 @@
 from src.decompiler_data import DecompilerData
+from src.opencl_types import make_type
 
 
 def get_gdata_offset(instruction):
@@ -7,6 +8,21 @@ def get_gdata_offset(instruction):
         return 0
     end_position = instruction.find(")", position)
     return int(instruction[position + 8:end_position])
+
+
+def gdata_type_processing():
+    decompiler_data = DecompilerData()
+    for key, val in decompiler_data.names_of_vars.items():
+        if 'gdata' in key:
+            decompiler_data.type_gdata[key] = make_type(val)
+        elif 'var' in key and key in decompiler_data.var_value:
+            name = decompiler_data.var_value[key]
+            decompiler_data.type_gdata[name] = make_type(val)
+    tmp = {}
+    for key in decompiler_data.names_of_vars:
+        if 'gdata' not in key:
+            tmp[key] = decompiler_data.names_of_vars[key]
+    decompiler_data.names_of_vars = tmp
 
 
 def process_global_data(set_of_global_data_instruction, set_of_global_data_bytes):

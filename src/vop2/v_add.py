@@ -4,6 +4,8 @@ from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.operation_status import OperationStatus
+from src.upload import find_first_last_num_to_from
+from src.opencl_types import most_common_type
 
 
 class VAdd(BaseInstruction):
@@ -61,12 +63,18 @@ class VAdd(BaseInstruction):
                             new_val = node.state.registers[src0].val + "[" + new_value + "]"
                             node.state.registers[vdst] = \
                                 Register(new_val, Type.param_global_id_x, new_integrity)
+                            node.state.registers[vdst].type_of_data = 'i32' \
+                                if decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "int" \
+                                else suffix
                         elif decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "long" \
                                 or decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "ulong":
                             new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
                             new_val = node.state.registers[src0].val + "[" + new_value + "]"
                             node.state.registers[vdst] = \
                                 Register(new_val, Type.param_global_id_x, new_integrity)
+                            node.state.registers[vdst].type_of_data = 'i64' \
+                                if decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "long" \
+                                else 'u64'
                         elif decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "char" \
                                 or decompiler_data.type_params.get("*" + node.state.registers[src0].val) == "uchar":
                             new_val = node.state.registers[src0].val + "[" + node.state.registers[src1].val + "]"
@@ -77,22 +85,29 @@ class VAdd(BaseInstruction):
                             new_val = node.state.registers[src0].val + "[" + new_value + "]"
                             node.state.registers[vdst] = \
                                 Register(new_val, Type.param_global_id_x, new_integrity)
+                            node.state.registers[vdst].type_of_data = 'f32'
+                        else:
+                            new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
+                            new_val = node.state.registers[src0].val + "[" + new_value + "]"
+                            node.state.registers[vdst] = \
+                                Register(new_val, Type.param_global_id_x, new_integrity)
+                            node.state.registers[vdst].type_of_data = 'f64'
                     elif node.state.registers[src0].type == Type.global_data_pointer:
                         name = node.state.registers[src0].val
-                        if node.state.registers[src1].type_of_data == 'i32':
-                            decompiler_data.type_gdata[name] = 'int'
+                        if node.state.registers[src1].type_of_data == '4 bytes':
+                            # decompiler_data.type_gdata[name] = 'int'
                             new_value, src0_flag, src1_flag = make_op(node, src1, "4", " / ", '', '')
                             new_val = name + "[" + new_value + "]"
                             node.state.registers[vdst] = \
                                 Register(new_val, Type.global_data_pointer, Integrity.entire)
-                            suffix = 'i32'
+                            suffix = '4 bytes'
                         else:
-                            decompiler_data.type_gdata[name] = 'long'
+                            # decompiler_data.type_gdata[name] = 'long'
                             new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
                             new_val = name + "[" + new_value + "]"
                             node.state.registers[vdst] = \
                                 Register(new_val, Type.global_data_pointer, Integrity.entire)
-                            suffix = 'i64'
+                            suffix = '8 bytes'
                     elif node.state.registers[src0].type == Type.work_group_id_x_local_size and \
                             node.state.registers[src1].type == Type.work_item_id_x:
                         new_integrity = node.state.registers[src1].integrity
@@ -131,6 +146,30 @@ class VAdd(BaseInstruction):
                 decompiler_data.make_version(node.state, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
-                node.state.registers[vdst].type_of_data = suffix
+                if node.state.registers[vdst].type_of_data is None:
+                    node.state.registers[vdst].type_of_data = suffix
                 return node
             return output_string
+        elif suffix == 'f64':
+            vdst = instruction[1]
+            src0 = instruction[2]
+            src1 = instruction[3]
+            _, _, _, name_of_from, first_from, last_from \
+                = find_first_last_num_to_from(vdst, src0)
+            from_registers_src0 = name_of_from + str(first_from)
+            first_to, last_to, name_of_to, name_of_from, first_from, last_from \
+                = find_first_last_num_to_from(vdst, src1)
+            from_registers_src1 = name_of_from + str(first_from)
+            to_registers = name_of_to + str(first_to)
+            if flag_of_status == OperationStatus.to_fill_node:
+                suffix = most_common_type(node.state.registers[from_registers_src0].type_of_data,
+                                          node.state.registers[from_registers_src1].type_of_data)
+                type_reg = node.state.registers[from_registers_src1].type
+                new_val = node.state.registers[from_registers_src1].val
+                node.state.registers[to_registers] = Register(new_val, type_reg, Integrity.entire)
+                decompiler_data.make_version(node.state, to_registers)
+                if node.state.registers[to_registers].type_of_data is None:
+                    node.state.registers[to_registers].type_of_data = suffix
+                return node
+            return output_string
+            #     if node.state.registers[src0].type == Type.global_data_pointer:

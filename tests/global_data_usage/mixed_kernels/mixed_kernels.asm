@@ -19,10 +19,10 @@
     .config
         .dims xy
         .cws 8, 8, 1
-        .sgprsnum 16
-        .vgprsnum 14
+        .sgprsnum 17
+        .vgprsnum 11
         .floatmode 0xc0
-        .pgmrsrc1 0x00ac0083
+        .pgmrsrc1 0x00ac0082
         .pgmrsrc2 0x0000098c
         .dx10clamp
         .ieeemode
@@ -35,6 +35,7 @@
         .arg _.vqueue_pointer, "size_t", long
         .arg _.aqlwrap_pointer, "size_t", long
         .arg out, "long*", long*, global, 
+        .arg res, "int*", int*, global, 
         .arg i, "int", int
     .text
 /*000000000000*/ s_load_dwordx4  s[0:3], s[4:5], 0x0
@@ -46,32 +47,32 @@
 /*00000000001c*/ v_lshlrev_b64   v[4:5], 2, v[2:3]
 /*000000000024*/ s_mov_b32       s1, .gdata>>32
 /*00000000002c*/ s_mov_b32       s0, .gdata&0xffffffff
-/*000000000034*/ v_add_u32       v4, vcc, s0, v4
-/*000000000038*/ v_mov_b32       v0, s1
-/*00000000003c*/ v_addc_u32      v5, vcc, v0, v5, vcc
-/*000000000040*/ v_lshlrev_b64   v[2:3], 3, v[2:3]
-/*000000000048*/ s_mov_b32       s1, (.gdata+32)>>32
-/*000000000050*/ s_mov_b32       s0, (.gdata+32)&0xffffffff
-/*000000000058*/ flat_load_dword v12, v[4:5]
-/*000000000060*/ v_add_u32       v4, vcc, s0, v2
-/*000000000064*/ v_mov_b32       v0, s1
-/*000000000068*/ v_addc_u32      v5, vcc, v0, v3, vcc
-/*00000000006c*/ flat_load_dwordx2 v[4:5], v[4:5]
-/*000000000074*/ s_load_dwordx2  s[0:1], s[4:5], 0x30
-/*00000000007c*/ s_lshl_b32      s3, s7, 3
-/*000000000080*/ s_add_u32       s2, s3, s2
-/*000000000084*/ v_add_u32       v0, vcc, s2, v1
+/*000000000034*/ v_lshlrev_b64   v[2:3], 3, v[2:3]
+/*00000000003c*/ s_mov_b32       s9, (.gdata+32)>>32
+/*000000000044*/ s_mov_b32       s8, (.gdata+32)&0xffffffff
+/*00000000004c*/ v_add_u32       v9, vcc, s0, v4
+/*000000000050*/ v_mov_b32       v6, s1
+/*000000000054*/ v_addc_u32      v10, vcc, v6, v5, vcc
+/*000000000058*/ v_add_u32       v7, vcc, s8, v2
+/*00000000005c*/ v_mov_b32       v2, s9
+/*000000000060*/ v_addc_u32      v8, vcc, v2, v3, vcc
+/*000000000064*/ flat_load_dword v6, v[9:10]
+/*00000000006c*/ flat_load_dwordx2 v[2:3], v[7:8]
+/*000000000074*/ s_load_dwordx4  s[8:11], s[4:5], 0x30
+/*00000000007c*/ s_lshl_b32      s0, s7, 3
+/*000000000080*/ s_add_u32       s0, s0, s2
+/*000000000084*/ v_add_u32       v0, vcc, s0, v1
 /*000000000088*/ v_mov_b32       v1, 0
 /*00000000008c*/ v_lshlrev_b64   v[0:1], 3, v[0:1]
 /*000000000094*/ s_waitcnt       lgkmcnt(0)
-/*000000000098*/ v_add_u32       v10, vcc, s0, v2
-/*00000000009c*/ v_mov_b32       v7, s1
-/*0000000000a0*/ v_addc_u32      v11, vcc, v7, v3, vcc
-/*0000000000a4*/ v_add_u32       v0, vcc, s0, v0
-/*0000000000a8*/ v_addc_u32      v1, vcc, v7, v1, vcc
-/*0000000000ac*/ s_waitcnt       vmcnt(1)
-/*0000000000b0*/ v_ashrrev_i32   v13, 31, v12
-/*0000000000b4*/ flat_store_dwordx2 v[10:11], v[12:13]
+/*000000000098*/ v_add_u32       v4, vcc, s10, v4
+/*00000000009c*/ v_mov_b32       v7, s11
+/*0000000000a0*/ v_addc_u32      v5, vcc, v7, v5, vcc
+/*0000000000a4*/ v_add_u32       v7, vcc, s8, v0
+/*0000000000a8*/ v_mov_b32       v0, s9
+/*0000000000ac*/ v_addc_u32      v8, vcc, v0, v1, vcc
+/*0000000000b0*/ s_waitcnt       vmcnt(1)
+/*0000000000b4*/ flat_store_dword v[4:5], v6
 /*0000000000bc*/ s_waitcnt       vmcnt(1)
-/*0000000000c0*/ flat_store_dwordx2 v[0:1], v[4:5]
+/*0000000000c0*/ flat_store_dwordx2 v[7:8], v[2:3]
 /*0000000000c8*/ s_endpgm

@@ -31,9 +31,13 @@ def write_global_data():
     decompiler_data = DecompilerData()
     for key, var in sorted(decompiler_data.type_gdata.items()):
         if var in ('uint', 'int'):
-            list_of_gdata_values = evaluate_from_hex(decompiler_data.global_data[key], 4)
+            list_of_gdata_values = evaluate_from_hex(decompiler_data.global_data[key], 4, '>i')
         elif var in ('ulong', 'long'):
-            list_of_gdata_values = evaluate_from_hex(decompiler_data.global_data[key], 8)
+            list_of_gdata_values = evaluate_from_hex(decompiler_data.global_data[key], 8, '>q')
+        elif var == 'float':
+            list_of_gdata_values = evaluate_from_hex(decompiler_data.global_data[key], 4, '>f')
+        elif var == 'double':
+            list_of_gdata_values = evaluate_from_hex(decompiler_data.global_data[key], 8, '>d')
         decompiler_data.write("__constant " + var + " " + key + "[] = {")
         for index, element in enumerate(list_of_gdata_values):
             if index:

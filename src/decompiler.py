@@ -2,14 +2,14 @@ import copy
 from src.regions.functions_for_regions import make_region_graph_from_cfg, process_region_graph
 from src.node import Node
 from src.node_processor import check_realisation_for_node
-from src.decompiler_data import DecompilerData
+from src.decompiler_data import DecompilerData, optimize_names_of_vars
 from src.cfg import change_cfg_for_else_structure, make_cfg_node, make_unresolved_node
 from src.code_printer import create_opencl_body
 from src.config import process_config
 from src.versions import find_max_and_prev_versions, change_values, check_for_use_new_version
 from src.kernel_params import process_kernel_params
 from src.type_of_flag import TypeOfFlag
-from src.global_data import process_global_data
+from src.global_data import process_global_data, gdata_type_processing
 
 
 def transform_instruction_set(instruction, set_of_instructions, num, row, curr_node):
@@ -116,6 +116,9 @@ def process_src(name_of_program, set_of_config, set_of_instructions, set_of_glob
             process_src_with_unresolved_instruction(initial_set_of_instructions)
             return
 
+    optimize_names_of_vars()
+    if decompiler_data.global_data:
+        gdata_type_processing()
     check_for_use_new_version()
     decompiler_data.remove_unusable_versions()
 

@@ -61,7 +61,7 @@ class SLoad(BaseInstruction):
                         and node.state.registers[from_registers].type == Type.global_data_pointer:
                     data_type = node.state.registers[from_registers].type_of_data
                     node.state.registers[to_registers].type_of_data = data_type
-                else:
+                if node.state.registers[to_registers] is None:
                     node.state.registers[to_registers].type_of_data = suffix
                 return node
             return output_string

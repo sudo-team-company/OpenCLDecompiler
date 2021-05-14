@@ -1,8 +1,45 @@
+import binascii
+import struct
 from src.state import State
 from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.type_of_flag import TypeOfFlag
+
+
+def get_name(key):
+    position_gdata = key.find('gdata')
+    previous_position = position_gdata
+    while True:
+        if position_gdata + 5 < len(key) and '0' <= key[position_gdata + 5] <= '9':
+            position_gdata += 1
+        else:
+            break
+    return key[previous_position:position_gdata + 5]
+
+
+def optimize_names_of_vars():
+    decompiler_data = DecompilerData()
+    new_names_of_vars = {}
+    for key, val in decompiler_data.names_of_vars.items():
+        if 'gdata' in key:
+            name = get_name(key)
+            new_names_of_vars[name] = val
+        elif 'var' in key:
+            new_names_of_vars[key] = val
+        else:
+            continue
+    decompiler_data.names_of_vars = new_names_of_vars
+    new_var_value = {}
+    for key, val in decompiler_data.var_value.items():
+        if 'gdata' in val:
+            new_val = get_name(val)
+            new_var_value[key] = new_val
+        elif 'var' in val:
+            new_var_value[key] = val
+        else:
+            continue
+    decompiler_data.var_value = new_var_value
 
 
 def check_reg_for_val(node, register):
@@ -32,12 +69,12 @@ def make_op(node, register0, register1, operation, type0, type1):
     return new_val, register0_flag, register1_flag
 
 
-def evaluate_from_hex(global_data, size):
+def evaluate_from_hex(global_data, size, flag):
     typed_global_data = []
     for element in range(int(len(global_data) / size)):
         array_of_bytes = global_data[element * size: element * size + size]
         string_of_bytes = ''.join(elem[2:] + ' ' for elem in array_of_bytes)
-        value = int("".join(string_of_bytes.split()[::-1]), 16)
+        value = struct.unpack(flag, binascii.unhexlify("".join(string_of_bytes.split()[::-1])))[0]
         typed_global_data.append(value)
     return typed_global_data
 
@@ -94,6 +131,7 @@ class DecompilerData(metaclass=Singleton):
         self.checked_variables = {}
         self.kernel_params = {}
         self.global_data = {}
+        self.var_value = {}
         self.versions = {
             "s0": 0,
             "s1": 0,
@@ -199,6 +237,7 @@ class DecompilerData(metaclass=Singleton):
         self.checked_variables = {}
         self.kernel_params = {}
         self.global_data = {}
+        self.var_value = {}
         self.versions = {
             "s0": 0,
             "s1": 0,
