@@ -38,12 +38,29 @@ def write_global_data():
             list_of_gdata_values = evaluate_from_hex(decompiler_data.global_data[key], 4, '>f')
         elif var == 'double':
             list_of_gdata_values = evaluate_from_hex(decompiler_data.global_data[key], 8, '>d')
+        elif var in ('int2', 'int4', 'int8'):
+            list_of_gdata_values = evaluate_from_hex(decompiler_data.global_data[key], 4, '>i')
         decompiler_data.write("__constant " + var + " " + key + "[] = {")
-        for index, element in enumerate(list_of_gdata_values):
-            if index:
-                decompiler_data.write(', ' + str(element))
-            else:
-                decompiler_data.write(str(element))
+        if var in ('int2', 'int4', 'int8'):
+            num = int(var[-1])
+            for index, element in enumerate(list_of_gdata_values):
+                if index == 0:
+                    decompiler_data.write('(' + var + ')(')
+                    decompiler_data.write(str(element))
+                elif index % num == 0:
+                    decompiler_data.write(', (' + var + ')(')
+                    decompiler_data.write(str(element))
+                elif index % num == num - 1:
+                    decompiler_data.write(', ' + str(element))
+                    decompiler_data.write(')')
+                else:
+                    decompiler_data.write(', ' + str(element))
+        else:
+            for index, element in enumerate(list_of_gdata_values):
+                if index:
+                    decompiler_data.write(', ' + str(element))
+                else:
+                    decompiler_data.write(str(element))
         decompiler_data.write("};\n\n")
 
 

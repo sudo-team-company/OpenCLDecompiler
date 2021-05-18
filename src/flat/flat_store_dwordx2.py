@@ -27,7 +27,7 @@ class FlatStoreDwordx2(BaseInstruction):
         to_registers = name_of_to + str(first_to)
         if flag_of_status == OperationStatus.to_fill_node:
             to_now = name_of_to + str(first_to + 1)
-            if node.state.registers[from_registers].type_of_data in ('4 bytes', '8 bytes'):
+            if node.state.registers[from_registers].type_of_data is not None and 'bytes' in node.state.registers[from_registers].type_of_data:
                 node.state.registers[from_registers].type_of_data = \
                     node.state.registers[to_registers].type_of_data
                 if node.state.registers[from_registers].type_of_data != node.state.registers[
@@ -49,6 +49,11 @@ class FlatStoreDwordx2(BaseInstruction):
                             node.state.registers[to_registers].type_of_data) + ')' + node.state.registers[
                                                                        from_registers].val
                         decompiler_data.names_of_vars[val] = node.state.registers[from_registers].type_of_data
+                    else:
+                        node.state.registers[from_registers].type_of_data = \
+                            node.state.registers[to_registers].type_of_data
+                        decompiler_data.names_of_vars[node.state.registers[from_registers].val] = \
+                            node.state.registers[from_registers].type_of_data
             node.state.registers[to_registers] = \
                 Register(node.state.registers[from_registers].val, node.state.registers[from_registers].type,
                          Integrity.low_part)

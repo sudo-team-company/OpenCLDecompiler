@@ -48,6 +48,33 @@ class GlobalDataTest(unittest.TestCase):
     def test_cvt_f64_i64(self):
         template(self, 'global_data_usage', 'cvt_f64_i64')
 
+    def test_int4(self):
+        template(self, 'global_data_usage', 'int4')
+
+    def test_int8(self):
+        template(self, 'global_data_usage', 'int8')
+
+    def test_mix_vectors(self):
+        template(self, 'global_data_usage', 'mix_vectors')
+
+    def test_int_matrix(self):
+        template(self, 'global_data_usage', 'int_matrix')
+
+    def test_long_matrix(self):
+        template(self, 'global_data_usage', 'long_matrix')
+
+    def test_int2_array(self):
+        template(self, 'global_data_usage', 'int2_array')
+
+    def test_int2_to_int2(self):
+        template(self, 'global_data_usage', 'int2_to_int2')
+
+    def test_int4_to_int4(self):
+        template(self, 'global_data_usage', 'int4_to_int4')
+
+    def test_int8_to_int8(self):
+        template(self, 'global_data_usage', 'int8_to_int8')
+
 
 class BranchingKernelsTest(unittest.TestCase):
     def test_if_first(self):
