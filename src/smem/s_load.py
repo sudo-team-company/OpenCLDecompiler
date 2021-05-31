@@ -36,12 +36,12 @@ class SLoad(BaseInstruction):
                     upload(node.state, sdata, sbase, offset, decompiler_data.kernel_params)
                 else:
                     upload_usesetup(node.state, sdata, offset)
-                if node.state.registers[from_registers] is not None\
-                        and node.state.registers[from_registers].type == Type.global_data_pointer:
-                    data_type = node.state.registers[from_registers].type_of_data
-                    node.state.registers[to_registers].type_of_data = data_type
-                else:
-                    node.state.registers[to_registers].type_of_data = suffix
+                # if node.state.registers[from_registers] is not None\
+                #         and node.state.registers[from_registers].type == Type.global_data_pointer:
+                #     data_type = node.state.registers[from_registers].type_of_data
+                #     node.state.registers[to_registers].type_of_data = data_type
+                # else:
+                #     node.state.registers[to_registers].type_of_data = suffix
                 return node
             return output_string
 
@@ -57,12 +57,12 @@ class SLoad(BaseInstruction):
                     upload(node.state, sdata, sbase, offset, decompiler_data.kernel_params)
                 else:
                     upload_usesetup(node.state, sdata, offset)
-                if node.state.registers[from_registers] is not None \
-                        and node.state.registers[from_registers].type == Type.global_data_pointer:
-                    data_type = node.state.registers[from_registers].type_of_data
-                    node.state.registers[to_registers].type_of_data = data_type
-                else:
-                    node.state.registers[to_registers].type_of_data = suffix
+                # if node.state.registers[from_registers] is not None \
+                #         and node.state.registers[from_registers].type == Type.global_data_pointer:
+                #     data_type = node.state.registers[from_registers].type_of_data
+                #     node.state.registers[to_registers].type_of_data = data_type
+                # else:
+                #     node.state.registers[to_registers].type_of_data = suffix
                 return node
             return output_string
 
@@ -78,6 +78,6 @@ class SLoad(BaseInstruction):
                     upload(node.state, sdata, sbase, offset, decompiler_data.kernel_params)
                 else:
                     upload_usesetup(node.state, sdata, offset)
-                node.state.registers[to_registers].type_of_data = suffix
+                # node.state.registers[to_registers].type_of_data = suffix
                 return node
             return output_string

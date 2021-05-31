@@ -20,3 +20,17 @@ def make_type(asm_type):
     else:
         opencl_type = "unknown type"
     return opencl_type
+
+
+def make_suffix(opencl_type):
+    if opencl_type == "uint":
+        asm_type = "u32"
+    elif opencl_type == "int":
+        asm_type = "i32"
+    elif opencl_type == "long":
+        asm_type = "i64"
+    elif opencl_type == "ulong":
+        asm_type = "u64"
+    else:
+        asm_type = "dword"
+    return asm_type

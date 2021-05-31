@@ -8,8 +8,6 @@ def check_realisation_for_node(curr_node, row):
     decompiler_data = DecompilerData()
     if curr_node is None:  # check of node
         decompiler_data.write("Not resolved yet. " + row + "\n")
-        # for instr in set_of_instructions:
-        #     decompiler_data.write(instr + "\n")
         return False
     return True
 

@@ -21,6 +21,7 @@ class SMov(BaseInstruction):
                 if node.state.registers.get(ssrc0) is not None:
                     node.state.registers[sdst] = \
                         Register(node.state.registers[ssrc0].val, node.state.registers[ssrc0].type, Integrity.entire)
+                    node.state.registers[sdst].type_of_data = node.state.registers[ssrc0].type_of_data
                 else:
                     if ".gdata" in ssrc0:
                         id = get_gdata_offset(ssrc0)
@@ -28,7 +29,7 @@ class SMov(BaseInstruction):
                                                               Integrity.entire)
                     else:
                         node.state.registers[sdst] = Register(ssrc0, Type.int32, Integrity.entire)
+                    node.state.registers[sdst].type_of_data = suffix
                 decompiler_data.make_version(node.state, sdst)
-                node.state.registers[sdst].type_of_data = suffix
                 return node
             return output_string
