@@ -18,17 +18,17 @@ def add_parent_and_child(before_r, next_r, region, pred_child, pred_parent):
 
 def check_if(curr_region):
     return curr_region.type == TypeNode.basic and len(curr_region.children) == 2 \
-            and (len(curr_region.children[0].children) > 0
-                 and curr_region.children[0].children[0] == curr_region.children[1]
-                 or len(curr_region.children[1].children) > 0
-                 and curr_region.children[1].children[0] == curr_region.children[0])
+           and (len(curr_region.children[0].children) > 0
+                and curr_region.children[0].children[0] == curr_region.children[1]
+                or len(curr_region.children[1].children) > 0
+                and curr_region.children[1].children[0] == curr_region.children[0])
 
 
 def check_if_else(curr_region):
     return curr_region.type == TypeNode.basic and len(curr_region.children) == 2 \
-            and len(curr_region.children[0].children) > 0 \
-            and len(curr_region.children[1].children) > 0 \
-            and curr_region.children[0].children[0] == curr_region.children[1].children[0]
+           and len(curr_region.children[0].children) > 0 \
+           and len(curr_region.children[1].children) > 0 \
+           and curr_region.children[0].children[0] == curr_region.children[1].children[0]
 
 
 def check_circle(region_start, region_end):
@@ -167,7 +167,7 @@ def make_region_graph_from_cfg():
                 else:
                     region.add_child(decompiler_data.starts_regions[child])
                     decompiler_data.set_parent_for_starts_regions(child, region)
-                        
+
 
 def process_if_statement_region(curr_region, visited, start_region, q):
     region = Region(TypeNode.ifstatement, curr_region)
@@ -222,8 +222,44 @@ def process_if_else_statement_region(curr_region, visited, start_region, q):
     return visited, q, start_region
 
 
-def process_circle(region_start, region_end):
+def make_var_for_circle(curr_node, register, version, prev_version):
     decompiler_data = DecompilerData()
+    if decompiler_data.circles_variables.get(prev_version):
+        variable = decompiler_data.circles_variables[prev_version]
+    else:
+        variable = "var" + str(decompiler_data.num_of_var)
+        decompiler_data.num_of_var += 1
+    # if curr_node.state.registers[register].type == Type.paramA:
+    #     variable = "*" + variable
+    # decompiler_data.make_var(first_reg_prev_version, variable,
+    #                          curr_node.state.registers[register].type_of_data)
+    decompiler_data.checked_variables[prev_version] = variable
+    # decompiler_data.checked_variables[first_reg_version] = variable
+    decompiler_data.circles_variables[version] = variable
+    decompiler_data.circles_nodes_for_variables[curr_node] = version
+    # decompiler_data.variables[first_reg_version] = variable
+    decompiler_data.names_of_vars[variable] = curr_node.state.registers[register].type_of_data
+    decompiler_data.variables[prev_version] = variable
+
+
+def check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_version_node):
+    register_version = curr_node.state.registers[register].version
+    instruction = curr_node.instruction[0]
+    if reg_versions_in_instruction.get(register_version):
+        change_node = reg_version_node[register_version]
+        instruction_version_list = reg_versions_in_instruction[register_version]
+        for version in instruction_version_list:
+            instruction_register = version[:version.find("_")]
+            instruction_register_version = curr_node.state.registers[instruction_register].version
+            if version != instruction_register_version:
+                if "flat_store" in instruction or "cmp" in instruction:
+                    prev_register_version = register_version
+                else:
+                    prev_register_version = curr_node.parent[0].state.registers[register].version
+                make_var_for_circle(change_node, instruction_register, register_version, prev_register_version)
+
+
+def process_circle(region_start, region_end):
     region = Region(TypeNode.circle, region_start)
     region.end = region_end
     prev_child = [region_start]
@@ -232,39 +268,56 @@ def process_circle(region_start, region_end):
     add_parent_and_child(before_r, next_r, region, prev_child, region.end)
     used_versions_of_registers = set()
     curr_node = region_start.start
+    reg_versions_in_instruction = {}
+    reg_version_node = {}
+    first_reg = None
+    first_reg_version = None
     while curr_node != region_end.start:
         list_of_reg_nums = list(range(1, len(curr_node.instruction))[1:])
         list_of_reg_nums = list_of_reg_nums if len(curr_node.instruction) == 1 else list_of_reg_nums + [1]
+        if len(list_of_reg_nums) > 0:
+            first_reg = curr_node.instruction[1]
+            if len(first_reg) > 1 and first_reg[1] == "[":
+                first_reg = first_reg[0] + first_reg[2: first_reg.find(":")]
+            if "cmp" not in curr_node.instruction[0] \
+                    and "flat_store" not in curr_node.instruction[0] \
+                    and curr_node.state.registers.get(first_reg):
+                first_reg_version = curr_node.state.registers[first_reg].version
+                reg_versions_in_instruction[first_reg_version] = []
+                reg_version_node[first_reg_version] = curr_node
         for num_of_register in list_of_reg_nums:
             register = curr_node.instruction[num_of_register]
             if len(register) > 1 and register[1] == "[":
                 register = register[0] + register[2: register.find(":")]
-            if ("cmp" in curr_node.instruction[0] or num_of_register > 1) and curr_node.state.registers.get(register):
-                if register == curr_node.instruction[1] and "cmp" not in curr_node.instruction[0]:
-                    used_versions_of_registers.add(curr_node.parent[0].state.registers[register].version)
+            if ("cmp" in curr_node.instruction[0]
+                or "flat_store" in curr_node.instruction[0]
+                or num_of_register > 1) \
+                    and curr_node.state.registers.get(register):
+                if register == first_reg \
+                        and "cmp" not in curr_node.instruction[0] \
+                        and "flat_store" not in curr_node.instruction[0]:
+                    register_version = curr_node.parent[0].state.registers[register].version
                 else:
-                    used_versions_of_registers.add(curr_node.state.registers[register].version)
-            if "cmp" not in curr_node.instruction[0] and num_of_register == 1 and curr_node.state.registers.get(register):
-                first_reg_version = curr_node.state.registers[register].version
+                    register_version = curr_node.state.registers[register].version
+                used_versions_of_registers.add(register_version)
+            if curr_node.state.registers.get(register):
+                if "cmp" not in curr_node.instruction[0] \
+                        and "flat_store" not in curr_node.instruction[0]:
+                    if num_of_register > 1 \
+                            and register != first_reg:
+                        reg_versions_in_instruction[first_reg_version].append(register_version)
+                        check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_version_node)
+                else:
+                    check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_version_node)
+            if "cmp" not in curr_node.instruction[0] \
+                    and "flat_store" not in curr_node.instruction[0] \
+                    and num_of_register == 1 \
+                    and curr_node.state.registers.get(register):
                 separation = first_reg_version.find("_")
-                first_reg_prev_version = first_reg_version[:separation + 1] + str(int(first_reg_version[separation+1:]) - 1)
+                first_reg_prev_version = first_reg_version[:separation + 1] \
+                                         + str(int(first_reg_version[separation + 1:]) - 1)
                 if first_reg_prev_version in used_versions_of_registers:
-                    if decompiler_data.circles_variables.get(first_reg_prev_version):
-                        variable = decompiler_data.circles_variables[first_reg_prev_version]
-                    else:
-                        variable = "var" + str(decompiler_data.num_of_var)
-                        decompiler_data.num_of_var += 1
-                    if curr_node.state.registers[register].type == Type.param_global_id_x:
-                        variable = "*" + variable
-                    # decompiler_data.make_var(first_reg_prev_version, variable,
-                    #                          curr_node.state.registers[register].type_of_data)
-                    decompiler_data.checked_variables[first_reg_prev_version] = variable
-                    # decompiler_data.checked_variables[first_reg_version] = variable
-                    decompiler_data.circles_variables[first_reg_version] = variable
-                    decompiler_data.circles_nodes_for_variables[curr_node] = first_reg_version
-                    # decompiler_data.variables[first_reg_version] = variable
-                    decompiler_data.names_of_vars[variable] = curr_node.state.registers[register].type_of_data
-                    decompiler_data.variables[first_reg_prev_version] = variable
+                    make_var_for_circle(curr_node, register, first_reg_version, first_reg_prev_version)
         curr_node = curr_node.children[0]
 
 
@@ -337,7 +390,7 @@ def find_circles():
                 else:
                     region_end = curr_region
                     region_start = curr_circle
-                    curr_circle, start_region, q_circles, region_start =\
+                    curr_circle, start_region, q_circles, region_start = \
                         get_one_circle_region(q_circles, curr_region, start_region, region_start, region_end)
             elif curr_region.type == TypeNode.startcircle:
                 curr_circle = curr_region

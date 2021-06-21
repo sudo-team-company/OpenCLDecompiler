@@ -51,6 +51,13 @@ class SAdd(BaseInstruction):
                             node.state.registers[sdst] = \
                                 Register(new_val, Type.global_data_pointer, Integrity.entire)
                             suffix = '8 bytes'
+                    elif node.state.registers[ssrc0].type == Type.paramA:
+                        if node.state.registers[ssrc0].type_of_data == 'u32' \
+                                or node.state.registers[ssrc0].type_of_data == 'i32':
+                            new_val, _, _ = make_op(node, ssrc1, "4", " / ", '', '')
+                            new_val, _, _ = make_op(node, ssrc0, new_val, " + ", '(ulong)', '(ulong)')
+                            node.state.registers[sdst] = \
+                                Register(new_val, Type.paramA, Integrity.entire)
                     elif node.state.registers[ssrc0].type == Type.param \
                             or node.state.registers[ssrc1].type == Type.param:
                         node.state.registers[sdst] = \
@@ -64,6 +71,11 @@ class SAdd(BaseInstruction):
                         type_reg = node.state.registers[ssrc0].type
                     if ssrc1_reg:
                         type_reg = node.state.registers[ssrc1].type
+                    if node.state.registers[ssrc0].type == Type.paramA:
+                        if node.state.registers[ssrc0].type_of_data == 'u32' \
+                                or node.state.registers[ssrc0].type_of_data == 'i32':
+                            new_val, _, _ = make_op(node, ssrc1, "4", " / ", '', '')
+                            new_val, _, _ = make_op(node, ssrc0, new_val, " + ", '(ulong)', '(ulong)')
                     node.state.registers[sdst] = \
                         Register(new_val, type_reg, Integrity.entire)
                 decompiler_data.make_version(node.state, sdst)

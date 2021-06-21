@@ -180,5 +180,10 @@ class DifferentFlags(unittest.TestCase):
         template(self, 'different_flags', 'flag_only_opencl', 'only_opencl')
 
 
+class CirclesKernels(unittest.TestCase):
+    def test_simple_circle_kernels(self):
+        template(self, 'circles_kernels', 'simple_circle_kernels')
+
+
 if __name__ == '__main__':
     unittest.main()

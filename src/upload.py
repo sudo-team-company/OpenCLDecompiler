@@ -78,7 +78,7 @@ def upload(state, to_registers, from_registers, offset, kernel_params):
             state.registers[to_registers] = Register("get_global_offset(0)", Type.global_offset_x, Integrity.entire)
             decompiler_data.make_version(state, to_registers)
             state.registers[name_of_to + str(first_to + 1)] = Register("get_global_offset(0)",
-                                                                      Type.global_offset_x, Integrity.entire)
+                                                                       Type.global_offset_x, Integrity.entire)
             decompiler_data.make_version(state, name_of_to + str(first_to + 1))
             if last_to - first_to > 1:
                 state.registers[name_of_to + str(last_to - 1)] = \
@@ -108,17 +108,17 @@ def upload(state, to_registers, from_registers, offset, kernel_params):
             decompiler_data.make_version(state, name_of_to + str(first_to + 1))
         else:
             for (reg, val) in kernel_params[offset]:
-                type_of_data = ""
-                if val in decompiler_data.type_params:
-                    type_of_data = decompiler_data.type_params[val]
+                value_for_type = val
+                if value_for_type.find(".") != -1:
+                    value_for_type = value_for_type[:value_for_type.find(".")]
+                type_of_data = make_asm_type(decompiler_data.type_params[value_for_type])
                 if val[0] == "*":
                     type_param = Type.paramA
                     val = val[1:]
                 else:
                     type_param = Type.param
                 state.registers[reg] = Register(val, type_param, Integrity.entire)
-                if type_of_data != "":
-                    state.registers[reg].type_of_data = make_asm_type(type_of_data)
+                state.registers[reg].type_of_data = type_of_data
                 decompiler_data.make_version(state, reg)
     elif state.registers[from_registers].type == Type.global_data_pointer:
         type_of_data = state.registers[from_registers].type_of_data

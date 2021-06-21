@@ -16,7 +16,6 @@ class FlatLoad(BaseInstruction):
             inst_offset = instruction[3] if len(instruction) > 3 else "0"
             if flag_of_status == OperationStatus.to_print_unresolved:
                 decompiler_data.write(vdst + " = *(uint*)(" + vaddr + " + " + inst_offset + ") // flat_load_dword\n")
-                # decompiler_data.write(instruction + "  # " + to_registers + " = " + variable + "\n")
                 return node
             variable = "var" + str(decompiler_data.num_of_var)
             first_to, last_to, name_of_to, name_of_from, first_from, last_from \
@@ -36,8 +35,11 @@ class FlatLoad(BaseInstruction):
                         node.state.registers[to_registers].val = variable
                         decompiler_data.make_var(node.state.registers[to_registers].version, variable, data_type)
                 return node
-            output_string = node.state.registers[to_registers].val + " = " + \
-                node.parent[0].state.registers[from_registers].val
+            if to_registers == from_registers:
+                output = node.parent[0].state.registers[from_registers].val
+            else:
+                output = node.state.registers[from_registers].val
+            output_string = node.state.registers[to_registers].val + " = " + output
             return output_string
         elif suffix == "dwordx2":
             vdst = instruction[1]
@@ -45,7 +47,6 @@ class FlatLoad(BaseInstruction):
             inst_offset = instruction[3] if len(instruction) > 3 else "0"
             if flag_of_status == OperationStatus.to_print_unresolved:
                 decompiler_data.write(vdst + " = *(uint*)(" + vaddr + " + " + inst_offset + ") // flat_load_dword2\n")
-                # decompiler_data.write(instruction + "  # " + to_registers + " = " + variable + "\n")
                 return node
             variable = "var" + str(decompiler_data.num_of_var)
             first_to, last_to, name_of_to, name_of_from, first_from, last_from \
