@@ -2,11 +2,11 @@ from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData, make_op
 from src.integrity import Integrity
 from src.register import Register
-from src.type_of_reg import Type
 from src.operation_status import OperationStatus
 from src.upload import find_first_last_num_to_from
 
-class VLDEXP(BaseInstruction):
+
+class VLdexp(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData()
         output_string = ""

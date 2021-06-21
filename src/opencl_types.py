@@ -48,6 +48,7 @@ def make_asm_type(opencl_type):
     return asm_type
 
 
+# get size and priority
 def evaluate_size(asm_type):
     if asm_type in ("u32", "i32", "b32", "dword", "f32"):
         if asm_type == "f32:":
@@ -64,6 +65,7 @@ def evaluate_size(asm_type):
     return information
 
 
+# use for pair of regs connection
 def most_common_type(fst_asm_type, snd_asm_type):
     fst_information = evaluate_size(fst_asm_type)
     snd_information = evaluate_size(snd_asm_type)

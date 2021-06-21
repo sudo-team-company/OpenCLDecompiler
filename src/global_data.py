@@ -12,6 +12,7 @@ def get_gdata_offset(instruction):
 
 def gdata_type_processing():
     decompiler_data = DecompilerData()
+    # evaluate gdata type
     for key, val in decompiler_data.names_of_vars.items():
         if 'gdata' in key:
             decompiler_data.type_gdata[key] = make_type(val)
@@ -19,6 +20,7 @@ def gdata_type_processing():
             name = decompiler_data.var_value[key]
             decompiler_data.type_gdata[name] = make_type(val)
     tmp = {}
+    # remove gdata from names_of_vars
     for key in decompiler_data.names_of_vars:
         if 'gdata' not in key:
             tmp[key] = decompiler_data.names_of_vars[key]

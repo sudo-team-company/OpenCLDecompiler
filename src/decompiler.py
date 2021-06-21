@@ -113,6 +113,7 @@ def process_src(name_of_program, set_of_config, set_of_instructions, set_of_glob
         else:
             if decompiler_data.flag_for_decompilation == TypeOfFlag.only_opencl:
                 break
+            decompiler_data.flag_for_decompilation = TypeOfFlag.only_clrx
             process_src_with_unresolved_instruction(initial_set_of_instructions)
             return
 

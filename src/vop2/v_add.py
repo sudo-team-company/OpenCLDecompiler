@@ -69,7 +69,7 @@ class VAdd(BaseInstruction):
                                 Register(new_val, Type.param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'i32' \
                                 if decompiler_data.type_params.get("*" + argument) == "int" \
-                                else suffix
+                                else 'u32'
                         elif decompiler_data.type_params.get("*" + argument) == "long" \
                                 or decompiler_data.type_params.get("*" + argument) == "ulong":
                             new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
@@ -212,4 +212,3 @@ class VAdd(BaseInstruction):
                     node.state.registers[to_registers].type_of_data = suffix
                 return node
             return output_string
-            #     if node.state.registers[src0].type == Type.global_data_pointer:

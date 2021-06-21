@@ -27,6 +27,7 @@ class FlatLoad(BaseInstruction):
                 if inst_offset == "0":
                     if first_to == last_to:
                         data_type = node.state.registers[from_registers].type_of_data
+                        # probably we should save only const data
                         decompiler_data.var_value[variable] = node.state.registers[from_registers].val
                         node.state.registers[to_registers] = \
                             Register(variable, Type.program_param, Integrity.entire)

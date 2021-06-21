@@ -60,23 +60,21 @@ class SLshl(BaseInstruction):
             new_val1, ssrc0_flag1, ssrc1_flag1 = make_op(node, from_registers1,
                                                          str(pow(2, int(ssrc1))), " * ", '', '')
             if flag_of_status == OperationStatus.to_fill_node:
-                if name_of_from in {'v', 's'} and name_of_to in {'v', 's'}:
-                    node.state.registers[to_registers] = \
-                        Register(new_val0, node.state.registers[from_registers].type, Integrity.low_part)
-                    node.state.registers[to_registers1] = \
-                        Register(new_val1, node.state.registers[from_registers1].type, Integrity.high_part)
-                    decompiler_data.make_version(node.state, to_registers)
-                    node.state.registers[to_registers].type_of_data = suffix
-                    if to_registers in [from_registers, ssrc1]:
-                        node.state.registers[to_registers].make_prev()
-                    decompiler_data.make_version(node.state, to_registers1)
-                    if ssrc1 == '3':
-                        suffix = '8 bytes'
-                    elif ssrc1 == '2':
-                        suffix = '4 bytes'
-                    node.state.registers[to_registers].type_of_data = suffix
-                    node.state.registers[to_registers1].type_of_data = suffix
-                    if to_registers1 in [from_registers1, ssrc1]:
-                        node.state.registers[to_registers1].make_prev()
+                node.state.registers[to_registers] = \
+                    Register(new_val0, node.state.registers[from_registers].type, Integrity.low_part)
+                node.state.registers[to_registers1] = \
+                    Register(new_val1, node.state.registers[from_registers1].type, Integrity.high_part)
+                decompiler_data.make_version(node.state, to_registers)
+                if to_registers in [from_registers, ssrc1]:
+                    node.state.registers[to_registers].make_prev()
+                decompiler_data.make_version(node.state, to_registers1)
+                if ssrc1 == '3':
+                    suffix = '8 bytes'
+                elif ssrc1 == '2':
+                    suffix = '4 bytes'
+                node.state.registers[to_registers].type_of_data = suffix
+                node.state.registers[to_registers1].type_of_data = suffix
+                if to_registers1 in [from_registers1, ssrc1]:
+                    node.state.registers[to_registers1].make_prev()
                 return node
             return output_string

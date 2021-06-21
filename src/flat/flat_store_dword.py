@@ -16,10 +16,6 @@ class FlatStoreDword(BaseInstruction):
         if flag_of_status == OperationStatus.to_print_unresolved:
             decompiler_data.write("*(uint32*)(" + vaddr + " + " + inst_offset
                                   + ") = " + vdata + " // flat_store_dword\n")
-            # decompiler_data.write(to_registers + " = " + vdata + "\n")
-            # if first_to != last_to:
-            #     to_now = name_of_to + str(first_to + 1)
-            #     decompiler_data.write(to_now + " = " + vdata + "\n")
             return node
         first_to, last_to, name_of_to, name_of_from, first_from, last_from \
             = find_first_last_num_to_from(vaddr, vdata)
@@ -35,26 +31,19 @@ class FlatStoreDword(BaseInstruction):
             else:
                 to_now = name_of_to + str(first_to + 1)
                 if node.state.registers.get(vdata):
-                    if node.state.registers[from_registers].type_of_data is not None and 'bytes' in node.state.registers[from_registers].type_of_data:
+                    if node.state.registers[from_registers].type_of_data is not None \
+                            and 'bytes' in node.state.registers[from_registers].type_of_data:
                         node.state.registers[from_registers].type_of_data = \
                             node.state.registers[to_registers].type_of_data
-                        if node.state.registers[from_registers].type_of_data != node.state.registers[
-                            to_registers].type_of_data:
-                            if node.state.registers[from_registers].val in decompiler_data.names_of_vars:
-                                val = node.state.registers[from_registers].val
-                                node.state.registers[from_registers].val = '(' + make_type(
-                                    node.state.registers[to_registers].type_of_data) + ')' + node.state.registers[
-                                                                               from_registers].val
-                                decompiler_data.names_of_vars[val] = node.state.registers[from_registers].type_of_data
                         decompiler_data.names_of_vars[node.state.registers[from_registers].val] = \
                             node.state.registers[to_registers].type_of_data
                     else:
                         if node.state.registers[from_registers].type_of_data != node.state.registers[to_registers].type_of_data:
                             if node.state.registers[from_registers].val in decompiler_data.names_of_vars:
                                 val = node.state.registers[from_registers].val
-                                node.state.registers[from_registers].val = '(' + make_type(
-                                    node.state.registers[to_registers].type_of_data) + ')' + node.state.registers[
-                                                                               from_registers].val
+                                node.state.registers[from_registers].val = \
+                                    '(' + make_type(node.state.registers[to_registers].type_of_data) + ')'\
+                                    + node.state.registers[from_registers].val
                                 decompiler_data.names_of_vars[val] = node.state.registers[from_registers].type_of_data
                             else:
                                 node.state.registers[from_registers].type_of_data = \

@@ -8,6 +8,16 @@ from src.type_of_reg import Type
 from src.type_of_flag import TypeOfFlag
 
 
+def update_register(asm_type, from_registers, to_registers, node):
+    decompiler_data = DecompilerData()
+    decompiler_data.names_of_vars[node.state.registers[from_registers].val] = asm_type
+    new_val = node.state.registers[from_registers].val
+    type_of_reg = node.state.registers[from_registers].type
+    node.state.registers[to_registers] = Register(new_val, type_of_reg, Integrity.entire)
+    node.state.registers[to_registers].type_of_data = asm_type
+    return node
+
+
 def simplify_opencl_statement(opencl_line):
     decompiler_data = DecompilerData()
     start_open = 0
@@ -25,15 +35,19 @@ def simplify_opencl_statement(opencl_line):
                 current_type_conversion[key] = data_type
         for key, data_type in current_type_conversion.items():
             substring = substring.replace(data_type, '')
-        substring = sym.simplify(substring)
-        substring = sym.sstr(substring)
+        if substring != '':
+            substring = sym.simplify(substring)
+            substring = sym.sstr(substring)
+        # doesn't recover type (int)A in case (int)(A + B) - B
         for key, data_type in current_type_conversion.items():
             if key in substring:
                 substring = substring.replace(key, data_type + key)
-        new_line += opencl_line[start_close:open_bracket_position + 1] + substring + opencl_line[
-            close_bracket_position] if start_close == 0 else opencl_line[
-                                                             start_close + 1:open_bracket_position + 1] + substring + \
-                                                             opencl_line[close_bracket_position]
+        # recover all left symbols from [
+        if start_close == 0:
+            new_line += opencl_line[start_close:open_bracket_position + 1]
+        else:
+            new_line += opencl_line[start_close + 1:open_bracket_position + 1]
+        new_line += substring + ']'
         start_open = open_bracket_position
         start_close = close_bracket_position
     if start_close != 0:
@@ -43,39 +57,30 @@ def simplify_opencl_statement(opencl_line):
     return new_line
 
 
+# gdata0[get_local_id(0)] -> gdata0
 def get_name(key):
     position_gdata = key.find('gdata')
     previous_position = position_gdata
-    while True:
-        if position_gdata + 5 < len(key) and '0' <= key[position_gdata + 5] <= '9':
-            position_gdata += 1
-        else:
-            break
+    while position_gdata + 5 < len(key) and '0' <= key[position_gdata + 5] <= '9':
+        position_gdata += 1
     return key[previous_position:position_gdata + 5]
 
 
 def optimize_names_of_vars():
     decompiler_data = DecompilerData()
     new_names_of_vars = {}
+    # remove gdata element access (gdata[...] -> gdata)
     for key, val in decompiler_data.names_of_vars.items():
         if 'gdata' in key:
             name = get_name(key)
             new_names_of_vars[name] = val
         elif 'var' in key:
             new_names_of_vars[key] = val
-        else:
-            continue
     decompiler_data.names_of_vars = new_names_of_vars
-    new_var_value = {}
     for key, val in decompiler_data.var_value.items():
         if 'gdata' in val:
             new_val = get_name(val)
-            new_var_value[key] = new_val
-        elif 'var' in val:
-            new_var_value[key] = val
-        else:
-            continue
-    decompiler_data.var_value = new_var_value
+            decompiler_data.var_value[key] = new_val
 
 
 def check_reg_for_val(node, register):
@@ -114,9 +119,10 @@ def evaluate_from_hex(global_data, size, flag):
     typed_global_data = []
     for element in range(int(len(global_data) / size)):
         array_of_bytes = global_data[element * size: element * size + size]
-        string_of_bytes = ''.join(elem[2:] + ' ' for elem in array_of_bytes)
-        value = struct.unpack(flag, binascii.unhexlify("".join(string_of_bytes.split()[::-1])))[0]
-        typed_global_data.append(value)
+        string_of_bytes = ''.join(elem[2:] + '' for elem in array_of_bytes)
+        # output binascii.unhexlify is byteset from string; struct.unpack encode byte to value.
+        value = struct.unpack(flag, binascii.unhexlify(string_of_bytes))[0]
+        typed_global_data.append(str(value))
     return typed_global_data
 
 
@@ -172,9 +178,8 @@ class DecompilerData(metaclass=Singleton):
         self.checked_variables = {}
         self.kernel_params = {}
         self.global_data = {}
-        self.var_value = {}
-        self.type_conversion = {}
-        self.program_block = ""
+        self.var_value = {}  # var -> value
+        self.type_conversion = {}  # expression -> type_conversion (get_global_id(0) -> (ulong))
         self.versions = {
             "s0": 0,
             "s1": 0,
@@ -282,7 +287,6 @@ class DecompilerData(metaclass=Singleton):
         self.global_data = {}
         self.var_value = {}
         self.type_conversion = {}
-        self.program_block = ""
         self.versions = {
             "s0": 0,
             "s1": 0,
@@ -354,7 +358,7 @@ class DecompilerData(metaclass=Singleton):
 
     def write(self, output):
         # noinspection PyUnresolvedReferences
-        if self.program_block == 'Body':
+        if self.flag_for_decompilation != TypeOfFlag.only_clrx:
             output = simplify_opencl_statement(output)
         self.output_file.write(output)
 
