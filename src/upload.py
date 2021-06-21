@@ -2,7 +2,7 @@ from src.register import Register
 from src.integrity import Integrity
 from src.type_of_reg import Type
 from src.decompiler_data import DecompilerData
-from src.opencl_types import make_suffix
+from src.opencl_types import make_asm_type
 
 
 def extract_from_regs(registers, left_board):
@@ -111,7 +111,7 @@ def upload(state, to_registers, from_registers, offset, kernel_params):
                 value_for_type = val
                 if value_for_type.find(".") != -1:
                     value_for_type = value_for_type[:value_for_type.find(".")]
-                type_of_data = make_suffix(decompiler_data.type_params[value_for_type])
+                type_of_data = make_asm_type(decompiler_data.type_params[value_for_type])
                 if val[0] == "*":
                     type_param = Type.paramA
                     val = val[1:]
@@ -121,9 +121,10 @@ def upload(state, to_registers, from_registers, offset, kernel_params):
                 state.registers[reg].type_of_data = type_of_data
                 decompiler_data.make_version(state, reg)
     elif state.registers[from_registers].type == Type.global_data_pointer:
+        type_of_data = state.registers[from_registers].type_of_data
         new_val = state.registers[from_registers].val
-        state.registers[to_registers] = \
-            Register(new_val, Type.global_data_pointer, Integrity.entire)
+        state.registers[to_registers] = Register(new_val, Type.global_data_pointer, Integrity.entire)
+        state.registers[to_registers].type_of_data = type_of_data
         decompiler_data.make_version(state, to_registers)
     else:
         for i in range(first_to, last_to + 1):

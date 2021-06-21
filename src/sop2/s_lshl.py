@@ -65,11 +65,13 @@ class SLshl(BaseInstruction):
                 node.state.registers[to_registers1] = \
                     Register(new_val1, node.state.registers[from_registers1].type, Integrity.high_part)
                 decompiler_data.make_version(node.state, to_registers)
-                node.state.registers[to_registers].type_of_data = suffix
                 if to_registers in [from_registers, ssrc1]:
                     node.state.registers[to_registers].make_prev()
                 decompiler_data.make_version(node.state, to_registers1)
-                suffix = 'i64' if ssrc1 == '3' else 'i32'
+                if ssrc1 == '3':
+                    suffix = '8 bytes'
+                elif ssrc1 == '2':
+                    suffix = '4 bytes'
                 node.state.registers[to_registers].type_of_data = suffix
                 node.state.registers[to_registers1].type_of_data = suffix
                 if to_registers1 in [from_registers1, ssrc1]:

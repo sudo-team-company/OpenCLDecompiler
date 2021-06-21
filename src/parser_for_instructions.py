@@ -45,7 +45,7 @@ def main(input_par, output_par, flag_for_decompilation):
             elif status_of_parse == "global_data":
                 line_of_bytes = row.split()
                 if line_of_bytes.pop(0) == ".fill":
-                    amount = line_of_bytes[0]
+                    amount = line_of_bytes[0][:-1]
                     value = line_of_bytes[2]
                     expand_list = [value for _ in range(int(amount))]
                     set_of_global_data_bytes += expand_list

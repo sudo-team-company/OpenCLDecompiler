@@ -74,9 +74,9 @@ class VLshlrev(BaseInstruction):
                     node.state.registers[to_registers_1] = Register(new_val, type_reg, Integrity.high_part)
                     decompiler_data.make_version(node.state, to_registers_1)
                 if src0_flag:
-                    suffix = 'i64' if src1 == '3' else 'i32'
-                else:
-                    suffix = 'i64' if src0 == '3' else 'i32'
+                    suffix = str(pow(2, int(src1))) + ' bytes'
+                elif src1_flag:
+                    suffix = str(pow(2, int(src0))) + ' bytes'
                 node.state.registers[to_registers].type_of_data = suffix
                 node.state.registers[to_registers_1].type_of_data = suffix
                 return node
