@@ -40,14 +40,12 @@ class SAdd(BaseInstruction):
                     elif node.state.registers[ssrc0].type == Type.global_data_pointer:
                         name = node.state.registers[ssrc0].val
                         if node.state.registers[ssrc1].type_of_data == '4 bytes':
-                            # decompiler_data.type_gdata[name] = 'int'
                             new_value, src0_flag, src1_flag = make_op(node, ssrc1, "4", " / ", '', '')
                             new_val = name + "[" + new_value + "]"
                             node.state.registers[sdst] = \
                                 Register(new_val, Type.global_data_pointer, Integrity.entire)
                             suffix = '4 bytes'
                         else:
-                            # decompiler_data.type_gdata[name] = 'long'
                             new_value, src0_flag, src1_flag = make_op(node, ssrc1, "8", " / ", '', '')
                             new_val = name + "[" + new_value + "]"
                             node.state.registers[sdst] = \

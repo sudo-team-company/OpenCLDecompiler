@@ -4,6 +4,6 @@ __kernel __attribute__((reqd_work_group_size(8, 8, 1)))
 void int_test(__global long *out, int i)
 {
     long var0;
-    var0 = gdata0[((ulong)(get_global_id(0) * 24) + (ulong)(get_global_id(1) * 8)) / 8];
-    out[(get_global_id(0) * 8) / 8] = var0;
+    var0 = gdata0[3*get_global_id(0) + get_global_id(1)];
+    out[get_global_id(0)] = var0;
 }

@@ -2,10 +2,10 @@ __kernel void four_unused_params(int n, __global int *data2, int w, int z, __glo
 {
     int var3;
     if ((int)n > (int)get_global_id(0)) {
-        data[(get_global_id(0) * 4) / 4] = x;
+        data[get_global_id(0)] = x;
     }
     else {
-        var3 = data1[(get_global_id(1) / (long)1073741824) * 1073741824];
-        data[(get_global_id(1) / (long)1073741824) * 1073741824] = (ulong)y + (ulong)var3;
+        var3 = data1[get_global_id(1)];
+        data[get_global_id(1)] = (ulong)y + (ulong)var3;
     }
 }

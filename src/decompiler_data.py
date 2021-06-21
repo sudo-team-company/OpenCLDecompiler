@@ -1,10 +1,46 @@
 import binascii
 import struct
+import sympy as sym
 from src.state import State
 from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
 from src.type_of_flag import TypeOfFlag
+
+
+def simplify_opencl_statement(opencl_line):
+    decompiler_data = DecompilerData()
+    start_open = 0
+    start_close = 0
+    new_line = ""
+    while True:
+        open_bracket_position = opencl_line.find('[', start_open + 1)
+        close_bracket_position = opencl_line.find(']', start_close + 1)
+        if open_bracket_position == -1:
+            break
+        substring = opencl_line[open_bracket_position + 1:close_bracket_position]
+        current_type_conversion = {}
+        for key, data_type in decompiler_data.type_conversion.items():
+            if data_type + key in substring:
+                current_type_conversion[key] = data_type
+        for key, data_type in current_type_conversion.items():
+            substring = substring.replace(data_type, '')
+        substring = sym.simplify(substring)
+        substring = sym.sstr(substring)
+        for key, data_type in current_type_conversion.items():
+            if key in substring:
+                substring = substring.replace(key, data_type + key)
+        new_line += opencl_line[start_close:open_bracket_position + 1] + substring + opencl_line[
+            close_bracket_position] if start_close == 0 else opencl_line[
+                                                             start_close + 1:open_bracket_position + 1] + substring + \
+                                                             opencl_line[close_bracket_position]
+        start_open = open_bracket_position
+        start_close = close_bracket_position
+    if start_close != 0:
+        new_line += opencl_line[start_close + 1:]
+    else:
+        new_line = opencl_line
+    return new_line
 
 
 def get_name(key):
@@ -59,6 +95,11 @@ def make_op(node, register0, register1, operation, type0, type1):
         new_val0 = "(" + new_val0 + ")"
     if "-" in new_val1 or "+" in new_val1 or "*" in new_val1 or "/" in new_val1:
         new_val1 = "(" + new_val1 + ")"
+    decompiler_data = DecompilerData()
+    if type0 != '':
+        decompiler_data.type_conversion[new_val0] = type0
+    if type1 != '':
+        decompiler_data.type_conversion[new_val1] = type1
     new_val0 = type0 + new_val0
     new_val1 = type1 + new_val1
     if len(type0) > 0 and ')' not in type0:
@@ -132,6 +173,8 @@ class DecompilerData(metaclass=Singleton):
         self.kernel_params = {}
         self.global_data = {}
         self.var_value = {}
+        self.type_conversion = {}
+        self.program_block = ""
         self.versions = {
             "s0": 0,
             "s1": 0,
@@ -238,6 +281,8 @@ class DecompilerData(metaclass=Singleton):
         self.kernel_params = {}
         self.global_data = {}
         self.var_value = {}
+        self.type_conversion = {}
+        self.program_block = ""
         self.versions = {
             "s0": 0,
             "s1": 0,
@@ -309,6 +354,8 @@ class DecompilerData(metaclass=Singleton):
 
     def write(self, output):
         # noinspection PyUnresolvedReferences
+        if self.program_block == 'Body':
+            output = simplify_opencl_statement(output)
         self.output_file.write(output)
 
     def make_version(self, state, reg):
@@ -361,8 +408,8 @@ class DecompilerData(metaclass=Singleton):
         if cws:
             self.size_of_work_groups = set_of_config_1.replace(',', ' ').split()[1:]
             self.configuration_output += "__kernel __attribute__((reqd_work_group_size(" \
-                + self.size_of_work_groups[0] + ", " + self.size_of_work_groups[1] \
-                + ", " + self.size_of_work_groups[2] + ")))\n"
+                                         + self.size_of_work_groups[0] + ", " + self.size_of_work_groups[1] \
+                                         + ", " + self.size_of_work_groups[2] + ")))\n"
         else:
             self.configuration_output += "__kernel "
 

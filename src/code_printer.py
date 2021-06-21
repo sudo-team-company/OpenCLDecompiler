@@ -11,6 +11,7 @@ def create_opencl_body():
     write_global_data()
     decompiler_data.write(decompiler_data.configuration_output)
     decompiler_data.write("{\n")
+    decompiler_data.program_block = 'Body'
     for var in sorted(decompiler_data.names_of_vars.keys()):
         type_of_var = make_type(decompiler_data.names_of_vars[var])
         decompiler_data.write("    " + type_of_var + " " + var + ";\n")
