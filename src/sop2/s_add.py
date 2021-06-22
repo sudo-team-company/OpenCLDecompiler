@@ -81,7 +81,8 @@ class SAdd(BaseInstruction):
                 decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()
-                if node.state.registers[ssrc0].type_of_data is not None:
+                if not (node.state.registers[ssrc0].type == Type.global_data_pointer):
+                # if node.state.registers[ssrc0].type_of_data is not None:
                     node.state.registers[sdst].type_of_data = suffix
                 return node
             return output_string
