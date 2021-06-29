@@ -1,288 +1,188 @@
 import subprocess
 import unittest
-from src import parser_for_instructions
+
+
+def template(self, path_to_dir, dir_name, flag=None):
+    path_to_exec_file = r'..\src\parser_for_instructions.py'
+    flag_option = ''
+    if flag:
+        flag_option = f' -f {flag}'
+    subprocess.call(fr'tests.bat {path_to_dir}\{dir_name}\{dir_name}.bin {path_to_dir}\{dir_name}\{dir_name}.asm')
+    subprocess.check_call(fr"python {path_to_exec_file} -i {path_to_dir}\{dir_name}\{dir_name}.asm" +
+                    fr" -o {path_to_dir}\{dir_name}\{dir_name}_dcmpl.cl" + flag_option)
+
+    with open(
+            fr"{path_to_dir}\{dir_name}\{dir_name}_hands.cl") as hands_decompilation:
+        with open(fr"{path_to_dir}\{dir_name}\{dir_name}_dcmpl.cl") as decompiled:
+            unittest.TestCase.assertEqual(self, first=hands_decompilation.read(), second=decompiled.read())
+
+
+class GlobalDataTest(unittest.TestCase):
+    def test_int_array(self):
+        template(self, 'global_data_usage', 'int_kernels')
+
+    def test_long_array(self):
+        template(self, 'global_data_usage', 'long_kernels')
+
+    def test_mixed_array(self):
+        template(self, 'global_data_usage', 'mixed_kernels')
+
+    def test_float_array(self):
+        template(self, 'global_data_usage', 'float_kernels')
+
+    def test_double_array(self):
+        template(self, 'global_data_usage', 'double_kernels')
+
+    def test_cvt_i32_f32(self):
+        template(self, 'global_data_usage', 'cvt_i32_f32')
+
+    def test_cvt_f32_i32(self):
+        template(self, 'global_data_usage', 'cvt_f32_i32')
+
+    def test_cvt_i32_f64(self):
+        template(self, 'global_data_usage', 'cvt_i32_f64')
+
+    def test_cvt_f64_i32(self):
+        template(self, 'global_data_usage', 'cvt_f64_i32')
+
+    def test_cvt_f64_i64(self):
+        template(self, 'global_data_usage', 'cvt_f64_i64')
+
+    def test_int4(self):
+        template(self, 'global_data_usage', 'int4')
+
+    def test_int8(self):
+        template(self, 'global_data_usage', 'int8')
+
+    def test_mix_vectors(self):
+        template(self, 'global_data_usage', 'mix_vectors')
+
+    def test_int_matrix(self):
+        template(self, 'global_data_usage', 'int_matrix')
+
+    def test_long_matrix(self):
+        template(self, 'global_data_usage', 'long_matrix')
+
+    def test_int2_array(self):
+        template(self, 'global_data_usage', 'int2_array')
+
+    def test_int2_to_int2(self):
+        template(self, 'global_data_usage', 'int2_to_int2')
+
+    def test_int4_to_int4(self):
+        template(self, 'global_data_usage', 'int4_to_int4')
+
+    def test_int8_to_int8(self):
+        template(self, 'global_data_usage', 'int8_to_int8')
 
 
 class BranchingKernelsTest(unittest.TestCase):
     def test_if_first(self):
-        subprocess.call(r'tests.bat branching_kernels\if_1\if_1.bin ' +
-                        r'branching_kernels\if_1\if_1.asm')
-        parser_for_instructions.main(r"branching_kernels\if_1\if_1.asm",
-                                     r"branching_kernels\if_1\if_1_dcmpl.cl")
-        with open(
-                r"branching_kernels\if_1\if_1_hands.cl") as hands_decompilation:
-            with open(r"branching_kernels\if_1\if_1_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'branching_kernels', 'if_1')
 
     def test_if_second(self):
-        subprocess.call(r'tests.bat branching_kernels\if_2\if_2.bin ' +
-                        r'branching_kernels\if_2\if_2.asm')
-        parser_for_instructions.main(r"branching_kernels\if_2\if_2.asm",
-                                     r"branching_kernels\if_2\if_2_dcmpl.cl")
-        with open(
-                r"branching_kernels\if_2\if_2_hands.cl") as hands_decompilation:
-            with open(r"branching_kernels\if_2\if_2_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'branching_kernels', 'if_2')
 
     def test_if_and_if(self):
-        subprocess.call(r'tests.bat branching_kernels\if_and_if\if_and_if.bin ' +
-                        r'branching_kernels\if_and_if\if_and_if.asm')
-        parser_for_instructions.main(r"branching_kernels\if_and_if\if_and_if.asm",
-                                     r"branching_kernels\if_and_if\if_and_if_dcmpl.cl")
-        with open(
-                r"branching_kernels\if_and_if\if_and_if_hands.cl") as hands_decompilation:
-            with open(r"branching_kernels\if_and_if\if_and_if_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'branching_kernels', 'if_and_if')
 
     def test_if_else_0_labels(self):
-        subprocess.call(r'tests.bat branching_kernels\if_else_0_labels\if_else_0_labels.bin ' +
-                        r'branching_kernels\if_else_0_labels\if_else_0_labels.asm')
-        parser_for_instructions.main(r"branching_kernels\if_else_0_labels\if_else_0_labels.asm",
-                                     r"branching_kernels\if_else_0_labels\if_else_0_labels_dcmpl.cl")
-        with open(
-                r"branching_kernels\if_else_0_labels\if_else_0_labels_hands.cl") as hands_decompilation:
-            with open(r"branching_kernels\if_else_0_labels\if_else_0_labels_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'branching_kernels', 'if_else_0_labels')
 
     def test_if_else_1_labels(self):
-        subprocess.call(r'tests.bat branching_kernels\if_else_1_label\if_else_1_label.bin ' +
-                        r'branching_kernels\if_else_1_label\if_else_1_label.asm')
-        parser_for_instructions.main(r"branching_kernels\if_else_1_label\if_else_1_label.asm",
-                                     r"branching_kernels\if_else_1_label\if_else_1_label_dcmpl.cl")
-        with open(
-                r"branching_kernels\if_else_1_label\if_else_1_label_hands.cl") as hands_decompilation:
-            with open(r"branching_kernels\if_else_1_label\if_else_1_label_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'branching_kernels', 'if_else_1_label')
 
     def test_if_else_2_labels(self):
-        subprocess.call(r'tests.bat branching_kernels\if_else_2_labels\if_else_2_labels.bin ' +
-                        r'branching_kernels\if_else_2_labels\if_else_2_labels.asm')
-        parser_for_instructions.main(r"branching_kernels\if_else_2_labels\if_else_2_labels.asm",
-                                     r"branching_kernels\if_else_2_labels\if_else_2_labels_dcmpl.cl")
-        with open(
-                r"branching_kernels\if_else_2_labels\if_else_2_labels_hands.cl") as hands_decompilation:
-            with open(r"branching_kernels\if_else_2_labels\if_else_2_labels_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'branching_kernels', 'if_else_2_labels')
 
     def test_if_in_if(self):
-        subprocess.call(r'tests.bat branching_kernels\if_in_if\if_in_if.bin ' +
-                        r'branching_kernels\if_in_if\if_in_if.asm')
-        parser_for_instructions.main(r"branching_kernels\if_in_if\if_in_if.asm",
-                                     r"branching_kernels\if_in_if\if_in_if_dcmpl.cl")
-        with open(
-                r"branching_kernels\if_in_if\if_in_if_hands.cl") as hands_decompilation:
-            with open(r"branching_kernels\if_in_if\if_in_if_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'branching_kernels', 'if_in_if')
 
     def test_if_else_in_if(self):
-        subprocess.call(r'tests.bat branching_kernels\if_else_in_if\if_else_in_if.bin ' +
-                        r'branching_kernels\if_else_in_if\if_else_in_if.asm')
-        parser_for_instructions.main(r"branching_kernels\if_else_in_if\if_else_in_if.asm",
-                                     r"branching_kernels\if_else_in_if\if_else_in_if_dcmpl.cl")
-        with open(
-                r"branching_kernels\if_else_in_if\if_else_in_if_hands.cl") as hands_decompilation:
-            with open(r"branching_kernels\if_else_in_if\if_else_in_if_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'branching_kernels', 'if_else_in_if')
 
     def test_if_else_and_if_else(self):
-        subprocess.call(r'tests.bat branching_kernels\if_else_and_if_else\if_else_and_if_else.bin ' +
-                        r'branching_kernels\if_else_and_if_else\if_else_and_if_else.asm')
-        parser_for_instructions.main(r"branching_kernels\if_else_and_if_else\if_else_and_if_else.asm",
-                                     r"branching_kernels\if_else_and_if_else\if_else_and_if_else_dcmpl.cl")
-        with open(
-                r"branching_kernels\if_else_and_if_else\if_else_and_if_else_hands.cl") as hands_decompilation:
-            with open(r"branching_kernels\if_else_and_if_else\if_else_and_if_else_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'branching_kernels', 'if_else_and_if_else')
 
     def test_if_else_and_if_else_0_labels(self):
-        subprocess.call(r'tests.bat branching_kernels\if_else_and_if_else_0_labels\if_else_and_if_else_0_labels.bin ' +
-                        r'branching_kernels\if_else_and_if_else_0_labels\if_else_and_if_else_0_labels.asm')
-        parser_for_instructions.main(r"branching_kernels\if_else_and_if_else_0_labels\if_else_and_if_else_0_labels.asm",
-                                     r"branching_kernels\if_else_and_if_else_0_labels\if_else_and_if_else_0_labels_dcmpl.cl")
-        with open(
-                r"branching_kernels\if_else_and_if_else_0_labels\if_else_and_if_else_0_labels_hands.cl") as hands_decompilation:
-            with open(r"branching_kernels\if_else_and_if_else_0_labels\if_else_and_if_else_0_labels_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'branching_kernels', 'if_else_and_if_else_0_labels')
 
     def test_if_else_in_if_of_if_else(self):
-        subprocess.call(r'tests.bat branching_kernels\if_else_in_if_of_if_else\if_else_in_if_of_if_else.bin ' +
-                        r'branching_kernels\if_else_in_if_of_if_else\if_else_in_if_of_if_else.asm')
-        parser_for_instructions.main(r"branching_kernels\if_else_in_if_of_if_else\if_else_in_if_of_if_else.asm",
-                                     r"branching_kernels\if_else_in_if_of_if_else\if_else_in_if_of_if_else_dcmpl.cl")
-        with open(
-                r"branching_kernels\if_else_in_if_of_if_else\if_else_in_if_of_if_else_hands.cl") as hands_decompilation:
-            with open(r"branching_kernels\if_else_in_if_of_if_else\if_else_in_if_of_if_else_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'branching_kernels', 'if_else_in_if_of_if_else')
 
     def test_if_else_in_else_of_if_else(self):
-        subprocess.call(r'tests.bat branching_kernels\if_else_in_else_of_if_else\if_else_in_else_of_if_else.bin ' +
-                        r'branching_kernels\if_else_in_else_of_if_else\if_else_in_else_of_if_else.asm')
-        parser_for_instructions.main(r"branching_kernels\if_else_in_else_of_if_else\if_else_in_else_of_if_else.asm",
-                                     r"branching_kernels\if_else_in_else_of_if_else\if_else_in_else_of_if_else_dcmpl.cl")
-        with open(
-                r"branching_kernels\if_else_in_else_of_if_else\if_else_in_else_of_if_else_hands.cl") as hands_decompilation:
-            with open(r"branching_kernels\if_else_in_else_of_if_else\if_else_in_else_of_if_else_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'branching_kernels', 'if_else_in_else_of_if_else')
 
     def test_if_else_in_if_and_else_of_if_else(self):
-        subprocess.call(r'tests.bat branching_kernels\if_else_in_if_and_else_of_if_else\if_else_in_if_and_else_of_if_else.bin ' +
-                        r'branching_kernels\if_else_in_if_and_else_of_if_else\if_else_in_if_and_else_of_if_else.asm')
-        parser_for_instructions.main(r"branching_kernels\if_else_in_if_and_else_of_if_else\if_else_in_if_and_else_of_if_else.asm",
-                                     r"branching_kernels\if_else_in_if_and_else_of_if_else\if_else_in_if_and_else_of_if_else_dcmpl.cl")
-        with open(
-                r"branching_kernels\if_else_in_if_and_else_of_if_else\if_else_in_if_and_else_of_if_else_hands.cl") as hands_decompilation:
-            with open(r"branching_kernels\if_else_in_if_and_else_of_if_else\if_else_in_if_and_else_of_if_else_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'branching_kernels', 'if_else_in_if_and_else_of_if_else')
 
 
 class LinearKernelsTest(unittest.TestCase):
     def test_addition(self):
-        subprocess.call(r'tests.bat linear_kernels\addition\addition.bin ' +
-                        r'linear_kernels\addition\addition.asm')
-        parser_for_instructions.main(r"linear_kernels\addition\addition.asm",
-                                     r"linear_kernels\addition\addition_dcmpl.cl")
-        with open(
-                r"linear_kernels\addition\addition_hands.cl") as hands_decompilation:
-            with open(r"linear_kernels\addition\addition_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'linear_kernels', 'addition')
 
     def test_subtraction(self):
-        subprocess.call(r'tests.bat linear_kernels\subtraction\subtraction.bin ' +
-                        r'linear_kernels\subtraction\subtraction.asm')
-        parser_for_instructions.main(r"linear_kernels\subtraction\subtraction.asm",
-                                     r"linear_kernels\subtraction\subtraction_dcmpl.cl")
-        with open(
-                r"linear_kernels\subtraction\subtraction_hands.cl") as hands_decompilation:
-            with open(r"linear_kernels\subtraction\subtraction_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'linear_kernels', 'subtraction')
 
     def test_multiplication(self):
-        subprocess.call(r'tests.bat linear_kernels\multiplication\multiplication.bin ' +
-                        r'linear_kernels\multiplication\multiplication.asm')
-        parser_for_instructions.main(r"linear_kernels\multiplication\multiplication.asm",
-                                     r"linear_kernels\multiplication\multiplication_dcmpl.cl")
-        with open(
-                r"linear_kernels\multiplication\multiplication_hands.cl") as hands_decompilation:
-            with open(r"linear_kernels\multiplication\multiplication_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'linear_kernels', 'multiplication')
 
     def test_many_linears(self):
-        subprocess.call(r'tests.bat linear_kernels\many_linears\many_linears.bin ' +
-                        r'linear_kernels\many_linears\many_linears.asm')
-        parser_for_instructions.main(r"linear_kernels\many_linears\many_linears.asm",
-                                     r"linear_kernels\many_linears\many_linears_dcmpl.cl")
-        with open(
-                r"linear_kernels\many_linears\many_linears_hands.cl") as hands_decompilation:
-            with open(r"linear_kernels\many_linears\many_linears_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'linear_kernels', 'many_linears')
 
     def test_work_item_built_in_functions(self):
-        subprocess.call(r'tests.bat linear_kernels\work_item_built_in_functions\work_item_built_in_functions.bin ' +
-                        r'linear_kernels\work_item_built_in_functions\work_item_built_in_functions.asm')
-        parser_for_instructions.main(r"linear_kernels\work_item_built_in_functions\work_item_built_in_functions.asm",
-                                     r"linear_kernels\work_item_built_in_functions\work_item_built_in_functions_dcmpl.cl")
-        with open(
-                r"linear_kernels\work_item_built_in_functions\work_item_built_in_functions_hands.cl") as hands_decompilation:
-            with open(r"linear_kernels\work_item_built_in_functions\work_item_built_in_functions_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'linear_kernels', 'work_item_built_in_functions')
 
 
 class LocalMemoryKernelsTest(unittest.TestCase):
     def test_barrier_1(self):
-        subprocess.call(r'tests.bat local_memory_kernels\barrier_1\barrier_1.bin ' +
-                        r'local_memory_kernels\barrier_1\barrier_1.asm')
-        parser_for_instructions.main(r"local_memory_kernels\barrier_1\barrier_1.asm",
-                                     r"local_memory_kernels\barrier_1\barrier_1_dcmpl.cl")
-        with open(
-                r"local_memory_kernels\barrier_1\barrier_1_hands.cl") as hands_decompilation:
-            with open(r"local_memory_kernels\barrier_1\barrier_1_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'local_memory_kernels', 'barrier_1')
 
 
 class UnusedParams(unittest.TestCase):
     def test_one_unused_param(self):
-        subprocess.call(r'tests.bat unused_params\one_unused_param\one_unused_param.bin ' +
-                        r'unused_params\one_unused_param\one_unused_param.asm')
-        parser_for_instructions.main(r"unused_params\one_unused_param\one_unused_param.asm",
-                                     r"unused_params\one_unused_param\one_unused_param_dcmpl.cl")
-        with open(
-                r"unused_params\one_unused_param\one_unused_param_hands.cl") as hands_decompilation:
-            with open(r"unused_params\one_unused_param\one_unused_param_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'unused_params', 'one_unused_param')
 
     def test_two_unused_params(self):
-        subprocess.call(r'tests.bat unused_params\two_unused_params\two_unused_params.bin ' +
-                        r'unused_params\two_unused_params\two_unused_params.asm')
-        parser_for_instructions.main(r"unused_params\two_unused_params\two_unused_params.asm",
-                                     r"unused_params\two_unused_params\two_unused_params_dcmpl.cl")
-        with open(
-                r"unused_params\two_unused_params\two_unused_params_hands.cl") as hands_decompilation:
-            with open(r"unused_params\two_unused_params\two_unused_params_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'unused_params', 'two_unused_params')
 
     def test_three_unused_params(self):
-        subprocess.call(r'tests.bat unused_params\three_unused_params\three_unused_params.bin ' +
-                        r'unused_params\three_unused_params\three_unused_params.asm')
-        parser_for_instructions.main(r"unused_params\three_unused_params\three_unused_params.asm",
-                                     r"unused_params\three_unused_params\three_unused_params_dcmpl.cl")
-        with open(
-                r"unused_params\three_unused_params\three_unused_params_hands.cl") as hands_decompilation:
-            with open(r"unused_params\three_unused_params\three_unused_params_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'unused_params', 'three_unused_params')
 
     def test_four_unused_params(self):
-        subprocess.call(r'tests.bat unused_params\four_unused_params\four_unused_params.bin ' +
-                        r'unused_params\four_unused_params\four_unused_params.asm')
-        parser_for_instructions.main(r"unused_params\four_unused_params\four_unused_params.asm",
-                                     r"unused_params\four_unused_params\four_unused_params_dcmpl.cl")
-        with open(
-                r"unused_params\four_unused_params\four_unused_params_hands.cl") as hands_decompilation:
-            with open(r"unused_params\four_unused_params\four_unused_params_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'unused_params', 'four_unused_params')
 
 
 class RealKernels(unittest.TestCase):
     def test_mask_kernel(self):
-        subprocess.call(r'tests.bat real_kernels\mask_kernel\mask_kernel.bin ' +
-                        r'real_kernels\mask_kernel\mask_kernel.asm')
-        parser_for_instructions.main(r"real_kernels\mask_kernel\mask_kernel.asm",
-                                     r"real_kernels\mask_kernel\mask_kernel_dcmpl.cl")
-        with open(
-                r"real_kernels\mask_kernel\mask_kernel_hands.cl") as hands_decompilation:
-            with open(r"real_kernels\mask_kernel\mask_kernel_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'real_kernels', 'mask_kernel')
 
     def test_weighted_sum_kernel(self):
-        subprocess.call(r'tests.bat real_kernels\weighted_sum_kernel\weighted_sum_kernel.bin ' +
-                        r'real_kernels\weighted_sum_kernel\weighted_sum_kernel.asm')
-        parser_for_instructions.main(r"real_kernels\weighted_sum_kernel\weighted_sum_kernel.asm",
-                                     r"real_kernels\weighted_sum_kernel\weighted_sum_kernel_dcmpl.cl")
-        with open(
-                r"real_kernels\weighted_sum_kernel\weighted_sum_kernel_hands.cl") as hands_decompilation:
-            with open(r"real_kernels\weighted_sum_kernel\weighted_sum_kernel_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'real_kernels', 'weighted_sum_kernel')
 
 
 class DifferentTypes(unittest.TestCase):
     def test_uint8_type_test(self):
-        subprocess.call(r'tests.bat different_types\uint8_type_test\uint8_type_test.bin ' +
-                        r'different_types\uint8_type_test\uint8_type_test.asm')
-        parser_for_instructions.main(r"different_types\uint8_type_test\uint8_type_test.asm",
-                                     r"different_types\uint8_type_test\uint8_type_test_dcmpl.cl")
-        with open(
-                r"different_types\uint8_type_test\uint8_type_test_hands.cl") as hands_decompilation:
-            with open(r"different_types\uint8_type_test\uint8_type_test_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'different_types', 'uint8_type_test')
 
     def test_big_type_test(self):
-        subprocess.call(r'tests.bat different_types\big_type_test\big_type_test.bin ' +
-                        r'different_types\big_type_test\big_type_test.asm')
-        parser_for_instructions.main(r"different_types\big_type_test\big_type_test.asm",
-                                     r"different_types\big_type_test\big_type_test_dcmpl.cl")
-        with open(
-                r"different_types\big_type_test\big_type_test_hands.cl") as hands_decompilation:
-            with open(r"different_types\big_type_test\big_type_test_dcmpl.cl") as decompiled:
-                self.assertEqual(hands_decompilation.read(), decompiled.read())
+        template(self, 'different_types', 'big_type_test')
+
+
+class DifferentFlags(unittest.TestCase):
+    def test_flag_auto_decompilation(self):
+        template(self, 'different_flags', 'flag_auto_decompilation')
+
+    def test_flag_only_clrx(self):
+        template(self, 'different_flags', 'flag_only_clrx', 'only_clrx')
+
+    def test_flag_only_opencl(self):
+        template(self, 'different_flags', 'flag_only_opencl', 'only_opencl')
+
+
+class CirclesKernels(unittest.TestCase):
+    def test_simple_circle_kernels(self):
+        template(self, 'circles_kernels', 'simple_circle_kernels')
 
 
 if __name__ == '__main__':

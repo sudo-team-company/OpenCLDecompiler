@@ -14,9 +14,12 @@ class VAshrrev(BaseInstruction):
             vdst = instruction[1]
             src0 = instruction[2]
             src1 = instruction[3]
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                decompiler_data.write(vdst + " = (int)" + src1 + " >> (" + src0 + "&31) // v_ashrrev_i32\n")
+                return node
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[vdst] = \
-                    Register(node.state.registers[src1].val, node.state.registers[src1].type, Integrity.integer)
+                    Register(node.state.registers[src1].val, node.state.registers[src1].type, Integrity.entire)
                 # node.state.registers[vdst].version = node.parent[0].state.registers[vdst].version
                 decompiler_data.make_version(node.state, vdst)
                 if vdst in [src0, src1]:
@@ -33,6 +36,9 @@ class VAshrrev(BaseInstruction):
                 = find_first_last_num_to_from(vdst, src1)
             from_registers = name_of_from + str(first_from)
             to_registers = name_of_to + str(first_to)
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                decompiler_data.write(vdst + " = (long)" + src1 + " >> (" + src0 + "&63) // v_ashrrev_i64\n")
+                return node
             if flag_of_status == OperationStatus.to_fill_node:
                 if node.state.registers[from_registers].val == "0":
                     node.state.registers[from_registers].val = \
@@ -53,4 +59,4 @@ class VAshrrev(BaseInstruction):
                 decompiler_data.make_version(node.state, to_registers_1)
                 node.state.registers[to_registers_1].type_of_data = suffix
                 return node
-            return output_string
+            return output_string  # из vop3

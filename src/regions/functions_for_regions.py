@@ -2,6 +2,7 @@ from collections import deque
 from src.decompiler_data import DecompilerData
 from src.regions.region import Region
 from src.type_of_node import TypeNode
+from src.type_of_reg import Type
 
 
 def add_parent_and_child(before_r, next_r, region, pred_child, pred_parent):
@@ -17,17 +18,22 @@ def add_parent_and_child(before_r, next_r, region, pred_child, pred_parent):
 
 def check_if(curr_region):
     return curr_region.type == TypeNode.basic and len(curr_region.children) == 2 \
-            and (len(curr_region.children[0].children) > 0
-                 and curr_region.children[0].children[0] == curr_region.children[1]
-                 or len(curr_region.children[1].children) > 0
-                 and curr_region.children[1].children[0] == curr_region.children[0])
+           and (len(curr_region.children[0].children) > 0
+                and curr_region.children[0].children[0] == curr_region.children[1]
+                or len(curr_region.children[1].children) > 0
+                and curr_region.children[1].children[0] == curr_region.children[0])
 
 
 def check_if_else(curr_region):
     return curr_region.type == TypeNode.basic and len(curr_region.children) == 2 \
-            and len(curr_region.children[0].children) > 0 \
-            and len(curr_region.children[1].children) > 0 \
-            and curr_region.children[0].children[0] == curr_region.children[1].children[0]
+           and len(curr_region.children[0].children) > 0 \
+           and len(curr_region.children[1].children) > 0 \
+           and curr_region.children[0].children[0] == curr_region.children[1].children[0]
+
+
+def check_circle(region_start, region_end):
+    return len(region_start.children) == 1 and len(region_start.children[0].children) == 1 \
+           and region_start.children[0].children[0] == region_end
 
 
 def create_new_region(prev_reg_1, prev_reg_2, next_reg):
@@ -108,7 +114,22 @@ def make_region_graph_from_cfg():
         curr_node = q.popleft()
         if curr_node not in visited:
             visited.append(curr_node)
-            if len(curr_node.parent) == 1 and (len(curr_node.children) == 1 or len(curr_node.children) == 0):
+            if curr_node in decompiler_data.circles or curr_node in decompiler_data.back_edges:
+                region_type = TypeNode.backedge
+                if curr_node in decompiler_data.circles:
+                    region_type = TypeNode.startcircle
+                region = Region(region_type, curr_node)
+                decompiler_data.set_starts_regions(curr_node, region)
+                decompiler_data.set_ends_regions(curr_node, region)
+                for c_p in curr_node.parent:
+                    if c_p in visited:
+                        if decompiler_data.ends_regions.get(c_p) is not None:
+                            parent = decompiler_data.ends_regions[c_p]
+                        else:
+                            parent = decompiler_data.ends_regions[curr_node.parent[0].children[0]]
+                        parent.add_child(region)
+                        region.add_parent(parent)
+            elif len(curr_node.parent) == 1 and (len(curr_node.children) == 1 or len(curr_node.children) == 0):
                 if decompiler_data.ends_regions[curr_node.parent[0]].type == TypeNode.linear:
                     region = decompiler_data.ends_regions.pop(curr_node.parent[0])
                     region.end = curr_node
@@ -126,26 +147,27 @@ def make_region_graph_from_cfg():
                 decompiler_data.set_ends_regions(curr_node, region)
                 flag_of_continue = False
                 for c_p in curr_node.parent:
-                    if c_p not in visited:
+                    if c_p not in visited and curr_node not in decompiler_data.circles:
                         flag_of_continue = True
                         break
                 if flag_of_continue:
                     visited.remove(curr_node)
                     continue
                 for c_p in curr_node.parent:
-                    if decompiler_data.ends_regions.get(c_p) is not None:
-                        parent = decompiler_data.ends_regions[c_p]
-                    else:
-                        parent = decompiler_data.ends_regions[curr_node.parent[0].children[0]]
-                    parent.add_child(region)
-                    region.add_parent(parent)
+                    if c_p in visited:
+                        if decompiler_data.ends_regions.get(c_p) is not None:
+                            parent = decompiler_data.ends_regions[c_p]
+                        else:
+                            parent = decompiler_data.ends_regions[curr_node.parent[0].children[0]]
+                        parent.add_child(region)
+                        region.add_parent(parent)
             for child in curr_node.children:
                 if child not in visited:
                     q.append(child)
                 else:
                     region.add_child(decompiler_data.starts_regions[child])
                     decompiler_data.set_parent_for_starts_regions(child, region)
-                        
+
 
 def process_if_statement_region(curr_region, visited, start_region, q):
     region = Region(TypeNode.ifstatement, curr_region)
@@ -200,31 +222,121 @@ def process_if_else_statement_region(curr_region, visited, start_region, q):
     return visited, q, start_region
 
 
-def process_region_graph():
+def make_var_for_circle(curr_node, register, version, prev_version):
     decompiler_data = DecompilerData()
-    start_region = decompiler_data.starts_regions[decompiler_data.cfg]
+    if decompiler_data.circles_variables.get(prev_version):
+        variable = decompiler_data.circles_variables[prev_version]
+    else:
+        variable = "var" + str(decompiler_data.num_of_var)
+        decompiler_data.num_of_var += 1
+    # if curr_node.state.registers[register].type == Type.paramA:
+    #     variable = "*" + variable
+    # decompiler_data.make_var(first_reg_prev_version, variable,
+    #                          curr_node.state.registers[register].type_of_data)
+    decompiler_data.checked_variables[prev_version] = variable
+    # decompiler_data.checked_variables[first_reg_version] = variable
+    decompiler_data.circles_variables[version] = variable
+    decompiler_data.circles_nodes_for_variables[curr_node] = version
+    # decompiler_data.variables[first_reg_version] = variable
+    decompiler_data.names_of_vars[variable] = curr_node.state.registers[register].type_of_data
+    decompiler_data.variables[prev_version] = variable
+
+
+def check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_version_node):
+    register_version = curr_node.state.registers[register].version
+    instruction = curr_node.instruction[0]
+    if reg_versions_in_instruction.get(register_version):
+        change_node = reg_version_node[register_version]
+        instruction_version_list = reg_versions_in_instruction[register_version]
+        for version in instruction_version_list:
+            instruction_register = version[:version.find("_")]
+            instruction_register_version = curr_node.state.registers[instruction_register].version
+            if version != instruction_register_version:
+                if "flat_store" in instruction or "cmp" in instruction:
+                    prev_register_version = register_version
+                else:
+                    prev_register_version = curr_node.parent[0].state.registers[register].version
+                make_var_for_circle(change_node, instruction_register, register_version, prev_register_version)
+
+
+def process_circle(region_start, region_end):
+    region = Region(TypeNode.circle, region_start)
+    region.end = region_end
+    prev_child = [region_start]
+    before_r = [region_start.parent[0]]
+    next_r = region.end.children[1]
+    add_parent_and_child(before_r, next_r, region, prev_child, region.end)
+    used_versions_of_registers = set()
+    curr_node = region_start.start
+    reg_versions_in_instruction = {}
+    reg_version_node = {}
+    first_reg = None
+    first_reg_version = None
+    while curr_node != region_end.start:
+        list_of_reg_nums = list(range(1, len(curr_node.instruction))[1:])
+        list_of_reg_nums = list_of_reg_nums if len(curr_node.instruction) == 1 else list_of_reg_nums + [1]
+        if len(list_of_reg_nums) > 0:
+            first_reg = curr_node.instruction[1]
+            if len(first_reg) > 1 and first_reg[1] == "[":
+                first_reg = first_reg[0] + first_reg[2: first_reg.find(":")]
+            if "cmp" not in curr_node.instruction[0] \
+                    and "flat_store" not in curr_node.instruction[0] \
+                    and curr_node.state.registers.get(first_reg):
+                first_reg_version = curr_node.state.registers[first_reg].version
+                reg_versions_in_instruction[first_reg_version] = []
+                reg_version_node[first_reg_version] = curr_node
+        for num_of_register in list_of_reg_nums:
+            register = curr_node.instruction[num_of_register]
+            if len(register) > 1 and register[1] == "[":
+                register = register[0] + register[2: register.find(":")]
+            if ("cmp" in curr_node.instruction[0]
+                or "flat_store" in curr_node.instruction[0]
+                or num_of_register > 1) \
+                    and curr_node.state.registers.get(register):
+                if register == first_reg \
+                        and "cmp" not in curr_node.instruction[0] \
+                        and "flat_store" not in curr_node.instruction[0]:
+                    register_version = curr_node.parent[0].state.registers[register].version
+                else:
+                    register_version = curr_node.state.registers[register].version
+                used_versions_of_registers.add(register_version)
+            if curr_node.state.registers.get(register):
+                if "cmp" not in curr_node.instruction[0] \
+                        and "flat_store" not in curr_node.instruction[0]:
+                    if num_of_register > 1 \
+                            and register != first_reg:
+                        reg_versions_in_instruction[first_reg_version].append(register_version)
+                        check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_version_node)
+                else:
+                    check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_version_node)
+            if "cmp" not in curr_node.instruction[0] \
+                    and "flat_store" not in curr_node.instruction[0] \
+                    and num_of_register == 1 \
+                    and curr_node.state.registers.get(register):
+                separation = first_reg_version.find("_")
+                first_reg_prev_version = first_reg_version[:separation + 1] \
+                                         + str(int(first_reg_version[separation + 1:]) - 1)
+                if first_reg_prev_version in used_versions_of_registers:
+                    make_var_for_circle(curr_node, register, first_reg_version, first_reg_prev_version)
+        curr_node = curr_node.children[0]
+
+
+def process_control_structures_in_circle(region_start, region_end):
+    start_region = region_start
     visited = []
     q = deque()
     q.append(start_region)
-    while start_region.children:
+    after_region_end = region_end.children[0]
+    while start_region.children[0] != after_region_end:
         curr_region = q.popleft()
         if curr_region not in visited:
             visited.append(curr_region)
-            if curr_region.type != TypeNode.linear:
-                if check_if(curr_region):
-                    visited, q, start_region = process_if_statement_region(curr_region, visited, start_region, q)
-                elif check_if_else(curr_region):
-                    visited, q, start_region = process_if_else_statement_region(curr_region, visited, start_region, q)
-                else:
-                    if curr_region.children:
-                        for child in curr_region.children:
-                            if child not in visited:
-                                q.append(child)
-                    else:
-                        q = deque()
-                        q.append(start_region)
-                        visited = []
-            else:
+            if check_circle(region_start, region_end):
+                process_circle(region_start, region_end)
+                return
+            elif curr_region.type == TypeNode.basic and len(curr_region.children) == 2 \
+                    and (curr_region.children[0] == after_region_end or curr_region.children[1] == after_region_end):
+                curr_region.type = TypeNode.breakregion  # надо отдельно написать на return и обрезание на break
                 if curr_region.children:
                     for child in curr_region.children:
                         if child not in visited:
@@ -233,4 +345,115 @@ def process_region_graph():
                     q = deque()
                     q.append(start_region)
                     visited = []
+            else:
+                preprocess_if_and_if_else(curr_region, visited, start_region, q)
+
+
+def get_one_circle_region(q_circles, curr_region, start_region, region_start, region_end):
+    while q_circles:
+        circle_region = q_circles.pop()
+        if circle_region.type == TypeNode.backedge:
+            circle_region.type = TypeNode.continueregion
+            join_regions([circle_region.parent[0]], circle_region,
+                         circle_region.children[0], start_region)  # not good enough
+        elif curr_region.start.instruction[1] == circle_region.start.instruction[0][:-1]:
+            region_start = circle_region
+            curr_circle = None
+        else:
+            start_region = circle_region
+            curr_circle = circle_region
+            q_circles.append(circle_region)
+            break
+    if check_circle(region_start, region_end):
+        process_circle(region_start, region_end)
+    else:
+        process_control_structures_in_circle(region_start, region_end)
+    return curr_circle, start_region, q_circles, region_start
+
+
+def find_circles():
+    decompiler_data = DecompilerData()
+    start_region = decompiler_data.starts_regions[decompiler_data.circles[0]]
+    q_circles = deque()  # очередь из элементов цикла
+    curr_circle = start_region  # текущий старт цикла
+    q_circles.append(start_region)
+    q_regions = deque()  # очередь из всех регионов
+    q_regions.append(start_region.children[0])
+    visited = [start_region]
+    while q_regions:
+        curr_region = q_regions.popleft()
+        if curr_region not in visited:
+            visited.append(curr_region)
+            if curr_region.type == TypeNode.backedge:
+                if curr_region.start.instruction[1] == curr_circle.start.instruction[0][:-1]:
+                    q_circles.append(curr_region)
+                else:
+                    region_end = curr_region
+                    region_start = curr_circle
+                    curr_circle, start_region, q_circles, region_start = \
+                        get_one_circle_region(q_circles, curr_region, start_region, region_start, region_end)
+            elif curr_region.type == TypeNode.startcircle:
+                curr_circle = curr_region
+                q_circles.append(curr_region)
+            for curr_child in curr_region.children:
+                if curr_child not in visited:
+                    q_regions.append(curr_child)
+    if q_circles:
+        region_end = q_circles.pop()
+        curr_region = region_end
+        region_start = None
+        get_one_circle_region(q_circles, curr_region, start_region, region_start, region_end)
+
+
+def preprocess_if_and_if_else(curr_region, visited, start_region, q):
+    if curr_region.type != TypeNode.linear:
+        if check_if(curr_region):
+            visited, q, start_region = process_if_statement_region(curr_region, visited, start_region, q)
+        elif check_if_else(curr_region):
+            visited, q, start_region = process_if_else_statement_region(curr_region, visited, start_region, q)
+        else:
+            if curr_region.children:
+                for child in curr_region.children:
+                    if child not in visited:
+                        q.append(child)
+            else:
+                q = deque()
+                q.append(start_region)
+                visited = []
+    else:
+        if curr_region.children:
+            for child in curr_region.children:
+                if child not in visited:
+                    q.append(child)
+        else:
+            q = deque()
+            q.append(start_region)
+            visited = []
+    return visited, q, start_region
+
+
+def process_region_graph():
+    decompiler_data = DecompilerData()
+    start_region = decompiler_data.starts_regions[decompiler_data.cfg]
+    if decompiler_data.circles:
+        find_circles()
+    visited = []
+    q = deque()
+    q.append(start_region)
+    while start_region.children:
+        curr_region = q.popleft()
+        if curr_region not in visited:
+            visited.append(curr_region)
+            if curr_region.type == TypeNode.circle:
+                start_region = join_regions([curr_region.parent[0]], curr_region, curr_region.children[0], start_region)
+                if curr_region.children:
+                    for child in curr_region.children:
+                        if child not in visited:
+                            q.append(child)
+                else:
+                    q = deque()
+                    q.append(start_region)
+                    visited = []
+            else:
+                visited, q, start_region = preprocess_if_and_if_else(curr_region, visited, start_region, q)
     decompiler_data.improve_cfg = start_region

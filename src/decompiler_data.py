@@ -1,26 +1,110 @@
+import binascii
+import struct
+import sympy as sym
 from src.state import State
 from src.integrity import Integrity
 from src.register import Register
 from src.type_of_reg import Type
+from src.type_of_flag import TypeOfFlag
+
+
+def update_register(asm_type, from_registers, to_registers, node):
+    decompiler_data = DecompilerData()
+    decompiler_data.names_of_vars[node.state.registers[from_registers].val] = asm_type
+    new_val = node.state.registers[from_registers].val
+    type_of_reg = node.state.registers[from_registers].type
+    node.state.registers[to_registers] = Register(new_val, type_of_reg, Integrity.entire)
+    node.state.registers[to_registers].type_of_data = asm_type
+    return node
+
+
+def simplify_opencl_statement(opencl_line):
+    decompiler_data = DecompilerData()
+    start_open = 0
+    start_close = 0
+    new_line = ""
+    while True:
+        open_bracket_position = opencl_line.find('[', start_open + 1)
+        close_bracket_position = opencl_line.find(']', start_close + 1)
+        if open_bracket_position == -1:
+            break
+        substring = opencl_line[open_bracket_position + 1:close_bracket_position]
+        current_type_conversion = {}
+        for key, data_type in decompiler_data.type_conversion.items():
+            if data_type + key in substring:
+                current_type_conversion[key] = data_type
+        for key, data_type in current_type_conversion.items():
+            substring = substring.replace(data_type, '')
+        if substring != '':
+            substring = sym.simplify(substring)
+            substring = sym.sstr(substring)
+        # doesn't recover type (int)A in case (int)(A + B) - B
+        for key, data_type in current_type_conversion.items():
+            if key in substring:
+                substring = substring.replace(key, data_type + key)
+        # recover all left symbols from [
+        if start_close == 0:
+            new_line += opencl_line[start_close:open_bracket_position + 1]
+        else:
+            new_line += opencl_line[start_close + 1:open_bracket_position + 1]
+        new_line += substring + ']'
+        start_open = open_bracket_position
+        start_close = close_bracket_position
+    if start_close != 0:
+        new_line += opencl_line[start_close + 1:]
+    else:
+        new_line = opencl_line
+    return new_line
+
+
+# gdata0[get_local_id(0)] -> gdata0
+def get_name(key):
+    position_gdata = key.find('gdata')
+    previous_position = position_gdata
+    while position_gdata + 5 < len(key) and '0' <= key[position_gdata + 5] <= '9':
+        position_gdata += 1
+    return key[previous_position:position_gdata + 5]
+
+
+def optimize_names_of_vars():
+    decompiler_data = DecompilerData()
+    new_names_of_vars = {}
+    # remove gdata element access (gdata[...] -> gdata)
+    for key, val in decompiler_data.names_of_vars.items():
+        if 'gdata' in key:
+            name = get_name(key)
+            new_names_of_vars[name] = val
+        elif 'var' in key:
+            new_names_of_vars[key] = val
+    decompiler_data.names_of_vars = new_names_of_vars
+    for key, val in decompiler_data.var_value.items():
+        if 'gdata' in val:
+            new_val = get_name(val)
+            decompiler_data.var_value[key] = new_val
+
+
+def check_reg_for_val(node, register):
+    register_flag = True
+    if "s" in register or "v" in register:
+        new_val = node.state.registers[register].val
+    else:
+        new_val = register
+        register_flag = False
+    return new_val, register_flag
 
 
 def make_op(node, register0, register1, operation, type0, type1):
-    register0_flag = True
-    register1_flag = True
-    if "s" in register0 or "v" in register0:
-        new_val0 = node.state.registers[register0].val
-    else:
-        new_val0 = register0
-        register0_flag = False
-    if "s" in register1 or "v" in register1:
-        new_val1 = node.state.registers[register1].val
-    else:
-        new_val1 = register1
-        register1_flag = False
+    new_val0, register0_flag = check_reg_for_val(node, register0)
+    new_val1, register1_flag = check_reg_for_val(node, register1)
     if "-" in new_val0 or "+" in new_val0 or "*" in new_val0 or "/" in new_val0:
         new_val0 = "(" + new_val0 + ")"
     if "-" in new_val1 or "+" in new_val1 or "*" in new_val1 or "/" in new_val1:
         new_val1 = "(" + new_val1 + ")"
+    decompiler_data = DecompilerData()
+    if type0 != '':
+        decompiler_data.type_conversion[new_val0] = type0
+    if type1 != '':
+        decompiler_data.type_conversion[new_val1] = type1
     new_val0 = type0 + new_val0
     new_val1 = type1 + new_val1
     if len(type0) > 0 and ')' not in type0:
@@ -29,6 +113,17 @@ def make_op(node, register0, register1, operation, type0, type1):
         new_val1 += ')'
     new_val = new_val0 + operation + new_val1
     return new_val, register0_flag, register1_flag
+
+
+def evaluate_from_hex(global_data, size, flag):
+    typed_global_data = []
+    for element in range(int(len(global_data) / size)):
+        array_of_bytes = global_data[element * size: element * size + size]
+        string_of_bytes = ''.join(elem[2:] + '' for elem in array_of_bytes)
+        # output binascii.unhexlify is byteset from string; struct.unpack encode byte to value.
+        value = struct.unpack(flag, binascii.unhexlify(string_of_bytes))[0]
+        typed_global_data.append(str(value))
+    return typed_global_data
 
 
 class Singleton(type):
@@ -78,9 +173,13 @@ class DecompilerData(metaclass=Singleton):
         self.flag_of_else = False
         self.version_wait = None
         self.type_params = {}
+        self.type_gdata = {}
         self.variables = {}
         self.checked_variables = {}
         self.kernel_params = {}
+        self.global_data = {}
+        self.var_value = {}  # var -> value
+        self.type_conversion = {}  # expression -> type_conversion (get_global_id(0) -> (ulong))
         self.versions = {
             "s0": 0,
             "s1": 0,
@@ -138,8 +237,14 @@ class DecompilerData(metaclass=Singleton):
         self.num_of_var = 0
         self.num_of_label = 0
         self.wait_labels = []
+        self.circles = []
+        self.back_edges = []
+        self.circles_variables = {}
+        self.circles_nodes_for_variables = {}
+        self.configuration_output = ""
+        self.flag_for_decompilation = None
 
-    def reset(self, output_file):
+    def reset(self, output_file, flag_for_decompilation):
         self.output_file = output_file
         self.usesetup = False
         self.size_of_work_groups = []
@@ -175,9 +280,13 @@ class DecompilerData(metaclass=Singleton):
         self.flag_of_else = False
         self.version_wait = None
         self.type_params = {}
+        self.type_gdata = {}
         self.variables = {}
         self.checked_variables = {}
         self.kernel_params = {}
+        self.global_data = {}
+        self.var_value = {}
+        self.type_conversion = {}
         self.versions = {
             "s0": 0,
             "s1": 0,
@@ -235,9 +344,22 @@ class DecompilerData(metaclass=Singleton):
         self.num_of_var = 0
         self.num_of_label = 0
         self.wait_labels = []
+        self.circles = []
+        self.back_edges = []
+        self.circles_variables = {}
+        self.circles_nodes_for_variables = {}
+        self.configuration_output = ""
+        if flag_for_decompilation == "auto_decompilation":
+            self.flag_for_decompilation = TypeOfFlag.auto_decompilation
+        elif flag_for_decompilation == "only_opencl":
+            self.flag_for_decompilation = TypeOfFlag.only_opencl
+        else:
+            self.flag_for_decompilation = TypeOfFlag.only_clrx
 
     def write(self, output):
         # noinspection PyUnresolvedReferences
+        if self.flag_for_decompilation != TypeOfFlag.only_clrx:
+            output = simplify_opencl_statement(output)
         self.output_file.write(output)
 
     def make_version(self, state, reg):
@@ -289,11 +411,11 @@ class DecompilerData(metaclass=Singleton):
     def process_size_of_work_groups(self, cws, set_of_config_1):
         if cws:
             self.size_of_work_groups = set_of_config_1.replace(',', ' ').split()[1:]
-            self.write(
-                "__kernel __attribute__((reqd_work_group_size(" + self.size_of_work_groups[0] + ", "
-                + self.size_of_work_groups[1] + ", " + self.size_of_work_groups[2] + ")))\n")
+            self.configuration_output += "__kernel __attribute__((reqd_work_group_size(" \
+                                         + self.size_of_work_groups[0] + ", " + self.size_of_work_groups[1] \
+                                         + ", " + self.size_of_work_groups[2] + ")))\n"
         else:
-            self.write("__kernel ")
+            self.configuration_output += "__kernel "
 
     def process_local_size(self, localsize, set_of_config_4):
         if localsize:
@@ -307,15 +429,15 @@ class DecompilerData(metaclass=Singleton):
         for key in keys:
             self.variables.pop(key)
 
-    def update_reg_version(self, version_of_reg, variable, curr_node, reg, max_version):
+    def update_reg_version(self, prev_versions_of_reg, variable, curr_node, reg, max_version):
         self.num_of_var += 1
-        for ver in version_of_reg:
-            self.variables[ver] = variable
+        for prev_version in prev_versions_of_reg:
+            self.variables[prev_version] = variable
         self.checked_variables[curr_node.state.registers[reg].version] = variable
         self.versions[reg] = max_version + 1
 
-    def set_name_of_vars(self, var_name, val):
-        self.names_of_vars[var_name] = val
+    def set_name_of_vars(self, var_name, type_of_var):
+        self.names_of_vars[var_name] = type_of_var
 
     def check_lds_vars(self, offset, suffix):
         if self.lds_vars.get(offset) is None:
@@ -372,6 +494,8 @@ class DecompilerData(metaclass=Singleton):
         if self.to_node.get(reladdr) is not None:
             node.add_child(self.to_node[reladdr])
             self.to_node[reladdr].add_parent(node)
+            self.circles.append(self.to_node[reladdr])
+            self.back_edges.append(node)
         else:
             if self.from_node.get(reladdr) is None:
                 self.from_node[reladdr] = [node]

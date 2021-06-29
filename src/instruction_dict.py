@@ -29,9 +29,11 @@ from src.sop2.s_lshl import SLshl
 from src.sop2.s_lshr import SLshr
 from src.sop2.s_min import SMin
 from src.sop2.s_mul import SMul
+from src.sop2.s_or import SOr
 from src.sop2.s_sub import SSub
 from src.sopc.s_cmp_eq import SCmpEq
 from src.sopc.s_cmp_ge import SCmpGe
+from src.sopc.s_cmp_gt import SCmpGt
 from src.sopc.s_cmp_lt import SCmpLt
 from src.sopc.s_set_gpr_idx_on import SSetGprIdxOn
 from src.sopk.s_movk import SMovk
@@ -49,7 +51,9 @@ from src.sopp.s_nop import SNop
 from src.sopp.s_set_gpr_idx_off import SSetGprIdxOff
 from src.sopp.s_waitcnt import SWaitcnt
 from src.vop1.v_cvt import VCvt
+from src.vop1.v_floor import VFloor
 from src.vop1.v_mov import VMov
+from src.vop1.v_trunc import VTrunc
 from src.vop2.v_add import VAdd
 from src.vop2.v_addc import VAddc
 from src.vop2.v_and import VAnd
@@ -62,12 +66,14 @@ from src.vop2.v_min import VMin
 from src.vop2.v_mul_f32 import VMulF32
 from src.vop2.v_sub import VSub
 from src.vop2.v_subrev import VSubrev
+from src.vop2.v_xor import VXor
 from src.vop3.v_alignbit import VAlignbit
 from src.vop3.v_alignbyte import VAlignbyte
 from src.vop3.v_and_or import VAndOr
 from src.vop3.v_bfi import VBfi
 from src.vop3.v_div_fixup import VDivFixup
 from src.vop3.v_fma import VFma
+from src.vop3.v_ldexp import VLdexp
 from src.vop3.v_mul_f64 import VMulF64
 from src.vop3.v_mul_lo import VMulLo
 from src.vopc.v_cmp_eq import VCmpEq
@@ -78,6 +84,11 @@ from src.vopc.v_cmp_lt import VCmpLt
 from src.vopc.v_cmpx_class import VCmpxClass
 from src.vopc.v_cmpx_eq import VCmpxEq
 from src.vopc.v_cmpx_le import VCmpxLe
+
+
+
+
+
 
 instruction_dict = {'ds_add': DsAdd(),
                     'ds_bpermute': DsBpermute(),
@@ -109,6 +120,7 @@ instruction_dict = {'ds_add': DsAdd(),
                     's_cbranch_vccz': SCbranchVccz(),
                     's_cmp_eq': SCmpEq(),
                     's_cmp_ge': SCmpGe(),
+                    's_cmp_gt': SCmpGt(),
                     's_cmp_lt': SCmpLt(),
                     's_cselect': SCselect(),
                     's_endpgm': SEndpgm(),
@@ -123,6 +135,7 @@ instruction_dict = {'ds_add': DsAdd(),
                     's_mulk': SMulk(),
                     's_not': SNot(),
                     's_nop': SNop(),
+                    's_or': SOr(),
                     's_set_gpr_idx_on': SSetGprIdxOn(),
                     's_set_gpr_idx_off': SSetGprIdxOff(),
                     's_setpc': SSetpc(),
@@ -150,7 +163,9 @@ instruction_dict = {'ds_add': DsAdd(),
                     'v_cndmask': VCndmask(),
                     'v_cvt': VCvt(),
                     'v_div_fixup': VDivFixup(),
+                    'v_floor': VFloor(),
                     'v_fma': VFma(),
+                    'v_ldexp': VLdexp(),
                     'v_lshlrev': VLshlrev(),
                     'v_lshrrev': VLshrrev(),
                     'v_mac': VMac(),
@@ -163,5 +178,7 @@ instruction_dict = {'ds_add': DsAdd(),
                     'v_mov': VMov(),
                     'v_sub': VSub(),
                     'v_subb': VSub(),
-                    'v_subrev': VSubrev()
+                    'v_subrev': VSubrev(),
+                    'v_trunc': VTrunc(),
+                    'v_xor': VXor()
                     }

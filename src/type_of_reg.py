@@ -15,6 +15,7 @@ class Type(Enum):
     global_offset_x = auto()
     global_offset_y = auto()
     global_offset_z = auto()
+    global_data_pointer = auto()
     arguments_pointer = auto()
     work_group_id_x_local_size = auto()
     work_group_id_y_local_size = auto()

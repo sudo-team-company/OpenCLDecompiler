@@ -6,5 +6,5 @@ void if_2(int x, __global int *data, int y)
     if ((int)0 == (int)var0) {
         var0 = get_global_id(1);
     }
-    data[(var0 * 4) / 4] = x;
+    data[var0] = x;
 }

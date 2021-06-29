@@ -4,12 +4,10 @@ from src.operation_status import OperationStatus
 from src.instruction_dict import instruction_dict
 
 
-def check_realisation_for_node(curr_node, row, set_of_instructions):
+def check_realisation_for_node(curr_node, row):
     decompiler_data = DecompilerData()
     if curr_node is None:  # check of node
         decompiler_data.write("Not resolved yet. " + row + "\n")
-        for instr in set_of_instructions:
-            decompiler_data.write(instr + "\n")
         return False
     return True
 
@@ -28,6 +26,9 @@ def process_label_node(node, flag_of_status):
                     node.add_parent(wait_node)
                     node.state = copy.deepcopy(node.parent[-1].state)
 
+        return node
+    if flag_of_status == OperationStatus.to_print_unresolved:
+        decompiler_data.write(node.instruction[0])
         return node
     return ""
 

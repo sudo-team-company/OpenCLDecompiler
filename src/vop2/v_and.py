@@ -13,6 +13,9 @@ class VAnd(BaseInstruction):
             vdst = instruction[1]
             src0 = instruction[2]
             src1 = instruction[3]
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                decompiler_data.write(vdst + " = " + src0 + " & " + src1 + " // v_and_b32\n")
+                return node
             if flag_of_status == OperationStatus.to_fill_node:
                 new_integrity = node.state.registers[src1].integrity
                 new_val, src0_flag, src1_flag = make_op(node, src1, src0[1:], " * ", '', '')

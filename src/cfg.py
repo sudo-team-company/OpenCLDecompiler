@@ -12,6 +12,11 @@ def make_cfg_node(instruction, last_node_state, last_node):
     return to_opencl(node, OperationStatus.to_fill_node)
 
 
+def make_unresolved_node(instruction, last_node_state):
+    node = Node(instruction, last_node_state)
+    return to_opencl(node, OperationStatus.to_print_unresolved)
+
+
 def change_cfg_for_else_structure(curr_node, instruction):
     decompiler_data = DecompilerData()
     for parents_of_label in decompiler_data.parents_of_label:

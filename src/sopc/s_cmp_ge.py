@@ -13,19 +13,33 @@ class SCmpGe(BaseInstruction):
         if suffix == 'i32':
             ssrc0 = instruction[1]
             ssrc1 = instruction[2]
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                decompiler_data.write("scc = (int)" + ssrc0 + " >= (int)" + ssrc1 + " // s_cmp_ge_i32\n")
+                return node
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers["scc"] = \
                     Register('(int)' + node.state.registers[ssrc0].val + " >= (int)" + node.state.registers[ssrc1].val,
-                             Type.unknown, Integrity.integer)
+                             Type.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, "scc")
                 if "scc" in [ssrc0, ssrc1]:
                     node.state.registers["scc"].make_prev()
                 node.state.registers["scc"].type_of_data = suffix
                 return node
             return output_string
-            # decompiler_data.write("scc = (int)" + ssrc0 + " >= (int)" + ssrc1 + "\n")
 
         elif suffix == 'u32':
             ssrc0 = instruction[1]
             ssrc1 = instruction[2]
-            decompiler_data.write("scc = " + ssrc0 + " >= " + ssrc1 + "\n")
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                decompiler_data.write("scc = " + ssrc0 + " >= " + ssrc1 + " // s_cmp_ge_u32\n")
+                return node
+            if flag_of_status == OperationStatus.to_fill_node:
+                node.state.registers["scc"] = \
+                    Register(node.state.registers[ssrc0].val + " >= " + ssrc1,
+                             Type.unknown, Integrity.entire)
+                decompiler_data.make_version(node.state, "scc")
+                if "scc" in [ssrc0, ssrc1]:
+                    node.state.registers["scc"].make_prev()
+                node.state.registers["scc"].type_of_data = suffix
+                return node
+            return output_string

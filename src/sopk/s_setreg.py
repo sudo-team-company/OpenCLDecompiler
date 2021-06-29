@@ -1,5 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData
+from src.operation_status import OperationStatus
 
 
 class SSetreg(BaseInstruction):
@@ -11,9 +12,11 @@ class SSetreg(BaseInstruction):
             bitoffset = instruction[3]
             bitsize = instruction[4]
             sdst = instruction[5]
-            mask = "mask" + str(decompiler_data.number_of_mask)
-            decompiler_data.write("uint " + mask + " = (1U << " + bitsize + ") - 1U) << " + bitoffset + "\n")
-            decompiler_data.write(
-                hwreg + " = (" + hwreg + "& ~" + mask + ") | ((" + sdst + " << " + bitoffset + ") & " + mask
-                + ")\n")
-            decompiler_data.number_of_mask += 1
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                mask = "mask" + str(decompiler_data.number_of_mask)
+                decompiler_data.write("uint " + mask + " = (1U << " + bitsize
+                                      + ") - 1U) << " + bitoffset + " // s_setreg_b32\n")
+                decompiler_data.write(hwreg + " = (" + hwreg + "& ~" + mask + ") | (("
+                                      + sdst + " << " + bitoffset + ") & " + mask + ")\n")
+                decompiler_data.number_of_mask += 1
+                return node

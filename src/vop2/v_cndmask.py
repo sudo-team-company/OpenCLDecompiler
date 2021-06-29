@@ -15,8 +15,12 @@ class VCndmask(BaseInstruction):
             src1 = instruction[3]
             ssrc2 = instruction[4]
             variable = "var" + str(decompiler_data.num_of_var)
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                decompiler_data.write(vdst + " = " + ssrc2 + "&(1ULL<<LANEID) ? "
+                                      + src1 + " : " + src0 + " // v_cndmask_b32\n")
+                return node
             if flag_of_status == OperationStatus.to_fill_node:
-                node.state.registers[vdst] = Register(variable, Type.program_param, Integrity.integer)
+                node.state.registers[vdst] = Register(variable, Type.program_param, Integrity.entire)
                 decompiler_data.make_version(node.state, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
@@ -29,7 +33,6 @@ class VCndmask(BaseInstruction):
                 return node
             if "?" in node.state.registers[ssrc2].val:
                 node.state.registers[ssrc2].val = "(" + node.state.registers[ssrc2].val + ")"
-            output_string = node.state.registers[vdst].val + " = " + node.state.registers[ssrc2].val \
-                            + " ? " + node.parent[0].state.registers[src1].val + " : " \
-                            + node.parent[0].state.registers[src0].val
+            output_string = node.state.registers[vdst].val + " = " + node.state.registers[ssrc2].val + " ? " + \
+                node.parent[0].state.registers[src1].val + " : " + node.parent[0].state.registers[src0].val
             return output_string

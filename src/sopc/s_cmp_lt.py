@@ -13,10 +13,13 @@ class SCmpLt(BaseInstruction):
         if suffix == 'i32':
             ssrc0 = instruction[1]
             ssrc1 = instruction[2]
+            if flag_of_status == OperationStatus.to_print_unresolved:
+                decompiler_data.write("scc = (int)" + ssrc0 + " < (int)" + ssrc1 + " // s_cmp_lt_i32\n")
+                return node
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers["scc"] = \
                     Register('(int)' + node.state.registers[ssrc0].val + " < (int)" + node.state.registers[ssrc1].val,
-                             Type.unknown, Integrity.integer)
+                             Type.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, "scc")
                 if "scc" in [ssrc0, ssrc1]:
                     node.state.registers["scc"].make_prev()
