@@ -425,8 +425,8 @@ class DecompilerData(metaclass=Singleton):
 
     def remove_unusable_versions(self):
         keys = []
-        for key in self.variables:
-            if self.variables[key] not in self.names_of_vars:
+        for key, variable in self.variables.items():
+            if variable not in self.names_of_vars:
                 keys.append(key)
         for key in keys:
             self.variables.pop(key)
