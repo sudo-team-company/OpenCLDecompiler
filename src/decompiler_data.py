@@ -1,11 +1,13 @@
 import binascii
 import struct
+
 import sympy as sym
-from src.state import State
+
 from src.integrity import Integrity
 from src.register import Register
-from src.type_of_reg import Type
+from src.state import State
 from src.type_of_flag import TypeOfFlag
+from src.type_of_reg import Type
 
 
 def update_register(asm_type, from_registers, to_registers, node):

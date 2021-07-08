@@ -1,8 +1,8 @@
-from src.register import Register
-from src.integrity import Integrity
-from src.type_of_reg import Type
 from src.decompiler_data import DecompilerData
+from src.integrity import Integrity
 from src.opencl_types import make_asm_type
+from src.register import Register
+from src.type_of_reg import Type
 
 
 def extract_from_regs(registers, left_board):

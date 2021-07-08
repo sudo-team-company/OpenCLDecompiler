@@ -1,5 +1,5 @@
-from src.sopp.s_cbranch import SCbranch
 from src.decompiler_data import DecompilerData
+from src.sopp.s_cbranch import SCbranch
 
 
 class SCbranchVccz(SCbranch):

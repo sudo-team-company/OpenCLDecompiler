@@ -1,4 +1,5 @@
 import copy
+
 from src.decompiler_data import DecompilerData
 from src.node import Node
 from src.node_processor import to_opencl

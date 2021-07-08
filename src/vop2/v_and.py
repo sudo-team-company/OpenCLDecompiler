@@ -1,8 +1,8 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData, make_op
+from src.operation_status import OperationStatus
 from src.register import Register
 from src.type_of_reg import Type
-from src.operation_status import OperationStatus
 
 
 class VAnd(BaseInstruction):

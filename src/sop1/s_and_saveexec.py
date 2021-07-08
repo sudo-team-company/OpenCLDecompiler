@@ -1,5 +1,5 @@
-from src.decompiler_data import DecompilerData
 from src.base_instruction import BaseInstruction
+from src.decompiler_data import DecompilerData
 from src.operation_status import OperationStatus
 
 

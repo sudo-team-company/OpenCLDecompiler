@@ -1,7 +1,8 @@
 import copy
 from collections import deque
-from src.type_of_reg import Type
+
 from src.decompiler_data import DecompilerData
+from src.type_of_reg import Type
 
 
 def find_max_and_prev_versions(curr_node):

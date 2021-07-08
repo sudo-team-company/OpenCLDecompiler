@@ -1,8 +1,8 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData, make_op
 from src.integrity import Integrity
-from src.register import Register
 from src.operation_status import OperationStatus
+from src.register import Register
 
 
 class DsWrite(BaseInstruction):

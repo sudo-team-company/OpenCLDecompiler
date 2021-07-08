@@ -1,8 +1,8 @@
 from collections import deque
+
 from src.decompiler_data import DecompilerData
 from src.regions.region import Region
 from src.type_of_node import TypeNode
-from src.type_of_reg import Type
 
 
 def add_parent_and_child(before_r, next_r, region, pred_child, pred_parent):

@@ -1,7 +1,8 @@
 import copy
+
 from src.decompiler_data import DecompilerData
-from src.operation_status import OperationStatus
 from src.instruction_dict import instruction_dict
+from src.operation_status import OperationStatus
 
 
 def check_realisation_for_node(curr_node, row):

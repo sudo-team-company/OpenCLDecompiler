@@ -1,6 +1,7 @@
 import argparse
 import re
 import sys
+
 from src.decompiler import process_src
 from src.decompiler_data import DecompilerData
 

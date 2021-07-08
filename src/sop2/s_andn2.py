@@ -1,6 +1,6 @@
 from src.base_instruction import BaseInstruction
-from src.operation_status import OperationStatus
 from src.decompiler_data import DecompilerData
+from src.operation_status import OperationStatus
 
 
 class SAndn2(BaseInstruction):

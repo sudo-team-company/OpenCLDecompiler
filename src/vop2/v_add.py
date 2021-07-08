@@ -1,11 +1,11 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData, make_op
 from src.integrity import Integrity
+from src.opencl_types import most_common_type
+from src.operation_status import OperationStatus
 from src.register import Register
 from src.type_of_reg import Type
-from src.operation_status import OperationStatus
 from src.upload import find_first_last_num_to_from
-from src.opencl_types import most_common_type
 
 
 class VAdd(BaseInstruction):

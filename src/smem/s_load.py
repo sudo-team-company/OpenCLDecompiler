@@ -1,9 +1,8 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData
 from src.operation_status import OperationStatus
-from src.upload import upload_usesetup, upload, find_first_last_num_to_from
 from src.type_of_reg import Type
-from src.global_data import get_gdata_offset
+from src.upload import upload_usesetup, upload, find_first_last_num_to_from
 
 
 class SLoad(BaseInstruction):
