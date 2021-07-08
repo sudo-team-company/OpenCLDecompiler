@@ -86,10 +86,6 @@ from src.vopc.v_cmpx_eq import VCmpxEq
 from src.vopc.v_cmpx_le import VCmpxLe
 
 
-
-
-
-
 instruction_dict = {'ds_add': DsAdd(),
                     'ds_bpermute': DsBpermute(),
                     'ds_read': DsRead(),
