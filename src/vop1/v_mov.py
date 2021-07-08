@@ -3,7 +3,7 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 class VMov(BaseInstruction):
@@ -24,7 +24,7 @@ class VMov(BaseInstruction):
                                  Integrity.entire)
                     node.state.registers[vdst].type_of_data = type_of_data
                 else:
-                    node.state.registers[vdst] = Register(src0, Type.int32, Integrity.entire)
+                    node.state.registers[vdst] = Register(src0, RegisterType.int32, Integrity.entire)
                 decompiler_data.make_version(node.state, vdst)
                 if vdst in [src0]:
                     node.state.registers[vdst].make_prev()

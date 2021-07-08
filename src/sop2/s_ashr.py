@@ -3,7 +3,7 @@ from src.decompiler_data import DecompilerData, make_op
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 class SAshr(BaseInstruction):
@@ -22,7 +22,7 @@ class SAshr(BaseInstruction):
                 make_op(node, ssrc0, str(pow(2, int(ssrc1))), " / ", '(int)', '')
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers[sdst] = \
-                    Register(new_val, Type.unknown, Integrity.entire)
+                    Register(new_val, RegisterType.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()

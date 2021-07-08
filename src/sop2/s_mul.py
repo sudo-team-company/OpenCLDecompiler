@@ -3,7 +3,7 @@ from src.decompiler_data import DecompilerData, make_op
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 class SMul(BaseInstruction):
@@ -20,22 +20,22 @@ class SMul(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val, ssrc0_reg, ssrc1_reg = make_op(node, ssrc0, ssrc1, " * ", '', '')
                 if ssrc0_reg and ssrc1_reg:
-                    if node.state.registers[ssrc0].type == Type.local_size_x \
-                            and node.state.registers[ssrc1].type == Type.work_group_id_x:
+                    if node.state.registers[ssrc0].type == RegisterType.local_size_x \
+                            and node.state.registers[ssrc1].type == RegisterType.work_group_id_x:
                         node.state.registers[sdst] = \
-                            Register(new_val, Type.work_group_id_x_local_size, Integrity.entire)
-                    elif node.state.registers[ssrc0].type == Type.local_size_y \
-                            and node.state.registers[ssrc1].type == Type.work_group_id_y:
+                            Register(new_val, RegisterType.work_group_id_x_local_size, Integrity.entire)
+                    elif node.state.registers[ssrc0].type == RegisterType.local_size_y \
+                            and node.state.registers[ssrc1].type == RegisterType.work_group_id_y:
                         node.state.registers[sdst] = \
-                            Register(new_val, Type.work_group_id_y_local_size, Integrity.entire)
-                    elif node.state.registers[ssrc0].type == Type.local_size_z \
-                            and node.state.registers[ssrc1].type == Type.work_group_id_z:
+                            Register(new_val, RegisterType.work_group_id_y_local_size, Integrity.entire)
+                    elif node.state.registers[ssrc0].type == RegisterType.local_size_z \
+                            and node.state.registers[ssrc1].type == RegisterType.work_group_id_z:
                         node.state.registers[sdst] = \
-                            Register(new_val, Type.work_group_id_z_local_size, Integrity.entire)
+                            Register(new_val, RegisterType.work_group_id_z_local_size, Integrity.entire)
                     else:
-                        node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.entire)
+                        node.state.registers[sdst] = Register(new_val, RegisterType.unknown, Integrity.entire)
                 else:
-                    node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.entire)
+                    node.state.registers[sdst] = Register(new_val, RegisterType.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()

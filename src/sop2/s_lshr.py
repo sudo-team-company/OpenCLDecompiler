@@ -3,7 +3,7 @@ from src.decompiler_data import DecompilerData, make_op
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 class SLshr(BaseInstruction):
@@ -19,15 +19,15 @@ class SLshr(BaseInstruction):
                 decompiler_data.write("scc = " + sdst + "!= 0\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
-                if node.state.registers[ssrc0].type == Type.global_size_x \
+                if node.state.registers[ssrc0].type == RegisterType.global_size_x \
                         and str(pow(2, int(ssrc1))) == decompiler_data.size_of_work_groups[0]:
                     node.state.registers[sdst] = \
                         Register("get_num_groups(0)", node.state.registers[ssrc0].type, Integrity.entire)
-                elif node.state.registers[ssrc0].type == Type.global_size_y \
+                elif node.state.registers[ssrc0].type == RegisterType.global_size_y \
                         and str(pow(2, int(ssrc1))) == decompiler_data.size_of_work_groups[1]:
                     node.state.registers[sdst] = \
                         Register("get_num_groups(1)", node.state.registers[ssrc0].type, Integrity.entire)
-                elif node.state.registers[ssrc0].type == Type.global_size_z \
+                elif node.state.registers[ssrc0].type == RegisterType.global_size_z \
                         and str(pow(2, int(ssrc1))) == decompiler_data.size_of_work_groups[2]:
                     node.state.registers[sdst] = \
                         Register("get_num_groups(2)", node.state.registers[ssrc0].type, Integrity.entire)

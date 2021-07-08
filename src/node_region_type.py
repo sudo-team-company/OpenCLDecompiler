@@ -1,7 +1,7 @@
 from enum import Enum, auto
 
 
-class TypeNode(Enum):
+class NodeRegionType(Enum):
     basic = auto()
     linear = auto()
     ifstatement = auto()

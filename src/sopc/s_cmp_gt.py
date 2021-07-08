@@ -3,7 +3,7 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 class SCmpGt(BaseInstruction):
@@ -19,7 +19,7 @@ class SCmpGt(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers["scc"] = \
                     Register('(int)' + node.state.registers[ssrc0].val + " > (int)" + node.state.registers[ssrc1].val,
-                             Type.unknown, Integrity.entire)
+                             RegisterType.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, "scc")
                 if "scc" in [ssrc0, ssrc1]:
                     node.state.registers["scc"].make_prev()
@@ -36,7 +36,7 @@ class SCmpGt(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 node.state.registers["scc"] = \
                     Register(node.state.registers[ssrc0].val + " > " + ssrc1,
-                             Type.unknown, Integrity.entire)
+                             RegisterType.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, "scc")
                 if "scc" in [ssrc0, ssrc1]:
                     node.state.registers["scc"].make_prev()

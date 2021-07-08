@@ -1,11 +1,11 @@
 from src.integrity import Integrity
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 class Register:
     def __init__(self, val, type_of_elem, integrity):
         self.val = val
-        self.type: Type = type_of_elem
+        self.type: RegisterType = type_of_elem
         self.integrity: Integrity = integrity
         self.version = None
         self.prev_version = []

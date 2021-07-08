@@ -4,7 +4,7 @@ from src.global_data import get_gdata_offset
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 class SMov(BaseInstruction):
@@ -25,10 +25,10 @@ class SMov(BaseInstruction):
                 else:
                     if ".gdata" in ssrc0:
                         id = get_gdata_offset(ssrc0)
-                        node.state.registers[sdst] = Register("gdata" + str(id), Type.global_data_pointer,
+                        node.state.registers[sdst] = Register("gdata" + str(id), RegisterType.global_data_pointer,
                                                               Integrity.entire)
                     else:
-                        node.state.registers[sdst] = Register(ssrc0, Type.int32, Integrity.entire)
+                        node.state.registers[sdst] = Register(ssrc0, RegisterType.int32, Integrity.entire)
                     node.state.registers[sdst].type_of_data = suffix
                 decompiler_data.make_version(node.state, sdst)
                 return node

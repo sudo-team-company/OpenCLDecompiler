@@ -4,7 +4,7 @@ from src.integrity import Integrity
 from src.opencl_types import most_common_type
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 from src.upload import find_first_last_num_to_from
 
 
@@ -32,27 +32,27 @@ class VAdd(BaseInstruction):
             new_val, src0_reg, src1_reg = make_op(node, src0, src1, " + ", '(ulong)', '(ulong)')
             if flag_of_status == OperationStatus.to_fill_node:
                 if src0_reg and src1_reg:
-                    if node.state.registers[src0].type == Type.work_group_id_x_local_size_offset and \
-                            node.state.registers[src1].type == Type.work_item_id_x or \
-                            node.state.registers[src0].type == Type.global_offset_x and \
-                            node.state.registers[src1].type == Type.work_group_id_x_work_item_id:
+                    if node.state.registers[src0].type == RegisterType.work_group_id_x_local_size_offset and \
+                            node.state.registers[src1].type == RegisterType.work_item_id_x or \
+                            node.state.registers[src0].type == RegisterType.global_offset_x and \
+                            node.state.registers[src1].type == RegisterType.work_group_id_x_work_item_id:
                         new_integrity = node.state.registers[src1].integrity
-                        node.state.registers[vdst] = Register("get_global_id(0)", Type.global_id_x, new_integrity)
-                    elif node.state.registers[src0].type == Type.work_group_id_y_local_size_offset and \
-                            node.state.registers[src1].type == Type.work_item_id_y or \
-                            node.state.registers[src0].type == Type.global_offset_y and \
-                            node.state.registers[src1].type == Type.work_group_id_y_work_item_id:
+                        node.state.registers[vdst] = Register("get_global_id(0)", RegisterType.global_id_x, new_integrity)
+                    elif node.state.registers[src0].type == RegisterType.work_group_id_y_local_size_offset and \
+                            node.state.registers[src1].type == RegisterType.work_item_id_y or \
+                            node.state.registers[src0].type == RegisterType.global_offset_y and \
+                            node.state.registers[src1].type == RegisterType.work_group_id_y_work_item_id:
                         new_integrity = node.state.registers[src1].integrity
-                        node.state.registers[vdst] = Register("get_global_id(1)", Type.global_id_y, new_integrity)
-                    elif node.state.registers[src0].type == Type.work_group_id_z_local_size_offset and \
-                            node.state.registers[src1].type == Type.work_item_id_z or \
-                            node.state.registers[src0].type == Type.global_offset_z and \
-                            node.state.registers[src1].type == Type.work_group_id_z_work_item_id or \
-                            node.state.registers[src1].type == Type.global_offset_z and \
-                            node.state.registers[src0].type == Type.work_group_id_z_work_item_id:
+                        node.state.registers[vdst] = Register("get_global_id(1)", RegisterType.global_id_y, new_integrity)
+                    elif node.state.registers[src0].type == RegisterType.work_group_id_z_local_size_offset and \
+                            node.state.registers[src1].type == RegisterType.work_item_id_z or \
+                            node.state.registers[src0].type == RegisterType.global_offset_z and \
+                            node.state.registers[src1].type == RegisterType.work_group_id_z_work_item_id or \
+                            node.state.registers[src1].type == RegisterType.global_offset_z and \
+                            node.state.registers[src0].type == RegisterType.work_group_id_z_work_item_id:
                         new_integrity = node.state.registers[src1].integrity
-                        node.state.registers[vdst] = Register("get_global_id(2)", Type.global_id_z, new_integrity)
-                    elif node.state.registers[src0].type == Type.paramA:
+                        node.state.registers[vdst] = Register("get_global_id(2)", RegisterType.global_id_z, new_integrity)
+                    elif node.state.registers[src0].type == RegisterType.paramA:
                         new_integrity = node.state.registers[src1].integrity
                         if '.s' in node.state.registers[src0].val:
                             argument = node.state.registers[src0].val[:-3]
@@ -66,7 +66,7 @@ class VAdd(BaseInstruction):
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "4", " / ", '', '')
                             new_val = argument + "[" + new_value + "]"
                             node.state.registers[vdst] = \
-                                Register(new_val, Type.param_global_id_x, new_integrity)
+                                Register(new_val, RegisterType.param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'i32' \
                                 if decompiler_data.type_params.get("*" + argument) == "int" \
                                 else 'u32'
@@ -75,7 +75,7 @@ class VAdd(BaseInstruction):
                             new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
                             new_val = argument + "[" + new_value + "]"
                             node.state.registers[vdst] = \
-                                Register(new_val, Type.param_global_id_x, new_integrity)
+                                Register(new_val, RegisterType.param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'i64' \
                                 if decompiler_data.type_params.get("*" + argument) == "long" \
                                 else 'u64'
@@ -83,7 +83,7 @@ class VAdd(BaseInstruction):
                                 or decompiler_data.type_params.get("*" + argument) == "uchar":
                             new_val = argument + "[" + node.state.registers[src1].val + "]"
                             node.state.registers[vdst] = \
-                                Register(new_val, Type.param_global_id_x, new_integrity)
+                                Register(new_val, RegisterType.param_global_id_x, new_integrity)
                         elif decompiler_data.type_params.get("*" + argument) == "float":
                             if "1073741824" in node.state.registers[src1].val:
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "1073741824", " * ", '', '')
@@ -91,7 +91,7 @@ class VAdd(BaseInstruction):
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "4", " / ", '', '')
                             new_val = argument + "[" + new_value + "]"
                             node.state.registers[vdst] = \
-                                Register(new_val, Type.param_global_id_x, new_integrity)
+                                Register(new_val, RegisterType.param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'f32'
                         elif decompiler_data.type_params.get("*" + argument) == "double":
                             if "1073741824" in node.state.registers[src1].val:
@@ -100,7 +100,7 @@ class VAdd(BaseInstruction):
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
                             new_val = argument + "[" + new_value + "]"
                             node.state.registers[vdst] = \
-                                Register(new_val, Type.param_global_id_x, new_integrity)
+                                Register(new_val, RegisterType.param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'f64'
                         elif decompiler_data.type_params.get("*" + argument) == "int2":
                             if "1073741824" in node.state.registers[src1].val:
@@ -109,7 +109,7 @@ class VAdd(BaseInstruction):
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
                             new_val = argument + "[" + new_value + "]"
                             node.state.registers[vdst] = \
-                                Register(new_val, Type.param_global_id_x, new_integrity)
+                                Register(new_val, RegisterType.param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'int2'
                         elif decompiler_data.type_params.get("*" + argument) == "int4":
                             if "1073741824" in node.state.registers[src1].val:
@@ -118,7 +118,7 @@ class VAdd(BaseInstruction):
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "16", " / ", '', '')
                             new_val = argument + "[" + new_value + "]"
                             node.state.registers[vdst] = \
-                                Register(new_val, Type.param_global_id_x, new_integrity)
+                                Register(new_val, RegisterType.param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'int4'
                         elif decompiler_data.type_params.get("*" + argument) == "int8":
                             if "1073741824" in node.state.registers[src1].val:
@@ -127,15 +127,15 @@ class VAdd(BaseInstruction):
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "32", " / ", '', '')
                             new_val = argument + "[" + new_value + "]"
                             node.state.registers[vdst] = \
-                                Register(new_val, Type.param_global_id_x, new_integrity)
+                                Register(new_val, RegisterType.param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'int8'
                         else:
                             new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
                             new_val = argument + "[" + new_value + "]"
                             node.state.registers[vdst] = \
-                                Register(new_val, Type.param_global_id_x, new_integrity)
+                                Register(new_val, RegisterType.param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'int2'
-                    elif node.state.registers[src0].type == Type.global_data_pointer:
+                    elif node.state.registers[src0].type == RegisterType.global_data_pointer:
                         type_of_data = node.state.registers[src1].type_of_data
                         name = node.state.registers[src0].val
                         if 'bytes' in type_of_data:
@@ -144,40 +144,40 @@ class VAdd(BaseInstruction):
                             new_value, src0_flag, src1_flag = make_op(node, src1, value, " / ", '', '')
                             new_val = name + "[" + new_value + "]"
                             node.state.registers[vdst] = \
-                                Register(new_val, Type.global_data_pointer, Integrity.entire)
+                                Register(new_val, RegisterType.global_data_pointer, Integrity.entire)
                             suffix = type_of_data
-                    elif node.state.registers[src0].type == Type.work_group_id_x_local_size and \
-                            node.state.registers[src1].type == Type.work_item_id_x:
+                    elif node.state.registers[src0].type == RegisterType.work_group_id_x_local_size and \
+                            node.state.registers[src1].type == RegisterType.work_item_id_x:
                         new_integrity = node.state.registers[src1].integrity
                         node.state.registers[vdst] = \
-                            Register("get_global_id(0) - get_global_offset(0)", Type.work_group_id_x_work_item_id,
+                            Register("get_global_id(0) - get_global_offset(0)", RegisterType.work_group_id_x_work_item_id,
                                      new_integrity)
-                    elif node.state.registers[src0].type == Type.work_group_id_y_local_size and \
-                            node.state.registers[src1].type == Type.work_item_id_y:
+                    elif node.state.registers[src0].type == RegisterType.work_group_id_y_local_size and \
+                            node.state.registers[src1].type == RegisterType.work_item_id_y:
                         new_integrity = node.state.registers[src1].integrity
                         node.state.registers[vdst] = \
-                            Register("get_global_id(1) - get_global_offset(1)", Type.work_group_id_y_work_item_id,
+                            Register("get_global_id(1) - get_global_offset(1)", RegisterType.work_group_id_y_work_item_id,
                                      new_integrity)
-                    elif node.state.registers[src0].type == Type.work_group_id_z_local_size and \
-                            node.state.registers[src1].type == Type.work_item_id_z:
+                    elif node.state.registers[src0].type == RegisterType.work_group_id_z_local_size and \
+                            node.state.registers[src1].type == RegisterType.work_item_id_z:
                         new_integrity = node.state.registers[src1].integrity
                         node.state.registers[vdst] = \
-                            Register("get_global_id(2) - get_global_offset(2)", Type.work_group_id_z_work_item_id,
+                            Register("get_global_id(2) - get_global_offset(2)", RegisterType.work_group_id_z_work_item_id,
                                      new_integrity)
-                    elif node.state.registers[src0].type == Type.work_group_id_x_local_size and \
-                            node.state.registers[src1].type == Type.work_item_id_x or \
-                            node.state.registers[src1].type == Type.work_group_id_x_local_size and \
-                            node.state.registers[src0].type == Type.work_item_id_x:
+                    elif node.state.registers[src0].type == RegisterType.work_group_id_x_local_size and \
+                            node.state.registers[src1].type == RegisterType.work_item_id_x or \
+                            node.state.registers[src1].type == RegisterType.work_group_id_x_local_size and \
+                            node.state.registers[src0].type == RegisterType.work_item_id_x:
                         new_integrity = node.state.registers[src1].integrity
                         node.state.registers[vdst] = \
-                            Register("get_global_id(0) - get_global_offset(0)", Type.unknown, new_integrity)
+                            Register("get_global_id(0) - get_global_offset(0)", RegisterType.unknown, new_integrity)
                     else:
                         type_of_data = node.state.registers[src1].type_of_data
                         new_integrity = node.state.registers[src1].integrity
-                        node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
+                        node.state.registers[vdst] = Register(new_val, RegisterType.unknown, new_integrity)
                         node.state.registers[vdst].type_of_data = type_of_data
                 else:
-                    type_reg = Type.int32
+                    type_reg = RegisterType.int32
                     if src0_reg:
                         type_reg = node.state.registers[src0].type
                     if src1_reg:

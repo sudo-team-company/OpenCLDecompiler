@@ -3,7 +3,7 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 class SCselect(BaseInstruction):
@@ -21,7 +21,7 @@ class SCselect(BaseInstruction):
                 if ssrc0 == "exec":
                     ssrc0 = "1"
                 new_val = node.state.registers["scc"].val + " ? " + ssrc0 + " : " + ssrc1
-                node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.entire)
+                node.state.registers[sdst] = Register(new_val, RegisterType.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()

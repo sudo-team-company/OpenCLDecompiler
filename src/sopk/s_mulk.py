@@ -3,7 +3,7 @@ from src.decompiler_data import DecompilerData, make_op
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 class SMulk(BaseInstruction):
@@ -18,7 +18,7 @@ class SMulk(BaseInstruction):
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val, sdst_flag, simm16_flag = make_op(node, sdst, simm16, " * ", '', '')
-                node.state.registers[sdst] = Register(new_val, Type.unknown, Integrity.entire)
+                node.state.registers[sdst] = Register(new_val, RegisterType.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, sdst)
                 node.state.registers[sdst].make_prev()
                 node.state.registers[sdst].type_of_data = suffix

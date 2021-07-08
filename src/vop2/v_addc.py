@@ -3,7 +3,7 @@ from src.decompiler_data import DecompilerData, make_op
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 class VAddc(BaseInstruction):
@@ -34,17 +34,17 @@ class VAddc(BaseInstruction):
             new_val, src0_reg, src1_reg = make_op(node, src0, src1, " + ", '(ulong)', '(ulong)')
             if flag_of_status == OperationStatus.to_fill_node:
                 if src0_reg and src1_reg:
-                    if node.state.registers[src0].type == Type.paramA \
-                            and node.state.registers[src1].type == Type.global_id_x:
+                    if node.state.registers[src0].type == RegisterType.paramA \
+                            and node.state.registers[src1].type == RegisterType.global_id_x:
                         new_integrity = node.state.registers[src1].integrity
                         node.state.registers[vdst] = \
                             Register(node.state.registers[src0].val + "[get_global_id(0)]",
-                                     Type.param_global_id_x, new_integrity)
+                                     RegisterType.param_global_id_x, new_integrity)
                     else:
                         new_integrity = node.state.registers[src1].integrity
-                        node.state.registers[vdst] = Register(new_val, Type.unknown, new_integrity)
+                        node.state.registers[vdst] = Register(new_val, RegisterType.unknown, new_integrity)
                 else:
-                    type_reg = Type.int32
+                    type_reg = RegisterType.int32
                     if src0_reg:
                         type_reg = node.state.registers[src0].type
                     if src1_reg:

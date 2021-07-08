@@ -3,7 +3,7 @@ from src.decompiler_data import DecompilerData, check_reg_for_val
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 class VAlignbit(BaseInstruction):
@@ -24,7 +24,7 @@ class VAlignbit(BaseInstruction):
                 src1, _ = check_reg_for_val(node, src1)
                 src2, _ = check_reg_for_val(node, src2)
                 new_val = 'amd_bitalign(' + src0 + ', ' + src1 + ', ' + src2 + ')'
-                node.state.registers[vdst] = Register(new_val, Type.unknown, Integrity.entire)
+                node.state.registers[vdst] = Register(new_val, RegisterType.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, vdst)
                 if vdst in [src0, src1, src2]:
                     node.state.registers[vdst].make_prev()

@@ -1,9 +1,9 @@
 from src.decompiler_data import DecompilerData, evaluate_from_hex
 from src.node import Node
 from src.node_processor import to_opencl
+from src.node_region_type import NodeRegionType
 from src.opencl_types import make_type
 from src.operation_status import OperationStatus
-from src.type_of_node import TypeNode
 
 
 def create_opencl_body():
@@ -211,15 +211,15 @@ def make_output_from_circle_region(region, indent):
 
 def make_output_from_region(region, indent):
     decompiler_data = DecompilerData()
-    if region.type == TypeNode.linear:
+    if region.type == NodeRegionType.linear:
         make_output_for_linear_region(region, indent)
-    elif region.type == TypeNode.ifstatement:
+    elif region.type == NodeRegionType.ifstatement:
         make_output_from_if_statement_region(region, indent)
-    elif region.type == TypeNode.ifelsestatement:
+    elif region.type == NodeRegionType.ifelsestatement:
         make_output_from_if_else_statement_region(region, indent)
-    elif region.type == TypeNode.circle:
+    elif region.type == NodeRegionType.circle:
         make_output_from_circle_region(region, indent)
-    elif region.type == TypeNode.continueregion:
+    elif region.type == NodeRegionType.continueregion:
         decompiler_data.write(indent + "continue;\n")
-    elif region.type == TypeNode.breakregion:
+    elif region.type == NodeRegionType.breakregion:
         decompiler_data.write(indent + "break;\n")

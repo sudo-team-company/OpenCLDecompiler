@@ -3,7 +3,7 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 class SMovk(BaseInstruction):
@@ -17,7 +17,7 @@ class SMovk(BaseInstruction):
                 decompiler_data.write("scc = " + simm16 + " // s_movk_i32\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
-                node.state.registers[sdst] = Register(simm16, Type.unknown, Integrity.entire)
+                node.state.registers[sdst] = Register(simm16, RegisterType.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, sdst)
                 node.state.registers[sdst].type_of_data = suffix
                 return node

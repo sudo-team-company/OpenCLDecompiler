@@ -1,7 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData
 from src.operation_status import OperationStatus
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 from src.upload import upload_usesetup, upload, find_first_last_num_to_from
 
 
@@ -29,14 +29,14 @@ class SLoad(BaseInstruction):
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 if node.state.registers[from_registers] is not None \
-                        and node.state.registers[from_registers].type == Type.global_data_pointer \
+                        and node.state.registers[from_registers].type == RegisterType.global_data_pointer \
                         or decompiler_data.usesetup is False and sbase == "s[4:5]" \
                         or decompiler_data.usesetup is True and sbase == "s[6:7]":
                     upload(node.state, sdata, sbase, offset, decompiler_data.kernel_params)
                 else:
                     upload_usesetup(node.state, sdata, offset)
                 # if node.state.registers[from_registers] is not None\
-                #         and node.state.registers[from_registers].type == Type.global_data_pointer:
+                #         and node.state.registers[from_registers].type == RegisterType.global_data_pointer:
                 #     data_type = node.state.registers[from_registers].type_of_data
                 #     node.state.registers[to_registers].type_of_data = data_type
                 # else:
@@ -50,14 +50,14 @@ class SLoad(BaseInstruction):
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 if node.state.registers[from_registers] is not None \
-                        and node.state.registers[from_registers].type == Type.global_data_pointer \
+                        and node.state.registers[from_registers].type == RegisterType.global_data_pointer \
                         or decompiler_data.usesetup is False and sbase == "s[4:5]" \
                         or decompiler_data.usesetup is True and sbase == "s[6:7]":
                     upload(node.state, sdata, sbase, offset, decompiler_data.kernel_params)
                 else:
                     upload_usesetup(node.state, sdata, offset)
                 # if node.state.registers[from_registers] is not None \
-                #         and node.state.registers[from_registers].type == Type.global_data_pointer:
+                #         and node.state.registers[from_registers].type == RegisterType.global_data_pointer:
                 #     data_type = node.state.registers[from_registers].type_of_data
                 #     node.state.registers[to_registers].type_of_data = data_type
                 # else:

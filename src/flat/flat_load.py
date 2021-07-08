@@ -3,7 +3,7 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 from src.upload import find_first_last_num_to_from
 
 
@@ -29,7 +29,7 @@ class FlatLoad(BaseInstruction):
                         # probably we should save only const data
                         decompiler_data.var_value[variable] = node.state.registers[from_registers].val
                         node.state.registers[to_registers] = \
-                            Register(variable, Type.program_param, Integrity.entire)
+                            Register(variable, RegisterType.program_param, Integrity.entire)
                         decompiler_data.make_version(node.state, to_registers)
                         node.state.registers[to_registers].type_of_data = data_type
                         node.state.registers[to_registers].val = variable
@@ -59,7 +59,7 @@ class FlatLoad(BaseInstruction):
                         data_type = node.state.registers[from_registers].type_of_data
                         decompiler_data.var_value[variable] = node.state.registers[from_registers].val
                         node.state.registers[to_registers] = \
-                            Register(variable, Type.program_param, Integrity.entire)
+                            Register(variable, RegisterType.program_param, Integrity.entire)
                         decompiler_data.make_version(node.state, to_registers)
                         node.state.registers[to_registers].type_of_data = data_type
                         node.state.registers[to_registers].val = variable
@@ -68,7 +68,7 @@ class FlatLoad(BaseInstruction):
                         data_type = node.state.registers[from_registers].type_of_data
                         decompiler_data.var_value[variable] = node.state.registers[from_registers].val
                         node.state.registers[to_registers] = \
-                            Register(variable, Type.program_param, Integrity.entire)
+                            Register(variable, RegisterType.program_param, Integrity.entire)
                         decompiler_data.make_version(node.state, to_registers)
                         node.state.registers[to_registers].type_of_data = data_type
                         node.state.registers[to_registers].val = variable
@@ -104,13 +104,13 @@ class FlatLoad(BaseInstruction):
                         data_type = node.state.registers[from_registers].type_of_data
                         decompiler_data.var_value[variable] = node.state.registers[from_registers].val
                         node.state.registers[to_registers] = \
-                            Register(variable, Type.program_param, Integrity.entire)
+                            Register(variable, RegisterType.program_param, Integrity.entire)
                         decompiler_data.make_version(node.state, to_registers)
                         node.state.registers[to_registers].type_of_data = data_type
                         node.state.registers[to_registers].val = variable
                         decompiler_data.make_var(node.state.registers[to_registers].version, variable, data_type)
                         node.state.registers[to_now] = \
-                            Register(variable, Type.program_param, Integrity.entire)
+                            Register(variable, RegisterType.program_param, Integrity.entire)
                         decompiler_data.make_version(node.state, to_now)
                         node.state.registers[to_now].type_of_data = data_type
                         node.state.registers[to_now].val = variable
@@ -120,14 +120,14 @@ class FlatLoad(BaseInstruction):
                         data_type = node.state.registers[from_registers].type_of_data
                         decompiler_data.var_value[variable] = node.state.registers[from_registers].val
                         node.state.registers[to_registers] = \
-                            Register(variable, Type.program_param, Integrity.entire)
+                            Register(variable, RegisterType.program_param, Integrity.entire)
                         decompiler_data.make_version(node.state, to_registers)
                         node.state.registers[to_registers].type_of_data = data_type
                         node.state.registers[to_registers].val = variable
                         decompiler_data.make_var(node.state.registers[to_registers].version, variable,
                                                  data_type)
                         node.state.registers[to_now] = \
-                            Register(variable, Type.program_param, Integrity.entire)
+                            Register(variable, RegisterType.program_param, Integrity.entire)
                         decompiler_data.make_version(node.state, to_now)
                         node.state.registers[to_now].type_of_data = data_type
                         node.state.registers[to_now].val = variable

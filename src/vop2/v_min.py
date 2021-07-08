@@ -3,7 +3,7 @@ from src.decompiler_data import DecompilerData, check_reg_for_val
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 class VMin(BaseInstruction):
@@ -21,7 +21,7 @@ class VMin(BaseInstruction):
                 src0, _ = check_reg_for_val(node, src0)
                 src1, _ = check_reg_for_val(node, src1)
                 new_val = "min(" + src0 + ", " + src1 + ")"
-                node.state.registers[vdst] = Register(new_val, Type.unknown, Integrity.entire)
+                node.state.registers[vdst] = Register(new_val, RegisterType.unknown, Integrity.entire)
                 decompiler_data.make_version(node.state, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()

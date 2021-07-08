@@ -3,11 +3,11 @@ import struct
 
 import sympy as sym
 
+from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.register import Register
+from src.register_type import RegisterType
 from src.state import State
-from src.type_of_flag import TypeOfFlag
-from src.type_of_reg import Type
 
 
 def update_register(asm_type, from_registers, to_registers, node):
@@ -352,15 +352,15 @@ class DecompilerData(metaclass=Singleton):
         self.circles_nodes_for_variables = {}
         self.configuration_output = ""
         if flag_for_decompilation == "auto_decompilation":
-            self.flag_for_decompilation = TypeOfFlag.auto_decompilation
+            self.flag_for_decompilation = FlagType.auto_decompilation
         elif flag_for_decompilation == "only_opencl":
-            self.flag_for_decompilation = TypeOfFlag.only_opencl
+            self.flag_for_decompilation = FlagType.only_opencl
         else:
-            self.flag_for_decompilation = TypeOfFlag.only_clrx
+            self.flag_for_decompilation = FlagType.only_clrx
 
     def write(self, output):
         # noinspection PyUnresolvedReferences
-        if self.flag_for_decompilation != TypeOfFlag.only_clrx:
+        if self.flag_for_decompilation != FlagType.only_clrx:
             output = simplify_opencl_statement(output)
         self.output_file.write(output)
 
@@ -392,17 +392,17 @@ class DecompilerData(metaclass=Singleton):
 
     def process_initial_state(self):
         if self.usesetup:
-            self.initial_state.registers["s6"] = Register("s6", Type.arguments_pointer, Integrity.low_part)
+            self.initial_state.registers["s6"] = Register("s6", RegisterType.arguments_pointer, Integrity.low_part)
             self.initial_state.registers["s6"].add_version("s6", self.versions["s6"])
             self.versions["s6"] += 1
-            self.initial_state.registers["s7"] = Register("s7", Type.arguments_pointer, Integrity.high_part)
+            self.initial_state.registers["s7"] = Register("s7", RegisterType.arguments_pointer, Integrity.high_part)
             self.initial_state.registers["s7"].add_version("s7", self.versions["s7"])
             self.versions["s7"] += 1
         else:
-            self.initial_state.registers["s4"] = Register("s4", Type.arguments_pointer, Integrity.low_part)
+            self.initial_state.registers["s4"] = Register("s4", RegisterType.arguments_pointer, Integrity.low_part)
             self.initial_state.registers["s4"].add_version("s4", self.versions["s4"])
             self.versions["s4"] += 1
-            self.initial_state.registers["s5"] = Register("s5", Type.arguments_pointer, Integrity.high_part)
+            self.initial_state.registers["s5"] = Register("s5", RegisterType.arguments_pointer, Integrity.high_part)
             self.initial_state.registers["s5"].add_version("s5", self.versions["s5"])
             self.versions["s5"] += 1
 

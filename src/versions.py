@@ -2,7 +2,7 @@ import copy
 from collections import deque
 
 from src.decompiler_data import DecompilerData
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 def find_max_and_prev_versions(curr_node):
@@ -31,7 +31,7 @@ def update_reg_version(reg, curr_node, max_version, prev_versions_of_reg):
         curr_node.state.registers[reg].version = reg + "_" + str(max_version + 1)
         curr_node.state.registers[reg].prev_version = list(prev_versions_of_reg)
         variable = "var" + str(decompiler_data.num_of_var)
-        if curr_node.state.registers[reg].type == Type.param_global_id_x:
+        if curr_node.state.registers[reg].type == RegisterType.param_global_id_x:
             variable = "*" + variable
         curr_node.state.registers[reg].val = variable
         decompiler_data.update_reg_version(prev_versions_of_reg, variable, curr_node, reg, max_version)

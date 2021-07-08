@@ -3,7 +3,7 @@ from src.decompiler_data import DecompilerData, make_op
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 from src.upload import find_first_last_num_to_from
 
 
@@ -21,15 +21,15 @@ class SLshl(BaseInstruction):
                 return node
             new_val, ssrc0_flag, ssrc1_flag = make_op(node, ssrc0, str(pow(2, int(ssrc1))), " * ", '', '')
             if flag_of_status == OperationStatus.to_fill_node:
-                if node.state.registers[ssrc0].type == Type.work_group_id_x:
-                    node.state.registers[sdst] = Register(new_val, Type.work_group_id_x_local_size, Integrity.entire)
-                    node.state.registers["scc"] = Register(sdst + "!= 0", Type.int32, Integrity.entire)
-                elif node.state.registers[ssrc0].type == Type.work_group_id_y:
-                    node.state.registers[sdst] = Register(new_val, Type.work_group_id_y_local_size, Integrity.entire)
-                    node.state.registers["scc"] = Register(sdst + "!= 0", Type.int32, Integrity.entire)
-                elif node.state.registers[ssrc0].type == Type.work_group_id_z:
-                    node.state.registers[sdst] = Register(new_val, Type.work_group_id_z_local_size, Integrity.entire)
-                    node.state.registers["scc"] = Register(sdst + "!= 0", Type.int32, Integrity.entire)
+                if node.state.registers[ssrc0].type == RegisterType.work_group_id_x:
+                    node.state.registers[sdst] = Register(new_val, RegisterType.work_group_id_x_local_size, Integrity.entire)
+                    node.state.registers["scc"] = Register(sdst + "!= 0", RegisterType.int32, Integrity.entire)
+                elif node.state.registers[ssrc0].type == RegisterType.work_group_id_y:
+                    node.state.registers[sdst] = Register(new_val, RegisterType.work_group_id_y_local_size, Integrity.entire)
+                    node.state.registers["scc"] = Register(sdst + "!= 0", RegisterType.int32, Integrity.entire)
+                elif node.state.registers[ssrc0].type == RegisterType.work_group_id_z:
+                    node.state.registers[sdst] = Register(new_val, RegisterType.work_group_id_z_local_size, Integrity.entire)
+                    node.state.registers["scc"] = Register(sdst + "!= 0", RegisterType.int32, Integrity.entire)
                 else:
                     node.state.registers[sdst] = Register(new_val, node.state.registers[ssrc0].type, Integrity.entire)
                 decompiler_data.make_version(node.state, sdst)

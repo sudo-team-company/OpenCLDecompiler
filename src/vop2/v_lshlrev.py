@@ -3,7 +3,7 @@ from src.decompiler_data import DecompilerData, make_op
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 from src.upload import find_first_last_num_to_from
 
 
@@ -46,7 +46,7 @@ class VLshlrev(BaseInstruction):
                 new_val, src1_flag, src0_flag = make_op(node, from_registers, str(pow(2, int(src0))), " * ", '', '')
                 if src0_flag and src1_flag:
                     if node.state.registers[from_registers].type \
-                            in [Type.global_id_x, Type.global_id_y, Type.global_id_z] \
+                            in [RegisterType.global_id_x, RegisterType.global_id_y, RegisterType.global_id_z] \
                             and node.state.registers[name_of_to + str(first_from + 1)].val == "0":
                         node.state.registers[to_registers] = \
                             Register(new_val, node.state.registers[from_registers].type, Integrity.low_part)
@@ -64,7 +64,7 @@ class VLshlrev(BaseInstruction):
                         node.state.registers[to_registers_1] = node.state.registers[from_registers_1]
                         decompiler_data.make_version(node.state, to_registers_1)
                 else:
-                    type_reg = Type.int32
+                    type_reg = RegisterType.int32
                     if src0_flag:
                         type_reg = node.state.registers[src0].type
                     if src1_flag:

@@ -3,7 +3,7 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 def compare_in_s_cmp_eq(ssrc0, ssrc1, node, suffix):
@@ -13,7 +13,7 @@ def compare_in_s_cmp_eq(ssrc0, ssrc1, node, suffix):
     else:
         cmpr_val = ssrc1
     node.state.registers["scc"] = \
-        Register(node.state.registers[ssrc0].val + " == " + cmpr_val, Type.unknown,
+        Register(node.state.registers[ssrc0].val + " == " + cmpr_val, RegisterType.unknown,
                  Integrity.entire)
     decompiler_data.make_version(node.state, "scc")
     if "scc" in [ssrc0, ssrc1]:

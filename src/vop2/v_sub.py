@@ -2,7 +2,7 @@ from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData, make_op
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 class VSub(BaseInstruction):
@@ -28,12 +28,12 @@ class VSub(BaseInstruction):
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val, src0_reg, src1_reg = make_op(node, src0, src1, " - ", '(ulong)', '')
-                type_reg = Type.int32
+                type_reg = RegisterType.int32
                 if src0_reg:
                     type_reg = node.state.registers[src0].integrity
                 elif src1_reg:
                     type_reg = node.state.registers[src1].integrity
-                node.state.registers[vdst] = Register(new_val, Type.unknown, type_reg)
+                node.state.registers[vdst] = Register(new_val, RegisterType.unknown, type_reg)
                 decompiler_data.make_version(node.state, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
@@ -50,12 +50,12 @@ class VSub(BaseInstruction):
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val, src0_reg, src1_reg = make_op(node, src0, src1, " - ", 'as_float(', 'as_float(')
-                type_reg = Type.int32
+                type_reg = RegisterType.int32
                 if src0_reg:
                     type_reg = node.state.registers[src0].integrity
                 elif src1_reg:
                     type_reg = node.state.registers[src1].integrity
-                node.state.registers[vdst] = Register(new_val, Type.unknown, type_reg)
+                node.state.registers[vdst] = Register(new_val, RegisterType.unknown, type_reg)
                 decompiler_data.make_version(node.state, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()

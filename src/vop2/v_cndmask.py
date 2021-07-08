@@ -3,7 +3,7 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 class VCndmask(BaseInstruction):
@@ -20,13 +20,13 @@ class VCndmask(BaseInstruction):
                                       + src1 + " : " + src0 + " // v_cndmask_b32\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
-                node.state.registers[vdst] = Register(variable, Type.program_param, Integrity.entire)
+                node.state.registers[vdst] = Register(variable, RegisterType.program_param, Integrity.entire)
                 decompiler_data.make_version(node.state, vdst)
                 if vdst in [src0, src1]:
                     node.state.registers[vdst].make_prev()
                 node.state.registers[vdst].type_of_data = suffix
 
-                if node.state.registers[vdst].type == Type.param_global_id_x:
+                if node.state.registers[vdst].type == RegisterType.param_global_id_x:
                     variable = "*" + variable
                 node.state.registers[vdst].val = variable
                 decompiler_data.make_var(node.state.registers[vdst].version, variable, suffix)

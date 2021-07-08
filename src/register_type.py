@@ -1,7 +1,7 @@
 from enum import Enum, auto
 
 
-class Type(Enum):
+class RegisterType(Enum):
     unknown = auto()
     global_id_x = auto()
     global_id_y = auto()

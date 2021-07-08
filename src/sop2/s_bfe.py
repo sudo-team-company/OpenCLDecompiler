@@ -3,7 +3,7 @@ from src.decompiler_data import DecompilerData
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 class SBfe(BaseInstruction):
@@ -33,9 +33,9 @@ class SBfe(BaseInstruction):
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 if ssrc1 == "0x20010":
-                    node.state.registers[sdst] = Register("get_work_dim()", Type.work_dim, Integrity.entire)
+                    node.state.registers[sdst] = Register("get_work_dim()", RegisterType.work_dim, Integrity.entire)
                 elif ssrc1 == '0x100010':
-                    node.state.registers[sdst] = Register("get_local_size(1)", Type.local_size_y, Integrity.entire)
+                    node.state.registers[sdst] = Register("get_local_size(1)", RegisterType.local_size_y, Integrity.entire)
                 else:
                     print("Unknown pattern in s_bfe")
                 decompiler_data.make_version(node.state, sdst)

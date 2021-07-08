@@ -4,12 +4,12 @@ from src.cfg import change_cfg_for_else_structure, make_cfg_node, make_unresolve
 from src.code_printer import create_opencl_body
 from src.config import process_config
 from src.decompiler_data import DecompilerData, optimize_names_of_vars
+from src.flag_type import FlagType
 from src.global_data import process_global_data, gdata_type_processing
 from src.kernel_params import process_kernel_params
 from src.node import Node
 from src.node_processor import check_realisation_for_node
 from src.regions.functions_for_regions import make_region_graph_from_cfg, process_region_graph
-from src.type_of_flag import TypeOfFlag
 from src.versions import find_max_and_prev_versions, change_values, check_for_use_new_version
 
 
@@ -104,7 +104,7 @@ def process_src(name_of_program, set_of_config, set_of_instructions, set_of_glob
     last_node_state = decompiler_data.initial_state
     decompiler_data.set_cfg(last_node)
     num = 0
-    if decompiler_data.flag_for_decompilation == TypeOfFlag.only_clrx:
+    if decompiler_data.flag_for_decompilation == FlagType.only_clrx:
         process_src_with_unresolved_instruction(initial_set_of_instructions)
         return
     while num < len(set_of_instructions):
@@ -112,9 +112,9 @@ def process_src(name_of_program, set_of_config, set_of_instructions, set_of_glob
         if result_for_check is not None:
             num, curr_node, set_of_instructions, last_node, last_node_state = result_for_check
         else:
-            if decompiler_data.flag_for_decompilation == TypeOfFlag.only_opencl:
+            if decompiler_data.flag_for_decompilation == FlagType.only_opencl:
                 break
-            decompiler_data.flag_for_decompilation = TypeOfFlag.only_clrx
+            decompiler_data.flag_for_decompilation = FlagType.only_clrx
             process_src_with_unresolved_instruction(initial_set_of_instructions)
             return
 
