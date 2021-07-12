@@ -1,9 +1,9 @@
 from src.decompiler_data import DecompilerData, evaluate_from_hex
 from src.node import Node
 from src.node_processor import to_opencl
-from src.node_region_type import NodeRegionType
 from src.opencl_types import make_type
 from src.operation_status import OperationStatus
+from src.region_type import RegionType
 
 
 def create_opencl_body():
@@ -18,11 +18,10 @@ def create_opencl_body():
     offsets.append(decompiler_data.localsize)
     offsets.sort()
     for key in range(len(offsets) - 1):
-        size_var = int(
-            (offsets[key + 1] - offsets[key]) / (int(decompiler_data.lds_vars[offsets[key]][1][1:]) / 8))
+        size_var = int((offsets[key + 1] - offsets[key]) / (int(decompiler_data.lds_vars[offsets[key]][1][1:]) / 8))
         type_of_var = make_type(decompiler_data.lds_vars[offsets[key]][1])
-        decompiler_data.write("    __local " + type_of_var + " " + decompiler_data.lds_vars[offsets[key]][0] + "["
-                              + str(size_var) + "]" + ";\n")
+        decompiler_data.write("    __local " + type_of_var + " " + decompiler_data.lds_vars[offsets[key]][0]
+                              + "[" + str(size_var) + "]" + ";\n")
     make_output_from_region(decompiler_data.improve_cfg, '    ')
     decompiler_data.write("}\n")
 
@@ -211,15 +210,15 @@ def make_output_from_circle_region(region, indent):
 
 def make_output_from_region(region, indent):
     decompiler_data = DecompilerData()
-    if region.type == NodeRegionType.linear:
+    if region.type == RegionType.linear:
         make_output_for_linear_region(region, indent)
-    elif region.type == NodeRegionType.ifstatement:
+    elif region.type == RegionType.ifstatement:
         make_output_from_if_statement_region(region, indent)
-    elif region.type == NodeRegionType.ifelsestatement:
+    elif region.type == RegionType.ifelsestatement:
         make_output_from_if_else_statement_region(region, indent)
-    elif region.type == NodeRegionType.circle:
+    elif region.type == RegionType.circle:
         make_output_from_circle_region(region, indent)
-    elif region.type == NodeRegionType.continueregion:
+    elif region.type == RegionType.continueregion:
         decompiler_data.write(indent + "continue;\n")
-    elif region.type == NodeRegionType.breakregion:
+    elif region.type == RegionType.breakregion:
         decompiler_data.write(indent + "break;\n")

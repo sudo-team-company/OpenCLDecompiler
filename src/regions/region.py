@@ -1,9 +1,9 @@
-from src.node_region_type import NodeRegionType
+from src.region_type import RegionType
 
 
 class Region:
     def __init__(self, type_of_node, start):
-        self.type: NodeRegionType = type_of_node
+        self.type: RegionType = type_of_node
         self.start = start
         self.end = start
         self.parent = []

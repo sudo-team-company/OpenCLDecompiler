@@ -1,7 +1,7 @@
 from collections import deque
 
 from src.decompiler_data import DecompilerData
-from src.node_region_type import NodeRegionType
+from src.region_type import RegionType
 from src.regions.region import Region
 
 
@@ -17,7 +17,7 @@ def add_parent_and_child(before_r, next_r, region, pred_child, pred_parent):
 
 
 def check_if(curr_region):
-    return curr_region.type == NodeRegionType.basic and len(curr_region.children) == 2 \
+    return curr_region.type == RegionType.basic and len(curr_region.children) == 2 \
            and (len(curr_region.children[0].children) > 0
                 and curr_region.children[0].children[0] == curr_region.children[1]
                 or len(curr_region.children[1].children) > 0
@@ -25,7 +25,7 @@ def check_if(curr_region):
 
 
 def check_if_else(curr_region):
-    return curr_region.type == NodeRegionType.basic and len(curr_region.children) == 2 \
+    return curr_region.type == RegionType.basic and len(curr_region.children) == 2 \
            and len(curr_region.children[0].children) > 0 \
            and len(curr_region.children[1].children) > 0 \
            and curr_region.children[0].children[0] == curr_region.children[1].children[0]
@@ -40,7 +40,7 @@ def create_new_region(prev_reg_1, prev_reg_2, next_reg):
     prev_reg_1.children.remove(next_reg)
     prev_reg_2.children.remove(next_reg)
     position = next_reg.parent.index(prev_reg_1)
-    new_fiction_region = Region(NodeRegionType.linear, next_reg.start)
+    new_fiction_region = Region(RegionType.linear, next_reg.start)
     next_reg.parent[position] = new_fiction_region
     next_reg.parent.remove(prev_reg_2)
     prev_reg_1.children.append(new_fiction_region)
@@ -55,8 +55,8 @@ def join_regions(before_region, curr_region, next_region, start_region):
     start_now = start_region
     if len(before_region) == 1:
         before_region = before_region[0]
-        if before_region.type != NodeRegionType.basic:
-            region = Region(NodeRegionType.linear, before_region)
+        if before_region.type != RegionType.basic:
+            region = Region(RegionType.linear, before_region)
             region.end = curr_region
             if before_region == start_now:
                 start_now = region
@@ -69,8 +69,8 @@ def join_regions(before_region, curr_region, next_region, start_region):
                 index = next_region.parent.index(curr_region)
                 next_region.parent[index] = region
                 region.add_child(next_region)
-            if next_region is not None and next_region.type != NodeRegionType.basic and len(curr_region.parent) == 1:
-                region_all = Region(NodeRegionType.linear, before_region)
+            if next_region is not None and next_region.type != RegionType.basic and len(curr_region.parent) == 1:
+                region_all = Region(RegionType.linear, before_region)
                 region_all.end = next_region
                 if start_now == region:
                     start_now = region_all
@@ -86,8 +86,8 @@ def join_regions(before_region, curr_region, next_region, start_region):
                     region_all.add_child(child)
             return start_now
 
-    if next_region is not None and next_region != NodeRegionType.basic and len(curr_region.parent) == 1:
-        region_all = Region(NodeRegionType.linear, curr_region)
+    if next_region is not None and next_region != RegionType.basic and len(curr_region.parent) == 1:
+        region_all = Region(RegionType.linear, curr_region)
         region_all.end = next_region
         for prev_r in before_region:
             index = prev_r.children.index(curr_region)
@@ -104,7 +104,7 @@ def join_regions(before_region, curr_region, next_region, start_region):
 def make_region_graph_from_cfg():
     decompiler_data = DecompilerData()
     curr_node = decompiler_data.cfg
-    region = Region(NodeRegionType.linear, curr_node)
+    region = Region(RegionType.linear, curr_node)
     decompiler_data.set_starts_regions(curr_node, region)
     decompiler_data.set_ends_regions(curr_node, region)
     visited = [curr_node]
@@ -115,9 +115,9 @@ def make_region_graph_from_cfg():
         if curr_node not in visited:
             visited.append(curr_node)
             if curr_node in decompiler_data.circles or curr_node in decompiler_data.back_edges:
-                region_type = NodeRegionType.backedge
+                region_type = RegionType.backedge
                 if curr_node in decompiler_data.circles:
-                    region_type = NodeRegionType.startcircle
+                    region_type = RegionType.startcircle
                 region = Region(region_type, curr_node)
                 decompiler_data.set_starts_regions(curr_node, region)
                 decompiler_data.set_ends_regions(curr_node, region)
@@ -130,19 +130,19 @@ def make_region_graph_from_cfg():
                         parent.add_child(region)
                         region.add_parent(parent)
             elif len(curr_node.parent) == 1 and (len(curr_node.children) == 1 or len(curr_node.children) == 0):
-                if decompiler_data.ends_regions[curr_node.parent[0]].type == NodeRegionType.linear:
+                if decompiler_data.ends_regions[curr_node.parent[0]].type == RegionType.linear:
                     region = decompiler_data.ends_regions.pop(curr_node.parent[0])
                     region.end = curr_node
                     decompiler_data.set_ends_regions(curr_node, region)
                 else:
-                    region = Region(NodeRegionType.linear, curr_node)
+                    region = Region(RegionType.linear, curr_node)
                     decompiler_data.set_starts_regions(curr_node, region)
                     decompiler_data.set_ends_regions(curr_node, region)
                     parent = decompiler_data.ends_regions[curr_node.parent[0]]
                     parent.add_child(region)
                     region.add_parent(parent)
             else:
-                region = Region(NodeRegionType.basic, curr_node)
+                region = Region(RegionType.basic, curr_node)
                 decompiler_data.set_starts_regions(curr_node, region)
                 decompiler_data.set_ends_regions(curr_node, region)
                 flag_of_continue = False
@@ -170,7 +170,7 @@ def make_region_graph_from_cfg():
 
 
 def process_if_statement_region(curr_region, visited, start_region, q):
-    region = Region(NodeRegionType.ifstatement, curr_region)
+    region = Region(RegionType.ifstatement, curr_region)
     child0 = curr_region.children[0] if len(curr_region.children[0].parent) == 1 else \
         curr_region.children[1]
     child1 = curr_region.children[1] if len(curr_region.children[1].parent) > 1 else \
@@ -197,7 +197,7 @@ def process_if_statement_region(curr_region, visited, start_region, q):
 
 
 def process_if_else_statement_region(curr_region, visited, start_region, q):
-    region = Region(NodeRegionType.ifelsestatement, curr_region)
+    region = Region(RegionType.ifelsestatement, curr_region)
     child0 = curr_region.children[0]
     child1 = curr_region.children[1]
     region.end = child0.children[0]
@@ -260,7 +260,7 @@ def check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_v
 
 
 def process_circle(region_start, region_end):
-    region = Region(NodeRegionType.circle, region_start)
+    region = Region(RegionType.circle, region_start)
     region.end = region_end
     prev_child = [region_start]
     before_r = [region_start.parent[0]]
@@ -334,9 +334,9 @@ def process_control_structures_in_circle(region_start, region_end):
             if check_circle(region_start, region_end):
                 process_circle(region_start, region_end)
                 return
-            elif curr_region.type == NodeRegionType.basic and len(curr_region.children) == 2 \
+            elif curr_region.type == RegionType.basic and len(curr_region.children) == 2 \
                     and (curr_region.children[0] == after_region_end or curr_region.children[1] == after_region_end):
-                curr_region.type = NodeRegionType.breakregion  # надо отдельно написать на return и обрезание на break
+                curr_region.type = RegionType.breakregion  # надо отдельно написать на return и обрезание на break
                 if curr_region.children:
                     for child in curr_region.children:
                         if child not in visited:
@@ -352,8 +352,8 @@ def process_control_structures_in_circle(region_start, region_end):
 def get_one_circle_region(q_circles, curr_region, start_region, region_start, region_end):
     while q_circles:
         circle_region = q_circles.pop()
-        if circle_region.type == NodeRegionType.backedge:
-            circle_region.type = NodeRegionType.continueregion
+        if circle_region.type == RegionType.backedge:
+            circle_region.type = RegionType.continueregion
             join_regions([circle_region.parent[0]], circle_region,
                          circle_region.children[0], start_region)  # not good enough
         elif curr_region.start.instruction[1] == circle_region.start.instruction[0][:-1]:
@@ -384,7 +384,7 @@ def find_circles():
         curr_region = q_regions.popleft()
         if curr_region not in visited:
             visited.append(curr_region)
-            if curr_region.type == NodeRegionType.backedge:
+            if curr_region.type == RegionType.backedge:
                 if curr_region.start.instruction[1] == curr_circle.start.instruction[0][:-1]:
                     q_circles.append(curr_region)
                 else:
@@ -392,7 +392,7 @@ def find_circles():
                     region_start = curr_circle
                     curr_circle, start_region, q_circles, region_start = \
                         get_one_circle_region(q_circles, curr_region, start_region, region_start, region_end)
-            elif curr_region.type == NodeRegionType.startcircle:
+            elif curr_region.type == RegionType.startcircle:
                 curr_circle = curr_region
                 q_circles.append(curr_region)
             for curr_child in curr_region.children:
@@ -406,7 +406,7 @@ def find_circles():
 
 
 def preprocess_if_and_if_else(curr_region, visited, start_region, q):
-    if curr_region.type != NodeRegionType.linear:
+    if curr_region.type != RegionType.linear:
         if check_if(curr_region):
             visited, q, start_region = process_if_statement_region(curr_region, visited, start_region, q)
         elif check_if_else(curr_region):
@@ -444,7 +444,7 @@ def process_region_graph():
         curr_region = q.popleft()
         if curr_region not in visited:
             visited.append(curr_region)
-            if curr_region.type == NodeRegionType.circle:
+            if curr_region.type == RegionType.circle:
                 start_region = join_regions([curr_region.parent[0]], curr_region, curr_region.children[0], start_region)
                 if curr_region.children:
                     for child in curr_region.children:

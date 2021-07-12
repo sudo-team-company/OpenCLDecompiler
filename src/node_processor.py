@@ -43,8 +43,13 @@ def decode_instruction(node, flag_of_status):
     root = parts_of_operation[1]
     if len(parts_of_operation) >= 3:
         for part in parts_of_operation[2:]:
-            if part in ["b32", 'b64', "u32", "u64", "i32", "i64", "dwordx4", "dwordx2", "dword", "f32",
-                        "f64", "i32", "i24", "byte", "dwordx8"]:
+            if part in ["b16", "b32", 'b64',
+                        "u8", "u16", "u24", "u32", "u64",
+                        "i4", "i16", "i24", "i32", "i64",
+                        "f16", "f32", "f64",
+                        "byte", "ubyte", "ubyte0", "ubyte1", "ubyte2", "ubyte3", "sbyte",
+                        "ushort", "sshort",
+                        "dword", "dwordx2", "dwordx4", "dwordx8", "dwordx16"]:
                 # TODO: Дописать
                 if suffix != "":
                     suffix = suffix + "_" + part
