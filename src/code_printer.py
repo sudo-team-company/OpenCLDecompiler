@@ -12,8 +12,9 @@ def create_opencl_body():
     decompiler_data.write(decompiler_data.configuration_output)
     decompiler_data.write("{\n")
     for var in sorted(decompiler_data.names_of_vars.keys()):
-        type_of_var = make_type(decompiler_data.names_of_vars[var])
-        decompiler_data.write("    " + type_of_var + " " + var + ";\n")
+        if " " not in var:
+            type_of_var = make_type(decompiler_data.names_of_vars[var])
+            decompiler_data.write("    " + type_of_var + " " + var + ";\n")
     offsets = list(decompiler_data.lds_vars.keys())
     offsets.append(decompiler_data.localsize)
     offsets.sort()

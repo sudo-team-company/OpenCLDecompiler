@@ -360,7 +360,7 @@ class DecompilerData(metaclass=Singleton):
 
     def write(self, output):
         # noinspection PyUnresolvedReferences
-        if self.flag_for_decompilation != FlagType.only_clrx:
+        if self.flag_for_decompilation != FlagType.only_clrx and "Not resolved yet. " not in output:
             output = simplify_opencl_statement(output)
         self.output_file.write(output)
 

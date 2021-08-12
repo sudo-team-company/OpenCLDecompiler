@@ -33,6 +33,14 @@ class VCndmask(BaseInstruction):
                 return node
             if "?" in node.state.registers[ssrc2].val:
                 node.state.registers[ssrc2].val = "(" + node.state.registers[ssrc2].val + ")"
+            if 's' in src1 or 'v' in src1:
+                src1_parent_val = node.parent[0].state.registers[src1].val
+            else:
+                src1_parent_val = src1
+            if 's' in src0 or 'v' in src0:
+                src0_parent_val = node.parent[0].state.registers[src0].val
+            else:
+                src0_parent_val = src0
             output_string = node.state.registers[vdst].val + " = " + node.state.registers[ssrc2].val + " ? " + \
-                node.parent[0].state.registers[src1].val + " : " + node.parent[0].state.registers[src0].val
+                src1_parent_val + " : " + src0_parent_val
             return output_string
