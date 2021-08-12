@@ -59,7 +59,11 @@ class FlatStoreDwordx2(BaseInstruction):
         else:
             var = node.parent[0].state.registers[to_registers].val
             if node.state.registers.get(from_registers):
-                output_string = var + " = " + node.state.registers[from_registers].val
+                from_registers_1 = name_of_from + str(last_from)
+                if node.state.registers[from_registers].val == "0" and node.state.registers.get(from_registers_1):
+                    output_string = var + " = " + node.state.registers[from_registers_1].val
+                else:
+                    output_string = var + " = " + node.state.registers[from_registers].val
             else:
                 output_string = var + " = " + decompiler_data.initial_state.registers[from_registers].val
         return output_string
