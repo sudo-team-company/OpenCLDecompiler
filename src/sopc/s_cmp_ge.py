@@ -1,9 +1,6 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData
-from src.integrity import Integrity
+from src.decompiler_data import DecompilerData, compare_values
 from src.operation_status import OperationStatus
-from src.register import Register
-from src.register_type import RegisterType
 
 
 class SCmpGe(BaseInstruction):
@@ -17,14 +14,7 @@ class SCmpGe(BaseInstruction):
                 decompiler_data.write("scc = (int)" + ssrc0 + " >= (int)" + ssrc1 + " // s_cmp_ge_i32\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
-                node.state.registers["scc"] = \
-                    Register('(int)' + node.state.registers[ssrc0].val + " >= (int)" + node.state.registers[ssrc1].val,
-                             RegisterType.unknown, Integrity.entire)
-                decompiler_data.make_version(node.state, "scc")
-                if "scc" in [ssrc0, ssrc1]:
-                    node.state.registers["scc"].make_prev()
-                node.state.registers["scc"].type_of_data = suffix
-                return node
+                return compare_values(node, "scc", ssrc0, ssrc1, "(int)", "(int)", " >= ", suffix)
             return output_string
 
         elif suffix == 'u32':
@@ -34,12 +24,5 @@ class SCmpGe(BaseInstruction):
                 decompiler_data.write("scc = " + ssrc0 + " >= " + ssrc1 + " // s_cmp_ge_u32\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
-                node.state.registers["scc"] = \
-                    Register(node.state.registers[ssrc0].val + " >= " + ssrc1,
-                             RegisterType.unknown, Integrity.entire)
-                decompiler_data.make_version(node.state, "scc")
-                if "scc" in [ssrc0, ssrc1]:
-                    node.state.registers["scc"].make_prev()
-                node.state.registers["scc"].type_of_data = suffix
-                return node
+                return compare_values(node, "scc", ssrc0, ssrc1, "", "", " >= ", suffix)
             return output_string

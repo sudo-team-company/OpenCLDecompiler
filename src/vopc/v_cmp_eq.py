@@ -1,10 +1,7 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData, make_op
-from src.integrity import Integrity
+from src.decompiler_data import DecompilerData, compare_values
 from src.opencl_types import make_type
 from src.operation_status import OperationStatus
-from src.register import Register
-from src.register_type import RegisterType
 
 
 class VCmpEq(BaseInstruction):
@@ -29,11 +26,5 @@ class VCmpEq(BaseInstruction):
                                           + src1 + ") // v_cmp_eq_" + suffix + "\n")
                     return node
             if flag_of_status == OperationStatus.to_fill_node:
-                new_val, src0_flag, src1_flag = make_op(node, src0, src1, " == ", new_as_type, new_as_type)
-                node.state.registers[sdst] = Register(new_val, RegisterType.unknown, Integrity.entire)
-                decompiler_data.make_version(node.state, sdst)
-                if sdst in [src0, src1]:
-                    node.state.registers[sdst].make_prev()
-                node.state.registers[sdst].type_of_data = suffix
-                return node
+                return compare_values(node, sdst, src0, src1, new_as_type, new_as_type, " == ", suffix)
             return output_string

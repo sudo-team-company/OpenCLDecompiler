@@ -21,7 +21,7 @@ void circleKernel0(__global uint *data, uint x, uint y, uint unrollingBreaker)
             var12 = (ulong)var0 + (ulong)var12;
             *var13 = var12;
             var12 = (var12) * x;
-        } while (((ulong)0 - (ulong)unrollingBreaker == var9 ? 1 : 0) | var9 > 63 ? 1 : 0);
+        } while ((((ulong)0 - (ulong)unrollingBreaker) == var9 ? 1 : 0) | var9 > 63 ? 1 : 0);
     }
 }
 
@@ -49,7 +49,7 @@ void circleKernel1(__global uint *data, uint x, uint y, uint unrollingBreaker)
             var12 = (ulong)var0 + (ulong)var12;
             *var13 = var12;
             var12 = (var12) * x;
-        } while (!((ulong)var11 + (ulong)(-1) == 0));
+        } while (!(((ulong)var11 + (ulong)(-1)) == 0));
     }
 }
 
@@ -77,6 +77,6 @@ void circleKernel2(__global uint *data, uint x, uint y, uint unrollingBreaker)
             var12 = (ulong)var0 + (ulong)var12;
             *var13 = var12;
             var12 = (var12) * x;
-        } while (!((ulong)var11 + (ulong)(-1) == 0));
+        } while (!(((ulong)var11 + (ulong)(-1)) == 0));
     }
 }

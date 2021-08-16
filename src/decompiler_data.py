@@ -10,6 +10,17 @@ from src.register_type import RegisterType
 from src.state import State
 
 
+def compare_values(node, to_reg, from_reg0, from_reg1, type0, type1, operation, suffix):
+    decompiler_data = DecompilerData()
+    new_val, _, _ = make_op(node, from_reg0, from_reg1, operation, type0, type1)
+    node.state.registers[to_reg] = Register(new_val, RegisterType.unknown, Integrity.entire)
+    decompiler_data.make_version(node.state, to_reg)
+    if to_reg in [from_reg0, from_reg1]:
+        node.state.registers[to_reg].make_prev()
+    node.state.registers[to_reg].type_of_data = suffix
+    return node
+
+
 def update_register(asm_type, from_registers, to_registers, node):
     decompiler_data = DecompilerData()
     decompiler_data.names_of_vars[node.state.registers[from_registers].val] = asm_type

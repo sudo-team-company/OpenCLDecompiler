@@ -1,28 +1,10 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData
-from src.integrity import Integrity
+from src.decompiler_data import compare_values, DecompilerData
 from src.operation_status import OperationStatus
-from src.register import Register
-from src.register_type import RegisterType
-
-
-def compare_in_s_cmp_eq(ssrc0, ssrc1, node, suffix):
-    decompiler_data = DecompilerData()
-    if 's' in ssrc1:
-        cmpr_val = node.state.registers[ssrc1].val
-    else:
-        cmpr_val = ssrc1
-    node.state.registers["scc"] = \
-        Register(node.state.registers[ssrc0].val + " == " + cmpr_val, RegisterType.unknown,
-                 Integrity.entire)
-    decompiler_data.make_version(node.state, "scc")
-    if "scc" in [ssrc0, ssrc1]:
-        node.state.registers["scc"].make_prev()
-    node.state.registers["scc"].type_of_data = suffix
-    return node
 
 
 class SCmpEq(BaseInstruction):
+    # think about types and separate
     def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData()
         output_string = ""
@@ -33,7 +15,7 @@ class SCmpEq(BaseInstruction):
                 decompiler_data.write("scc = " + ssrc0 + "==" + ssrc1 + " // s_cmp_eq_" + suffix + "\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
-                return compare_in_s_cmp_eq(ssrc0, ssrc1, node, suffix)
+                return compare_values(node, "scc", ssrc0, ssrc1, "", "", " == ", suffix)
             return output_string
 
         if suffix == 'u64':
@@ -44,5 +26,5 @@ class SCmpEq(BaseInstruction):
                 decompiler_data.write("scc = " + ssrc0 + "==" + ssrc1 + " // s_cmp_eq_" + suffix + "\n")
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
-                return compare_in_s_cmp_eq(ssrc0, ssrc1, node, suffix)
+                return compare_values(node, "scc", ssrc0, ssrc1, "", "", " == ", suffix)
             return output_string
