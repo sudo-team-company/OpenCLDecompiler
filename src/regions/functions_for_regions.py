@@ -321,13 +321,20 @@ def process_circle(region_start, region_end):
         curr_node = curr_node.children[0]
 
 
+def remove_region_connect(parent_region, child_region):
+    parent_region.children.remove(child_region)
+    child_region.parent.remove(parent_region)
+    return parent_region, child_region
+
+
 def process_control_structures_in_circle(region_start, region_end):
     start_region = region_start
     visited = []
     q = deque()
     q.append(start_region)
-    after_region_end = region_end.children[0]
+    after_region_end = region_end.children[1]
     while start_region.children[0] != after_region_end:
+    # while not (len(start_region.children) > 1 and start_region.children[1] == after_region_end):
         curr_region = q.popleft()
         if curr_region not in visited:
             visited.append(curr_region)
@@ -337,6 +344,10 @@ def process_control_structures_in_circle(region_start, region_end):
             elif curr_region.type == RegionType.basic and len(curr_region.children) == 2 \
                     and (curr_region.children[0] == after_region_end or curr_region.children[1] == after_region_end):
                 curr_region.type = RegionType.breakregion  # надо отдельно написать на return и обрезание на break
+                next_region = curr_region.children[0] if curr_region.children[1] == after_region_end else curr_region.children[1]
+                curr_region, after_region_end = remove_region_connect(curr_region, after_region_end)
+                join_regions([curr_region.parent[0]], curr_region,
+                             next_region, start_region)  # not good enough
                 if curr_region.children:
                     for child in curr_region.children:
                         if child not in visited:
@@ -388,7 +399,7 @@ def find_circles():
                 if curr_region.start.instruction[1] == curr_circle.start.instruction[0][:-1]:
                     q_circles.append(curr_region)
                 else:
-                    region_end = curr_region
+                    region_end = curr_region  # вероятно это не так
                     region_start = curr_circle
                     curr_circle, start_region, q_circles, region_start = \
                         get_one_circle_region(q_circles, curr_region, start_region, region_start, region_end)

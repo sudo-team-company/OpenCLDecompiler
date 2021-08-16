@@ -209,6 +209,19 @@ def make_output_from_circle_region(region, indent):
     decompiler_data.write(");\n")
 
 
+def make_output_from_break_region(region, indent):
+    decompiler_data = DecompilerData()
+    break_node = region.start
+    decompiler_data.write(indent + "if (")
+    statement = to_opencl(break_node, OperationStatus.to_print)
+    if break_node.instruction[0][-4:] in ["scc0", "vccz"]:
+        statement = "!(" + statement + ")"
+    decompiler_data.write(statement)
+    decompiler_data.write(") {\n")
+    decompiler_data.write(indent + "    break;\n")
+    decompiler_data.write(indent + "}\n")
+
+
 def make_output_from_region(region, indent):
     decompiler_data = DecompilerData()
     if region.type == RegionType.linear:
@@ -222,4 +235,4 @@ def make_output_from_region(region, indent):
     elif region.type == RegionType.continueregion:
         decompiler_data.write(indent + "continue;\n")
     elif region.type == RegionType.breakregion:
-        decompiler_data.write(indent + "break;\n")
+        make_output_from_break_region(region, indent)

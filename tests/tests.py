@@ -184,6 +184,9 @@ class CirclesKernels(unittest.TestCase):
     def test_simple_circle_kernels(self):
         template(self, 'circles_kernels', 'simple_circle_kernels')
 
+    def test_circle_with_break_kernels(self):
+        template(self, 'circles_kernels', 'circle_with_break_kernels')
+
 
 if __name__ == '__main__':
     unittest.main()
