@@ -7,9 +7,9 @@ from src.decompiler_data import DecompilerData
 
 
 def main(input_par, output_par, flag_for_decompilation):
-    with open(output_par, 'w') as output_file:
+    with open(output_par, 'w', encoding="utf-8") as output_file:
 
-        with open(input_par, 'r') as file:
+        with open(input_par, 'r', encoding="utf-8") as file:
             body_of_file = file.read().splitlines()
         status_of_parse = "start"
         set_of_instructions = []
