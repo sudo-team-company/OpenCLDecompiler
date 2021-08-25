@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData
+from src.decompiler_data import DecompilerData, make_elem_from_addr
 from src.integrity import Integrity
 from src.opencl_types import make_type
 from src.operation_status import OperationStatus
@@ -58,6 +58,10 @@ class FlatStoreDwordx2(BaseInstruction):
             return node
         else:
             var = node.parent[0].state.registers[to_registers].val
+            if " + " in var:
+                var = make_elem_from_addr(var)
+            else:
+                var = "*(ulong*)(" + var + ")"
             if node.state.registers.get(from_registers):
                 from_registers_1 = name_of_from + str(last_from)
                 if node.state.registers[from_registers].val == "0" and node.state.registers.get(from_registers_1):

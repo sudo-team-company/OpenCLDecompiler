@@ -72,8 +72,8 @@ class GlobalDataTest(unittest.TestCase):
     def test_int4_to_int4(self):
         template(self, 'global_data_usage', 'int4_to_int4')
 
-    def test_int8_to_int8(self):
-        template(self, 'global_data_usage', 'int8_to_int8')
+    # def test_int8_to_int8(self):
+    #     template(self, 'global_data_usage', 'int8_to_int8')
 
 
 class BranchingKernelsTest(unittest.TestCase):

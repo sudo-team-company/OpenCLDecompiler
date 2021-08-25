@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData
+from src.decompiler_data import DecompilerData, make_elem_from_addr
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
 from src.register import Register
@@ -39,6 +39,10 @@ class FlatLoad(BaseInstruction):
                 output = node.parent[0].state.registers[from_registers].val
             else:
                 output = node.state.registers[from_registers].val
+            if " + " in output:
+                output = make_elem_from_addr(output)
+            else:
+                output = "*(uint*)(" + output + ")"
             output_string = node.state.registers[to_registers].val + " = " + output
             return output_string
         elif suffix == "dwordx2":
@@ -75,8 +79,12 @@ class FlatLoad(BaseInstruction):
                         decompiler_data.make_var(node.state.registers[to_registers].version, variable,
                                                  data_type)
                 return node
-            output_string = node.state.registers[to_registers].val + " = " +\
-                node.parent[0].state.registers[from_registers].val
+            output = node.parent[0].state.registers[from_registers].val
+            if " + " in output:
+                output = make_elem_from_addr(output)
+            else:
+                output = "*(ulong*)(" + output + ")"
+            output_string = node.state.registers[to_registers].val + " = " + output
             return output_string
         elif suffix == "dwordx4":
             vdst = instruction[1]
@@ -134,6 +142,10 @@ class FlatLoad(BaseInstruction):
                         decompiler_data.make_var(node.state.registers[to_now].version, variable,
                                                  data_type)
                 return node
-            output_string = node.state.registers[to_registers].val + " = " + \
-                            node.parent[0].state.registers[from_registers].val
+            output = node.parent[0].state.registers[from_registers].val
+            if " + " in output:
+                output = make_elem_from_addr(output)
+            else:
+                output = "*(uint*)(" + output + ")"
+            output_string = node.state.registers[to_registers].val + " = " + output
             return output_string

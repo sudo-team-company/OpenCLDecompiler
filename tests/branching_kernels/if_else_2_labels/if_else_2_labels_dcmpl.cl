@@ -4,13 +4,13 @@ void if_else_2_labels(int x, __global int *data, int y)
     int *var3;
     int var6;
     if ((int)1 == (int)get_global_id(0)) {
-        var3 = &data[get_global_id(0)];
+        var3 = data + ((get_global_id(0) * 4) / 4);
         var6 = (ulong)(get_global_id(1) * x) - (ulong)y;
     }
     else {
-        var3 = &data[get_global_id(0)];
+        var3 = data + ((get_global_id(0) * 4) / 4);
         var6 = y * x;
     }
-    *var3 = var6;
+    *(uint*)(*var3) = var6;
     data[get_global_id(1)] = x;
 }

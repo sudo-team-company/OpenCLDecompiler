@@ -157,7 +157,7 @@ def make_output_from_if_else_statement_region(region, indent):
                                       " = " + r_node_parent.state.registers[reg].val + ";\n")
             else:
                 decompiler_data.write(
-                    indent + "    " + decompiler_data.variables[key][1:] + " = &" +
+                    indent + "    " + decompiler_data.variables[key][1:] + " = " +
                     r_node_parent.state.registers[reg].val + ";\n")
     decompiler_data.write(indent + "}\n")
     else_body = region.start.children[1]
@@ -181,7 +181,7 @@ def make_output_from_if_else_statement_region(region, indent):
                     + r_node_parent.state.registers[reg].val + ";\n")
             else:
                 decompiler_data.write(indent + "    " + decompiler_data.variables[key][1:]
-                                      + " = &" + r_node_parent.state.registers[reg].val + ";\n")
+                                      + " = " + r_node_parent.state.registers[reg].val + ";\n")
     decompiler_data.write(indent + "}\n")
 
 

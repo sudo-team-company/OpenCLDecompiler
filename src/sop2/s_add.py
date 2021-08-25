@@ -41,13 +41,13 @@ class SAdd(BaseInstruction):
                         name = node.state.registers[ssrc0].val
                         if node.state.registers[ssrc1].type_of_data == '4 bytes':
                             new_value, src0_flag, src1_flag = make_op(node, ssrc1, "4", " / ", '', '')
-                            new_val = name + "[" + new_value + "]"
+                            new_val, _, _ = make_op(node, name, new_value, " + ", '', '')
                             node.state.registers[sdst] = \
                                 Register(new_val, RegisterType.global_data_pointer, Integrity.entire)
                             suffix = '4 bytes'
                         else:
                             new_value, src0_flag, src1_flag = make_op(node, ssrc1, "8", " / ", '', '')
-                            new_val = name + "[" + new_value + "]"
+                            new_val, _, _ = make_op(node, name, new_value, " + ", '', '')
                             node.state.registers[sdst] = \
                                 Register(new_val, RegisterType.global_data_pointer, Integrity.entire)
                             suffix = '8 bytes'

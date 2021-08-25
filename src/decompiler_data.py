@@ -1,4 +1,5 @@
 import binascii
+import re
 import struct
 
 import sympy as sym
@@ -8,6 +9,14 @@ from src.integrity import Integrity
 from src.register import Register
 from src.register_type import RegisterType
 from src.state import State
+
+
+def make_elem_from_addr(var):
+    separator_pos = var.find(" + ")
+    param_name = var[:separator_pos]
+    index = var[separator_pos + 3:]
+    var = param_name + "[" + index + "]"
+    return var
 
 
 def compare_values(node, to_reg, from_reg0, from_reg1, type0, type1, operation, suffix):
@@ -98,7 +107,7 @@ def optimize_names_of_vars():
 
 def check_reg_for_val(node, register):
     register_flag = True
-    if "s" in register or "v" in register:
+    if re.compile(r'^[vs][\[]?[0-9]+[:]?[0-9]*[\]]?$').match(register):
         new_val = node.state.registers[register].val
     else:
         new_val = register
