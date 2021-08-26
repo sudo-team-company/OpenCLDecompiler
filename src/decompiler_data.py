@@ -107,7 +107,7 @@ def optimize_names_of_vars():
 
 def check_reg_for_val(node, register):
     register_flag = True
-    if re.compile(r'^[vs][\[]?[0-9]+[:]?[0-9]*[\]]?$').match(register):
+    if re.compile(r'^[vs](([0-9]+)|(\[[0-9]+:[0-9]+\]))$').match(register):
         new_val = node.state.registers[register].val
     else:
         new_val = register
