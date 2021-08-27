@@ -14,12 +14,12 @@ void circleKernel0(__global uint *data, uint x, uint y, uint unrollingBreaker)
         var12 = y;
         do {
             var13 = var10;
-            var0 = var13;
+            var0 = *(uint*)(var13);
             var9 = (ulong)var9 + (ulong)1;
             var10 = (ulong)var10 + (ulong)(4 / 4);
             var11 = (ulong)var11 + (ulong)(0 / 4);
             var12 = (ulong)var0 + (ulong)var12;
-            *var13 = var12;
+            *(uint*)(var13) = var12;
             var12 = (var12) * x;
         } while ((((ulong)0 - (ulong)unrollingBreaker) == var9 ? 1 : 0) | var9 > 63 ? 1 : 0);
     }
@@ -42,12 +42,12 @@ void circleKernel1(__global uint *data, uint x, uint y, uint unrollingBreaker)
         var12 = y;
         do {
             var13 = var9;
-            var0 = var13;
+            var0 = *(uint*)(var13);
             var9 = (ulong)var9 + (ulong)(4 / 4);
             var10 = (ulong)var10 + (ulong)(0 / 4);
             var11 = (ulong)var11 + (ulong)(-1);
             var12 = (ulong)var0 + (ulong)var12;
-            *var13 = var12;
+            *(uint*)(var13) = var12;
             var12 = (var12) * x;
         } while (!(((ulong)var11 + (ulong)(-1)) == 0));
     }
@@ -70,12 +70,12 @@ void circleKernel2(__global uint *data, uint x, uint y, uint unrollingBreaker)
         var12 = y;
         do {
             var13 = var9;
-            var0 = var13;
+            var0 = *(uint*)(var13);
             var9 = (ulong)(var9) + (ulong)((-4) / 4);
             var10 = (ulong)(var10) + (ulong)((-1) / 4);
             var11 = (ulong)var11 + (ulong)(-1);
             var12 = (ulong)var0 + (ulong)var12;
-            *var13 = var12;
+            *(uint*)(var13) = var12;
             var12 = (var12) * x;
         } while (!(((ulong)var11 + (ulong)(-1)) == 0));
     }

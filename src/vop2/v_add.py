@@ -64,7 +64,7 @@ class VAdd(BaseInstruction):
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "1073741824", " * ", '', '')
                             else:
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "4", " / ", '', '')
-                            new_val = argument + "[" + new_value + "]"
+                            new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
                                 Register(new_val, RegisterType.param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'i32' \
@@ -73,7 +73,7 @@ class VAdd(BaseInstruction):
                         elif decompiler_data.type_params.get("*" + argument) == "long" \
                                 or decompiler_data.type_params.get("*" + argument) == "ulong":
                             new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
-                            new_val = argument + "[" + new_value + "]"
+                            new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
                                 Register(new_val, RegisterType.param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'i64' \
@@ -81,7 +81,7 @@ class VAdd(BaseInstruction):
                                 else 'u64'
                         elif decompiler_data.type_params.get("*" + argument) == "char" \
                                 or decompiler_data.type_params.get("*" + argument) == "uchar":
-                            new_val = argument + "[" + node.state.registers[src1].val + "]"
+                            new_val, _, _ = make_op(node, argument, node.state.registers[src1].val, " + ", '', '')
                             node.state.registers[vdst] = \
                                 Register(new_val, RegisterType.param_global_id_x, new_integrity)
                         elif decompiler_data.type_params.get("*" + argument) == "float":
@@ -89,7 +89,7 @@ class VAdd(BaseInstruction):
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "1073741824", " * ", '', '')
                             else:
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "4", " / ", '', '')
-                            new_val = argument + "[" + new_value + "]"
+                            new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
                                 Register(new_val, RegisterType.param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'f32'
@@ -98,7 +98,7 @@ class VAdd(BaseInstruction):
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "1073741824", " * ", '', '')
                             else:
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
-                            new_val = argument + "[" + new_value + "]"
+                            new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
                                 Register(new_val, RegisterType.param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'f64'
@@ -107,7 +107,7 @@ class VAdd(BaseInstruction):
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "1073741824", " * ", '', '')
                             else:
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
-                            new_val = argument + "[" + new_value + "]"
+                            new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
                                 Register(new_val, RegisterType.param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'int2'
@@ -116,7 +116,7 @@ class VAdd(BaseInstruction):
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "1073741824", " * ", '', '')
                             else:
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "16", " / ", '', '')
-                            new_val = argument + "[" + new_value + "]"
+                            new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
                                 Register(new_val, RegisterType.param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'int4'
@@ -125,13 +125,13 @@ class VAdd(BaseInstruction):
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "1073741824", " * ", '', '')
                             else:
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "32", " / ", '', '')
-                            new_val = argument + "[" + new_value + "]"
+                            new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
                                 Register(new_val, RegisterType.param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'int8'
                         else:
                             new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
-                            new_val = argument + "[" + new_value + "]"
+                            new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
                                 Register(new_val, RegisterType.param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'int2'
@@ -142,7 +142,7 @@ class VAdd(BaseInstruction):
                             position = type_of_data.find(' ')
                             value = type_of_data[:position]
                             new_value, src0_flag, src1_flag = make_op(node, src1, value, " / ", '', '')
-                            new_val = name + "[" + new_value + "]"
+                            new_val, _, _ = make_op(node, name, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
                                 Register(new_val, RegisterType.global_data_pointer, Integrity.entire)
                             suffix = type_of_data

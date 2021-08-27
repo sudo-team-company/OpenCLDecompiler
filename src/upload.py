@@ -1,4 +1,4 @@
-from src.decompiler_data import DecompilerData
+from src.decompiler_data import DecompilerData, make_elem_from_addr
 from src.integrity import Integrity
 from src.opencl_types import make_asm_type
 from src.register import Register
@@ -152,7 +152,7 @@ def upload_kernel_param(state, offset, kernel_params):
 def upload_global_data_pointer(state, to_registers, from_registers):
     decompiler_data = DecompilerData()
     type_of_data = state.registers[from_registers].type_of_data
-    new_val = state.registers[from_registers].val
+    new_val = make_elem_from_addr(state.registers[from_registers].val)
     state.registers[to_registers] = Register(new_val, RegisterType.global_data_pointer, Integrity.entire)
     state.registers[to_registers].type_of_data = type_of_data
     decompiler_data.make_version(state, to_registers)

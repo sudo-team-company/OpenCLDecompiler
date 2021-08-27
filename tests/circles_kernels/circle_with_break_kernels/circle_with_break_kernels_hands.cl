@@ -13,9 +13,9 @@ void circleBreakKernel(__global uint *data, uint x, uint y, uint unrollingBreake
         var9 = data;
         var10 = 0x0;
         do {
-            var0 = var8;
+            var0 = *(uint*)(var8);
             var7 = (ulong)var0 + (ulong)var7;
-            *var8 = var7;
+            *(uint*)(var8) = var7;
             if (!((int)0 != (int)(var7))) {
                 break;
             }

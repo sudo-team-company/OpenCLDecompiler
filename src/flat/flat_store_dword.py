@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData
+from src.decompiler_data import DecompilerData, make_elem_from_addr
 from src.opencl_types import make_type
 from src.operation_status import OperationStatus
 from src.upload import find_first_last_num_to_from
@@ -60,8 +60,10 @@ class FlatStoreDword(BaseInstruction):
                             + node.state.registers[name_of_to + str(first_to)].val
         else:
             var = node.state.registers[to_registers].val
-            if "[" not in var and "*" not in var:
-                var = "*" + var
+            if " + " in var:
+                var = make_elem_from_addr(var)
+            else:
+                var = "*(uint*)(" + var + ")"
             if node.state.registers.get(from_registers):
                 output_string = var + " = " + node.state.registers[from_registers].val
             else:
