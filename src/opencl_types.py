@@ -1,51 +1,48 @@
-def make_type(asm_type):
-    if asm_type == "u32":
-        opencl_type = "uint"
-    elif asm_type == "i32":
-        opencl_type = "int"
-    elif asm_type == "u64":
-        opencl_type = "ulong"
-    elif asm_type == "i64":
-        opencl_type = "long"
-    elif asm_type == "b32":
-        opencl_type = "uint"
-    elif asm_type == "b64":
-        opencl_type = "ulong"
-    elif asm_type == "dword":
-        opencl_type = "int"
-    elif asm_type == "dwordx2":
-        opencl_type = "long"
-    elif asm_type == "f32":
-        opencl_type = "float"
-    elif asm_type == "f64":
-        opencl_type = "double"
-    elif asm_type == "int2":
-        opencl_type = "int2"
-    elif asm_type == "int4":
-        opencl_type = "int4"
-    elif asm_type == "int8":
-        opencl_type = "int8"
-    else:
-        opencl_type = "unknown type"
-    return opencl_type
+asm_to_opencl_dict = {
+    "u32": "uint",
+    "gu32": "__global uint",
+    "i32": "int",
+    "gi32": "__global int",
+    "u64": "ulong",
+    "gu64": "__global ulong",
+    "i64": "long",
+    "gi64": "__global long",
+    "f32": "float",
+    "gf32": "__global float",
+    "f64": "double",
+    "gf64": "__global double",
+    "int2": "int2",
+    "int4": "int4",
+    "int8": "int8",
+    "b32": "uint",
+    "b64": "ulong",
+    "dword": "int",
+    "dwordx2": "long"
+}
+
+
+def make_opencl_type(asm_type):
+    return asm_to_opencl_dict.get(asm_type, "unknown type")
+
+
+opencl_to_asm_dict = {
+    "uint": "u32",
+    "__global uint": "gu32",
+    "int": "i32",
+    "__global int": "gi32",
+    "ulong": "u64",
+    "__global ulong": "gu64",
+    "long": "i64",
+    "__global long": "gi64",
+    "float": "f32",
+    "__global float": "gf32",
+    "double": "f64",
+    "__global double": "gf64"
+}
 
 
 def make_asm_type(opencl_type):
-    if opencl_type == "uint":
-        asm_type = "u32"
-    elif opencl_type == "int":
-        asm_type = "i32"
-    elif opencl_type == "ulong":
-        asm_type = "u64"
-    elif opencl_type == "long":
-        asm_type = "i64"
-    elif opencl_type == "float":
-        asm_type = "f32"
-    elif opencl_type == "double":
-        asm_type = "f64"
-    else:
-        asm_type = "unknown type"
-    return asm_type
+    return opencl_to_asm_dict.get(opencl_type, "unknown type")
 
 
 # get size and priority

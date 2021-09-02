@@ -1,5 +1,5 @@
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
-void circleKernel0(__global uint *data,
+void loop_kernel_0(__global uint *data,
 		           uint x,
                    uint y,
                    uint unrollingBreaker
@@ -15,7 +15,7 @@ void circleKernel0(__global uint *data,
 }
 
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
-void circleKernel1(__global uint *data,
+void loop_kernel_1(__global uint *data,
 		           uint x,
                    uint y,
                    uint unrollingBreaker
@@ -28,8 +28,8 @@ void circleKernel1(__global uint *data,
 }
 
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
-void circleKernel2(__global uint *data,
-		   uint x,
+void loop_kernel_2(__global uint *data,
+		           uint x,
                    uint y,
                    uint unrollingBreaker
                   )

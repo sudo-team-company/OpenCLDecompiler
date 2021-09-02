@@ -1,11 +1,11 @@
-/* Disassembling 'circles_kernels\simple_circle_kernels\simple_circle_kernels.bin' */
+/* Disassembling 'loops_kernels\simple_loop_kernels\simple_loop_kernels.bin' */
 .amdcl2
 .gpu Iceland
 .64bit
 .arch_minor 0
 .arch_stepping 4
 .driver_version 200406
-.kernel circleKernel0
+.kernel loop_kernel_0
     .config
         .dims , x
         .cws 64, 1, 1
@@ -63,7 +63,7 @@
 /*00000000008c*/ s_cbranch_vccz  .L64_0
 .L144_0:
 /*000000000090*/ s_endpgm
-.kernel circleKernel1
+.kernel loop_kernel_1
     .config
         .dims , x
         .cws 64, 1, 1
@@ -116,7 +116,7 @@
 /*000000000078*/ s_cbranch_scc0  .L64_1
 .L124_1:
 /*00000000007c*/ s_endpgm
-.kernel circleKernel2
+.kernel loop_kernel_2
     .config
         .dims , x
         .cws 64, 1, 1

@@ -1,7 +1,7 @@
 from src.decompiler_data import DecompilerData, evaluate_from_hex
 from src.node import Node
 from src.node_processor import to_opencl
-from src.opencl_types import make_type
+from src.opencl_types import make_opencl_type
 from src.operation_status import OperationStatus
 from src.region_type import RegionType
 
@@ -13,14 +13,14 @@ def create_opencl_body():
     decompiler_data.write("{\n")
     for var in sorted(decompiler_data.names_of_vars.keys()):
         if " " not in var:
-            type_of_var = make_type(decompiler_data.names_of_vars[var])
+            type_of_var = make_opencl_type(decompiler_data.names_of_vars[var])
             decompiler_data.write("    " + type_of_var + " " + var + ";\n")
     offsets = list(decompiler_data.lds_vars.keys())
     offsets.append(decompiler_data.localsize)
     offsets.sort()
     for key in range(len(offsets) - 1):
         size_var = int((offsets[key + 1] - offsets[key]) / (int(decompiler_data.lds_vars[offsets[key]][1][1:]) / 8))
-        type_of_var = make_type(decompiler_data.lds_vars[offsets[key]][1])
+        type_of_var = make_opencl_type(decompiler_data.lds_vars[offsets[key]][1])
         decompiler_data.write("    __local " + type_of_var + " " + decompiler_data.lds_vars[offsets[key]][0]
                               + "[" + str(size_var) + "]" + ";\n")
     make_output_from_region(decompiler_data.improve_cfg, '    ')
@@ -64,12 +64,16 @@ def write_global_data():
         decompiler_data.write("};\n\n")
 
 
-def make_output_for_circle_vars(curr_node, indent):
+def make_output_for_loop_vars(curr_node, indent):
     decompiler_data = DecompilerData()
-    key = decompiler_data.circles_nodes_for_variables[curr_node]
+    key = decompiler_data.loops_nodes_for_variables[curr_node]
     reg = key[:key.find("_")]
-    decompiler_data.write(indent + decompiler_data.circles_variables[key] + " = "
-                          + curr_node.state.registers[reg].val + ";\n")
+    loop_variable = decompiler_data.loops_variables[key]
+    if "*" in loop_variable:
+        loop_variable = loop_variable[1:]
+    decompiler_data.write(indent + loop_variable + " = "
+                          + curr_node.state.registers[reg].val.replace("(ulong)*", "(ulong)")
+                          .replace("(ulong)(*", "(ulong)(").replace("*var", "var") + ";\n")
 
 
 def make_output_for_linear_region(region, indent):
@@ -81,8 +85,8 @@ def make_output_for_linear_region(region, indent):
             curr_node = region.start
         while True:
             new_output = to_opencl(curr_node, OperationStatus.to_print)
-            if decompiler_data.circles_nodes_for_variables.get(curr_node):
-                make_output_for_circle_vars(curr_node, indent)
+            if decompiler_data.loops_nodes_for_variables.get(curr_node):
+                make_output_for_loop_vars(curr_node, indent)
             elif new_output != "" and new_output is not None:
                 decompiler_data.write(indent + new_output + ";\n")
             if curr_node == region.end:
@@ -185,7 +189,7 @@ def make_output_from_if_else_statement_region(region, indent):
     decompiler_data.write(indent + "}\n")
 
 
-def make_output_from_circle_region(region, indent):
+def make_output_from_loop_region(region, indent):
     decompiler_data = DecompilerData()
     printed_vars = []
     for key in decompiler_data.variables.keys():
@@ -196,6 +200,8 @@ def make_output_from_circle_region(region, indent):
                 and probably_printed_var in decompiler_data.names_of_vars.keys() \
                 and probably_printed_var not in printed_vars:
             printed_vars.append(probably_printed_var)
+            if "*" in probably_printed_var:
+                probably_printed_var = probably_printed_var[1:]
             decompiler_data.write(
                 indent + probably_printed_var + " = "
                 + region.start.start.parent[0].state.registers[reg].val + ";\n")
@@ -230,8 +236,8 @@ def make_output_from_region(region, indent):
         make_output_from_if_statement_region(region, indent)
     elif region.type == RegionType.ifelsestatement:
         make_output_from_if_else_statement_region(region, indent)
-    elif region.type == RegionType.circle:
-        make_output_from_circle_region(region, indent)
+    elif region.type == RegionType.loop:
+        make_output_from_loop_region(region, indent)
     elif region.type == RegionType.continueregion:
         decompiler_data.write(indent + "continue;\n")
     elif region.type == RegionType.breakregion:

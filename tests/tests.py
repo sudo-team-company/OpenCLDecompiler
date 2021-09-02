@@ -180,12 +180,12 @@ class DifferentFlags(unittest.TestCase):
         template(self, 'different_flags', 'flag_only_opencl', 'only_opencl')
 
 
-class CirclesKernels(unittest.TestCase):
-    def test_simple_circle_kernels(self):
-        template(self, 'circles_kernels', 'simple_circle_kernels')
+class LoopsKernels(unittest.TestCase):
+    def test_simple_loop_kernels(self):
+        template(self, 'loops_kernels', 'simple_loop_kernels')
 
-    def test_circle_with_break_kernels(self):
-        template(self, 'circles_kernels', 'circle_with_break_kernels')
+    def test_loop_with_break_kernels(self):
+        template(self, 'loops_kernels', 'loop_with_break_kernels')
 
 
 if __name__ == '__main__':

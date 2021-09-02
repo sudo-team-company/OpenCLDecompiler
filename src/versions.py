@@ -31,7 +31,7 @@ def update_reg_version(reg, curr_node, max_version, prev_versions_of_reg):
         curr_node.state.registers[reg].version = reg + "_" + str(max_version + 1)
         curr_node.state.registers[reg].prev_version = list(prev_versions_of_reg)
         variable = "var" + str(decompiler_data.num_of_var)
-        if curr_node.state.registers[reg].type == RegisterType.param_global_id_x:
+        if curr_node.state.registers[reg].type in [RegisterType.param_global_id_x, RegisterType.paramA]:
             variable = "*" + variable
         curr_node.state.registers[reg].val = variable
         decompiler_data.update_reg_version(prev_versions_of_reg, variable, curr_node, reg, max_version)
@@ -234,7 +234,7 @@ def change_values():
             else:
                 flag_of_continue = False
                 for c_p in curr_node.parent:
-                    if c_p not in visited and curr_node not in decompiler_data.circles:
+                    if c_p not in visited and curr_node not in decompiler_data.loops:
                         flag_of_continue = True
                         break
                 if flag_of_continue:

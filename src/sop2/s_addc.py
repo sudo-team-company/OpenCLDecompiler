@@ -26,8 +26,7 @@ class SAddc(BaseInstruction):
             if flag_of_status == OperationStatus.to_fill_node:
                 if ssrc0_reg and ssrc1_reg:
                     if node.state.registers[ssrc0].type == RegisterType.paramA:
-                        if node.state.registers[ssrc0].type_of_data == 'u32' \
-                                or node.state.registers[ssrc0].type_of_data == 'i32':
+                        if node.state.registers[ssrc0].type_of_data in ['u32', 'i32', 'gu32', 'gi32']:
                             new_val, _, _ = make_op(node, ssrc1, "4", " / ", '', '')
                             new_val, _, _ = make_op(node, ssrc0, new_val, " + ", '(ulong)', '(ulong)')
                             node.state.registers[sdst] = \
@@ -42,8 +41,7 @@ class SAddc(BaseInstruction):
                     if ssrc1_reg:
                         type_reg = node.state.registers[ssrc1].type
                     if node.state.registers[ssrc0].type == RegisterType.paramA:
-                        if node.state.registers[ssrc0].type_of_data == 'u32' \
-                                or node.state.registers[ssrc0].type_of_data == 'i32':
+                        if node.state.registers[ssrc0].type_of_data in ['u32', 'i32', 'gu32', 'gi32']:
                             new_val, _, _ = make_op(node, ssrc1, "4", " / ", '', '')
                             new_val, _, _ = make_op(node, ssrc0, new_val, " + ", '(ulong)', '(ulong)')
                     node.state.registers[sdst] = \
@@ -51,6 +49,12 @@ class SAddc(BaseInstruction):
                 decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()
-                node.state.registers[sdst].type_of_data = suffix
+                if node.state.registers[ssrc0].type == RegisterType.paramA:
+                    if ssrc0 == sdst:
+                        node.state.registers[sdst].type_of_data = node.parent[0].state.registers[ssrc0].type_of_data
+                    else:
+                        node.state.registers[sdst].type_of_data = node.state.registers[ssrc0].type_of_data
+                else:
+                    node.state.registers[sdst].type_of_data = suffix
                 return node
             return output_string
