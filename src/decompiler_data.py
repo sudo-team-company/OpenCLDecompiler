@@ -19,6 +19,15 @@ def make_elem_from_addr(var):
     return var
 
 
+# TODO: Проанализировать, может ли не быть "g" (или другого модификатора)
+def make_new_type_for_from(node, register):
+    if "g" in node.state.registers[register].type_of_data:
+        new_from_reg_type = node.state.registers[register].type_of_data[1:]
+    else:
+        new_from_reg_type = node.state.registers[register].type_of_data
+    return new_from_reg_type
+
+
 def compare_values(node, to_reg, from_reg0, from_reg1, type0, type1, operation, suffix):
     decompiler_data = DecompilerData()
     new_val, _, _ = make_op(node, from_reg0, from_reg1, operation, type0, type1)

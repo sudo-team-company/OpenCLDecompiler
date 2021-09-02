@@ -26,14 +26,13 @@ def process_params(set_of_config, name_of_program):
         set_of_param = param.strip().replace(',', ' ').split()
         name_param = set_of_param[1]
         type_param = set_of_param[3]
-        flag_param = ""
         if len(set_of_param) > 4:
-            flag_param = "__" + set_of_param[4] + " "
+            type_param = "__" + set_of_param[4] + " " + type_param
         if type_param[-1] == "*":
             name_param = "*" + name_param
             type_param = type_param[:-1]
         decompiler_data.make_params(num_of_param, name_param, type_param)
-        decompiler_data.configuration_output += flag_param + type_param + " " + name_param
+        decompiler_data.configuration_output += type_param + " " + name_param
         num_of_param += 1
     decompiler_data.configuration_output += ")\n"
 

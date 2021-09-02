@@ -1,5 +1,6 @@
 from collections import deque
 
+from src.register_type import RegisterType
 from src.decompiler_data import DecompilerData
 from src.region_type import RegionType
 from src.regions.region import Region
@@ -229,8 +230,8 @@ def make_var_for_circle(curr_node, register, version, prev_version):
     else:
         variable = "var" + str(decompiler_data.num_of_var)
         decompiler_data.num_of_var += 1
-    # if curr_node.state.registers[register].type == RegisterType.paramA:
-    #     variable = "*" + variable
+    if curr_node.state.registers[register].type == RegisterType.paramA:
+        variable = "*" + variable
     # decompiler_data.make_var(first_reg_prev_version, variable,
     #                          curr_node.state.registers[register].type_of_data)
     decompiler_data.checked_variables[prev_version] = variable
@@ -334,7 +335,6 @@ def process_control_structures_in_circle(region_start, region_end):
     q.append(start_region)
     after_region_end = region_end.children[1]
     while start_region.children[0] != after_region_end:
-    # while not (len(start_region.children) > 1 and start_region.children[1] == after_region_end):
         curr_region = q.popleft()
         if curr_region not in visited:
             visited.append(curr_region)
@@ -344,7 +344,8 @@ def process_control_structures_in_circle(region_start, region_end):
             elif curr_region.type == RegionType.basic and len(curr_region.children) == 2 \
                     and (curr_region.children[0] == after_region_end or curr_region.children[1] == after_region_end):
                 curr_region.type = RegionType.breakregion  # надо отдельно написать на return и обрезание на break
-                next_region = curr_region.children[0] if curr_region.children[1] == after_region_end else curr_region.children[1]
+                next_region = curr_region.children[0] if curr_region.children[1] == after_region_end else \
+                    curr_region.children[1]
                 curr_region, after_region_end = remove_region_connect(curr_region, after_region_end)
                 join_regions([curr_region.parent[0]], curr_region,
                              next_region, start_region)  # not good enough

@@ -68,8 +68,12 @@ def make_output_for_circle_vars(curr_node, indent):
     decompiler_data = DecompilerData()
     key = decompiler_data.circles_nodes_for_variables[curr_node]
     reg = key[:key.find("_")]
-    decompiler_data.write(indent + decompiler_data.circles_variables[key] + " = "
-                          + curr_node.state.registers[reg].val + ";\n")
+    circle_variable = decompiler_data.circles_variables[key]
+    if "*" in circle_variable:
+        circle_variable = circle_variable[1:]
+    decompiler_data.write(indent + circle_variable + " = "
+                          + curr_node.state.registers[reg].val.replace("(ulong)*", "(ulong)")
+                          .replace("(ulong)(*", "(ulong)(").replace("*var", "var") + ";\n")
 
 
 def make_output_for_linear_region(region, indent):
@@ -196,6 +200,8 @@ def make_output_from_circle_region(region, indent):
                 and probably_printed_var in decompiler_data.names_of_vars.keys() \
                 and probably_printed_var not in printed_vars:
             printed_vars.append(probably_printed_var)
+            if "*" in probably_printed_var:
+                probably_printed_var = probably_printed_var[1:]
             decompiler_data.write(
                 indent + probably_printed_var + " = "
                 + region.start.start.parent[0].state.registers[reg].val + ";\n")

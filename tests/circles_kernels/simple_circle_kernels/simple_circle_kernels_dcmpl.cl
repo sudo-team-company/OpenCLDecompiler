@@ -1,11 +1,11 @@
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
 void circleKernel0(__global uint *data, uint x, uint y, uint unrollingBreaker)
 {
+    __global uint *var10;
+    __global uint *var11;
+    __global uint *var13;
     uint var0;
-    uint var10;
-    uint var11;
     uint var12;
-    uint var13;
     uint var9;
     if (unrollingBreaker == 0) {
         var9 = 0x1;
@@ -14,12 +14,12 @@ void circleKernel0(__global uint *data, uint x, uint y, uint unrollingBreaker)
         var12 = y;
         do {
             var13 = var10;
-            var0 = *(uint*)(var13);
+            var0 = *(__global uint*)(var13);
             var9 = (ulong)var9 + (ulong)1;
             var10 = (ulong)var10 + (ulong)(4 / 4);
             var11 = (ulong)var11 + (ulong)(0 / 4);
             var12 = (ulong)var0 + (ulong)var12;
-            *(uint*)(var13) = var12;
+            *(__global uint*)(var13) = var12;
             var12 = (var12) * x;
         } while ((((ulong)0 - (ulong)unrollingBreaker) == var9 ? 1 : 0) | var9 > 63 ? 1 : 0);
     }
@@ -28,12 +28,12 @@ void circleKernel0(__global uint *data, uint x, uint y, uint unrollingBreaker)
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
 void circleKernel1(__global uint *data, uint x, uint y, uint unrollingBreaker)
 {
+    __global uint *var10;
+    __global uint *var13;
+    __global uint *var9;
     uint var0;
-    uint var10;
     uint var11;
     uint var12;
-    uint var13;
-    uint var9;
     var11 = unrollingBreaker;
     if (var11 == 0) {
         var9 = data;
@@ -42,12 +42,12 @@ void circleKernel1(__global uint *data, uint x, uint y, uint unrollingBreaker)
         var12 = y;
         do {
             var13 = var9;
-            var0 = *(uint*)(var13);
+            var0 = *(__global uint*)(var13);
             var9 = (ulong)var9 + (ulong)(4 / 4);
             var10 = (ulong)var10 + (ulong)(0 / 4);
             var11 = (ulong)var11 + (ulong)(-1);
             var12 = (ulong)var0 + (ulong)var12;
-            *(uint*)(var13) = var12;
+            *(__global uint*)(var13) = var12;
             var12 = (var12) * x;
         } while (!(((ulong)var11 + (ulong)(-1)) == 0));
     }
@@ -56,12 +56,12 @@ void circleKernel1(__global uint *data, uint x, uint y, uint unrollingBreaker)
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
 void circleKernel2(__global uint *data, uint x, uint y, uint unrollingBreaker)
 {
+    __global uint *var10;
+    __global uint *var13;
+    __global uint *var9;
     uint var0;
-    uint var10;
     uint var11;
     uint var12;
-    uint var13;
-    uint var9;
     var11 = unrollingBreaker;
     if (var11 == 0) {
         var9 = (ulong)data + (ulong)((var11 * 4) / 4);
@@ -70,12 +70,12 @@ void circleKernel2(__global uint *data, uint x, uint y, uint unrollingBreaker)
         var12 = y;
         do {
             var13 = var9;
-            var0 = *(uint*)(var13);
+            var0 = *(__global uint*)(var13);
             var9 = (ulong)(var9) + (ulong)((-4) / 4);
             var10 = (ulong)(var10) + (ulong)((-1) / 4);
             var11 = (ulong)var11 + (ulong)(-1);
             var12 = (ulong)var0 + (ulong)var12;
-            *(uint*)(var13) = var12;
+            *(__global uint*)(var13) = var12;
             var12 = (var12) * x;
         } while (!(((ulong)var11 + (ulong)(-1)) == 0));
     }

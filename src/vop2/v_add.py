@@ -1,7 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData, make_op
 from src.integrity import Integrity
-from src.opencl_types import most_common_type
+from src.opencl_types import most_common_type, make_asm_type
 from src.operation_status import OperationStatus
 from src.register import Register
 from src.register_type import RegisterType
@@ -58,8 +58,9 @@ class VAdd(BaseInstruction):
                             argument = node.state.registers[src0].val[:-3]
                         else:
                             argument = node.state.registers[src0].val
-                        if decompiler_data.type_params.get("*" + argument) == "int" \
-                                or decompiler_data.type_params.get("*" + argument) == "uint":
+                        # TODO: Проанализировать, есть ли в "int" и "uint" необходимость
+                        if decompiler_data.type_params.get("*" + argument) in \
+                                ["int", "uint", "__global int", "__global uint"]:
                             if "1073741824" in node.state.registers[src1].val:
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "1073741824", " * ", '', '')
                             else:
@@ -67,24 +68,23 @@ class VAdd(BaseInstruction):
                             new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
                                 Register(new_val, RegisterType.param_global_id_x, new_integrity)
-                            node.state.registers[vdst].type_of_data = 'i32' \
-                                if decompiler_data.type_params.get("*" + argument) == "int" \
-                                else 'u32'
-                        elif decompiler_data.type_params.get("*" + argument) == "long" \
-                                or decompiler_data.type_params.get("*" + argument) == "ulong":
+                            node.state.registers[vdst].type_of_data = \
+                                make_asm_type(decompiler_data.type_params["*" + argument])
+                        elif decompiler_data.type_params.get("*" + argument) in \
+                                ["long", "ulong", "__global long", "__global ulong"]:
                             new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
                             new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
                                 Register(new_val, RegisterType.param_global_id_x, new_integrity)
-                            node.state.registers[vdst].type_of_data = 'i64' \
-                                if decompiler_data.type_params.get("*" + argument) == "long" \
-                                else 'u64'
-                        elif decompiler_data.type_params.get("*" + argument) == "char" \
-                                or decompiler_data.type_params.get("*" + argument) == "uchar":
+                            node.state.registers[vdst].type_of_data = \
+                                make_asm_type(decompiler_data.type_params["*" + argument])
+                        elif decompiler_data.type_params.get("*" + argument) in \
+                                ["char", "uchar", "__global char", "__global uchar"]:
                             new_val, _, _ = make_op(node, argument, node.state.registers[src1].val, " + ", '', '')
                             node.state.registers[vdst] = \
                                 Register(new_val, RegisterType.param_global_id_x, new_integrity)
-                        elif decompiler_data.type_params.get("*" + argument) == "float":
+                            # TODO: Проанализировать, почему нет присвоения типов
+                        elif decompiler_data.type_params.get("*" + argument) in ["float", "__global float"]:
                             if "1073741824" in node.state.registers[src1].val:
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "1073741824", " * ", '', '')
                             else:
@@ -92,8 +92,9 @@ class VAdd(BaseInstruction):
                             new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
                                 Register(new_val, RegisterType.param_global_id_x, new_integrity)
-                            node.state.registers[vdst].type_of_data = 'f32'
-                        elif decompiler_data.type_params.get("*" + argument) == "double":
+                            node.state.registers[vdst].type_of_data = \
+                                make_asm_type(decompiler_data.type_params["*" + argument])
+                        elif decompiler_data.type_params.get("*" + argument) in ["double", "__global double"]:
                             if "1073741824" in node.state.registers[src1].val:
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "1073741824", " * ", '', '')
                             else:
@@ -101,8 +102,9 @@ class VAdd(BaseInstruction):
                             new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
                                 Register(new_val, RegisterType.param_global_id_x, new_integrity)
-                            node.state.registers[vdst].type_of_data = 'f64'
-                        elif decompiler_data.type_params.get("*" + argument) == "int2":
+                            node.state.registers[vdst].type_of_data = \
+                                make_asm_type(decompiler_data.type_params["*" + argument])
+                        elif decompiler_data.type_params.get("*" + argument) in ["int2", "__global int2"]:
                             if "1073741824" in node.state.registers[src1].val:
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "1073741824", " * ", '', '')
                             else:
@@ -110,8 +112,9 @@ class VAdd(BaseInstruction):
                             new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
                                 Register(new_val, RegisterType.param_global_id_x, new_integrity)
+                            # TODO: Определить, необходимо ли изменение на получение типа через make_asm_type
                             node.state.registers[vdst].type_of_data = 'int2'
-                        elif decompiler_data.type_params.get("*" + argument) == "int4":
+                        elif decompiler_data.type_params.get("*" + argument) in ["int4", "__global int4"]:
                             if "1073741824" in node.state.registers[src1].val:
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "1073741824", " * ", '', '')
                             else:
@@ -120,7 +123,7 @@ class VAdd(BaseInstruction):
                             node.state.registers[vdst] = \
                                 Register(new_val, RegisterType.param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'int4'
-                        elif decompiler_data.type_params.get("*" + argument) == "int8":
+                        elif decompiler_data.type_params.get("*" + argument) in ["int8", "__global int8"]:
                             if "1073741824" in node.state.registers[src1].val:
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "1073741824", " * ", '', '')
                             else:
