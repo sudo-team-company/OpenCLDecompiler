@@ -1,5 +1,5 @@
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
-void circleBreakKernel(__global uint *data, uint x, uint y, uint unrollingBreaker)
+void loop_break_kernel(__global uint *data, uint x, uint y, uint unrollingBreaker)
 {
     __global uint *var8;
     __global uint *var9;

@@ -1,5 +1,5 @@
 from src.decompiler_data import DecompilerData
-from src.opencl_types import make_type
+from src.opencl_types import make_opencl_type
 
 
 def get_gdata_offset(instruction):
@@ -17,10 +17,10 @@ def gdata_type_processing():
         if "g" in val:
             val = val[1:]
         if 'gdata' in key:
-            decompiler_data.type_gdata[key] = make_type(val)
+            decompiler_data.type_gdata[key] = make_opencl_type(val)
         elif 'var' in key and key in decompiler_data.var_value:
             name = decompiler_data.var_value[key]
-            decompiler_data.type_gdata[name] = make_type(val)
+            decompiler_data.type_gdata[name] = make_opencl_type(val)
         decompiler_data.names_of_vars[key] = val
     tmp = {}
     # remove gdata from names_of_vars

@@ -1,11 +1,11 @@
-/* Disassembling 'circles_kernels\circle_with_break_kernels\circle_with_break_kernels.bin' */
+/* Disassembling 'loops_kernels\loop_with_break_kernels\loop_with_break_kernels.bin' */
 .amdcl2
 .gpu Iceland
 .64bit
 .arch_minor 0
 .arch_stepping 4
 .driver_version 200406
-.kernel circleBreakKernel
+.kernel loop_break_kernel
     .config
         .dims x
         .cws 64, 1, 1

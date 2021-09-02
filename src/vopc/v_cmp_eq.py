@@ -1,6 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData, compare_values
-from src.opencl_types import make_type
+from src.opencl_types import make_opencl_type
 from src.operation_status import OperationStatus
 
 
@@ -10,7 +10,7 @@ class VCmpEq(BaseInstruction):
         output_string = ""
         if suffix == "u32" or suffix == "i32" or suffix == 'f32':
             if suffix != 'f32':
-                new_as_type = '(' + make_type(suffix) + ')'
+                new_as_type = '(' + make_opencl_type(suffix) + ')'
             else:
                 new_as_type = 'as_float('
             sdst = instruction[1]

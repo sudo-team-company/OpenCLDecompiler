@@ -1,7 +1,7 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData, make_elem_from_addr, make_new_type_for_from
+from src.decompiler_data import DecompilerData, make_elem_from_addr, make_new_type_without_modifier
 from src.integrity import Integrity
-from src.opencl_types import make_type
+from src.opencl_types import make_opencl_type
 from src.operation_status import OperationStatus
 from src.register import Register
 from src.upload import find_first_last_num_to_from
@@ -34,13 +34,13 @@ class FlatStoreDwordx2(BaseInstruction):
                     if node.state.registers[from_registers].val in decompiler_data.names_of_vars:
                         val = node.state.registers[from_registers].val
                         node.state.registers[from_registers].val = \
-                            '(' + make_type(make_new_type_for_from(node, to_registers)) + ')' \
+                            '(' + make_opencl_type(make_new_type_without_modifier(node, to_registers)) + ')' \
                             + node.state.registers[from_registers].val
                         # init var - i32, gdata - i64. var = gdata -> var - i64
                         decompiler_data.names_of_vars[val] = node.state.registers[from_registers].type_of_data
                     else:
                         node.state.registers[from_registers].type_of_data = \
-                            make_new_type_for_from(node, to_registers)
+                            make_new_type_without_modifier(node, to_registers)
                         decompiler_data.names_of_vars[node.state.registers[from_registers].val] = \
                             node.state.registers[from_registers].type_of_data
             node.state.registers[to_registers] = \
@@ -61,7 +61,7 @@ class FlatStoreDwordx2(BaseInstruction):
             if " + " in var:
                 var = make_elem_from_addr(var)
             else:
-                var = "*(" + make_type(decompiler_data.names_of_vars[var]) + "*)(" + var[1:] + ")"
+                var = "*(" + make_opencl_type(decompiler_data.names_of_vars[var]) + "*)(" + var[1:] + ")"
             if node.state.registers.get(from_registers):
                 from_registers_1 = name_of_from + str(last_from)
                 if node.state.registers[from_registers].val == "0" and node.state.registers.get(from_registers_1):

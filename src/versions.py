@@ -234,7 +234,7 @@ def change_values():
             else:
                 flag_of_continue = False
                 for c_p in curr_node.parent:
-                    if c_p not in visited and curr_node not in decompiler_data.circles:
+                    if c_p not in visited and curr_node not in decompiler_data.loops:
                         flag_of_continue = True
                         break
                 if flag_of_continue:

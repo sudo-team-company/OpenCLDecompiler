@@ -20,7 +20,7 @@ def make_elem_from_addr(var):
 
 
 # TODO: Проанализировать, может ли не быть "g" (или другого модификатора)
-def make_new_type_for_from(node, register):
+def make_new_type_without_modifier(node, register):
     if "g" in node.state.registers[register].type_of_data:
         new_from_reg_type = node.state.registers[register].type_of_data[1:]
     else:
@@ -268,10 +268,10 @@ class DecompilerData(metaclass=Singleton):
         self.num_of_var = 0
         self.num_of_label = 0
         self.wait_labels = []
-        self.circles = []
+        self.loops = []
         self.back_edges = []
-        self.circles_variables = {}
-        self.circles_nodes_for_variables = {}
+        self.loops_variables = {}
+        self.loops_nodes_for_variables = {}
         self.configuration_output = ""
         self.flag_for_decompilation = None
 
@@ -375,10 +375,10 @@ class DecompilerData(metaclass=Singleton):
         self.num_of_var = 0
         self.num_of_label = 0
         self.wait_labels = []
-        self.circles = []
+        self.loops = []
         self.back_edges = []
-        self.circles_variables = {}
-        self.circles_nodes_for_variables = {}
+        self.loops_variables = {}
+        self.loops_nodes_for_variables = {}
         self.configuration_output = ""
         if flag_for_decompilation == "auto_decompilation":
             self.flag_for_decompilation = FlagType.auto_decompilation
@@ -525,7 +525,7 @@ class DecompilerData(metaclass=Singleton):
         if self.to_node.get(reladdr) is not None:
             node.add_child(self.to_node[reladdr])
             self.to_node[reladdr].add_parent(node)
-            self.circles.append(self.to_node[reladdr])
+            self.loops.append(self.to_node[reladdr])
             self.back_edges.append(node)
         else:
             if self.from_node.get(reladdr) is None:

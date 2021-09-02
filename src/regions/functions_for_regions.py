@@ -32,7 +32,7 @@ def check_if_else(curr_region):
            and curr_region.children[0].children[0] == curr_region.children[1].children[0]
 
 
-def check_circle(region_start, region_end):
+def check_loop(region_start, region_end):
     return len(region_start.children) == 1 and len(region_start.children[0].children) == 1 \
            and region_start.children[0].children[0] == region_end
 
@@ -115,10 +115,10 @@ def make_region_graph_from_cfg():
         curr_node = q.popleft()
         if curr_node not in visited:
             visited.append(curr_node)
-            if curr_node in decompiler_data.circles or curr_node in decompiler_data.back_edges:
+            if curr_node in decompiler_data.loops or curr_node in decompiler_data.back_edges:
                 region_type = RegionType.backedge
-                if curr_node in decompiler_data.circles:
-                    region_type = RegionType.startcircle
+                if curr_node in decompiler_data.loops:
+                    region_type = RegionType.startloop
                 region = Region(region_type, curr_node)
                 decompiler_data.set_starts_regions(curr_node, region)
                 decompiler_data.set_ends_regions(curr_node, region)
@@ -148,7 +148,7 @@ def make_region_graph_from_cfg():
                 decompiler_data.set_ends_regions(curr_node, region)
                 flag_of_continue = False
                 for c_p in curr_node.parent:
-                    if c_p not in visited and curr_node not in decompiler_data.circles:
+                    if c_p not in visited and curr_node not in decompiler_data.loops:
                         flag_of_continue = True
                         break
                 if flag_of_continue:
@@ -223,10 +223,10 @@ def process_if_else_statement_region(curr_region, visited, start_region, q):
     return visited, q, start_region
 
 
-def make_var_for_circle(curr_node, register, version, prev_version):
+def make_var_for_loop(curr_node, register, version, prev_version):
     decompiler_data = DecompilerData()
-    if decompiler_data.circles_variables.get(prev_version):
-        variable = decompiler_data.circles_variables[prev_version]
+    if decompiler_data.loops_variables.get(prev_version):
+        variable = decompiler_data.loops_variables[prev_version]
     else:
         variable = "var" + str(decompiler_data.num_of_var)
         decompiler_data.num_of_var += 1
@@ -236,8 +236,8 @@ def make_var_for_circle(curr_node, register, version, prev_version):
     #                          curr_node.state.registers[register].type_of_data)
     decompiler_data.checked_variables[prev_version] = variable
     # decompiler_data.checked_variables[first_reg_version] = variable
-    decompiler_data.circles_variables[version] = variable
-    decompiler_data.circles_nodes_for_variables[curr_node] = version
+    decompiler_data.loops_variables[version] = variable
+    decompiler_data.loops_nodes_for_variables[curr_node] = version
     # decompiler_data.variables[first_reg_version] = variable
     decompiler_data.names_of_vars[variable] = curr_node.state.registers[register].type_of_data
     decompiler_data.variables[prev_version] = variable
@@ -257,11 +257,11 @@ def check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_v
                     prev_register_version = register_version
                 else:
                     prev_register_version = curr_node.parent[0].state.registers[register].version
-                make_var_for_circle(change_node, instruction_register, register_version, prev_register_version)
+                make_var_for_loop(change_node, instruction_register, register_version, prev_register_version)
 
 
-def process_circle(region_start, region_end):
-    region = Region(RegionType.circle, region_start)
+def process_loop(region_start, region_end):
+    region = Region(RegionType.loop, region_start)
     region.end = region_end
     prev_child = [region_start]
     before_r = [region_start.parent[0]]
@@ -318,7 +318,7 @@ def process_circle(region_start, region_end):
                 first_reg_prev_version = first_reg_version[:separation + 1] \
                                          + str(int(first_reg_version[separation + 1:]) - 1)
                 if first_reg_prev_version in used_versions_of_registers:
-                    make_var_for_circle(curr_node, register, first_reg_version, first_reg_prev_version)
+                    make_var_for_loop(curr_node, register, first_reg_version, first_reg_prev_version)
         curr_node = curr_node.children[0]
 
 
@@ -328,7 +328,7 @@ def remove_region_connect(parent_region, child_region):
     return parent_region, child_region
 
 
-def process_control_structures_in_circle(region_start, region_end):
+def process_control_structures_in_loop(region_start, region_end):
     start_region = region_start
     visited = []
     q = deque()
@@ -338,8 +338,8 @@ def process_control_structures_in_circle(region_start, region_end):
         curr_region = q.popleft()
         if curr_region not in visited:
             visited.append(curr_region)
-            if check_circle(region_start, region_end):
-                process_circle(region_start, region_end)
+            if check_loop(region_start, region_end):
+                process_loop(region_start, region_end)
                 return
             elif curr_region.type == RegionType.basic and len(curr_region.children) == 2 \
                     and (curr_region.children[0] == after_region_end or curr_region.children[1] == after_region_end):
@@ -361,34 +361,34 @@ def process_control_structures_in_circle(region_start, region_end):
                 preprocess_if_and_if_else(curr_region, visited, start_region, q)
 
 
-def get_one_circle_region(q_circles, curr_region, start_region, region_start, region_end):
-    while q_circles:
-        circle_region = q_circles.pop()
-        if circle_region.type == RegionType.backedge:
-            circle_region.type = RegionType.continueregion
-            join_regions([circle_region.parent[0]], circle_region,
-                         circle_region.children[0], start_region)  # not good enough
-        elif curr_region.start.instruction[1] == circle_region.start.instruction[0][:-1]:
-            region_start = circle_region
-            curr_circle = None
+def get_one_loop_region(q_loops, curr_region, start_region, region_start, region_end):
+    while q_loops:
+        loop_region = q_loops.pop()
+        if loop_region.type == RegionType.backedge:
+            loop_region.type = RegionType.continueregion
+            join_regions([loop_region.parent[0]], loop_region,
+                         loop_region.children[0], start_region)  # not good enough
+        elif curr_region.start.instruction[1] == loop_region.start.instruction[0][:-1]:
+            region_start = loop_region
+            curr_loop = None
         else:
-            start_region = circle_region
-            curr_circle = circle_region
-            q_circles.append(circle_region)
+            start_region = loop_region
+            curr_loop = loop_region
+            q_loops.append(loop_region)
             break
-    if check_circle(region_start, region_end):
-        process_circle(region_start, region_end)
+    if check_loop(region_start, region_end):
+        process_loop(region_start, region_end)
     else:
-        process_control_structures_in_circle(region_start, region_end)
-    return curr_circle, start_region, q_circles, region_start
+        process_control_structures_in_loop(region_start, region_end)
+    return curr_loop, start_region, q_loops, region_start
 
 
-def find_circles():
+def find_loops():
     decompiler_data = DecompilerData()
-    start_region = decompiler_data.starts_regions[decompiler_data.circles[0]]
-    q_circles = deque()  # очередь из элементов цикла
-    curr_circle = start_region  # текущий старт цикла
-    q_circles.append(start_region)
+    start_region = decompiler_data.starts_regions[decompiler_data.loops[0]]
+    q_loops = deque()  # очередь из элементов цикла
+    curr_loop = start_region  # текущий старт цикла
+    q_loops.append(start_region)
     q_regions = deque()  # очередь из всех регионов
     q_regions.append(start_region.children[0])
     visited = [start_region]
@@ -397,24 +397,24 @@ def find_circles():
         if curr_region not in visited:
             visited.append(curr_region)
             if curr_region.type == RegionType.backedge:
-                if curr_region.start.instruction[1] == curr_circle.start.instruction[0][:-1]:
-                    q_circles.append(curr_region)
+                if curr_region.start.instruction[1] == curr_loop.start.instruction[0][:-1]:
+                    q_loops.append(curr_region)
                 else:
                     region_end = curr_region  # вероятно это не так
-                    region_start = curr_circle
-                    curr_circle, start_region, q_circles, region_start = \
-                        get_one_circle_region(q_circles, curr_region, start_region, region_start, region_end)
-            elif curr_region.type == RegionType.startcircle:
-                curr_circle = curr_region
-                q_circles.append(curr_region)
+                    region_start = curr_loop
+                    curr_loop, start_region, q_loops, region_start = \
+                        get_one_loop_region(q_loops, curr_region, start_region, region_start, region_end)
+            elif curr_region.type == RegionType.startloop:
+                curr_loop = curr_region
+                q_loops.append(curr_region)
             for curr_child in curr_region.children:
                 if curr_child not in visited:
                     q_regions.append(curr_child)
-    if q_circles:
-        region_end = q_circles.pop()
+    if q_loops:
+        region_end = q_loops.pop()
         curr_region = region_end
         region_start = None
-        get_one_circle_region(q_circles, curr_region, start_region, region_start, region_end)
+        get_one_loop_region(q_loops, curr_region, start_region, region_start, region_end)
 
 
 def preprocess_if_and_if_else(curr_region, visited, start_region, q):
@@ -447,8 +447,8 @@ def preprocess_if_and_if_else(curr_region, visited, start_region, q):
 def process_region_graph():
     decompiler_data = DecompilerData()
     start_region = decompiler_data.starts_regions[decompiler_data.cfg]
-    if decompiler_data.circles:
-        find_circles()
+    if decompiler_data.loops:
+        find_loops()
     visited = []
     q = deque()
     q.append(start_region)
@@ -456,7 +456,7 @@ def process_region_graph():
         curr_region = q.popleft()
         if curr_region not in visited:
             visited.append(curr_region)
-            if curr_region.type == RegionType.circle:
+            if curr_region.type == RegionType.loop:
                 start_region = join_regions([curr_region.parent[0]], curr_region, curr_region.children[0], start_region)
                 if curr_region.children:
                     for child in curr_region.children:
