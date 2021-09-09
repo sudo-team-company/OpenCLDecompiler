@@ -29,8 +29,11 @@ class FlatLoad(BaseInstruction):
                         data_type = make_new_type_without_modifier(node, from_registers)
                         # probably we should save only const data
                         decompiler_data.var_value[variable] = node.state.registers[from_registers].val
+                        register_type = RegisterType.paramA \
+                            if node.state.registers[from_registers].type == RegisterType.address_paramA \
+                            else RegisterType.param_global_id_x
                         node.state.registers[to_registers] = \
-                            Register(variable, RegisterType.program_param, Integrity.entire)
+                            Register(variable, register_type, Integrity.entire)
                         decompiler_data.make_version(node.state, to_registers)
                         node.state.registers[to_registers].type_of_data = data_type
                         node.state.registers[to_registers].val = variable
@@ -43,7 +46,7 @@ class FlatLoad(BaseInstruction):
             if " + " in output:
                 output = make_elem_from_addr(output)
             else:
-                output = "*(" + make_opencl_type(decompiler_data.names_of_vars[output]) + "*)(" + output[1:] + ")"
+                output = "*(" + make_opencl_type(decompiler_data.names_of_vars[output]) + "*)(" + output + ")"
             output_string = node.state.registers[to_registers].val + " = " + output
             return output_string
         elif suffix == "dwordx2":
@@ -63,8 +66,11 @@ class FlatLoad(BaseInstruction):
                     if first_to == last_to:
                         data_type = make_new_type_without_modifier(node, from_registers)
                         decompiler_data.var_value[variable] = node.state.registers[from_registers].val
+                        register_type = RegisterType.paramA \
+                            if node.state.registers[from_registers].type == RegisterType.address_paramA \
+                            else RegisterType.param_global_id_x
                         node.state.registers[to_registers] = \
-                            Register(variable, RegisterType.program_param, Integrity.entire)
+                            Register(variable, register_type, Integrity.entire)
                         decompiler_data.make_version(node.state, to_registers)
                         node.state.registers[to_registers].type_of_data = data_type
                         node.state.registers[to_registers].val = variable
@@ -72,8 +78,11 @@ class FlatLoad(BaseInstruction):
                     else:
                         data_type = make_new_type_without_modifier(node, from_registers)
                         decompiler_data.var_value[variable] = node.state.registers[from_registers].val
+                        register_type = RegisterType.paramA \
+                            if node.state.registers[from_registers].type == RegisterType.address_paramA \
+                            else RegisterType.param_global_id_x
                         node.state.registers[to_registers] = \
-                            Register(variable, RegisterType.program_param, Integrity.entire)
+                            Register(variable, register_type, Integrity.entire)
                         decompiler_data.make_version(node.state, to_registers)
                         node.state.registers[to_registers].type_of_data = data_type
                         node.state.registers[to_registers].val = variable
@@ -84,7 +93,7 @@ class FlatLoad(BaseInstruction):
             if " + " in output:
                 output = make_elem_from_addr(output)
             else:
-                output = "*(" + make_opencl_type(decompiler_data.names_of_vars[output]) + "*)(" + output[1:] + ")"
+                output = "*(" + make_opencl_type(decompiler_data.names_of_vars[output]) + "*)(" + output + ")"
             output_string = node.state.registers[to_registers].val + " = " + output
             return output_string
         elif suffix == "dwordx4":
@@ -112,14 +121,17 @@ class FlatLoad(BaseInstruction):
                     if first_to == last_to:
                         data_type = make_new_type_without_modifier(node, from_registers)
                         decompiler_data.var_value[variable] = node.state.registers[from_registers].val
+                        register_type = RegisterType.paramA \
+                            if node.state.registers[from_registers].type == RegisterType.address_paramA \
+                            else RegisterType.param_global_id_x
                         node.state.registers[to_registers] = \
-                            Register(variable, RegisterType.program_param, Integrity.entire)
+                            Register(variable, register_type, Integrity.entire)
                         decompiler_data.make_version(node.state, to_registers)
                         node.state.registers[to_registers].type_of_data = data_type
                         node.state.registers[to_registers].val = variable
                         decompiler_data.make_var(node.state.registers[to_registers].version, variable, data_type)
                         node.state.registers[to_now] = \
-                            Register(variable, RegisterType.program_param, Integrity.entire)
+                            Register(variable, register_type, Integrity.entire)
                         decompiler_data.make_version(node.state, to_now)
                         node.state.registers[to_now].type_of_data = data_type
                         node.state.registers[to_now].val = variable
@@ -128,15 +140,18 @@ class FlatLoad(BaseInstruction):
                     else:
                         data_type = make_new_type_without_modifier(node, from_registers)
                         decompiler_data.var_value[variable] = node.state.registers[from_registers].val
+                        register_type = RegisterType.paramA \
+                            if node.state.registers[from_registers].type == RegisterType.address_paramA \
+                            else RegisterType.param_global_id_x
                         node.state.registers[to_registers] = \
-                            Register(variable, RegisterType.program_param, Integrity.entire)
+                            Register(variable, register_type, Integrity.entire)
                         decompiler_data.make_version(node.state, to_registers)
                         node.state.registers[to_registers].type_of_data = data_type
                         node.state.registers[to_registers].val = variable
                         decompiler_data.make_var(node.state.registers[to_registers].version, variable,
                                                  data_type)
                         node.state.registers[to_now] = \
-                            Register(variable, RegisterType.program_param, Integrity.entire)
+                            Register(variable, register_type, Integrity.entire)
                         decompiler_data.make_version(node.state, to_now)
                         node.state.registers[to_now].type_of_data = data_type
                         node.state.registers[to_now].val = variable
@@ -147,6 +162,6 @@ class FlatLoad(BaseInstruction):
             if " + " in output:
                 output = make_elem_from_addr(output)
             else:
-                output = "*(" + make_opencl_type(decompiler_data.names_of_vars[output]) + "*)(" + output[1:] + ")"
+                output = "*(" + make_opencl_type(decompiler_data.names_of_vars[output]) + "*)(" + output + ")"
             output_string = node.state.registers[to_registers].val + " = " + output
             return output_string

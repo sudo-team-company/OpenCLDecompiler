@@ -1,12 +1,12 @@
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
 void loop_break_kernel(__global uint *data, uint x, uint y, uint unrollingBreaker)
 {
-    __global uint *var8;
-    __global uint *var9;
     uint var0;
     uint var10;
     uint var6;
     uint var7;
+    __global uint *var8;
+    __global uint *var9;
     if (unrollingBreaker == 0) {
         var7 = y;
         var8 = data;
@@ -20,8 +20,8 @@ void loop_break_kernel(__global uint *data, uint x, uint y, uint unrollingBreake
                 break;
             }
             var7 = (var7) * x;
-            var8 = (ulong)var8 + (ulong)(4 / 4);
-            var9 = (ulong)var9 + (ulong)(0 / 4);
+            var8 = var8 + (4 / 4);
+            var9 = var9 + (0 / 4);
             var10 = (ulong)var10 + (ulong)1;
         } while (!(((ulong)var10 + (ulong)1) >= unrollingBreaker));
     }

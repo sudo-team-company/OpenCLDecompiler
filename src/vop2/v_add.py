@@ -52,7 +52,7 @@ class VAdd(BaseInstruction):
                             node.state.registers[src0].type == RegisterType.work_group_id_z_work_item_id:
                         new_integrity = node.state.registers[src1].integrity
                         node.state.registers[vdst] = Register("get_global_id(2)", RegisterType.global_id_z, new_integrity)
-                    elif node.state.registers[src0].type == RegisterType.paramA:
+                    elif node.state.registers[src0].type == RegisterType.address_paramA:
                         new_integrity = node.state.registers[src1].integrity
                         if '.s' in node.state.registers[src0].val:
                             argument = node.state.registers[src0].val[:-3]
@@ -67,7 +67,7 @@ class VAdd(BaseInstruction):
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "4", " / ", '', '')
                             new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
-                                Register(new_val, RegisterType.param_global_id_x, new_integrity)
+                                Register(new_val, RegisterType.address_param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = \
                                 make_asm_type(decompiler_data.type_params["*" + argument])
                         elif decompiler_data.type_params.get("*" + argument) in \
@@ -75,14 +75,14 @@ class VAdd(BaseInstruction):
                             new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
                             new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
-                                Register(new_val, RegisterType.param_global_id_x, new_integrity)
+                                Register(new_val, RegisterType.address_param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = \
                                 make_asm_type(decompiler_data.type_params["*" + argument])
                         elif decompiler_data.type_params.get("*" + argument) in \
                                 ["char", "uchar", "__global char", "__global uchar"]:
                             new_val, _, _ = make_op(node, argument, node.state.registers[src1].val, " + ", '', '')
                             node.state.registers[vdst] = \
-                                Register(new_val, RegisterType.param_global_id_x, new_integrity)
+                                Register(new_val, RegisterType.address_param_global_id_x, new_integrity)
                             # TODO: Проанализировать, почему нет присвоения типов
                         elif decompiler_data.type_params.get("*" + argument) in ["float", "__global float"]:
                             if "1073741824" in node.state.registers[src1].val:
@@ -91,7 +91,7 @@ class VAdd(BaseInstruction):
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "4", " / ", '', '')
                             new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
-                                Register(new_val, RegisterType.param_global_id_x, new_integrity)
+                                Register(new_val, RegisterType.address_param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = \
                                 make_asm_type(decompiler_data.type_params["*" + argument])
                         elif decompiler_data.type_params.get("*" + argument) in ["double", "__global double"]:
@@ -101,7 +101,7 @@ class VAdd(BaseInstruction):
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
                             new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
-                                Register(new_val, RegisterType.param_global_id_x, new_integrity)
+                                Register(new_val, RegisterType.address_param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = \
                                 make_asm_type(decompiler_data.type_params["*" + argument])
                         elif decompiler_data.type_params.get("*" + argument) in ["int2", "__global int2"]:
@@ -111,7 +111,7 @@ class VAdd(BaseInstruction):
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
                             new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
-                                Register(new_val, RegisterType.param_global_id_x, new_integrity)
+                                Register(new_val, RegisterType.address_param_global_id_x, new_integrity)
                             # TODO: Определить, необходимо ли изменение на получение типа через make_asm_type
                             node.state.registers[vdst].type_of_data = 'int2'
                         elif decompiler_data.type_params.get("*" + argument) in ["int4", "__global int4"]:
@@ -121,7 +121,7 @@ class VAdd(BaseInstruction):
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "16", " / ", '', '')
                             new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
-                                Register(new_val, RegisterType.param_global_id_x, new_integrity)
+                                Register(new_val, RegisterType.address_param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'int4'
                         elif decompiler_data.type_params.get("*" + argument) in ["int8", "__global int8"]:
                             if "1073741824" in node.state.registers[src1].val:
@@ -130,13 +130,13 @@ class VAdd(BaseInstruction):
                                 new_value, src0_flag, src1_flag = make_op(node, src1, "32", " / ", '', '')
                             new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
-                                Register(new_val, RegisterType.param_global_id_x, new_integrity)
+                                Register(new_val, RegisterType.address_param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'int8'
                         else:
                             new_value, src0_flag, src1_flag = make_op(node, src1, "8", " / ", '', '')
                             new_val, _, _ = make_op(node, argument, new_value, " + ", '', '')
                             node.state.registers[vdst] = \
-                                Register(new_val, RegisterType.param_global_id_x, new_integrity)
+                                Register(new_val, RegisterType.address_param_global_id_x, new_integrity)
                             node.state.registers[vdst].type_of_data = 'int2'
                     elif node.state.registers[src0].type == RegisterType.global_data_pointer:
                         type_of_data = node.state.registers[src1].type_of_data

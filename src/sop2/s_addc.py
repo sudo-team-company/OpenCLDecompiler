@@ -25,12 +25,12 @@ class SAddc(BaseInstruction):
             new_val, ssrc0_reg, ssrc1_reg = make_op(node, ssrc0, ssrc1, " + ", '(ulong)', '(ulong)')
             if flag_of_status == OperationStatus.to_fill_node:
                 if ssrc0_reg and ssrc1_reg:
-                    if node.state.registers[ssrc0].type == RegisterType.paramA:
+                    if node.state.registers[ssrc0].type == RegisterType.address_paramA:
                         if node.state.registers[ssrc0].type_of_data in ['u32', 'i32', 'gu32', 'gi32']:
                             new_val, _, _ = make_op(node, ssrc1, "4", " / ", '', '')
-                            new_val, _, _ = make_op(node, ssrc0, new_val, " + ", '(ulong)', '(ulong)')
+                            new_val, _, _ = make_op(node, ssrc0, new_val, " + ", '', '')
                             node.state.registers[sdst] = \
-                                Register(new_val, RegisterType.paramA, Integrity.entire)
+                                Register(new_val, RegisterType.address_paramA, Integrity.entire)
                     else:
                         node.state.registers[sdst] = \
                             Register(new_val, RegisterType.unknown, Integrity.entire)
@@ -40,16 +40,16 @@ class SAddc(BaseInstruction):
                         type_reg = node.state.registers[ssrc0].type
                     if ssrc1_reg:
                         type_reg = node.state.registers[ssrc1].type
-                    if node.state.registers[ssrc0].type == RegisterType.paramA:
+                    if node.state.registers[ssrc0].type == RegisterType.address_paramA:
                         if node.state.registers[ssrc0].type_of_data in ['u32', 'i32', 'gu32', 'gi32']:
                             new_val, _, _ = make_op(node, ssrc1, "4", " / ", '', '')
-                            new_val, _, _ = make_op(node, ssrc0, new_val, " + ", '(ulong)', '(ulong)')
+                            new_val, _, _ = make_op(node, ssrc0, new_val, " + ", '', '')
                     node.state.registers[sdst] = \
                         Register(new_val, type_reg, Integrity.entire)
                 decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()
-                if node.state.registers[ssrc0].type == RegisterType.paramA:
+                if node.state.registers[ssrc0].type == RegisterType.address_paramA:
                     if ssrc0 == sdst:
                         node.state.registers[sdst].type_of_data = node.parent[0].state.registers[ssrc0].type_of_data
                     else:

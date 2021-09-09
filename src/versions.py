@@ -31,9 +31,9 @@ def update_reg_version(reg, curr_node, max_version, prev_versions_of_reg):
         curr_node.state.registers[reg].version = reg + "_" + str(max_version + 1)
         curr_node.state.registers[reg].prev_version = list(prev_versions_of_reg)
         variable = "var" + str(decompiler_data.num_of_var)
-        if curr_node.state.registers[reg].type in [RegisterType.param_global_id_x, RegisterType.paramA]:
-            variable = "*" + variable
         curr_node.state.registers[reg].val = variable
+        if curr_node.state.registers[reg].type in [RegisterType.address_param_global_id_x, RegisterType.address_paramA]:
+            decompiler_data.address_params.add(variable)
         decompiler_data.update_reg_version(prev_versions_of_reg, variable, curr_node, reg, max_version)
     return curr_node
 

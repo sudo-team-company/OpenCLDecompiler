@@ -230,8 +230,6 @@ def make_var_for_loop(curr_node, register, version, prev_version):
     else:
         variable = "var" + str(decompiler_data.num_of_var)
         decompiler_data.num_of_var += 1
-    if curr_node.state.registers[register].type == RegisterType.paramA:
-        variable = "*" + variable
     # decompiler_data.make_var(first_reg_prev_version, variable,
     #                          curr_node.state.registers[register].type_of_data)
     decompiler_data.checked_variables[prev_version] = variable
@@ -241,6 +239,8 @@ def make_var_for_loop(curr_node, register, version, prev_version):
     # decompiler_data.variables[first_reg_version] = variable
     decompiler_data.names_of_vars[variable] = curr_node.state.registers[register].type_of_data
     decompiler_data.variables[prev_version] = variable
+    if curr_node.state.registers[register].type == RegisterType.address_paramA:
+        decompiler_data.address_params.add(variable)
 
 
 def check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_version_node):

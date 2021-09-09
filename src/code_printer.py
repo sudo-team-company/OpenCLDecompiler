@@ -14,6 +14,8 @@ def create_opencl_body():
     for var in sorted(decompiler_data.names_of_vars.keys()):
         if " " not in var:
             type_of_var = make_opencl_type(decompiler_data.names_of_vars[var])
+            if var in decompiler_data.address_params:
+                var = "*" + var
             decompiler_data.write("    " + type_of_var + " " + var + ";\n")
     offsets = list(decompiler_data.lds_vars.keys())
     offsets.append(decompiler_data.localsize)
@@ -69,11 +71,7 @@ def make_output_for_loop_vars(curr_node, indent):
     key = decompiler_data.loops_nodes_for_variables[curr_node]
     reg = key[:key.find("_")]
     loop_variable = decompiler_data.loops_variables[key]
-    if "*" in loop_variable:
-        loop_variable = loop_variable[1:]
-    decompiler_data.write(indent + loop_variable + " = "
-                          + curr_node.state.registers[reg].val.replace("(ulong)*", "(ulong)")
-                          .replace("(ulong)(*", "(ulong)(").replace("*var", "var") + ";\n")
+    decompiler_data.write(indent + loop_variable + " = " + curr_node.state.registers[reg].val + ";\n")
 
 
 def make_output_for_linear_region(region, indent):

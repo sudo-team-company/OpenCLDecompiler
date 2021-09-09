@@ -63,7 +63,7 @@ class FlatStoreDword(BaseInstruction):
             if " + " in var:
                 var = make_elem_from_addr(var)
             else:
-                var = "*(" + make_opencl_type(decompiler_data.names_of_vars[var]) + "*)(" + var[1:] + ")"
+                var = "*(" + make_opencl_type(decompiler_data.names_of_vars[var]) + "*)(" + var + ")"
             if node.state.registers.get(from_registers):
                 output_string = var + " = " + node.state.registers[from_registers].val
             else:

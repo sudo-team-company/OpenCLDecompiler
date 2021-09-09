@@ -34,12 +34,12 @@ class VAddc(BaseInstruction):
             new_val, src0_reg, src1_reg = make_op(node, src0, src1, " + ", '(ulong)', '(ulong)')
             if flag_of_status == OperationStatus.to_fill_node:
                 if src0_reg and src1_reg:
-                    if node.state.registers[src0].type == RegisterType.paramA \
+                    if node.state.registers[src0].type == RegisterType.address_paramA \
                             and node.state.registers[src1].type == RegisterType.global_id_x:
                         new_integrity = node.state.registers[src1].integrity
                         node.state.registers[vdst] = \
                             Register(node.state.registers[src0].val + "[get_global_id(0)]",
-                                     RegisterType.param_global_id_x, new_integrity)
+                                     RegisterType.address_param_global_id_x, new_integrity)
                     else:
                         new_integrity = node.state.registers[src1].integrity
                         node.state.registers[vdst] = Register(new_val, RegisterType.unknown, new_integrity)
