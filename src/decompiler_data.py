@@ -2,7 +2,7 @@ import binascii
 import re
 import struct
 
-import sympy as sym
+import sympy
 
 from src.flag_type import FlagType
 from src.integrity import Integrity
@@ -67,8 +67,8 @@ def simplify_opencl_statement(opencl_line):
         for key, data_type in current_type_conversion.items():
             substring = substring.replace(data_type, '')
         if substring != '':
-            substring = sym.simplify(substring)
-            substring = sym.sstr(substring)
+            substring = sympy.simplify(substring)
+            substring = sympy.sstr(substring)
         # doesn't recover type (int)A in case (int)(A + B) - B
         for key, data_type in current_type_conversion.items():
             if key in substring:
@@ -274,6 +274,7 @@ class DecompilerData(metaclass=Singleton):
         self.loops_nodes_for_variables = {}
         self.configuration_output = ""
         self.flag_for_decompilation = None
+        self.address_params = set()
 
     def reset(self, output_file, flag_for_decompilation):
         self.output_file = output_file
@@ -386,6 +387,7 @@ class DecompilerData(metaclass=Singleton):
             self.flag_for_decompilation = FlagType.only_opencl
         else:
             self.flag_for_decompilation = FlagType.only_clrx
+        self.address_params = set()
 
     def write(self, output):
         # noinspection PyUnresolvedReferences
@@ -467,8 +469,8 @@ class DecompilerData(metaclass=Singleton):
         self.checked_variables[curr_node.state.registers[reg].version] = variable
         self.versions[reg] = max_version + 1
 
-    def set_name_of_vars(self, var_name, type_of_var):
-        self.names_of_vars[var_name] = type_of_var
+    def set_name_of_vars(self, var_name, type_of_data):
+        self.names_of_vars[var_name] = type_of_data
 
     def check_lds_vars(self, offset, suffix):
         if self.lds_vars.get(offset) is None:

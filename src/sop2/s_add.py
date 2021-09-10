@@ -51,12 +51,12 @@ class SAdd(BaseInstruction):
                             node.state.registers[sdst] = \
                                 Register(new_val, RegisterType.global_data_pointer, Integrity.entire)
                             suffix = '8 bytes'
-                    elif node.state.registers[ssrc0].type == RegisterType.paramA:
+                    elif node.state.registers[ssrc0].type == RegisterType.address_paramA:
                         if node.state.registers[ssrc0].type_of_data in ['u32', "i32", "gi32", "gu32"]:
                             new_val, _, _ = make_op(node, ssrc1, "4", " / ", '', '')
-                            new_val, _, _ = make_op(node, ssrc0, new_val, " + ", '(ulong)', '(ulong)')
+                            new_val, _, _ = make_op(node, ssrc0, new_val, " + ", '', '')
                             node.state.registers[sdst] = \
-                                Register(new_val, RegisterType.paramA, Integrity.entire)
+                                Register(new_val, RegisterType.address_paramA, Integrity.entire)
                     elif node.state.registers[ssrc0].type == RegisterType.param \
                             or node.state.registers[ssrc1].type == RegisterType.param:
                         node.state.registers[sdst] = \
@@ -70,17 +70,17 @@ class SAdd(BaseInstruction):
                         type_reg = node.state.registers[ssrc0].type
                     if ssrc1_reg:
                         type_reg = node.state.registers[ssrc1].type
-                    if node.state.registers[ssrc0].type == RegisterType.paramA:
+                    if node.state.registers[ssrc0].type == RegisterType.address_paramA:
                         if node.state.registers[ssrc0].type_of_data in ['u32', "i32", "gi32", "gu32"]:
                             new_val, _, _ = make_op(node, ssrc1, "4", " / ", '', '')
-                            new_val, _, _ = make_op(node, ssrc0, new_val, " + ", '(ulong)', '(ulong)')
+                            new_val, _, _ = make_op(node, ssrc0, new_val, " + ", '', '')
                     node.state.registers[sdst] = \
                         Register(new_val, type_reg, Integrity.entire)
                 decompiler_data.make_version(node.state, sdst)
                 if sdst in [ssrc0, ssrc1]:
                     node.state.registers[sdst].make_prev()
                 if not (node.state.registers[ssrc0].type == RegisterType.global_data_pointer):
-                    if node.state.registers[ssrc0].type == RegisterType.paramA:
+                    if node.state.registers[ssrc0].type == RegisterType.address_paramA:
                         if ssrc0 == sdst:
                             node.state.registers[sdst].type_of_data = node.parent[0].state.registers[ssrc0].type_of_data
                         else:

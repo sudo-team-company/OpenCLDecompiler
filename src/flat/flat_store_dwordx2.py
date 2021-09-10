@@ -61,7 +61,7 @@ class FlatStoreDwordx2(BaseInstruction):
             if " + " in var:
                 var = make_elem_from_addr(var)
             else:
-                var = "*(" + make_opencl_type(decompiler_data.names_of_vars[var]) + "*)(" + var[1:] + ")"
+                var = "*(" + make_opencl_type(decompiler_data.names_of_vars[var]) + "*)(" + var + ")"
             if node.state.registers.get(from_registers):
                 from_registers_1 = name_of_from + str(last_from)
                 if node.state.registers[from_registers].val == "0" and node.state.registers.get(from_registers_1):
