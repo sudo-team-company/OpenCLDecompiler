@@ -6,13 +6,14 @@ from src.operation_status import OperationStatus
 class DsBpermute(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData()
+        dst = instruction[1]
+        addr = instruction[2]
+        src = instruction[3]
+        offset = instruction[4][7:]
+
         if suffix == "b32":
             tab = "    "
             tmp = "tmp" + str(decompiler_data.number_of_tmp)
-            dst = instruction[1]
-            addr = instruction[2]
-            src = instruction[3]
-            offset = instruction[4][7:]
             if flag_of_status == OperationStatus.to_print_unresolved:
                 decompiler_data.write("ulong " + tmp + " // ds_bpermute_b32\n")
                 decompiler_data.write("for (short i = 0; i < 64; i++)\n")

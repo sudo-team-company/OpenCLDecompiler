@@ -12,11 +12,13 @@ class VTrunc(BaseInstruction):
         output_string = ""
         vdst = instruction[1]
         src0 = instruction[2]
+
+        first_to, last_to, name_of_to, name_of_from, first_from, last_from \
+            = find_first_last_num_to_from(vdst, src0)
+        from_registers = name_of_from + str(first_from)
+        to_registers = name_of_to + str(first_to)
+
         if suffix == "f16":
-            first_to, last_to, name_of_to, name_of_from, first_from, last_from \
-                = find_first_last_num_to_from(vdst, src0)
-            from_registers = name_of_from + str(first_from)
-            to_registers = name_of_to + str(first_to)
             if flag_of_status == OperationStatus.to_fill_node:
                 decompiler_data.names_of_vars[node.state.registers[from_registers].val] = suffix
                 type_reg = node.state.registers[from_registers].type
@@ -27,11 +29,8 @@ class VTrunc(BaseInstruction):
                     node.state.registers[to_registers].type_of_data = 'i16'
                 return node
             return output_string
+
         elif suffix == 'f32':
-            first_to, last_to, name_of_to, name_of_from, first_from, last_from \
-                = find_first_last_num_to_from(vdst, src0)
-            from_registers = name_of_from + str(first_from)
-            to_registers = name_of_to + str(first_to)
             if flag_of_status == OperationStatus.to_fill_node:
                 decompiler_data.names_of_vars[node.state.registers[from_registers].val] = suffix
                 type_reg = node.state.registers[from_registers].type
@@ -42,11 +41,8 @@ class VTrunc(BaseInstruction):
                     node.state.registers[to_registers].type_of_data = 'i32'
                 return node
             return output_string
+
         else:
-            first_to, last_to, name_of_to, name_of_from, first_from, last_from \
-                = find_first_last_num_to_from(vdst, src0)
-            from_registers = name_of_from + str(first_from)
-            to_registers = name_of_to + str(first_to)
             if flag_of_status == OperationStatus.to_fill_node:
                 decompiler_data.names_of_vars[node.state.registers[from_registers].val] = suffix
                 type_reg = node.state.registers[from_registers].type

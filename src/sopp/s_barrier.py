@@ -8,5 +8,6 @@ class SBarrier(BaseInstruction):
             return None
         if flag_of_status == OperationStatus.to_fill_node:
             return node
-        output_string = "barrier(CLK_LOCAL_MEM_FENCE)"
-        return output_string
+        if flag_of_status == OperationStatus.to_print:
+            output_string = "barrier(CLK_LOCAL_MEM_FENCE)"
+            return output_string

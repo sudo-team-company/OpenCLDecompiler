@@ -6,9 +6,7 @@ from src.ds.ds_write import DsWrite
 from src.ds.ds_write2 import DsWrite2
 from src.flat.flat_atomic_add import FlatAtomicAdd
 from src.flat.flat_load import FlatLoad
-from src.flat.flat_store_dword import FlatStoreDword
-from src.flat.flat_store_dwordx2 import FlatStoreDwordx2
-from src.flat.flat_store_dwordx4 import FlatStoreDwordx4
+from src.flat.flat_store import FlatStore
 from src.flat.global_load import GlobalLoad
 from src.flat.global_store import GlobalStore
 from src.smem.s_load import SLoad
@@ -94,10 +92,7 @@ instruction_dict = {'ds_add': DsAdd(),
                     'ds_write2': DsWrite2(),
                     'flat_atomic_add': FlatAtomicAdd(),
                     'flat_load': FlatLoad(),
-                    'flat_store_byte': FlatStoreDword(),
-                    'flat_store_dword': FlatStoreDword(),
-                    'flat_store_dwordx2': FlatStoreDwordx2(),
-                    'flat_store_dwordx4': FlatStoreDwordx4(),
+                    'flat_store': FlatStore(),
                     'global_load': GlobalLoad(),
                     'global_store': GlobalStore(),
                     's_add': SAdd(),

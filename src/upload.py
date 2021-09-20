@@ -140,10 +140,10 @@ def upload_kernel_param(state, offset, kernel_params):
             value_for_type = value_for_type[:value_for_type.find(".")]
         type_of_data = make_asm_type(decompiler_data.type_params[value_for_type])
         if val[0] == "*":
-            type_param = RegisterType.address_paramA
+            type_param = RegisterType.address_kernel_argument
             val = val[1:]
         else:
-            type_param = RegisterType.param
+            type_param = RegisterType.kernel_argument_value
         state.registers[reg] = Register(val, type_param, Integrity.entire)
         state.registers[reg].type_of_data = type_of_data
         decompiler_data.make_version(state, reg)

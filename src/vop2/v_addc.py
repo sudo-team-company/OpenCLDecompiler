@@ -1,8 +1,7 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData, make_op
+from src.decompiler_data import DecompilerData, make_op, make_new_value_for_reg
 from src.integrity import Integrity
 from src.operation_status import OperationStatus
-from src.register import Register
 from src.register_type import RegisterType
 
 
@@ -10,12 +9,13 @@ class VAddc(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData()
         output_string = ""
+        vdst = instruction[1]
+        sdst = instruction[2]
+        src0 = instruction[3]
+        src1 = instruction[4]
+        ssrc2 = instruction[5]
+
         if suffix == "u32":
-            vdst = instruction[1]
-            sdst = instruction[2]
-            src0 = instruction[3]
-            src1 = instruction[4]
-            ssrc2 = instruction[5]
             if flag_of_status == OperationStatus.to_print_unresolved:
                 temp = "temp" + str(decompiler_data.number_of_temp)
                 mask = "mask" + str(decompiler_data.number_of_mask)
@@ -31,28 +31,23 @@ class VAddc(BaseInstruction):
                 decompiler_data.number_of_mask += 1
                 decompiler_data.number_of_cc += 1
                 return node
-            new_val, src0_reg, src1_reg = make_op(node, src0, src1, " + ", '(ulong)', '(ulong)')
             if flag_of_status == OperationStatus.to_fill_node:
+                new_value, src0_reg, src1_reg = make_op(node, src0, src1, " + ", '(ulong)', '(ulong)')
+                reg_type = RegisterType.unknown
+                new_integrity = Integrity.entire
                 if src0_reg and src1_reg:
-                    if node.state.registers[src0].type == RegisterType.address_paramA \
+                    new_integrity = node.state.registers[src1].integrity
+                    if node.state.registers[src0].type == RegisterType.address_kernel_argument \
                             and node.state.registers[src1].type == RegisterType.global_id_x:
-                        new_integrity = node.state.registers[src1].integrity
-                        node.state.registers[vdst] = \
-                            Register(node.state.registers[src0].val + "[get_global_id(0)]",
-                                     RegisterType.address_param_global_id_x, new_integrity)
-                    else:
-                        new_integrity = node.state.registers[src1].integrity
-                        node.state.registers[vdst] = Register(new_val, RegisterType.unknown, new_integrity)
+                        new_value = node.state.registers[src0].val + "[get_global_id(0)]"
+                        reg_type = RegisterType.address_kernel_argument_element
                 else:
-                    type_reg = RegisterType.int32
+                    reg_type = RegisterType.int32
                     if src0_reg:
-                        type_reg = node.state.registers[src0].type
+                        reg_type = node.state.registers[src0].type
                     if src1_reg:
-                        type_reg = node.state.registers[src1].type
-                    node.state.registers[vdst] = Register(new_val, type_reg, Integrity.entire)
-                decompiler_data.make_version(node.state, vdst)
-                if vdst in [src0, src1]:
-                    node.state.registers[vdst].make_prev()
-                node.state.registers[vdst].type_of_data = suffix
-                return node
-            return output_string
+                        reg_type = node.state.registers[src1].type
+                return make_new_value_for_reg(node, new_value, vdst, [src0, src1], suffix,
+                                              reg_type=reg_type, reg_entire=new_integrity)
+            if flag_of_status == OperationStatus.to_print:
+                return output_string

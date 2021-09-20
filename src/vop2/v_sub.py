@@ -1,14 +1,23 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData, make_op
+from src.decompiler_data import DecompilerData, make_op, make_new_value_for_reg
 from src.operation_status import OperationStatus
-from src.register import Register
 from src.register_type import RegisterType
+
+
+def v_sub_fill_node(node, src0_reg, src1_reg, src0, src1, vdst, new_value, suffix):
+    reg_type = RegisterType.int32
+    if src0_reg:
+        reg_type = node.state.registers[src0].integrity
+    elif src1_reg:
+        reg_type = node.state.registers[src1].integrity
+    return make_new_value_for_reg(node, new_value, vdst, [src0, src1], suffix, reg_type=reg_type)
 
 
 class VSub(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData()
         output_string = ""
+
         if suffix == "u32":
             vdst = instruction[1]
             vcc = instruction[2]
@@ -28,18 +37,9 @@ class VSub(BaseInstruction):
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val, src0_reg, src1_reg = make_op(node, src0, src1, " - ", '(ulong)', '')
-                type_reg = RegisterType.int32
-                if src0_reg:
-                    type_reg = node.state.registers[src0].integrity
-                elif src1_reg:
-                    type_reg = node.state.registers[src1].integrity
-                node.state.registers[vdst] = Register(new_val, RegisterType.unknown, type_reg)
-                decompiler_data.make_version(node.state, vdst)
-                if vdst in [src0, src1]:
-                    node.state.registers[vdst].make_prev()
-                node.state.registers[vdst].type_of_data = suffix
-                return node
-            return output_string
+                return v_sub_fill_node(node, src0_reg, src1_reg, src0, src1, vdst, new_val, suffix)
+            if flag_of_status == OperationStatus:
+                return output_string
 
         if suffix == "f32":
             vdst = instruction[1]
@@ -50,15 +50,6 @@ class VSub(BaseInstruction):
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 new_val, src0_reg, src1_reg = make_op(node, src0, src1, " - ", 'as_float(', 'as_float(')
-                type_reg = RegisterType.int32
-                if src0_reg:
-                    type_reg = node.state.registers[src0].integrity
-                elif src1_reg:
-                    type_reg = node.state.registers[src1].integrity
-                node.state.registers[vdst] = Register(new_val, RegisterType.unknown, type_reg)
-                decompiler_data.make_version(node.state, vdst)
-                if vdst in [src0, src1]:
-                    node.state.registers[vdst].make_prev()
-                node.state.registers[vdst].type_of_data = suffix
-                return node
-            return output_string
+                return v_sub_fill_node(node, src0_reg, src1_reg, src0, src1, vdst, new_val, suffix)
+            if flag_of_status == OperationStatus.to_print:
+                return output_string

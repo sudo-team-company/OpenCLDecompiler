@@ -1,8 +1,6 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData, make_op
-from src.integrity import Integrity
+from src.decompiler_data import DecompilerData, make_op, make_new_value_for_reg
 from src.operation_status import OperationStatus
-from src.register import Register
 from src.register_type import RegisterType
 from src.upload import find_first_last_num_to_from
 
@@ -11,70 +9,56 @@ class SLshl(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData()
         output_string = ""
+        sdst = instruction[1]
+        ssrc0 = instruction[2]
+        ssrc1 = instruction[3]
+
         if suffix == 'b32':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            ssrc1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
                 decompiler_data.write(sdst + " = " + ssrc0 + " << (" + ssrc1 + " & 31) // s_lshl_b32\n")
                 decompiler_data.write("scc = " + sdst + "!= 0\n")
                 return node
-            new_val, ssrc0_flag, ssrc1_flag = make_op(node, ssrc0, str(pow(2, int(ssrc1))), " * ", '', '')
             if flag_of_status == OperationStatus.to_fill_node:
+                new_value, ssrc0_flag, ssrc1_flag = make_op(node, ssrc0, str(pow(2, int(ssrc1))), " * ", '', '')
                 if node.state.registers[ssrc0].type == RegisterType.work_group_id_x:
-                    node.state.registers[sdst] = Register(new_val, RegisterType.work_group_id_x_local_size, Integrity.entire)
-                    node.state.registers["scc"] = Register(sdst + "!= 0", RegisterType.int32, Integrity.entire)
+                    reg_type = RegisterType.work_group_id_x_local_size
                 elif node.state.registers[ssrc0].type == RegisterType.work_group_id_y:
-                    node.state.registers[sdst] = Register(new_val, RegisterType.work_group_id_y_local_size, Integrity.entire)
-                    node.state.registers["scc"] = Register(sdst + "!= 0", RegisterType.int32, Integrity.entire)
+                    reg_type = RegisterType.work_group_id_y_local_size
                 elif node.state.registers[ssrc0].type == RegisterType.work_group_id_z:
-                    node.state.registers[sdst] = Register(new_val, RegisterType.work_group_id_z_local_size, Integrity.entire)
-                    node.state.registers["scc"] = Register(sdst + "!= 0", RegisterType.int32, Integrity.entire)
+                    reg_type = RegisterType.work_group_id_z_local_size
                 else:
-                    node.state.registers[sdst] = Register(new_val, node.state.registers[ssrc0].type, Integrity.entire)
-                decompiler_data.make_version(node.state, sdst)
-                node.state.registers[sdst].type_of_data = suffix
-                decompiler_data.make_version(node.state, "scc")
-                node.state.registers["scc"].type_of_data = suffix
-                if sdst in [ssrc0, ssrc1]:
-                    node.state.registers[sdst].make_prev()
-                return node
-            return output_string
+                    reg_type = node.state.registers[ssrc0].type
+                return make_new_value_for_reg(node, new_value, sdst, [ssrc0, ssrc1], suffix, reg_type=reg_type)
+            if flag_of_status == OperationStatus.to_print:
+                return output_string
 
         if suffix == 'b64':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            ssrc1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
                 decompiler_data.write(sdst + " = " + ssrc0 + " << (" + ssrc1 + " & 63) // s_lshl_b64\n")
                 decompiler_data.write("scc = " + sdst + "!= 0\n")
                 return node
-            first_to, last_to, name_of_to, name_of_from, first_from, last_from \
-                = find_first_last_num_to_from(sdst, ssrc0)
-            from_registers = name_of_from + str(first_from)
-            to_registers = name_of_to + str(first_to)
-            from_registers1 = name_of_from + str(first_from + 1)
-            to_registers1 = name_of_to + str(first_to + 1)
-            new_val0, ssrc0_flag0, ssrc1_flag0 = make_op(node, from_registers,
-                                                         str(pow(2, int(ssrc1))), " * ", '', '')
-            new_val1, ssrc0_flag1, ssrc1_flag1 = make_op(node, from_registers1,
-                                                         str(pow(2, int(ssrc1))), " * ", '', '')
             if flag_of_status == OperationStatus.to_fill_node:
-                node.state.registers[to_registers] = \
-                    Register(new_val0, node.state.registers[from_registers].type, Integrity.low_part)
-                node.state.registers[to_registers1] = \
-                    Register(new_val1, node.state.registers[from_registers1].type, Integrity.high_part)
-                decompiler_data.make_version(node.state, to_registers)
-                if to_registers in [from_registers, ssrc1]:
-                    node.state.registers[to_registers].make_prev()
-                decompiler_data.make_version(node.state, to_registers1)
+                first_to, last_to, name_of_to, name_of_from, first_from, last_from \
+                    = find_first_last_num_to_from(sdst, ssrc0)
+                from_registers = name_of_from + str(first_from)
+                to_registers = name_of_to + str(first_to)
+                from_registers1 = name_of_from + str(first_from + 1)
+                to_registers1 = name_of_to + str(first_to + 1)
+                new_value0, ssrc0_flag0, ssrc1_flag0 = make_op(node, from_registers,
+                                                               str(pow(2, int(ssrc1))), " * ", '', '')
+                new_value1, ssrc0_flag1, ssrc1_flag1 = make_op(node, from_registers1,
+                                                               str(pow(2, int(ssrc1))), " * ", '', '')
+                reg_type0 = node.state.registers[from_registers].type
+                reg_type1 = node.state.registers[from_registers1].type
+                type_of_value = suffix
                 if ssrc1 == '3':
-                    suffix = '8 bytes'
+                    type_of_value = '8 bytes'
                 elif ssrc1 == '2':
-                    suffix = '4 bytes'
-                node.state.registers[to_registers].type_of_data = suffix
-                node.state.registers[to_registers1].type_of_data = suffix
-                if to_registers1 in [from_registers1, ssrc1]:
-                    node.state.registers[to_registers1].make_prev()
+                    type_of_value = '4 bytes'
+                node = make_new_value_for_reg(node, new_value0, to_registers, [from_registers, ssrc1],
+                                              type_of_value, reg_type=reg_type0)
+                node = make_new_value_for_reg(node, new_value1, to_registers1, [from_registers1, ssrc1],
+                                              type_of_value, reg_type=reg_type1)
                 return node
-            return output_string
+            if flag_of_status == OperationStatus.to_print:
+                return output_string

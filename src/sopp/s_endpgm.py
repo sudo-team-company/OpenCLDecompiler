@@ -9,4 +9,5 @@ class SEndpgm(BaseInstruction):
             return node
         if flag_of_status == OperationStatus.to_fill_node:
             return node
-        return output_string
+        if flag_of_status == OperationStatus.to_print:
+            return output_string

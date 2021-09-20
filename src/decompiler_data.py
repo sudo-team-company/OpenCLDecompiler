@@ -11,6 +11,17 @@ from src.register_type import RegisterType
 from src.state import State
 
 
+def make_new_value_for_reg(node, new_value, to_reg, from_regs, type_of_value,
+                           reg_type=RegisterType.unknown, reg_entire=Integrity.entire):
+    decompiler_data = DecompilerData()
+    node.state.registers[to_reg] = Register(new_value, reg_type, reg_entire)
+    decompiler_data.make_version(node.state, to_reg)
+    if to_reg in from_regs:
+        node.state.registers[to_reg].make_prev()
+    node.state.registers[to_reg].type_of_data = type_of_value
+    return node
+
+
 def make_elem_from_addr(var):
     separator_pos = var.find(" + ")
     param_name = var[:separator_pos]
@@ -29,23 +40,8 @@ def make_new_type_without_modifier(node, register):
 
 
 def compare_values(node, to_reg, from_reg0, from_reg1, type0, type1, operation, suffix):
-    decompiler_data = DecompilerData()
-    new_val, _, _ = make_op(node, from_reg0, from_reg1, operation, type0, type1)
-    node.state.registers[to_reg] = Register(new_val, RegisterType.unknown, Integrity.entire)
-    decompiler_data.make_version(node.state, to_reg)
-    if to_reg in [from_reg0, from_reg1]:
-        node.state.registers[to_reg].make_prev()
-    node.state.registers[to_reg].type_of_data = suffix
-    return node
-
-
-def update_register(asm_type, from_registers, to_registers, node):
-    decompiler_data = DecompilerData()
-    decompiler_data.names_of_vars[node.state.registers[from_registers].val] = asm_type
-    new_val = node.state.registers[from_registers].val
-    type_of_reg = node.state.registers[from_registers].type
-    node.state.registers[to_registers] = Register(new_val, type_of_reg, Integrity.entire)
-    node.state.registers[to_registers].type_of_data = asm_type
+    new_value, _, _ = make_op(node, from_reg0, from_reg1, operation, type0, type1)
+    make_new_value_for_reg(node, new_value, to_reg, [from_reg0, from_reg1], suffix)
     return node
 
 
@@ -124,24 +120,22 @@ def check_reg_for_val(node, register):
     return new_val, register_flag
 
 
-def make_op(node, register0, register1, operation, type0, type1):
-    new_val0, register0_flag = check_reg_for_val(node, register0)
-    new_val1, register1_flag = check_reg_for_val(node, register1)
-    if "-" in new_val0 or "+" in new_val0 or "*" in new_val0 or "/" in new_val0:
-        new_val0 = "(" + new_val0 + ")"
-    if "-" in new_val1 or "+" in new_val1 or "*" in new_val1 or "/" in new_val1:
-        new_val1 = "(" + new_val1 + ")"
+def change_vals_for_make_op(node, register, reg_type):
     decompiler_data = DecompilerData()
-    if type0 != '':
-        decompiler_data.type_conversion[new_val0] = type0
-    if type1 != '':
-        decompiler_data.type_conversion[new_val1] = type1
-    new_val0 = type0 + new_val0
-    new_val1 = type1 + new_val1
-    if len(type0) > 0 and ')' not in type0:
-        new_val0 += ')'
-    if len(type1) > 0 and ')' not in type1:
-        new_val1 += ')'
+    new_val, register_flag = check_reg_for_val(node, register)
+    if "-" in new_val or "+" in new_val or "*" in new_val or "/" in new_val:
+        new_val = "(" + new_val + ")"
+    if reg_type != '':
+        decompiler_data.type_conversion[new_val] = reg_type
+    new_val = reg_type + new_val
+    if len(reg_type) > 0 and ')' not in reg_type:
+        new_val += ')'
+    return new_val, register_flag
+
+
+def make_op(node, register0, register1, operation, type0, type1):
+    new_val0, register0_flag = change_vals_for_make_op(node, register0, type0)
+    new_val1, register1_flag = change_vals_for_make_op(node, register1, type1)
     new_val = new_val0 + operation + new_val1
     return new_val, register0_flag, register1_flag
 

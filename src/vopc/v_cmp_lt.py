@@ -6,10 +6,11 @@ from src.operation_status import OperationStatus
 class VCmpLt(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData()
+        sdst = instruction[1]
+        src0 = instruction[2]
+        src1 = instruction[3]
+
         if suffix == "u32":
-            sdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
                 decompiler_data.write(sdst + " = (uint)" + src0 + " < (uint)" + src1 + " // v_cmp_lt_u32\n")
                 return node

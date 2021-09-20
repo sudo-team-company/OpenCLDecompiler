@@ -37,7 +37,13 @@ opencl_to_asm_dict = {
     "float": "f32",
     "__global float": "gf32",
     "double": "f64",
-    "__global double": "gf64"
+    "__global double": "gf64",
+    "int2": "int2",
+    "int4": "int4",
+    "int8": "int8",
+    "__global int2": "int2",
+    "__global int4": "int4",
+    "__global int8": "int8"
 }
 
 

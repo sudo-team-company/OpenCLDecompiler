@@ -1,8 +1,6 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData
-from src.integrity import Integrity
+from src.decompiler_data import DecompilerData, make_new_value_for_reg
 from src.operation_status import OperationStatus
-from src.register import Register
 from src.register_type import RegisterType
 
 
@@ -10,10 +8,11 @@ class SBfe(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData()
         output_string = ""
+        sdst = instruction[1]
+        ssrc0 = instruction[2]
+        ssrc1 = instruction[3]
+
         if suffix == 'u32':
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            ssrc1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
                 tab = "    "
                 shift = "shift" + str(decompiler_data.number_of_shift)
@@ -33,19 +32,19 @@ class SBfe(BaseInstruction):
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 if ssrc1 == "0x20010":
-                    node.state.registers[sdst] = Register("get_work_dim()", RegisterType.work_dim, Integrity.entire)
+                    new_value = "get_work_dim()"
+                    reg_type = RegisterType.work_dim
                 elif ssrc1 == '0x100010':
-                    node.state.registers[sdst] = Register("get_local_size(1)", RegisterType.local_size_y, Integrity.entire)
+                    new_value = "get_local_size(1)"
+                    reg_type = RegisterType.local_size_y
                 else:
                     print("Unknown pattern in s_bfe")
-                decompiler_data.make_version(node.state, sdst)
-                return node
-            return output_string
+                    raise NotImplementedError()
+                return make_new_value_for_reg(node, new_value, sdst, [], suffix, reg_type=reg_type)
+            if flag_of_status == OperationStatus.to_print:
+                return output_string
 
         if suffix == "i32":
-            sdst = instruction[1]
-            ssrc0 = instruction[2]
-            ssrc1 = instruction[3]
             if flag_of_status == OperationStatus.to_print_unresolved:
                 tab = "    "
                 shift = "shift" + str(decompiler_data.number_of_shift)
@@ -65,4 +64,5 @@ class SBfe(BaseInstruction):
                 return node
             if flag_of_status == OperationStatus.to_fill_node:
                 return node
-            return output_string
+            if flag_of_status == OperationStatus.to_print:
+                return output_string

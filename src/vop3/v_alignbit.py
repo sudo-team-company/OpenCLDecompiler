@@ -1,20 +1,18 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData, check_reg_for_val
-from src.integrity import Integrity
+from src.decompiler_data import DecompilerData, check_reg_for_val, make_new_value_for_reg
 from src.operation_status import OperationStatus
-from src.register import Register
-from src.register_type import RegisterType
 
 
 class VAlignbit(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData()
         output_string = ""
+        vdst = instruction[1]
+        src0 = instruction[2]
+        src1 = instruction[3]
+        src2 = instruction[4]
+
         if suffix == "b32":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            src2 = instruction[4]
             if flag_of_status == OperationStatus.to_print_unresolved:
                 decompiler_data.write(vdst + " = (((ulong)" + src0 + ") << 32) | " + src1
                                       + ") >> (" + src2 + " & 31) // v_alignbit_b32\n")
@@ -23,11 +21,7 @@ class VAlignbit(BaseInstruction):
                 src0, _ = check_reg_for_val(node, src0)
                 src1, _ = check_reg_for_val(node, src1)
                 src2, _ = check_reg_for_val(node, src2)
-                new_val = 'amd_bitalign(' + src0 + ', ' + src1 + ', ' + src2 + ')'
-                node.state.registers[vdst] = Register(new_val, RegisterType.unknown, Integrity.entire)
-                decompiler_data.make_version(node.state, vdst)
-                if vdst in [src0, src1, src2]:
-                    node.state.registers[vdst].make_prev()
-                node.state.registers[vdst].type_of_data = suffix
-                return node
-            return output_string
+                new_value = 'amd_bitalign(' + src0 + ', ' + src1 + ', ' + src2 + ')'
+                return make_new_value_for_reg(node, new_value, vdst, [src0, src1, src2], suffix)
+            if flag_of_status == OperationStatus.to_print:
+                return output_string

@@ -10,6 +10,7 @@ class FlatAtomicAdd(BaseInstruction):
         vaddr = instruction[2]
         vdata = instruction[3]
         inst_offset = instruction[4] if len(instruction) > 4 else ''
+
         if flag_of_status == OperationStatus.to_print_unresolved:
             vm = "vm" + str(decompiler_data.number_of_vm)
             p = "p" + str(decompiler_data.number_of_p)

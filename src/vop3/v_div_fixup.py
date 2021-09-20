@@ -7,11 +7,12 @@ class VDivFixup(BaseInstruction):
     def execute(self, node, instruction, flag_of_status, suffix):
         decompiler_data = DecompilerData()
         tab = "    "
+        vdst = instruction[1]
+        src0 = instruction[2]
+        src1 = instruction[3]
+        src2 = instruction[4]
+
         if suffix == "f64":
-            vdst = instruction[1]
-            src0 = instruction[2]
-            src1 = instruction[3]
-            src2 = instruction[4]
             if flag_of_status == OperationStatus.to_print_unresolved:
                 sf0 = "sf0" + str(decompiler_data.number_of_sf0)
                 sf1 = "sf1" + str(decompiler_data.number_of_sf1)

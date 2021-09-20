@@ -239,7 +239,7 @@ def make_var_for_loop(curr_node, register, version, prev_version):
     # decompiler_data.variables[first_reg_version] = variable
     decompiler_data.names_of_vars[variable] = curr_node.state.registers[register].type_of_data
     decompiler_data.variables[prev_version] = variable
-    if curr_node.state.registers[register].type == RegisterType.address_paramA:
+    if curr_node.state.registers[register].type == RegisterType.address_kernel_argument:
         decompiler_data.address_params.add(variable)
 
 
