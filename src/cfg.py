@@ -10,12 +10,12 @@ def make_cfg_node(instruction, last_node_state, last_node):
     node = Node(instruction, last_node_state)
     if last_node.instruction != "branch":
         node.add_parent(last_node)
-    return to_opencl(node, OperationStatus.to_fill_node)
+    return to_opencl(node, OperationStatus.TO_FILL_NODE)
 
 
 def make_unresolved_node(instruction, last_node_state):
     node = Node(instruction, last_node_state)
-    return to_opencl(node, OperationStatus.to_print_unresolved)
+    return to_opencl(node, OperationStatus.TO_PRINT_UNRESOLVED)
 
 
 def change_cfg_for_else_structure(curr_node, instruction):

@@ -1,16 +1,17 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData
-from src.operation_status import OperationStatus
 
 
 class VCmpGe(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData()
-        sdst = instruction[1]
-        src0 = instruction[2]
-        src1 = instruction[3]
+    def __init__(self, node, suffix):
+        super().__init__(node, suffix)
+        self.sdst = self.instruction[1]
+        self.src0 = self.instruction[2]
+        self.src1 = self.instruction[3]
 
-        if suffix == "u32":
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(sdst + " = (uint)" + src0 + " >= (uint)" + src1 + " // v_cmp_ge_u32\n")
-                return node
+    def to_print_unresolved(self):
+        if self.suffix == 'u32':
+            self.decompiler_data.write(self.sdst + " = (uint)" + self.src0 +
+                                       " >= (uint)" + self.src1 + " // v_cmp_ge_u32\n")
+            return self.node
+        else:
+            return super().to_print_unresolved()

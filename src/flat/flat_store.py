@@ -1,103 +1,93 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData, make_elem_from_addr, make_new_type_without_modifier
+from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier
 from src.opencl_types import make_opencl_type
-from src.operation_status import OperationStatus
 from src.upload import find_first_last_num_to_from
 
 
-def flat_store_fill_node(node, first_to, last_to, to_registers, from_registers, suffix):
-    decompiler_data = DecompilerData()
-    if first_to == last_to:
-        node.state.registers[to_registers].version = node.parent[0].state.registers[to_registers].version
-        node.state.registers[to_registers].type_of_data = suffix
-    else:
-        if node.state.registers[from_registers].type_of_data is not None \
-                and 'bytes' in node.state.registers[from_registers].type_of_data:
-            node.state.registers[from_registers].type_of_data = \
-                node.state.registers[to_registers].type_of_data
-            decompiler_data.names_of_vars[node.state.registers[from_registers].val] = \
-                node.state.registers[to_registers].type_of_data
-        else:
-            if str(node.state.registers[from_registers].type_of_data) not in \
-                    node.state.registers[to_registers].type_of_data:
-                if node.state.registers[from_registers].val in decompiler_data.names_of_vars:
-                    val = node.state.registers[from_registers].val
-                    node.state.registers[from_registers].val = \
-                        '(' + make_opencl_type(make_new_type_without_modifier(node, to_registers)) + ')' \
-                        + node.state.registers[from_registers].val
-                    # init var - i32, gdata - i64. var = gdata -> var - i64
-                    decompiler_data.names_of_vars[val] = node.state.registers[from_registers].type_of_data
-                else:
-                    node.state.registers[from_registers].type_of_data = \
-                        make_new_type_without_modifier(node, to_registers)
-                    decompiler_data.names_of_vars[node.state.registers[from_registers].val] = \
-                        node.state.registers[from_registers].type_of_data
-    return node
-
-
-def flat_store_print(node, to_registers, from_registers, name_of_from, last_from):
-    decompiler_data = DecompilerData()
-    var = node.state.registers[to_registers].val
-    if " + " in var:
-        var = make_elem_from_addr(var)
-    else:
-        var = "*(" + make_opencl_type(decompiler_data.names_of_vars[var]) + "*)(" + var + ")"
-    if node.state.registers.get(from_registers):
-        from_registers_1 = name_of_from + str(last_from)
-        if node.state.registers[from_registers].val == "0" and node.state.registers.get(from_registers_1):
-            output_string = var + " = " + node.state.registers[from_registers_1].val
-        else:
-            output_string = var + " = " + node.state.registers[from_registers].val
-    else:
-        output_string = var + " = " + decompiler_data.initial_state.registers[from_registers].val
-    return output_string
-
-
 class FlatStore(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData()
-        vaddr = instruction[1]
-        vdata = instruction[2]
-        inst_offset = "0" if len(instruction) < 4 else instruction[3]
+    def __init__(self, node, suffix):
+        super().__init__(node, suffix)
+        self.vaddr = self.instruction[1]
+        self.vdata = self.instruction[2]
+        self.inst_offset = "0" if len(self.instruction) < 4 else self.instruction[3]
 
-        first_to, last_to, name_of_to, name_of_from, first_from, last_from \
-            = find_first_last_num_to_from(vaddr, vdata)
-        from_registers = name_of_from + str(first_from)
-        to_registers = name_of_to + str(first_to)
+        self.first_to, self.last_to, self.name_of_to, self.name_of_from, self.first_from, self.last_from \
+            = find_first_last_num_to_from(self.vaddr, self.vdata)
+        self.from_registers = self.name_of_from + str(self.first_from)
+        self.to_registers = self.name_of_to + str(self.first_to)
 
-        if suffix in ["dword", "byte"]:
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write("*(uint32*)(" + vaddr + " + " + inst_offset
-                                      + ") = " + vdata + " // flat_store_dword\n")
-                return node
+    def to_print_unresolved(self):
+        if self.suffix in ["dword", "byte"]:
+            self.decompiler_data.write("*(uint32*)(" + self.vaddr + " + " + self.inst_offset
+                                       + ") = " + self.vdata + " // flat_store_dword\n")
+            return self.node
+        elif self.suffix == "dwordx2":
+            self.decompiler_data.write("*(ulong*)(" + self.vaddr + " + " + self.inst_offset
+                                       + " = " + self.vdata + " // flat_store_dwordx2\n")
+            return self.node
+        elif self.suffix == "dwordx4":
+            vm = "vm" + str(self.decompiler_data.number_of_vm)
+            self.decompiler_data.write(
+                "short* " + vm + " = (" + self.vaddr + " + " + self.inst_offset + ") // flat_store_dwordx4\n")
+            self.decompiler_data.write("*(uint*)(" + vm + ") = " + self.vdata + "[0]\n")
+            self.decompiler_data.write("*(uint*)(" + vm + " + 4) = " + self.vdata + "[1]\n")
+            self.decompiler_data.write("*(uint*)(" + vm + " + 8) = " + self.vdata + "[2]\n")
+            self.decompiler_data.write("*(uint*)(" + vm + " + 12) = " + self.vdata + "[3]\n")
+            self.decompiler_data.number_of_vm += 1
+            return self.node
+        else:
+            return super().to_print_unresolved()
 
-            if flag_of_status == OperationStatus.to_fill_node:
-                return flat_store_fill_node(node, first_to, last_to, to_registers, from_registers, suffix)
-            if flag_of_status == OperationStatus.to_print:
-                return flat_store_print(node, to_registers, from_registers, name_of_from, last_from)
+    def to_fill_node(self):
+        if self.suffix in ["dword", "dwordx2", "dwordx4", "byte"]:
+            if self.first_to == self.last_to:
+                self.node.state.registers[self.to_registers].version = \
+                    self.node.parent[0].state.registers[self.to_registers].version
+                self.node.state.registers[self.to_registers].data_type = self.suffix
+            else:
+                if self.node.state.registers[self.from_registers].data_type is not None \
+                        and 'bytes' in self.node.state.registers[self.from_registers].data_type:
+                    self.node.state.registers[self.from_registers].data_type = \
+                        self.node.state.registers[self.to_registers].data_type
+                    self.decompiler_data.names_of_vars[self.node.state.registers[self.from_registers].val] = \
+                        self.node.state.registers[self.to_registers].data_type
+                else:
+                    if str(self.node.state.registers[self.from_registers].data_type) not in \
+                            self.node.state.registers[self.to_registers].data_type:
+                        if self.node.state.registers[self.from_registers].val in self.decompiler_data.names_of_vars:
+                            val = self.node.state.registers[self.from_registers].val
+                            self.node.state.registers[self.from_registers].val = \
+                                '(' + make_opencl_type(
+                                    make_new_type_without_modifier(self.node, self.to_registers)) + ')' \
+                                + self.node.state.registers[self.from_registers].val
+                            # init var - i32, gdata - i64. var = gdata -> var - i64
+                            self.decompiler_data.names_of_vars[val] = \
+                                self.node.state.registers[self.from_registers].data_type
+                        else:
+                            self.node.state.registers[self.from_registers].data_type = \
+                                make_new_type_without_modifier(self.node, self.to_registers)
+                            self.decompiler_data.names_of_vars[self.node.state.registers[self.from_registers].val] = \
+                                self.node.state.registers[self.from_registers].data_type
+            return self.node
+        else:
+            return super().to_fill_node()
 
-        if suffix == "dwordx2":
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write("*(ulong*)(" + vaddr + " + " + inst_offset
-                                      + " = " + vdata + " // flat_store_dwordx2\n")
-                return node
-            if flag_of_status == OperationStatus.to_fill_node:
-                return flat_store_fill_node(node, first_to, last_to, to_registers, from_registers, suffix)
-            if flag_of_status == OperationStatus.to_print:
-                return flat_store_print(node, to_registers, from_registers, name_of_from, last_from)
-
-        if suffix == "dwordx4":
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                vm = "vm" + str(decompiler_data.number_of_vm)
-                decompiler_data.write(
-                    "short* " + vm + " = (" + vaddr + " + " + inst_offset + ") // flat_store_dwordx4\n")
-                decompiler_data.write("*(uint*)(" + vm + ") = " + vdata + "[0]\n")
-                decompiler_data.write("*(uint*)(" + vm + " + 4) = " + vdata + "[1]\n")
-                decompiler_data.write("*(uint*)(" + vm + " + 8) = " + vdata + "[2]\n")
-                decompiler_data.write("*(uint*)(" + vm + " + 12) = " + vdata + "[3]\n")
-                decompiler_data.number_of_vm += 1
-                return node
-            if flag_of_status == OperationStatus.to_fill_node:
-                return flat_store_fill_node(node, first_to, last_to, to_registers, from_registers, suffix)
-            if flag_of_status == OperationStatus.to_print:
-                return flat_store_print(node, to_registers, from_registers, name_of_from, last_from)
+    def to_print(self):
+        if self.suffix in ["dword", "dwordx2", "dwordx4", "byte"]:
+            var = self.node.state.registers[self.to_registers].val
+            if " + " in var:
+                var = make_elem_from_addr(var)
+            else:
+                var = "*(" + make_opencl_type(self.decompiler_data.names_of_vars[var]) + "*)(" + var + ")"
+            if self.node.state.registers.get(self.from_registers):
+                from_registers_1 = self.name_of_from + str(self.last_from)
+                if self.node.state.registers[self.from_registers].val == "0" \
+                        and self.node.state.registers.get(from_registers_1):
+                    self.output_string = var + " = " + self.node.state.registers[from_registers_1].val
+                else:
+                    self.output_string = var + " = " + self.node.state.registers[self.from_registers].val
+            else:
+                self.output_string = var + " = " + self.decompiler_data.initial_state.registers[self.from_registers].val
+            return self.output_string
+        else:
+            super().to_print()

@@ -1,53 +1,56 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData, make_op, make_new_value_for_reg
+from src.decompiler_data import make_op, make_new_value_for_reg
 from src.integrity import Integrity
-from src.operation_status import OperationStatus
 from src.register_type import RegisterType
 
 
 class VAddc(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData()
-        output_string = ""
-        vdst = instruction[1]
-        sdst = instruction[2]
-        src0 = instruction[3]
-        src1 = instruction[4]
-        ssrc2 = instruction[5]
+    def __init__(self, node, suffix):
+        super().__init__(node, suffix)
+        self.vdst = self.instruction[1]
+        self.sdst = self.instruction[2]
+        self.src0 = self.instruction[3]
+        self.src1 = self.instruction[4]
+        self.ssrc2 = self.instruction[5]
 
-        if suffix == "u32":
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                temp = "temp" + str(decompiler_data.number_of_temp)
-                mask = "mask" + str(decompiler_data.number_of_mask)
-                cc = "cc" + str(decompiler_data.number_of_cc)
-                decompiler_data.write("ulong " + mask + " = (1ULL<<LANEID) // v_addc_u32\n")
-                decompiler_data.write("uchar " + cc + " = ((" + ssrc2 + "&" + mask + " ? 1 : 0)\n")
-                decompiler_data.write("uint " + temp + " = (ulong)" + src0 + " + (ulong)" + src1 + " + " + cc + "\n")
-                decompiler_data.write(sdst + " = 0\n")
-                decompiler_data.write(vdst + " = CLAMP ? min(" + temp + ", 0xffffffff) : " + temp + "\n")
-                decompiler_data.write(sdst + " = (" + sdst + "&~" + mask + ") | (("
-                                      + temp + " >> 32) ? " + mask + " : 0)\n")
-                decompiler_data.number_of_temp += 1
-                decompiler_data.number_of_mask += 1
-                decompiler_data.number_of_cc += 1
-                return node
-            if flag_of_status == OperationStatus.to_fill_node:
-                new_value, src0_reg, src1_reg = make_op(node, src0, src1, " + ", '(ulong)', '(ulong)')
-                reg_type = RegisterType.unknown
-                new_integrity = Integrity.entire
-                if src0_reg and src1_reg:
-                    new_integrity = node.state.registers[src1].integrity
-                    if node.state.registers[src0].type == RegisterType.address_kernel_argument \
-                            and node.state.registers[src1].type == RegisterType.global_id_x:
-                        new_value = node.state.registers[src0].val + "[get_global_id(0)]"
-                        reg_type = RegisterType.address_kernel_argument_element
-                else:
-                    reg_type = RegisterType.int32
-                    if src0_reg:
-                        reg_type = node.state.registers[src0].type
-                    if src1_reg:
-                        reg_type = node.state.registers[src1].type
-                return make_new_value_for_reg(node, new_value, vdst, [src0, src1], suffix,
-                                              reg_type=reg_type, reg_entire=new_integrity)
-            if flag_of_status == OperationStatus.to_print:
-                return output_string
+    def to_print_unresolved(self):
+        if self.suffix == 'u32':
+            temp = "temp" + str(self.decompiler_data.number_of_temp)
+            mask = "mask" + str(self.decompiler_data.number_of_mask)
+            cc = "cc" + str(self.decompiler_data.number_of_cc)
+            self.decompiler_data.write("ulong " + mask + " = (1ULL<<LANEID) // v_addc_u32\n")
+            self.decompiler_data.write("uchar " + cc + " = ((" + self.ssrc2 + "&" + mask + " ? 1 : 0)\n")
+            self.decompiler_data.write("uint " + temp + " = (ulong)" + self.src0
+                                       + " + (ulong)" + self.src1 + " + " + cc + "\n")
+            self.decompiler_data.write(self.sdst + " = 0\n")
+            self.decompiler_data.write(self.vdst + " = CLAMP ? min(" + temp + ", 0xffffffff) : " + temp + "\n")
+            self.decompiler_data.write(self.sdst + " = (" + self.sdst + "&~" + mask + ") | (("
+                                       + temp + " >> 32) ? " + mask + " : 0)\n")
+            self.decompiler_data.number_of_temp += 1
+            self.decompiler_data.number_of_mask += 1
+            self.decompiler_data.number_of_cc += 1
+            return self.node
+        else:
+            return super().to_print_unresolved()
+
+    def to_fill_node(self):
+        if self.suffix == 'u32':
+            new_value, src0_reg, src1_reg = make_op(self.node, self.src0, self.src1, " + ", '(ulong)', '(ulong)')
+            reg_type = RegisterType.UNKNOWN
+            reg_entire = Integrity.ENTIRE
+            if src0_reg and src1_reg:
+                reg_entire = self.node.state.registers[self.src1].integrity
+                if self.node.state.registers[self.src0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT \
+                        and self.node.state.registers[self.src1].type == RegisterType.GLOBAL_ID_X:
+                    new_value = self.node.state.registers[self.src0].val + "[get_global_id(0)]"
+                    reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT
+            else:
+                reg_type = RegisterType.INT32
+                if src0_reg:
+                    reg_type = self.node.state.registers[self.src0].type
+                if src1_reg:
+                    reg_type = self.node.state.registers[self.src1].type
+            return make_new_value_for_reg(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
+                                          reg_type=reg_type, reg_entire=reg_entire)
+        else:
+            return super().to_fill_node()

@@ -11,14 +11,14 @@ from src.register_type import RegisterType
 from src.state import State
 
 
-def make_new_value_for_reg(node, new_value, to_reg, from_regs, type_of_value,
-                           reg_type=RegisterType.unknown, reg_entire=Integrity.entire):
+def make_new_value_for_reg(node, new_value, to_reg, from_regs, data_type,
+                           reg_type=RegisterType.UNKNOWN, reg_entire=Integrity.ENTIRE):
     decompiler_data = DecompilerData()
     node.state.registers[to_reg] = Register(new_value, reg_type, reg_entire)
     decompiler_data.make_version(node.state, to_reg)
     if to_reg in from_regs:
         node.state.registers[to_reg].make_prev()
-    node.state.registers[to_reg].type_of_data = type_of_value
+    node.state.registers[to_reg].data_type = data_type
     return node
 
 
@@ -32,10 +32,10 @@ def make_elem_from_addr(var):
 
 # TODO: Проанализировать, может ли не быть "g" (или другого модификатора)
 def make_new_type_without_modifier(node, register):
-    if "g" in node.state.registers[register].type_of_data:
-        new_from_reg_type = node.state.registers[register].type_of_data[1:]
+    if "g" in node.state.registers[register].data_type:
+        new_from_reg_type = node.state.registers[register].data_type[1:]
     else:
-        new_from_reg_type = node.state.registers[register].type_of_data
+        new_from_reg_type = node.state.registers[register].data_type
     return new_from_reg_type
 
 
@@ -133,7 +133,7 @@ def change_vals_for_make_op(node, register, reg_type):
     return new_val, register_flag
 
 
-def make_op(node, register0, register1, operation, type0, type1):
+def make_op(node, register0, register1, operation, type0='', type1=''):
     new_val0, register0_flag = change_vals_for_make_op(node, register0, type0)
     new_val1, register1_flag = change_vals_for_make_op(node, register1, type1)
     new_val = new_val0 + operation + new_val1
@@ -375,17 +375,17 @@ class DecompilerData(metaclass=Singleton):
         self.loops_variables = {}
         self.loops_nodes_for_variables = {}
         self.configuration_output = ""
-        if flag_for_decompilation == "auto_decompilation":
-            self.flag_for_decompilation = FlagType.auto_decompilation
-        elif flag_for_decompilation == "only_opencl":
-            self.flag_for_decompilation = FlagType.only_opencl
+        if flag_for_decompilation == "AUTO_DECOMPILATION":
+            self.flag_for_decompilation = FlagType.AUTO_DECOMPILATION
+        elif flag_for_decompilation == "ONLY_OPENCL":
+            self.flag_for_decompilation = FlagType.ONLY_OPENCL
         else:
-            self.flag_for_decompilation = FlagType.only_clrx
+            self.flag_for_decompilation = FlagType.ONLY_CLRX
         self.address_params = set()
 
     def write(self, output):
         # noinspection PyUnresolvedReferences
-        if self.flag_for_decompilation != FlagType.only_clrx and "Not resolved yet. " not in output:
+        if self.flag_for_decompilation != FlagType.ONLY_CLRX and "Not resolved yet. " not in output:
             output = simplify_opencl_statement(output)
         self.output_file.write(output)
 
@@ -417,17 +417,17 @@ class DecompilerData(metaclass=Singleton):
 
     def process_initial_state(self):
         if self.usesetup:
-            self.initial_state.registers["s6"] = Register("s6", RegisterType.arguments_pointer, Integrity.low_part)
+            self.initial_state.registers["s6"] = Register("s6", RegisterType.ARGUMENTS_POINTER, Integrity.LOW_PART)
             self.initial_state.registers["s6"].add_version("s6", self.versions["s6"])
             self.versions["s6"] += 1
-            self.initial_state.registers["s7"] = Register("s7", RegisterType.arguments_pointer, Integrity.high_part)
+            self.initial_state.registers["s7"] = Register("s7", RegisterType.ARGUMENTS_POINTER, Integrity.HIGH_PART)
             self.initial_state.registers["s7"].add_version("s7", self.versions["s7"])
             self.versions["s7"] += 1
         else:
-            self.initial_state.registers["s4"] = Register("s4", RegisterType.arguments_pointer, Integrity.low_part)
+            self.initial_state.registers["s4"] = Register("s4", RegisterType.ARGUMENTS_POINTER, Integrity.LOW_PART)
             self.initial_state.registers["s4"].add_version("s4", self.versions["s4"])
             self.versions["s4"] += 1
-            self.initial_state.registers["s5"] = Register("s5", RegisterType.arguments_pointer, Integrity.high_part)
+            self.initial_state.registers["s5"] = Register("s5", RegisterType.ARGUMENTS_POINTER, Integrity.HIGH_PART)
             self.initial_state.registers["s5"].add_version("s5", self.versions["s5"])
             self.versions["s5"] += 1
 
@@ -463,18 +463,18 @@ class DecompilerData(metaclass=Singleton):
         self.checked_variables[curr_node.state.registers[reg].version] = variable
         self.versions[reg] = max_version + 1
 
-    def set_name_of_vars(self, var_name, type_of_data):
-        self.names_of_vars[var_name] = type_of_data
+    def set_name_of_vars(self, var_name, data_type):
+        self.names_of_vars[var_name] = data_type
 
     def check_lds_vars(self, offset, suffix):
         if self.lds_vars.get(offset) is None:
             self.lds_vars[offset] = ["lds" + str(self.lds_var_number), "u" + suffix[1:]]
             self.lds_var_number += 1
 
-    def make_var(self, register_version, variable, type_of_data):
+    def make_var(self, register_version, variable, data_type):
         self.num_of_var += 1
         self.variables[register_version] = variable
-        self.names_of_vars[variable] = type_of_data
+        self.names_of_vars[variable] = data_type
 
     def set_starts_regions(self, node, region):
         self.starts_regions[node] = region
@@ -505,7 +505,6 @@ class DecompilerData(metaclass=Singleton):
     def make_label(self, node):
         self.label = node
         self.parents_of_label = node.parent
-        self.flag_of_else = True
 
     def change_cfg_for_else_structure(self, instruction, curr_node, from_node):
         self.from_node[instruction[1]].remove(curr_node)
@@ -516,7 +515,7 @@ class DecompilerData(metaclass=Singleton):
                 self.from_node[from_node].append(parents_of_label)
         self.flag_of_else = False
 
-    def to_fill_node(self, node, instruction):
+    def to_fill_branch_node(self, node, instruction):
         reladdr = instruction[1]
         if self.to_node.get(reladdr) is not None:
             node.add_child(self.to_node[reladdr])

@@ -9,7 +9,7 @@ class Register:
         self.integrity: Integrity = integrity
         self.version = None
         self.prev_version = []
-        self.type_of_data = None
+        self.data_type = None
 
     def add_version(self, name_version, num_version):
         self.version = name_version + "_" + str(num_version + 1)

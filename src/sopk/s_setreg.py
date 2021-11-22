@@ -1,23 +1,23 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData
-from src.operation_status import OperationStatus
 
 
 class SSetreg(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData()
-        hwreg = instruction[1]
-        hwregname = instruction[2]
-        bitoffset = instruction[3]
-        bitsize = instruction[4]
-        sdst = instruction[5]
+    def __init__(self, node, suffix):
+        super().__init__(node, suffix)
+        self.hwreg = self.instruction[1]
+        self.hwregname = self.instruction[2]
+        self.bitoffset = self.instruction[3]
+        self.bitsize = self.instruction[4]
+        self.sdst = self.instruction[5]
 
-        if suffix == 'b32':
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                mask = "mask" + str(decompiler_data.number_of_mask)
-                decompiler_data.write("uint " + mask + " = (1U << " + bitsize
-                                      + ") - 1U) << " + bitoffset + " // s_setreg_b32\n")
-                decompiler_data.write(hwreg + " = (" + hwreg + "& ~" + mask + ") | (("
-                                      + sdst + " << " + bitoffset + ") & " + mask + ")\n")
-                decompiler_data.number_of_mask += 1
-                return node
+    def to_print_unresolved(self):
+        if self.suffix == 'b32':
+            mask = "mask" + str(self.decompiler_data.number_of_mask)
+            self.decompiler_data.write("uint " + mask + " = (1U << " + self.bitsize
+                                       + ") - 1U) << " + self.bitoffset + " // s_setreg_b32\n")
+            self.decompiler_data.write(self.hwreg + " = (" + self.hwreg + "& ~" + mask + ") | (("
+                                       + self.sdst + " << " + self.bitoffset + ") & " + mask + ")\n")
+            self.decompiler_data.number_of_mask += 1
+            return self.node
+        else:
+            return super().to_print_unresolved()

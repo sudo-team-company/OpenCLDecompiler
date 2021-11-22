@@ -2,59 +2,59 @@ from enum import Enum, auto
 
 
 class RegisterType(Enum):
-    unknown = auto()
+    UNKNOWN = auto()
 
-    global_id_x = auto()
-    global_id_y = auto()
-    global_id_z = auto()
+    GLOBAL_ID_X = auto()
+    GLOBAL_ID_Y = auto()
+    GLOBAL_ID_Z = auto()
 
-    work_group_id_x = auto()
-    work_group_id_y = auto()
-    work_group_id_z = auto()
+    WORK_GROUP_ID_X = auto()
+    WORK_GROUP_ID_Y = auto()
+    WORK_GROUP_ID_Z = auto()
 
-    work_item_id_x = auto()
-    work_item_id_y = auto()
-    work_item_id_z = auto()
+    WORK_ITEM_ID_X = auto()
+    WORK_ITEM_ID_Y = auto()
+    WORK_ITEM_ID_Z = auto()
 
-    global_offset_x = auto()
-    global_offset_y = auto()
-    global_offset_z = auto()
+    GLOBAL_OFFSET_X = auto()
+    GLOBAL_OFFSET_Y = auto()
+    GLOBAL_OFFSET_Z = auto()
 
-    global_data_pointer = auto()
+    GLOBAL_DATA_POINTER = auto()
 
-    arguments_pointer = auto()
+    ARGUMENTS_POINTER = auto()
 
-    work_group_id_x_local_size = auto()
-    work_group_id_y_local_size = auto()
-    work_group_id_z_local_size = auto()
+    WORK_GROUP_ID_X_LOCAL_SIZE = auto()
+    WORK_GROUP_ID_Y_LOCAL_SIZE = auto()
+    WORK_GROUP_ID_Z_LOCAL_SIZE = auto()
 
-    work_group_id_x_local_size_offset = auto()
-    work_group_id_y_local_size_offset = auto()
-    work_group_id_z_local_size_offset = auto()
+    WORK_GROUP_ID_X_LOCAL_SIZE_OFFSET = auto()
+    WORK_GROUP_ID_Y_LOCAL_SIZE_OFFSET = auto()
+    WORK_GROUP_ID_Z_LOCAL_SIZE_OFFSET = auto()
 
-    work_group_id_x_work_item_id = auto()
-    work_group_id_y_work_item_id = auto()
-    work_group_id_z_work_item_id = auto()
+    WORK_GROUP_ID_X_WORK_ITEM_ID = auto()
+    WORK_GROUP_ID_Y_WORK_ITEM_ID = auto()
+    WORK_GROUP_ID_Z_WORK_ITEM_ID = auto()
 
-    kernel_argument_element = auto()  # data[id]
-    address_kernel_argument_element = auto()  # address data[id]
+    KERNEL_ARGUMENT_ELEMENT = auto()  # data[id]
+    ADDRESS_KERNEL_ARGUMENT_ELEMENT = auto()  # address data[id]
 
-    local_size_x = auto()
-    local_size_y = auto()
-    local_size_z = auto()
+    LOCAL_SIZE_X = auto()
+    LOCAL_SIZE_Y = auto()
+    LOCAL_SIZE_Z = auto()
 
-    global_size_x = auto()
-    global_size_y = auto()
-    global_size_z = auto()
+    GLOBAL_SIZE_X = auto()
+    GLOBAL_SIZE_Y = auto()
+    GLOBAL_SIZE_Z = auto()
 
-    kernel_argument_value = auto()  # x, y, z
-    kernel_argument_ptr = auto()  # __global *data
-    address_kernel_argument = auto()  # address data
+    KERNEL_ARGUMENT_VALUE = auto()  # x, y, z
+    KERNEL_ARGUMENT_PTR = auto()  # __global *data
+    ADDRESS_KERNEL_ARGUMENT = auto()  # address data
 
-    program_param = auto()
+    PROGRAM_PARAM = auto()
 
-    int32 = auto()
+    INT32 = auto()
 
-    work_dim = auto()
+    WORK_DIM = auto()
 
-    general_setup = auto()
+    GENERAL_SETUP = auto()

@@ -1,24 +1,27 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData, make_new_value_for_reg
-from src.operation_status import OperationStatus
+from src.decompiler_data import make_new_value_for_reg
 
 
 class SMin(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData()
-        output_string = ""
-        sdst = instruction[1]
-        ssrc0 = instruction[2]
-        ssrc1 = instruction[3]
+    def __init__(self, node, suffix):
+        super().__init__(node, suffix)
+        self.sdst = self.instruction[1]
+        self.ssrc0 = self.instruction[2]
+        self.ssrc1 = self.instruction[3]
 
-        if suffix == 'i32':
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(sdst + " = min((int)" + ssrc0 + ", (int)" + ssrc1 + ") // s_min_i32\n")
-                decompiler_data.write("scc = (int)" + ssrc0 + " < (int)" + ssrc1 + "\n")
-                return node
-            if flag_of_status == OperationStatus.to_fill_node:
-                new_value = "min((int)" + node.state.registers[ssrc0].val + ", (int)" \
-                            + node.state.registers[ssrc1].val + ")"
-                return make_new_value_for_reg(node, new_value, sdst, [ssrc0, ssrc1], suffix)
-            if flag_of_status == OperationStatus.to_print:
-                return output_string
+    def to_print_unresolved(self):
+        if self.suffix == 'i32':
+            self.decompiler_data.write(self.sdst + " = min((int)" + self.ssrc0 +
+                                       ", (int)" + self.ssrc1 + ") // s_min_i32\n")
+            self.decompiler_data.write("scc = (int)" + self.ssrc0 + " < (int)" + self.ssrc1 + "\n")
+            return self.node
+        else:
+            return super().to_print_unresolved()
+
+    def to_fill_node(self):
+        if self.suffix == 'i32':
+            new_value = "min((int)" + self.node.state.registers[self.ssrc0].val + ", (int)" \
+                        + self.node.state.registers[self.ssrc1].val + ")"
+            return make_new_value_for_reg(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix)
+        else:
+            return super().to_fill_node()

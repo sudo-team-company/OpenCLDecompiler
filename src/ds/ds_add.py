@@ -1,28 +1,38 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData, make_op, make_new_value_for_reg
-from src.operation_status import OperationStatus
+from src.decompiler_data import make_op, make_new_value_for_reg
 
 
 class DsAdd(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData()
-        addr = instruction[1]
-        vdata0 = instruction[2]
-        offset = int(instruction[3][7:]) if len(instruction) == 4 else 0
+    def __init__(self, node, suffix):
+        super().__init__(node, suffix)
+        self.addr = self.instruction[1]
+        self.vdata0 = self.instruction[2]
+        self.offset = int(self.instruction[3][7:]) if len(self.instruction) == 4 else 0
 
-        if suffix == "u32":
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                v = "V" + str(decompiler_data.number_of_v)
-                decompiler_data.write("uint* " + v + " = (uint*)(DS + ((" + addr + " + "
-                                      + str(offset) + ")&~3)) // ds_add_u32\n")
-                decompiler_data.write("*" + v + " = *" + v + " + " + vdata0 + "  // atomic operation\n")
-                decompiler_data.number_of_v += 1
-                return node
-            new_value, src0_flag, src1_flag = make_op(node, addr, "4", " / ", '', '')
-            name = decompiler_data.lds_vars[offset][0] + "[" + new_value + "]"
-            if flag_of_status == OperationStatus.to_fill_node:
-                new_value = node.state.registers[name].val + " + " + node.state.registers[vdata0].val
-                return make_new_value_for_reg(node, new_value, name, [], suffix)
-            if flag_of_status == OperationStatus.to_print:
-                output_string = name + " += " + node.state.registers[vdata0].val
-                return output_string
+        self.new_value, _, _ = make_op(node, self.addr, "4", " / ", '', '')
+        self.name = self.decompiler_data.lds_vars[self.offset][0] + "[" + self.new_value + "]"
+
+    def to_print_unresolved(self):
+        if self.suffix == "u32":
+            v = "V" + str(self.decompiler_data.number_of_v)
+            self.decompiler_data.write("uint* " + v + " = (uint*)(DS + ((" + self.addr + " + "
+                                       + str(self.offset) + ")&~3)) // ds_add_u32\n")
+            self.decompiler_data.write("*" + v + " = *" + v + " + " + self.vdata0 + "  // atomic operation\n")
+            self.decompiler_data.number_of_v += 1
+            return self.node
+        else:
+            return super().to_print_unresolved()
+
+    def to_fill_node(self):
+        if self.suffix == "u32":
+            new_value = self.node.state.registers[self.name].val + " + " + self.node.state.registers[self.vdata0].val
+            return make_new_value_for_reg(self.node, new_value, self.name, [], self.suffix)
+        else:
+            return super().to_fill_node()
+
+    def to_print(self):
+        if self.suffix == "u32":
+            self.output_string = self.name + " += " + self.node.state.registers[self.vdata0].val
+            return self.output_string
+        else:
+            super().to_print()

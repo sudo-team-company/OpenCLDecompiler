@@ -1,22 +1,24 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import compare_values, DecompilerData
-from src.operation_status import OperationStatus
+from src.decompiler_data import compare_values
 
 
 class SCmpEq(BaseInstruction):
     # think about types and separate
-    def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData()
-        output_string = ""
-        ssrc0 = instruction[1]
-        ssrc1 = instruction[2]
+    def __init__(self, node, suffix):
+        super().__init__(node, suffix)
+        self.ssrc0 = self.instruction[1] if suffix != 'u64' \
+            else self.instruction[1][0] + self.instruction[1][2: self.instruction[1].find(':')]
+        self.ssrc1 = self.instruction[2]
 
-        if suffix in ['i32', 'u32', 'u64']:
-            if suffix == 'u64':
-                ssrc0 = ssrc0[0] + ssrc0[2: ssrc0.find(':')]
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write("scc = " + ssrc0 + "==" + ssrc1 + " // s_cmp_eq_" + suffix + "\n")
-                return node
-            if flag_of_status == OperationStatus.to_fill_node:
-                return compare_values(node, "scc", ssrc0, ssrc1, "", "", " == ", suffix)
-            return output_string
+    def to_print_unresolved(self):
+        if self.suffix in ['i32', 'u32', 'u64']:
+            self.decompiler_data.write("scc = " + self.ssrc0 + "==" + self.ssrc1 + " // s_cmp_eq_" + self.suffix + "\n")
+            return self.node
+        else:
+            return super().to_print_unresolved()
+
+    def to_fill_node(self):
+        if self.suffix in ['i32', 'u32', 'u64']:
+            return compare_values(self.node, "scc", self.ssrc0, self.ssrc1, "", "", " == ", self.suffix)
+        else:
+            return super().to_fill_node()

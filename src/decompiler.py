@@ -37,17 +37,17 @@ def transform_instruction_set(instruction, set_of_instructions, num, row, curr_n
     return set_of_instructions, instruction
 
 
-def check_instruction_set_for_if_else(instruction, curr_node, set_of_instructions,
-                                      num, row, last_node, last_node_state):
+def check_instruction_set_for_if_else(curr_node, set_of_instructions, num, last_node, last_node_state):
     decompiler_data = DecompilerData()
+    instruction = curr_node.instruction
+    row = set_of_instructions[num - 1]
     if instruction[0][0] == ".":
         decompiler_data.make_label(curr_node)
-    elif ("andn2" in instruction[0] or
-          (num < len(set_of_instructions) and "branch" in set_of_instructions[num])) \
-            and decompiler_data.flag_of_else:
-        if "andn2" not in instruction[0] and "branch" in set_of_instructions[num]:
-            set_of_instructions.insert(num + 1, row)
-        return set_of_instructions, last_node, last_node_state
+    elif "andn2" in instruction[0]:
+        decompiler_data.set_flag_of_else(True)
+    elif num < len(set_of_instructions) and "andn2" not in instruction[0] \
+            and "cbranch" in set_of_instructions[num] and decompiler_data.flag_of_else:
+        set_of_instructions.insert(num + 1, row)
     elif decompiler_data.flag_of_else and "cbranch" in instruction[0]:
         last_node, last_node_state = change_cfg_for_else_structure(curr_node, instruction)
     else:
@@ -71,8 +71,7 @@ def process_single_instruction(set_of_instructions, num, curr_node, last_node_st
     if last_node is not None and last_node.instruction == "branch":
         last_node_state = copy.deepcopy(decompiler_data.initial_state)
     set_of_instructions, last_node, last_node_state = \
-        check_instruction_set_for_if_else(instruction, curr_node, set_of_instructions,
-                                          num, row, last_node, last_node_state)
+        check_instruction_set_for_if_else(curr_node, set_of_instructions, num, last_node, last_node_state)
     if instruction[0][0] == "." and len(curr_node.parent) > 1:
         last_node_state = find_max_and_prev_versions(curr_node)
     return num, curr_node, set_of_instructions, last_node, last_node_state
@@ -104,7 +103,7 @@ def process_src(name_of_program, set_of_config, set_of_instructions, set_of_glob
     last_node_state = decompiler_data.initial_state
     decompiler_data.set_cfg(last_node)
     num = 0
-    if decompiler_data.flag_for_decompilation == FlagType.only_clrx:
+    if decompiler_data.flag_for_decompilation == FlagType.ONLY_CLRX:
         process_src_with_unresolved_instruction(initial_set_of_instructions)
         return
     while num < len(set_of_instructions):
@@ -112,9 +111,9 @@ def process_src(name_of_program, set_of_config, set_of_instructions, set_of_glob
         if result_for_check is not None:
             num, curr_node, set_of_instructions, last_node, last_node_state = result_for_check
         else:
-            if decompiler_data.flag_for_decompilation == FlagType.only_opencl:
+            if decompiler_data.flag_for_decompilation == FlagType.ONLY_OPENCL:
                 break
-            decompiler_data.flag_for_decompilation = FlagType.only_clrx
+            decompiler_data.flag_for_decompilation = FlagType.ONLY_CLRX
             process_src_with_unresolved_instruction(initial_set_of_instructions)
             return
 

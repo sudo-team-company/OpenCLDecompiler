@@ -1,17 +1,16 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData
-from src.operation_status import OperationStatus
 
 
 class VAndOr(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData()
-        vdst = instruction[1]
-        src0 = instruction[2]
-        src1 = instruction[3]
-        src2 = instruction[4]
+    def __init__(self, node, suffix):
+        super().__init__(node, suffix)
+        self.vdst = self.instruction[1]
+        self.src0 = self.instruction[2]
+        self.src1 = self.instruction[3]
+        self.src2 = self.instruction[4]
 
-        if suffix == "b32":
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(vdst + " = (" + src0 + " & " + src1 + ") | " + src2 + " // v_and_or_b32\n")
-                return node
+    def to_print_unresolved(self):
+        if self.suffix == 'b32':
+            self.decompiler_data.write(self.vdst + " = (" + self.src0 + " & " + self.src1
+                                       + ") | " + self.src2 + " // v_and_or_b32\n")
+            return self.node

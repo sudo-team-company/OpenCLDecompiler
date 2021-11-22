@@ -1,16 +1,16 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData
-from src.operation_status import OperationStatus
 
 
 class SNot(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData()
-        sdst = instruction[1]
-        ssrc0 = instruction[2]
+    def __init__(self, node, suffix):
+        super().__init__(node, suffix)
+        self.sdst = self.instruction[1]
+        self.ssrc0 = self.instruction[2]
 
-        if suffix == 'b64':
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(sdst + " = ~" + ssrc0 + " // s_not_b64\n")
-                decompiler_data.write("scc = " + sdst + " != 0\n")
-                return node
+    def to_print_unresolved(self):
+        if self.suffix == 'b64':
+            self.decompiler_data.write(self.sdst + " = ~" + self.ssrc0 + " // s_not_b64\n")
+            self.decompiler_data.write("scc = " + self.sdst + " != 0\n")
+            return self.node
+        else:
+            return super().to_print_unresolved()

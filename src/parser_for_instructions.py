@@ -6,6 +6,20 @@ from src.decompiler import process_src
 from src.decompiler_data import DecompilerData
 
 
+def get_global_data_bytes(row, set_of_global_data_bytes):
+    line_of_bytes = row.split()
+    if line_of_bytes.pop(0) == ".fill":
+        amount = line_of_bytes[0][:-1]
+        value = line_of_bytes[2]
+        expand_list = [value for _ in range(int(amount))]
+        set_of_global_data_bytes += expand_list
+    else:
+        for i, elem in enumerate(line_of_bytes):
+            line_of_bytes[i] = re.sub(',', '', elem)
+        set_of_global_data_bytes += line_of_bytes
+    return set_of_global_data_bytes
+
+
 def main(input_par, output_par, flag_for_decompilation):
     with open(output_par, 'w', encoding="utf-8") as output_file:
 
@@ -44,19 +58,7 @@ def main(input_par, output_par, flag_for_decompilation):
             elif status_of_parse == "config":
                 set_of_config.append(row)
             elif status_of_parse == "global_data":
-                line_of_bytes = row.split()
-                if line_of_bytes.pop(0) == ".fill":
-                    amount = line_of_bytes[0][:-1]
-                    value = line_of_bytes[2]
-                    expand_list = [value for _ in range(int(amount))]
-                    set_of_global_data_bytes += expand_list
-                else:
-                    for i, elem in enumerate(line_of_bytes):
-                        line_of_bytes[i] = re.sub(',', '', elem)
-                    set_of_global_data_bytes += line_of_bytes
-
-            else:
-                continue
+                set_of_global_data_bytes = get_global_data_bytes(row, set_of_global_data_bytes)
         decompiler_data.reset(output_file, flag_for_decompilation)
         process_src(name_of_program, set_of_config, set_of_instructions, set_of_global_data_bytes,
                     set_of_global_data_instruction)
@@ -67,7 +69,7 @@ def create_parser():
     parser.add_argument('-i', '--input', help='path to .asm input file')
     parser.add_argument('-o', '--output', help='path to .cl output file')
     parser.add_argument('-f', '--flag', help='approach to parse', nargs='?',
-                        choices=['auto_decompilation', 'only_opencl', 'only_clrx'], default='auto_decompilation')
+                        choices=['AUTO_DECOMPILATION', 'ONLY_OPENCL', 'ONLY_CLRX'], default='AUTO_DECOMPILATION')
     return parser
 
 

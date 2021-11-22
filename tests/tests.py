@@ -9,7 +9,7 @@ def template(self, path_to_dir, dir_name, flag=None):
         flag_option = f' -f {flag}'
     subprocess.call(fr'tests.bat {path_to_dir}\{dir_name}\{dir_name}.bin {path_to_dir}\{dir_name}\{dir_name}.asm')
     subprocess.check_call(fr"python {path_to_exec_file} -i {path_to_dir}\{dir_name}\{dir_name}.asm" +
-                    fr" -o {path_to_dir}\{dir_name}\{dir_name}_dcmpl.cl" + flag_option)
+                          fr" -o {path_to_dir}\{dir_name}\{dir_name}_dcmpl.cl" + flag_option)
 
     with open(
             fr"{path_to_dir}\{dir_name}\{dir_name}_hands.cl") as hands_decompilation:
@@ -174,10 +174,10 @@ class DifferentFlags(unittest.TestCase):
         template(self, 'different_flags', 'flag_auto_decompilation')
 
     def test_flag_only_clrx(self):
-        template(self, 'different_flags', 'flag_only_clrx', 'only_clrx')
+        template(self, 'different_flags', 'flag_only_clrx', 'ONLY_CLRX')
 
     def test_flag_only_opencl(self):
-        template(self, 'different_flags', 'flag_only_opencl', 'only_opencl')
+        template(self, 'different_flags', 'flag_only_opencl', 'ONLY_OPENCL')
 
 
 class LoopsKernels(unittest.TestCase):

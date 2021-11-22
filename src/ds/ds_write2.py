@@ -1,27 +1,27 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData
-from src.operation_status import OperationStatus
 
 
 class DsWrite2(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData()
-        addr = instruction[1]
-        vdata0 = instruction[2]
-        vdata1 = instruction[3]
-        offset0 = instruction[4][8:]
-        offset1 = instruction[5][8:]
+    def __init__(self, node, suffix):
+        super().__init__(node, suffix)
+        self.addr = self.instruction[1]
+        self.vdata0 = self.instruction[2]
+        self.vdata1 = self.instruction[3]
+        self.offset0 = self.instruction[4][8:]
+        self.offset1 = self.instruction[5][8:]
 
-        if suffix == "b64":
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                v0 = "V0" + str(decompiler_data.number_of_v0)
-                v1 = "V1" + str(decompiler_data.number_of_v1)
-                decompiler_data.write(
-                    "ulong* " + v0 + " = (ulong*)(ds + (" + addr + " + " + offset0 + " * 8) & ~7) // ds_write2_b64\n")
-                decompiler_data.write(
-                    "ulong* " + v1 + " = (ulong*)(ds + (" + addr + " + " + offset1 + " * 8) & ~7)\n")
-                decompiler_data.write("*" + v0 + " = " + vdata0 + "\n")
-                decompiler_data.write("*" + v1 + " = " + vdata1 + "\n")
-                decompiler_data.number_of_v0 += 1
-                decompiler_data.number_of_v1 += 1
-                return node
+    def to_print_unresolved(self):
+        if self.suffix == "b64":
+            v0 = "V0" + str(self.decompiler_data.number_of_v0)
+            v1 = "V1" + str(self.decompiler_data.number_of_v1)
+            self.decompiler_data.write("ulong* " + v0 + " = (ulong*)(ds + (" + self.addr + " + "
+                                       + self.offset0 + " * 8) & ~7) // ds_write2_b64\n")
+            self.decompiler_data.write("ulong* " + v1 + " = (ulong*)(ds + (" + self.addr + " + "
+                                       + self.offset1 + " * 8) & ~7)\n")
+            self.decompiler_data.write("*" + v0 + " = " + self.vdata0 + "\n")
+            self.decompiler_data.write("*" + v1 + " = " + self.vdata1 + "\n")
+            self.decompiler_data.number_of_v0 += 1
+            self.decompiler_data.number_of_v1 += 1
+            return self.node
+        else:
+            return super().to_print_unresolved()

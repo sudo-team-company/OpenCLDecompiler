@@ -1,3 +1,31 @@
+from src.decompiler_data import DecompilerData
+from src.operation_status import OperationStatus
+
+
 class BaseInstruction:
-    def execute(self, node, instruction, flag_of_status, suffix):
-        raise NotImplementedError()
+    def __init__(self, node, suffix):
+        self.node = node
+        self.instruction = node.instruction
+        self.suffix = suffix
+        self.output_string = ""
+        self.decompiler_data = DecompilerData()
+
+    def execute(self, flag_of_status):
+        if flag_of_status == OperationStatus.TO_PRINT_UNRESOLVED:
+            return self.to_print_unresolved()
+        if flag_of_status == OperationStatus.TO_FILL_NODE:
+            return self.to_fill_node()
+        if flag_of_status == OperationStatus.TO_PRINT:
+            return self.to_print()
+        return None
+
+    @staticmethod
+    def to_print_unresolved():
+        return None
+
+    @staticmethod
+    def to_fill_node():
+        return None
+
+    def to_print(self):
+        return self.output_string

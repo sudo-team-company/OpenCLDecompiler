@@ -1,24 +1,22 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData
-from src.operation_status import OperationStatus
 
 
 class GlobalStore(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData()
-        vaddr = instruction[1]
-        vdata = instruction[2]
-        saddr = "0" if instruction[3] == "off" else instruction[3]
-        inst_offset = "0" if len(instruction) == 4 else instruction[4]
+    def __init__(self, node, suffix):
+        super().__init__(node, suffix)
+        self.vaddr = self.instruction[1]
+        self.vdata = self.instruction[2]
+        self.saddr = "0" if self.instruction[3] == "off" else self.instruction[3]
+        self.inst_offset = "0" if len(self.instruction) == 4 else self.instruction[4]
 
-        if suffix == "dword":
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write("*(uint*)(" + vaddr + " + " + saddr + " + " + inst_offset
-                                      + ") = " + vdata + " // global_store_dword\n")
-                return node
-
-        elif suffix == "dwordx2":
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write("*(ulong*)(" + vaddr + " + " + saddr + " + " + inst_offset
-                                      + ") = " + vdata + " // global_store_dwordx2\n")
-                return node
+    def to_print_unresolved(self):
+        if self.suffix == "dword":
+            self.decompiler_data.write("*(uint*)(" + self.vaddr + " + " + self.saddr + " + " + self.inst_offset
+                                       + ") = " + self.vdata + " // global_store_dword\n")
+            return self.node
+        elif self.suffix == "dwordx2":
+            self.decompiler_data.write("*(ulong*)(" + self.vaddr + " + " + self.saddr + " + " + self.inst_offset
+                                       + ") = " + self.vdata + " // global_store_dwordx2\n")
+            return self.node
+        else:
+            return super().to_print_unresolved()

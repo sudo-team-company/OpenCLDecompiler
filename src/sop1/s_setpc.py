@@ -1,14 +1,14 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData
-from src.operation_status import OperationStatus
 
 
 class SSetpc(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData()
-        ssrc0 = instruction[1]
+    def __init__(self, node, suffix):
+        super().__init__(node, suffix)
+        self.ssrc0 = self.instruction[1]
 
-        if suffix == 'b64':
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write("pc = " + ssrc0 + " // s_setpc_b64\n")
-                return node
+    def to_print_unresolved(self):
+        if self.suffix == 'b64':
+            self.decompiler_data.write("pc = " + self.ssrc0 + " // s_setpc_b64\n")
+            return self.node
+        else:
+            return super().to_print_unresolved()

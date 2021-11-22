@@ -19,37 +19,37 @@ class VTrunc(BaseInstruction):
         to_registers = name_of_to + str(first_to)
 
         if suffix == "f16":
-            if flag_of_status == OperationStatus.to_fill_node:
+            if flag_of_status == OperationStatus.TO_FILL_NODE:
                 decompiler_data.names_of_vars[node.state.registers[from_registers].val] = suffix
                 type_reg = node.state.registers[from_registers].type
                 new_val = node.state.registers[from_registers].val
-                node.state.registers[to_registers] = Register(new_val, type_reg, Integrity.entire)
+                node.state.registers[to_registers] = Register(new_val, type_reg, Integrity.ENTIRE)
                 decompiler_data.make_version(node.state, to_registers)
-                if node.state.registers[to_registers].type_of_data is None:
-                    node.state.registers[to_registers].type_of_data = 'i16'
+                if node.state.registers[to_registers].data_type is None:
+                    node.state.registers[to_registers].data_type = 'i16'
                 return node
             return output_string
 
         elif suffix == 'f32':
-            if flag_of_status == OperationStatus.to_fill_node:
+            if flag_of_status == OperationStatus.TO_FILL_NODE:
                 decompiler_data.names_of_vars[node.state.registers[from_registers].val] = suffix
                 type_reg = node.state.registers[from_registers].type
                 new_val = node.state.registers[from_registers].val
-                node.state.registers[to_registers] = Register(new_val, type_reg, Integrity.entire)
+                node.state.registers[to_registers] = Register(new_val, type_reg, Integrity.ENTIRE)
                 decompiler_data.make_version(node.state, to_registers)
-                if node.state.registers[to_registers].type_of_data is None:
-                    node.state.registers[to_registers].type_of_data = 'i32'
+                if node.state.registers[to_registers].data_type is None:
+                    node.state.registers[to_registers].data_type = 'i32'
                 return node
             return output_string
 
         else:
-            if flag_of_status == OperationStatus.to_fill_node:
+            if flag_of_status == OperationStatus.TO_FILL_NODE:
                 decompiler_data.names_of_vars[node.state.registers[from_registers].val] = suffix
                 type_reg = node.state.registers[from_registers].type
                 new_val = node.state.registers[from_registers].val
-                node.state.registers[to_registers] = Register(new_val, type_reg, Integrity.entire)
+                node.state.registers[to_registers] = Register(new_val, type_reg, Integrity.ENTIRE)
                 decompiler_data.make_version(node.state, to_registers)
-                if node.state.registers[to_registers].type_of_data is None:
-                    node.state.registers[to_registers].type_of_data = 'i64'
+                if node.state.registers[to_registers].data_type is None:
+                    node.state.registers[to_registers].data_type = 'i64'
                 return node
             return output_string

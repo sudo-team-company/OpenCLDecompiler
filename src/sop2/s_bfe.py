@@ -1,68 +1,64 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData, make_new_value_for_reg
-from src.operation_status import OperationStatus
+from src.decompiler_data import make_new_value_for_reg
 from src.register_type import RegisterType
 
 
 class SBfe(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData()
-        output_string = ""
-        sdst = instruction[1]
-        ssrc0 = instruction[2]
-        ssrc1 = instruction[3]
+    def __init__(self, node, suffix):
+        super().__init__(node, suffix)
+        self.sdst = self.instruction[1]
+        self.ssrc0 = self.instruction[2]
+        self.ssrc1 = self.instruction[3]
 
-        if suffix == 'u32':
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                tab = "    "
-                shift = "shift" + str(decompiler_data.number_of_shift)
-                length = "length" + str(decompiler_data.number_of_length)
-                decompiler_data.write("uchar " + shift + " = " + ssrc1 + " & 31 // s_bfe_u32\n")
-                decompiler_data.write("uchar " + length + " = (" + ssrc1 + ">>16) & 07xf\n")
-                decompiler_data.write("if (" + length + "==0)\n")
-                decompiler_data.write(tab + sdst + " = 0\n")
-                decompiler_data.write("if (" + shift + " + " + length + " < 32)\n")
-                decompiler_data.write(tab + sdst + " = " + ssrc0 + " << (32 - " + shift + " - " + length
-                                      + ") >> (32 - " + length + ")\n")
-                decompiler_data.write("else\n")
-                decompiler_data.write(tab + sdst + " = " + ssrc0 + " >> " + shift + "\n")
-                decompiler_data.write("scc = " + sdst + " != 0\n")
-                decompiler_data.number_of_length += 1
-                decompiler_data.number_of_shift += 1
-                return node
-            if flag_of_status == OperationStatus.to_fill_node:
-                if ssrc1 == "0x20010":
-                    new_value = "get_work_dim()"
-                    reg_type = RegisterType.work_dim
-                elif ssrc1 == '0x100010':
-                    new_value = "get_local_size(1)"
-                    reg_type = RegisterType.local_size_y
-                else:
-                    print("Unknown pattern in s_bfe")
-                    raise NotImplementedError()
-                return make_new_value_for_reg(node, new_value, sdst, [], suffix, reg_type=reg_type)
-            if flag_of_status == OperationStatus.to_print:
-                return output_string
+    def to_print_unresolved(self):
+        tab = "    "
+        shift = "shift" + str(self.decompiler_data.number_of_shift)
+        length = "length" + str(self.decompiler_data.number_of_length)
 
-        if suffix == "i32":
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                tab = "    "
-                shift = "shift" + str(decompiler_data.number_of_shift)
-                length = "length" + str(decompiler_data.number_of_length)
-                decompiler_data.write("uchar " + shift + " = " + ssrc1 + " & 31 // s_bfe_i32\n")
-                decompiler_data.write("uchar " + length + " = (" + ssrc1 + ">>16) & 07xf\n")
-                decompiler_data.write("if (" + length + "==0)\n")
-                decompiler_data.write(tab + sdst + " = 0\n")
-                decompiler_data.write("if (" + shift + " + " + length + " < 32)\n")
-                decompiler_data.write(tab + sdst + " = (int)" + ssrc0 + " << (32 - " + shift + " - " + length
-                                      + ") >> (32 - " + length + ")\n")
-                decompiler_data.write("else\n")
-                decompiler_data.write(tab + sdst + " = (int)" + ssrc0 + " >> " + shift + "\n")
-                decompiler_data.write("scc = " + sdst + " != 0\n")
-                decompiler_data.number_of_length += 1
-                decompiler_data.number_of_shift += 1
-                return node
-            if flag_of_status == OperationStatus.to_fill_node:
-                return node
-            if flag_of_status == OperationStatus.to_print:
-                return output_string
+        if self.suffix == 'u32':
+            self.decompiler_data.write("uchar " + shift + " = " + self.ssrc1 + " & 31 // s_bfe_u32\n")
+            self.decompiler_data.write("uchar " + length + " = (" + self.ssrc1 + ">>16) & 07xf\n")
+            self.decompiler_data.write("if (" + length + "==0)\n")
+            self.decompiler_data.write(tab + self.sdst + " = 0\n")
+            self.decompiler_data.write("if (" + shift + " + " + length + " < 32)\n")
+            self.decompiler_data.write(tab + self.sdst + " = " + self.ssrc0 + " << (32 - " + shift + " - " + length
+                                       + ") >> (32 - " + length + ")\n")
+            self.decompiler_data.write("else\n")
+            self.decompiler_data.write(tab + self.sdst + " = " + self.ssrc0 + " >> " + shift + "\n")
+            self.decompiler_data.write("scc = " + self.sdst + " != 0\n")
+            self.decompiler_data.number_of_length += 1
+            self.decompiler_data.number_of_shift += 1
+            return self.node
+        elif self.suffix == 'i32':
+            self.decompiler_data.write("uchar " + shift + " = " + self.ssrc1 + " & 31 // s_bfe_i32\n")
+            self.decompiler_data.write("uchar " + length + " = (" + self.ssrc1 + ">>16) & 07xf\n")
+            self.decompiler_data.write("if (" + length + "==0)\n")
+            self.decompiler_data.write(tab + self.sdst + " = 0\n")
+            self.decompiler_data.write("if (" + shift + " + " + length + " < 32)\n")
+            self.decompiler_data.write(tab + self.sdst + " = (int)" + self.ssrc0 + " << (32 - " + shift + " - " + length
+                                       + ") >> (32 - " + length + ")\n")
+            self.decompiler_data.write("else\n")
+            self.decompiler_data.write(tab + self.sdst + " = (int)" + self.ssrc0 + " >> " + shift + "\n")
+            self.decompiler_data.write("scc = " + self.sdst + " != 0\n")
+            self.decompiler_data.number_of_length += 1
+            self.decompiler_data.number_of_shift += 1
+            return self.node
+        else:
+            return super().to_print_unresolved()
+
+    def to_fill_node(self):
+        if self.suffix == 'u32':
+            if self.ssrc1 == "0x20010":
+                new_value = "get_work_dim()"
+                reg_type = RegisterType.WORK_DIM
+            elif self.ssrc1 == '0x100010':
+                new_value = "get_local_size(1)"
+                reg_type = RegisterType.LOCAL_SIZE_Y
+            else:
+                print("Unknown pattern in s_bfe")
+                raise NotImplementedError()
+            return make_new_value_for_reg(self.node, new_value, self.sdst, [], self.suffix, reg_type=reg_type)
+        elif self.suffix == 'i32':
+            return self.node
+        else:
+            return super().to_fill_node()

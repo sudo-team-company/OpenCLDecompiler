@@ -1,24 +1,26 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData
-from src.operation_status import OperationStatus
 
 
 class SAnd(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData()
-        output_string = ""
-        sdst = instruction[1]
-        ssrc0 = instruction[2]
-        ssrc1 = instruction[3]
+    def __init__(self, node, suffix):
+        super().__init__(node, suffix)
+        self.sdst = self.instruction[1]
+        self.ssrc0 = self.instruction[2]
+        self.ssrc1 = self.instruction[3]
 
-        if suffix == 'b32' or suffix == 'b64':
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(sdst + " = " + ssrc0 + " & " + ssrc1 + " // s_and_" + suffix + "\n")
-                decompiler_data.write("scc" + " = " + sdst + " != 0\n")
-                return node
-            if flag_of_status == OperationStatus.to_fill_node:
-                # не требуется ли здесь создание?
-                node.state.registers[sdst] = node.state.registers[ssrc0]
-                return node
-            if flag_of_status == OperationStatus.to_print:
-                return output_string
+    def to_print_unresolved(self):
+        if self.suffix in ['b32', 'b64']:
+            self.decompiler_data.write(self.sdst + " = " + self.ssrc0 + " & " +
+                                       self.ssrc1 + " // s_and_" + self.suffix + "\n")
+            self.decompiler_data.write("scc" + " = " + self.sdst + " != 0\n")
+            return self.node
+        else:
+            return super().to_print_unresolved()
+
+    def to_fill_node(self):
+        if self.suffix in ['b32', 'b64']:
+            # не требуется ли здесь создание?
+            self.node.state.registers[self.sdst] = self.node.state.registers[self.ssrc0]
+            return self.node
+        else:
+            return super().to_fill_node()

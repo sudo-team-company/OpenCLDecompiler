@@ -1,39 +1,48 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData, make_op, make_new_value_for_reg
-from src.operation_status import OperationStatus
+from src.decompiler_data import make_op, make_new_value_for_reg
 
 
 class DsWrite(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData()
-        addr = instruction[1]
-        vdata0 = instruction[2]
-        offset = int(instruction[3][7:]) if len(instruction) == 4 else 0
+    def __init__(self, node, suffix):
+        super().__init__(node, suffix)
+        self.addr = self.instruction[1]
+        self.vdata0 = self.instruction[2]
+        self.offset = int(self.instruction[3][7:]) if len(self.instruction) == 4 else 0
+        self.decompiler_data.check_lds_vars(self.offset, suffix)
 
-        if suffix == "b32":
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                v = "V" + str(decompiler_data.number_of_v)
-                decompiler_data.write("uint* " + v + " // ds_write_b32\n")
-                decompiler_data.write(v + " = (uint*)(ds + ((" + addr + " + " + str(offset) + ") & ~3))\n")
-                decompiler_data.write("*" + v + " = " + vdata0 + "\n")
-                decompiler_data.number_of_v += 1
-                return node
-            decompiler_data.check_lds_vars(offset, suffix)
-            new_value, src0_flag, src1_flag = make_op(node, addr, "4", " / ", '', '')
-            name = decompiler_data.lds_vars[offset][0] + "[" + new_value + "]"
-            if flag_of_status == OperationStatus.to_fill_node:
-                new_value = node.state.registers[vdata0].val
-                reg_type = node.state.registers[vdata0].type
-                return make_new_value_for_reg(node, new_value, name, [], "u" + suffix[1:], reg_type=reg_type)
-            if flag_of_status == OperationStatus.to_print:
-                output_string = name + " = " + node.state.registers[name].val
-                return output_string
+    def to_print_unresolved(self):
+        if self.suffix == "b32":
+            v = "V" + str(self.decompiler_data.number_of_v)
+            self.decompiler_data.write("uint* " + v + " // ds_write_b32\n")
+            self.decompiler_data.write(v + " = (uint*)(ds + ((" + self.addr + " + " + str(self.offset) + ") & ~3))\n")
+            self.decompiler_data.write("*" + v + " = " + self.vdata0 + "\n")
+            self.decompiler_data.number_of_v += 1
+            return self.node
+        elif self.suffix == "b64":
+            v = "V" + str(self.decompiler_data.number_of_v)
+            self.decompiler_data.write("ulong* " + v + " // ds_write_b64\n")
+            self.decompiler_data.write(v + " = (ulong*)(ds + ((" + self.addr + " + " + str(self.offset) + ") & ~7))\n")
+            self.decompiler_data.write("*" + v + " = " + self.vdata0 + "\n")
+            self.decompiler_data.number_of_v += 1
+            return self.node
+        else:
+            return super().to_print_unresolved()
 
-        elif suffix == "b64":
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                v = "V" + str(decompiler_data.number_of_v)
-                decompiler_data.write("ulong* " + v + " // ds_write_b64\n")
-                decompiler_data.write(v + " = (ulong*)(ds + ((" + addr + " + " + str(offset) + ") & ~7))\n")
-                decompiler_data.write("*" + v + " = " + vdata0 + "\n")
-                decompiler_data.number_of_v += 1
-                return node
+    def to_fill_node(self):
+        if self.suffix == "b32":
+            new_value, _, _ = make_op(self.node, self.addr, "4", " / ", '', '')
+            name = self.decompiler_data.lds_vars[self.offset][0] + "[" + new_value + "]"
+            new_value = self.node.state.registers[self.vdata0].val
+            reg_type = self.node.state.registers[self.vdata0].type
+            return make_new_value_for_reg(self.node, new_value, name, [], "u" + self.suffix[1:], reg_type=reg_type)
+        else:
+            return super().to_fill_node()
+
+    def to_print(self):
+        if self.suffix == "b32":
+            new_value, _, _ = make_op(self.node, self.addr, "4", " / ", '', '')
+            name = self.decompiler_data.lds_vars[self.offset][0] + "[" + new_value + "]"
+            self.output_string = name + " = " + self.node.state.registers[name].val
+            return self.output_string
+        else:
+            super().to_print()

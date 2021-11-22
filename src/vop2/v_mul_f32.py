@@ -1,42 +1,43 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData, make_op, make_new_value_for_reg
-from src.operation_status import OperationStatus
+from src.decompiler_data import make_op, make_new_value_for_reg
 
 
 class VMulF32(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData()
-        output_string = ""
-        vdst = instruction[1]
-        src0 = instruction[2]
-        src1 = instruction[3]
+    def __init__(self, node, suffix):
+        super().__init__(node, suffix)
+        self.vdst = self.instruction[1]
+        self.src0 = self.instruction[2]
+        self.src1 = self.instruction[3]
 
-        if suffix == "f32":
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(vdst + " = as_float(" + src0 + ") * as_float(" + src1 + ") // v_mul_f32\n")
-                return node
-            if flag_of_status == OperationStatus.to_fill_node:
-                new_integrity = node.state.registers[src1].integrity
-                new_value, src0_reg, src1_reg = make_op(node, src0, src1, " * ", 'as_float(', 'as_float(')
-                return make_new_value_for_reg(node, new_value, vdst, [src0, src1], suffix, reg_entire=new_integrity)
-            if flag_of_status == OperationStatus.to_print:
-                return output_string
+    def to_print_unresolved(self):
+        if self.suffix == 'f32':
+            self.decompiler_data.write(self.vdst + " = as_float(" + self.src0 +
+                                       ") * as_float(" + self.src1 + ") // v_mul_f32\n")
+            return self.node
+        elif self.suffix == 'i32_i24':
+            v0 = "V0" + str(self.decompiler_data.number_of_v0)
+            v1 = "V1" + str(self.decompiler_data.number_of_v1)
+            self.decompiler_data.write("int " + v0 + " (int)((" + self.src0 + "&0x7fffff) | ("
+                                       + self.src0 + "&0x800000 ? 0xff800000 : 0)) // v_mul_i32_i24\n")
+            self.decompiler_data.write("int " + v1 + " (int)((" + self.src1 + "&0x7fffff) | ("
+                                       + self.src1 + "&0x800000 ? 0xff800000 : 0))\n")
+            self.decompiler_data.write(self.vdst + " = " + v0 + " * " + v1 + "\n")
+            self.decompiler_data.number_of_v0 += 1
+            self.decompiler_data.number_of_v1 += 1
+            return self.node
+        else:
+            return super().to_print_unresolved()
 
-        if suffix == "i32_i24":
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                v0 = "V0" + str(decompiler_data.number_of_v0)
-                v1 = "V1" + str(decompiler_data.number_of_v1)
-                decompiler_data.write("int " + v0 + " (int)((" + src0 + "&0x7fffff) | ("
-                                      + src0 + "&0x800000 ? 0xff800000 : 0)) // v_mul_i32_i24\n")
-                decompiler_data.write("int " + v1 + " (int)((" + src1 + "&0x7fffff) | ("
-                                      + src1 + "&0x800000 ? 0xff800000 : 0))\n")
-                decompiler_data.write(vdst + " = " + v0 + " * " + v1 + "\n")
-                decompiler_data.number_of_v0 += 1
-                decompiler_data.number_of_v1 += 1
-                return node
-            if flag_of_status == OperationStatus.to_fill_node:
-                new_integrity = node.state.registers[src1].integrity
-                new_value, src0_reg, src1_reg = make_op(node, src0, src1, " * ", '(int)', '(int)')
-                return make_new_value_for_reg(node, new_value, vdst, [src0, src1], suffix, reg_entire=new_integrity)
-            if flag_of_status == OperationStatus.to_print:
-                return output_string
+    def to_fill_node(self):
+        if self.suffix == 'f32':
+            reg_entire = self.node.state.registers[self.src1].integrity
+            new_value, src0_reg, src1_reg = make_op(self.node, self.src0, self.src1, " * ", 'as_float(', 'as_float(')
+            return make_new_value_for_reg(self.node, new_value, self.vdst, [self.src0, self.src1],
+                                          self.suffix, reg_entire=reg_entire)
+        elif self.suffix == 'i32_i24':
+            reg_entire = self.node.state.registers[self.src1].integrity
+            new_value, src0_reg, src1_reg = make_op(self.node, self.src0, self.src1, " * ", '(int)', '(int)')
+            return make_new_value_for_reg(self.node, new_value, self.vdst, [self.src0, self.src1],
+                                          self.suffix, reg_entire=reg_entire)
+        else:
+            return super().to_fill_node()

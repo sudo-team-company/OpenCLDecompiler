@@ -1,27 +1,30 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import DecompilerData, check_reg_for_val, make_new_value_for_reg
-from src.operation_status import OperationStatus
+from src.decompiler_data import check_reg_for_val, make_new_value_for_reg
 
 
 class VAlignbit(BaseInstruction):
-    def execute(self, node, instruction, flag_of_status, suffix):
-        decompiler_data = DecompilerData()
-        output_string = ""
-        vdst = instruction[1]
-        src0 = instruction[2]
-        src1 = instruction[3]
-        src2 = instruction[4]
+    def __init__(self, node, suffix):
+        super().__init__(node, suffix)
+        self.vdst = self.instruction[1]
+        self.src0 = self.instruction[2]
+        self.src1 = self.instruction[3]
+        self.src2 = self.instruction[4]
 
-        if suffix == "b32":
-            if flag_of_status == OperationStatus.to_print_unresolved:
-                decompiler_data.write(vdst + " = (((ulong)" + src0 + ") << 32) | " + src1
-                                      + ") >> (" + src2 + " & 31) // v_alignbit_b32\n")
-                return node
-            if flag_of_status == OperationStatus.to_fill_node:
-                src0, _ = check_reg_for_val(node, src0)
-                src1, _ = check_reg_for_val(node, src1)
-                src2, _ = check_reg_for_val(node, src2)
-                new_value = 'amd_bitalign(' + src0 + ', ' + src1 + ', ' + src2 + ')'
-                return make_new_value_for_reg(node, new_value, vdst, [src0, src1, src2], suffix)
-            if flag_of_status == OperationStatus.to_print:
-                return output_string
+    def to_print_unresolved(self):
+        if self.suffix == 'b32':
+            self.decompiler_data.write(self.vdst + " = (((ulong)" + self.src0 + ") << 32) | " + self.src1
+                                       + ") >> (" + self.src2 + " & 31) // v_alignbit_b32\n")
+            return self.node
+        else:
+            return super().to_print_unresolved()
+
+    def to_fill_node(self):
+        if self.suffix == 'b32':
+            self.src0, _ = check_reg_for_val(self.node, self.src0)
+            self.src1, _ = check_reg_for_val(self.node, self.src1)
+            self.src2, _ = check_reg_for_val(self.node, self.src2)
+            new_value = 'amd_bitalign(' + self.src0 + ', ' + self.src1 + ', ' + self.src2 + ')'
+            return make_new_value_for_reg(self.node, new_value, self.vdst,
+                                          [self.src0, self.src1, self.src2], self.suffix)
+        else:
+            return super().to_fill_node()
