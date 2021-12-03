@@ -34,7 +34,7 @@ class VAshrrev(BaseInstruction):
             if self.node.state.registers[start_from_register].val == "0":
                 self.node.state.registers[start_from_register].val = \
                     self.node.state.registers[end_from_register].val
-            new_value, _, _ = make_op(self.node, start_from_register, str(pow(2, int(self.src0))), " / ", '', '(long)')
+            new_value = make_op(self.node, start_from_register, str(pow(2, int(self.src0))), " / ", '', '(long)')
             reg_type = self.node.state.registers[start_from_register].type
             node = set_reg_value(self.node, new_value, start_to_register, [start_from_register], self.suffix,
                                  reg_type=reg_type, reg_entire=Integrity.LOW_PART)

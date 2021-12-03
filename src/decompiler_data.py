@@ -1,12 +1,11 @@
 import binascii
-import re
 import struct
 
 import sympy
 
 from src.flag_type import FlagType
 from src.integrity import Integrity
-from src.register import Register
+from src.register import Register, is_reg, is_range
 from src.register_type import RegisterType
 from src.state import State
 
@@ -40,7 +39,7 @@ def make_new_type_without_modifier(node, register):
 
 
 def compare_values(node, to_reg, from_reg0, from_reg1, type0, type1, operation, suffix):
-    new_value, _, _ = make_op(node, from_reg0, from_reg1, operation, type0, type1)
+    new_value = make_op(node, from_reg0, from_reg1, operation, type0, type1)
     set_reg_value(node, new_value, to_reg, [from_reg0, from_reg1], suffix)
     return node
 
@@ -111,18 +110,16 @@ def optimize_names_of_vars():
 
 
 def check_reg_for_val(node, register):
-    register_flag = True
-    if re.compile(r'^[vs](([0-9]+)|(\[[0-9]+:[0-9]+\]))$').match(register):
+    if is_reg(register) or is_range(register):  # TODO: Выяснить зачем нужен range
         new_val = node.state.registers[register].val
     else:
         new_val = register
-        register_flag = False
-    return new_val, register_flag
+    return new_val
 
 
 def change_vals_for_make_op(node, register, reg_type):
     decompiler_data = DecompilerData()
-    new_val, register_flag = check_reg_for_val(node, register)
+    new_val = check_reg_for_val(node, register)
     if "-" in new_val or "+" in new_val or "*" in new_val or "/" in new_val:
         new_val = "(" + new_val + ")"
     if reg_type != '':
@@ -130,14 +127,14 @@ def change_vals_for_make_op(node, register, reg_type):
     new_val = reg_type + new_val
     if len(reg_type) > 0 and ')' not in reg_type:
         new_val += ')'
-    return new_val, register_flag
+    return new_val
 
 
 def make_op(node, register0, register1, operation, type0='', type1=''):
-    new_val0, register0_flag = change_vals_for_make_op(node, register0, type0)
-    new_val1, register1_flag = change_vals_for_make_op(node, register1, type1)
+    new_val0 = change_vals_for_make_op(node, register0, type0)
+    new_val1 = change_vals_for_make_op(node, register1, type1)
     new_val = new_val0 + operation + new_val1
-    return new_val, register0_flag, register1_flag
+    return new_val
 
 
 def evaluate_from_hex(global_data, size, flag):

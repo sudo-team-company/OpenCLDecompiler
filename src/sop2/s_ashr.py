@@ -19,7 +19,7 @@ class SAshr(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'i32':
-            new_value, _, _ = make_op(self.node, self.ssrc0, str(pow(2, int(self.ssrc1))), " / ", '(int)', '')
+            new_value = make_op(self.node, self.ssrc0, str(pow(2, int(self.ssrc1))), " / ", '(int)', '')
             self.node = set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix)
             return self.node
         return super().to_fill_node()

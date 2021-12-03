@@ -28,7 +28,7 @@ class VSubrev(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'u32':
-            new_value, _, _ = make_op(self.node, self.src1, self.src0, " - ", '(ulong)', '(ulong)')
+            new_value = make_op(self.node, self.src1, self.src0, " - ", '(ulong)', '(ulong)')
             reg_entire = self.node.state.registers[self.src1].integrity
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                  reg_entire=reg_entire)

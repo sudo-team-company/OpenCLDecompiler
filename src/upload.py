@@ -12,6 +12,7 @@ def upload_usesetup_offset_0x0(state, to_registers):
 
 
 def upload_usesetup_offset_0x4(state):
+    # TODO: Разобраться, явно неправильный подход
     decompiler_data = DecompilerData()
     state.registers["s0"] = Register("get_local_size(0)", RegisterType.LOCAL_SIZE_X, Integrity.ENTIRE)
     decompiler_data.make_version(state, "s0")
@@ -27,7 +28,7 @@ def upload_usesetup_offset_0xc(state, to_registers, to_registers1):
     decompiler_data = DecompilerData()
     state.registers[to_registers] = Register("get_global_size(0)", RegisterType.GLOBAL_SIZE_X, Integrity.ENTIRE)
     decompiler_data.make_version(state, to_registers)
-    if to_registers1 != "":
+    if to_registers1 != to_registers:
         state.registers[to_registers1] = Register("get_global_size(1)", RegisterType.GLOBAL_SIZE_Y, Integrity.ENTIRE)
         decompiler_data.make_version(state, to_registers1)
 
@@ -36,7 +37,7 @@ def upload_usesetup_offset_0x10(state, to_registers, to_registers1):
     decompiler_data = DecompilerData()
     state.registers[to_registers] = Register("get_global_size(1)", RegisterType.GLOBAL_SIZE_Y, Integrity.ENTIRE)
     decompiler_data.make_version(state, to_registers)
-    if to_registers1 != "":
+    if to_registers1 != to_registers:
         state.registers[to_registers1] = Register("get_global_size(2)", RegisterType.GLOBAL_SIZE_Z, Integrity.ENTIRE)
         decompiler_data.make_version(state, to_registers1)
 
@@ -48,21 +49,17 @@ def upload_usesetup_offset_0x14(state, to_registers):
 
 
 def upload_usesetup(state, to_registers, offset):
-    to_registers1 = ""
-    separation = to_registers.find(":")
-    if separation != -1:
-        to_registers1 = "s" + to_registers[separation + 1:-1]
-        to_registers = "s" + to_registers[2:separation]
+    start_to_register, end_to_register = check_and_split_regs(to_registers)
     if offset == "0x0":
-        upload_usesetup_offset_0x0(state, to_registers)
+        upload_usesetup_offset_0x0(state, start_to_register)
     elif offset == "0x4":
         upload_usesetup_offset_0x4(state)
     elif offset == "0xc":
-        upload_usesetup_offset_0xc(state, to_registers, to_registers1)
+        upload_usesetup_offset_0xc(state, start_to_register, end_to_register)
     elif offset == "0x10":
-        upload_usesetup_offset_0x10(state, to_registers, to_registers1)
+        upload_usesetup_offset_0x10(state, start_to_register, end_to_register)
     elif offset == "0x14":
-        upload_usesetup_offset_0x14(state, to_registers)
+        upload_usesetup_offset_0x14(state, start_to_register)
 
 
 def upload_offset_0x0(state, to_registers):

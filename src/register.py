@@ -50,7 +50,7 @@ def is_sgpr_pair(reg: str) -> bool:
 
 
 def is_vgpr_pair(reg: str) -> bool:
-    """Matches v[0:1], v[10:12] and etc."""
+    """Matches v[0:1], v[10:11] and etc."""
     if re.match("v\\[[0-9]+:[0-9]+]", reg) is not None:
         start, end = reg.split(':')
         start: int = int(start[2:])
@@ -64,7 +64,7 @@ def is_pair(reg: str) -> bool:
 
 
 def is_sgpr_range(reg: str) -> bool:
-    """Matches s[0:1], s[10:11] and etc."""
+    """Matches s[0:1], s[10:12] and etc."""
     return re.match("s\\[[0-9]+:[0-9]+]", reg) is not None
 
 

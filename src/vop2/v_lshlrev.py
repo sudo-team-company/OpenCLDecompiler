@@ -1,7 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
 from src.integrity import Integrity
-from src.register import check_and_split_regs
+from src.register import check_and_split_regs, is_reg
 from src.register_type import RegisterType
 
 
@@ -23,16 +23,17 @@ class VLshlrev(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'b32':
-            new_value, _, _ = make_op(self.node, self.src1, str(pow(2, int(self.src0))), " * ")
+            new_value = make_op(self.node, self.src1, str(pow(2, int(self.src0))), " * ")
             reg_type = self.node.state.registers[self.src1].type
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                  reg_type=reg_type)
         if self.suffix == 'b64':
             start_to_register, end_to_register = check_and_split_regs(self.vdst)
             start_from_register, end_from_register = check_and_split_regs(self.src1)
-            new_value0, src1_flag, src0_flag = \
-                make_op(self.node, start_from_register, str(pow(2, int(self.src0))), " * ")
-            new_value1, src1_flag, src0_flag = make_op(self.node, end_from_register, str(pow(2, int(self.src0))), " * ")
+            new_value0 = make_op(self.node, start_from_register, str(pow(2, int(self.src0))), " * ")
+            new_value1 = make_op(self.node, end_from_register, str(pow(2, int(self.src0))), " * ")
+            src1_flag = is_reg(start_from_register)
+            src0_flag = is_reg(self.src0)
             reg_entire0 = Integrity.LOW_PART
             reg_entire1 = Integrity.HIGH_PART
             if src0_flag and src1_flag:

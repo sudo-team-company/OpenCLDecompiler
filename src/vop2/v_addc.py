@@ -1,6 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
 from src.integrity import Integrity
+from src.register import is_reg
 from src.register_type import RegisterType
 
 
@@ -34,7 +35,9 @@ class VAddc(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'u32':
-            new_value, src0_reg, src1_reg = make_op(self.node, self.src0, self.src1, " + ", '(ulong)', '(ulong)')
+            new_value = make_op(self.node, self.src0, self.src1, " + ", '(ulong)', '(ulong)')
+            src0_reg = is_reg(self.src0)
+            src1_reg = is_reg(self.src1)
             reg_type = RegisterType.UNKNOWN
             reg_entire = Integrity.ENTIRE
             if src0_reg and src1_reg:

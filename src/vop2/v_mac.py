@@ -18,7 +18,7 @@ class VMac(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'f32':
-            new_val, _, _ = make_op(self.node, self.src0, self.src1, " * ", 'as_float(', 'as_float(')
+            new_val = make_op(self.node, self.src0, self.src1, " * ", 'as_float(', 'as_float(')
             new_value = new_val + " + as_float(" + self.node.state.registers[self.vdst].val + ')'
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix)
         return super().to_fill_node()

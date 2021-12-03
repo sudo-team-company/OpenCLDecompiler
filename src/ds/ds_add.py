@@ -9,7 +9,7 @@ class DsAdd(BaseInstruction):
         self.vdata0 = self.instruction[2]
         self.offset = int(self.instruction[3][7:]) if len(self.instruction) == 4 else 0
 
-        self.new_value, _, _ = make_op(node, self.addr, "4", " / ", '', '')
+        self.new_value = make_op(node, self.addr, "4", " / ", '', '')
         self.name = self.decompiler_data.lds_vars[self.offset][0] + "[" + self.new_value + "]"
 
     def to_print_unresolved(self):

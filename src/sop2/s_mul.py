@@ -1,5 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
+from src.register import is_reg
 from src.register_type import RegisterType
 
 
@@ -18,7 +19,9 @@ class SMul(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'i32':
-            new_value, ssrc0_reg, ssrc1_reg = make_op(self.node, self.ssrc0, self.ssrc1, " * ")
+            new_value = make_op(self.node, self.ssrc0, self.ssrc1, " * ")
+            ssrc0_reg = is_reg(self.ssrc0)
+            ssrc1_reg = is_reg(self.ssrc1)
             reg_type = RegisterType.UNKNOWN
             if ssrc0_reg and ssrc1_reg:
                 if self.node.state.registers[self.ssrc0].type == RegisterType.LOCAL_SIZE_X \

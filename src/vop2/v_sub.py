@@ -1,13 +1,14 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
+from src.register import is_reg
 from src.register_type import RegisterType
 
 
-def v_sub_fill_node(node, src0_reg, src1_reg, src0, src1, vdst, new_value, suffix):
+def v_sub_fill_node(node, src0, src1, vdst, new_value, suffix):
     reg_type = RegisterType.INT32
-    if src0_reg:
+    if is_reg(src0):
         reg_type = node.state.registers[src0].integrity
-    elif src1_reg:
+    elif is_reg(src1):
         reg_type = node.state.registers[src1].integrity
     return set_reg_value(node, new_value, vdst, [src0, src1], suffix, reg_type=reg_type)
 
@@ -46,9 +47,9 @@ class VSub(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'u32':
-            new_val, src0_reg, src1_reg = make_op(self.node, self.src0, self.src1, " - ", '(ulong)', '')
-            return v_sub_fill_node(self.node, src0_reg, src1_reg, self.src0, self.src1, self.vdst, new_val, self.suffix)
+            new_val = make_op(self.node, self.src0, self.src1, " - ", '(ulong)', '')
+            return v_sub_fill_node(self.node, self.src0, self.src1, self.vdst, new_val, self.suffix)
         if self.suffix == 'f32':
-            new_val, src0_reg, src1_reg = make_op(self.node, self.src0, self.src1, " - ", 'as_float(', 'as_float(')
-            return v_sub_fill_node(self.node, src0_reg, src1_reg, self.src0, self.src1, self.vdst, new_val, self.suffix)
+            new_val = make_op(self.node, self.src0, self.src1, " - ", 'as_float(', 'as_float(')
+            return v_sub_fill_node(self.node, self.src0, self.src1, self.vdst, new_val, self.suffix)
         return super().to_fill_node()

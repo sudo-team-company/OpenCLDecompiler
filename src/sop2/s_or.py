@@ -18,7 +18,7 @@ class SOr(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'b64':
-            new_value, _, _ = make_op(self.node, self.ssrc0, self.ssrc1, " | ")
+            new_value = make_op(self.node, self.ssrc0, self.ssrc1, " | ")
             reg_entire = self.node.state.registers[self.ssrc1].integrity
             return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix,
                                  reg_entire=reg_entire)

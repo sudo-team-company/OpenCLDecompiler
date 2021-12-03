@@ -30,12 +30,12 @@ class VMulF32(BaseInstruction):
     def to_fill_node(self):
         if self.suffix == 'f32':
             reg_entire = self.node.state.registers[self.src1].integrity
-            new_value, _, _ = make_op(self.node, self.src0, self.src1, " * ", 'as_float(', 'as_float(')
+            new_value = make_op(self.node, self.src0, self.src1, " * ", 'as_float(', 'as_float(')
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                  reg_entire=reg_entire)
         if self.suffix == 'i32_i24':
             reg_entire = self.node.state.registers[self.src1].integrity
-            new_value, _, _ = make_op(self.node, self.src0, self.src1, " * ", '(int)', '(int)')
+            new_value = make_op(self.node, self.src0, self.src1, " * ", '(int)', '(int)')
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                  reg_entire=reg_entire)
         return super().to_fill_node()

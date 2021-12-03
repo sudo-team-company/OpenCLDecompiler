@@ -16,6 +16,6 @@ class SMulk(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'i32':
-            new_value, _, _ = make_op(self.node, self.sdst, self.simm16, " * ")
+            new_value = make_op(self.node, self.sdst, self.simm16, " * ")
             return set_reg_value(self.node, new_value, self.sdst, [self.sdst], self.suffix)
         return super().to_fill_node()

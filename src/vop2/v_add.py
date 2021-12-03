@@ -2,7 +2,7 @@ from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
 from src.integrity import Integrity
 from src.opencl_types import most_common_type, make_asm_type
-from src.register import check_and_split_regs
+from src.register import check_and_split_regs, is_reg
 from src.register_type import RegisterType
 
 
@@ -36,7 +36,9 @@ class VAdd(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'u32':
-            new_value, src0_reg, src1_reg = make_op(self.node, self.src0, self.src1, " + ", '(ulong)', '(ulong)')
+            new_value = make_op(self.node, self.src0, self.src1, " + ", '(ulong)', '(ulong)')
+            src0_reg = is_reg(self.src0)
+            src1_reg = is_reg(self.src1)
             data_type = self.suffix
             reg_type = RegisterType.UNKNOWN
             reg_entire = Integrity.ENTIRE
@@ -77,38 +79,38 @@ class VAdd(BaseInstruction):
                     if self.decompiler_data.type_params.get("*" + argument) in \
                             ["int", "uint", "__global int", "__global uint", "float", "__global float"]:
                         if "1073741824" in self.node.state.registers[self.src1].val:
-                            new_value, _, _ = make_op(self.node, self.src1, "1073741824", " * ")
+                            new_value = make_op(self.node, self.src1, "1073741824", " * ")
                         else:
-                            new_value, _, _ = make_op(self.node, self.src1, "4", ' / ')
-                        new_value, _, _ = make_op(self.node, argument, new_value, " + ")
+                            new_value = make_op(self.node, self.src1, "4", ' / ')
+                        new_value = make_op(self.node, argument, new_value, " + ")
                     elif self.decompiler_data.type_params.get("*" + argument) in \
                             ["long", "ulong", "__global long", "__global ulong",
                              "double", "__global double",
                              "int2", "__global int2"]:
                         if "1073741824" in self.node.state.registers[self.src1].val:
-                            new_value, _, _ = make_op(self.node, self.src1, "1073741824", " * ")
+                            new_value = make_op(self.node, self.src1, "1073741824", " * ")
                         else:
-                            new_value, _, _ = make_op(self.node, self.src1, "8", " / ")
-                        new_value, _, _ = make_op(self.node, argument, new_value, " + ")
+                            new_value = make_op(self.node, self.src1, "8", " / ")
+                        new_value = make_op(self.node, argument, new_value, " + ")
                     elif self.decompiler_data.type_params.get("*" + argument) in \
                             ["char", "uchar", "__global char", "__global uchar"]:
-                        new_value, _, _ = make_op(self.node, argument, self.node.state.registers[self.src1].val, " + ")
+                        new_value = make_op(self.node, argument, self.node.state.registers[self.src1].val, " + ")
                         # TODO: Проанализировать, почему нет присвоения типов
                     elif self.decompiler_data.type_params.get("*" + argument) in ["int4", "__global int4"]:
                         if "1073741824" in self.node.state.registers[self.src1].val:
-                            new_value, _, _ = make_op(self.node, self.src1, "1073741824", " * ")
+                            new_value = make_op(self.node, self.src1, "1073741824", " * ")
                         else:
-                            new_value, _, _ = make_op(self.node, self.src1, "16", " / ")
-                        new_value, _, _ = make_op(self.node, argument, new_value, " + ")
+                            new_value = make_op(self.node, self.src1, "16", " / ")
+                        new_value = make_op(self.node, argument, new_value, " + ")
                     elif self.decompiler_data.type_params.get("*" + argument) in ["int8", "__global int8"]:
                         if "1073741824" in self.node.state.registers[self.src1].val:
-                            new_value, _, _ = make_op(self.node, self.src1, "1073741824", " * ")
+                            new_value = make_op(self.node, self.src1, "1073741824", " * ")
                         else:
-                            new_value, _, _ = make_op(self.node, self.src1, "32", " / ")
-                        new_value, _, _ = make_op(self.node, argument, new_value, " + ")
+                            new_value = make_op(self.node, self.src1, "32", " / ")
+                        new_value = make_op(self.node, argument, new_value, " + ")
                     else:
-                        new_value, _, _ = make_op(self.node, self.src1, "8", " / ")
-                        new_value, _, _ = make_op(self.node, argument, new_value, " + ")
+                        new_value = make_op(self.node, self.src1, "8", " / ")
+                        new_value = make_op(self.node, argument, new_value, " + ")
                 elif self.node.state.registers[self.src0].type == RegisterType.GLOBAL_DATA_POINTER:
                     data_type = self.node.state.registers[self.src1].data_type
                     name = self.node.state.registers[self.src0].val
@@ -116,8 +118,8 @@ class VAdd(BaseInstruction):
                     if 'bytes' in data_type:
                         position = data_type.find(' ')
                         value = data_type[:position]
-                        new_value, _, _ = make_op(self.node, self.src1, value, " / ")
-                        new_value, _, _ = make_op(self.node, name, new_value, " + ")
+                        new_value = make_op(self.node, self.src1, value, " / ")
+                        new_value = make_op(self.node, name, new_value, " + ")
                         reg_type = RegisterType.GLOBAL_DATA_POINTER
                 elif self.node.state.registers[self.src0].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE and \
                         self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_X:
