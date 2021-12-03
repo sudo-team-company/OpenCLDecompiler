@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, make_new_value_for_reg
+from src.decompiler_data import make_op, set_reg_value
 
 
 class DsAdd(BaseInstruction):
@@ -20,19 +20,16 @@ class DsAdd(BaseInstruction):
             self.decompiler_data.write("*" + v + " = *" + v + " + " + self.vdata0 + "  // atomic operation\n")
             self.decompiler_data.number_of_v += 1
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix == "u32":
             new_value = self.node.state.registers[self.name].val + " + " + self.node.state.registers[self.vdata0].val
-            return make_new_value_for_reg(self.node, new_value, self.name, [], self.suffix)
-        else:
-            return super().to_fill_node()
+            return set_reg_value(self.node, new_value, self.name, [], self.suffix)
+        return super().to_fill_node()
 
     def to_print(self):
         if self.suffix == "u32":
             self.output_string = self.name + " += " + self.node.state.registers[self.vdata0].val
             return self.output_string
-        else:
-            super().to_print()
+        return super().to_print()

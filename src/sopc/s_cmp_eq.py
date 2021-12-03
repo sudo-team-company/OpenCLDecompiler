@@ -14,11 +14,9 @@ class SCmpEq(BaseInstruction):
         if self.suffix in ['i32', 'u32', 'u64']:
             self.decompiler_data.write("scc = " + self.ssrc0 + "==" + self.ssrc1 + " // s_cmp_eq_" + self.suffix + "\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix in ['i32', 'u32', 'u64']:
             return compare_values(self.node, "scc", self.ssrc0, self.ssrc1, "", "", " == ", self.suffix)
-        else:
-            return super().to_fill_node()
+        return super().to_fill_node()

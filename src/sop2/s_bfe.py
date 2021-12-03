@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_new_value_for_reg
+from src.decompiler_data import set_reg_value
 from src.register_type import RegisterType
 
 
@@ -29,7 +29,7 @@ class SBfe(BaseInstruction):
             self.decompiler_data.number_of_length += 1
             self.decompiler_data.number_of_shift += 1
             return self.node
-        elif self.suffix == 'i32':
+        if self.suffix == 'i32':
             self.decompiler_data.write("uchar " + shift + " = " + self.ssrc1 + " & 31 // s_bfe_i32\n")
             self.decompiler_data.write("uchar " + length + " = (" + self.ssrc1 + ">>16) & 07xf\n")
             self.decompiler_data.write("if (" + length + "==0)\n")
@@ -43,8 +43,7 @@ class SBfe(BaseInstruction):
             self.decompiler_data.number_of_length += 1
             self.decompiler_data.number_of_shift += 1
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix == 'u32':
@@ -57,8 +56,7 @@ class SBfe(BaseInstruction):
             else:
                 print("Unknown pattern in s_bfe")
                 raise NotImplementedError()
-            return make_new_value_for_reg(self.node, new_value, self.sdst, [], self.suffix, reg_type=reg_type)
-        elif self.suffix == 'i32':
+            return set_reg_value(self.node, new_value, self.sdst, [], self.suffix, reg_type=reg_type)
+        if self.suffix == 'i32':
             return self.node
-        else:
-            return super().to_fill_node()
+        return super().to_fill_node()

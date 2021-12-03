@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_new_value_for_reg
+from src.decompiler_data import set_reg_value
 from src.register_type import RegisterType
 
 
@@ -16,8 +16,7 @@ class VCndmask(BaseInstruction):
             self.decompiler_data.write(self.vdst + " = " + self.ssrc2 + "&(1ULL<<LANEID) ? "
                                        + self.src1 + " : " + self.src0 + " // v_cndmask_b32\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix == 'b32':
@@ -25,12 +24,10 @@ class VCndmask(BaseInstruction):
             if self.node.state.registers[self.vdst].type == RegisterType.KERNEL_ARGUMENT_ELEMENT:
                 variable = "*" + variable
             reg_type = RegisterType.PROGRAM_PARAM
-            node = make_new_value_for_reg(self.node, variable, self.vdst, [self.src0, self.src1],
-                                          self.suffix, reg_type=reg_type)
+            node = set_reg_value(self.node, variable, self.vdst, [self.src0, self.src1], self.suffix, reg_type=reg_type)
             self.decompiler_data.make_var(node.state.registers[self.vdst].version, variable, self.suffix)
             return node
-        else:
-            return super().to_fill_node()
+        return super().to_fill_node()
 
     def to_print(self):
         if self.suffix == 'b32':
@@ -48,3 +45,4 @@ class VCndmask(BaseInstruction):
                                  + self.node.state.registers[self.ssrc2].val + " ? " \
                                  + src1_parent_val + " : " + src0_parent_val
             return self.output_string
+        return super().to_print()

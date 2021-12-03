@@ -1,34 +1,8 @@
 from src.decompiler_data import DecompilerData, make_elem_from_addr
 from src.integrity import Integrity
 from src.opencl_types import make_asm_type
-from src.register import Register
+from src.register import Register, check_and_split_regs, get_next_reg
 from src.register_type import RegisterType
-
-
-def extract_from_regs(registers, left_board):
-    last = 0
-    first = 0
-    name = registers
-    if left_board != -1:
-        separation = registers.index(":")
-        right_board = registers.index("]")
-        first = int(registers[(left_board + 1):separation])
-        last = int(registers[(separation + 1):right_board])
-        name = registers[:left_board]
-    else:
-        if "s" in registers or "v" in registers:
-            name = registers[0]
-            first = int(registers[1:])
-            last = first
-    return first, last, name
-
-
-def find_first_last_num_to_from(to_registers, from_registers):
-    left_board_from = from_registers.find("[")
-    first_from, last_from, name_of_from = extract_from_regs(from_registers, left_board_from)
-    left_board_to = to_registers.find("[")
-    first_to, last_to, name_of_to = extract_from_regs(to_registers, left_board_to)
-    return first_to, last_to, name_of_to, name_of_from, first_from, last_from
 
 
 def upload_usesetup_offset_0x0(state, to_registers):
@@ -91,45 +65,56 @@ def upload_usesetup(state, to_registers, offset):
         upload_usesetup_offset_0x14(state, to_registers)
 
 
-def upload_offset_0x0(state, to_registers, name_of_to, first_to, last_to):
+def upload_offset_0x0(state, to_registers):
+    # Подразумевается, что to_registers это не единичный регистр
     decompiler_data = DecompilerData()
-    state.registers[to_registers] = Register("get_global_offset(0)", RegisterType.GLOBAL_OFFSET_X, Integrity.ENTIRE)
-    decompiler_data.make_version(state, to_registers)
-    state.registers[name_of_to + str(first_to + 1)] = Register("get_global_offset(0)",
-                                                               RegisterType.GLOBAL_OFFSET_X, Integrity.ENTIRE)
-    decompiler_data.make_version(state, name_of_to + str(first_to + 1))
-    if last_to - first_to > 1:
-        state.registers[name_of_to + str(last_to - 1)] = \
+    start_to_register, end_to_register = check_and_split_regs(to_registers)
+    curr_to_register = start_to_register
+    state.registers[curr_to_register] = Register("get_global_offset(0)", RegisterType.GLOBAL_OFFSET_X, Integrity.ENTIRE)
+    decompiler_data.make_version(state, curr_to_register)
+    curr_to_register = get_next_reg(curr_to_register)
+    state.registers[curr_to_register] = Register("get_global_offset(0)", RegisterType.GLOBAL_OFFSET_X, Integrity.ENTIRE)
+    decompiler_data.make_version(state, curr_to_register)
+    if curr_to_register != end_to_register:  # может лучше цикл?
+        curr_to_register = get_next_reg(curr_to_register)
+        state.registers[curr_to_register] = \
             Register("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, Integrity.ENTIRE)
-        decompiler_data.make_version(state, name_of_to + str(last_to - 1))
-        state.registers[name_of_to + str(last_to)] = \
+        decompiler_data.make_version(state, curr_to_register)
+        curr_to_register = get_next_reg(curr_to_register)
+        state.registers[curr_to_register] = \
             Register("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, Integrity.ENTIRE)
-        decompiler_data.make_version(state, name_of_to + str(last_to))
+        decompiler_data.make_version(state, curr_to_register)
 
 
-def upload_offset_0x8(state, to_registers, name_of_to, first_to, last_to):
+def upload_offset_0x8(state, to_registers):
+    # Подразумевается, что to_registers это не единичный регистр
     decompiler_data = DecompilerData()
-    state.registers[to_registers] = Register("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, Integrity.ENTIRE)
-    decompiler_data.make_version(state, to_registers)
-    state.registers[name_of_to + str(first_to + 1)] = \
-        Register("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, Integrity.ENTIRE)
-    decompiler_data.make_version(state, name_of_to + str(first_to + 1))
-    if last_to - first_to > 1:
-        state.registers[name_of_to + str(last_to - 1)] = \
+    start_to_register, end_to_register = check_and_split_regs(to_registers)
+    curr_to_register = start_to_register
+    state.registers[curr_to_register] = Register("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, Integrity.ENTIRE)
+    decompiler_data.make_version(state, curr_to_register)
+    curr_to_register = get_next_reg(curr_to_register)
+    state.registers[curr_to_register] = Register("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, Integrity.ENTIRE)
+    decompiler_data.make_version(state, curr_to_register)
+    if curr_to_register != end_to_register:
+        curr_to_register = get_next_reg(curr_to_register)
+        state.registers[curr_to_register] = \
             Register("get_global_offset(2)", RegisterType.GLOBAL_OFFSET_Z, Integrity.ENTIRE)
-        decompiler_data.make_version(state, name_of_to + str(last_to - 1))
-        state.registers[name_of_to + str(last_to)] = \
+        decompiler_data.make_version(state, curr_to_register)
+        curr_to_register = get_next_reg(curr_to_register)
+        state.registers[curr_to_register] = \
             Register("get_global_offset(2)", RegisterType.GLOBAL_OFFSET_Z, Integrity.ENTIRE)
-        decompiler_data.make_version(state, name_of_to + str(last_to))
+        decompiler_data.make_version(state, curr_to_register)
 
 
-def upload_offset_0x10(state, to_registers, name_of_to, first_to):
+def upload_offset_0x10(state, to_registers):
     decompiler_data = DecompilerData()
-    state.registers[to_registers] = Register("get_global_offset(2)", RegisterType.GLOBAL_OFFSET_Z, Integrity.ENTIRE)
-    decompiler_data.make_version(state, to_registers)
-    state.registers[name_of_to + str(first_to + 1)] = Register("get_global_offset(2)",
-                                                               RegisterType.GLOBAL_OFFSET_Z, Integrity.ENTIRE)
-    decompiler_data.make_version(state, name_of_to + str(first_to + 1))
+    start_to_register, end_to_register = check_and_split_regs(to_registers)
+    state.registers[start_to_register] = \
+        Register("get_global_offset(2)", RegisterType.GLOBAL_OFFSET_Z, Integrity.ENTIRE)
+    decompiler_data.make_version(state, start_to_register)
+    state.registers[end_to_register] = Register("get_global_offset(2)", RegisterType.GLOBAL_OFFSET_Z, Integrity.ENTIRE)
+    decompiler_data.make_version(state, end_to_register)
 
 
 def upload_kernel_param(state, offset, kernel_params):
@@ -151,28 +136,27 @@ def upload_kernel_param(state, offset, kernel_params):
 
 def upload_global_data_pointer(state, to_registers, from_registers):
     decompiler_data = DecompilerData()
-    data_type = state.registers[from_registers].data_type
-    new_val = make_elem_from_addr(state.registers[from_registers].val)
-    state.registers[to_registers] = Register(new_val, RegisterType.GLOBAL_DATA_POINTER, Integrity.ENTIRE)
-    state.registers[to_registers].data_type = data_type
-    decompiler_data.make_version(state, to_registers)
+    start_to_register, _ = check_and_split_regs(to_registers)
+    start_from_register, _ = check_and_split_regs(from_registers)
+    data_type = state.registers[start_from_register].data_type
+    new_val = make_elem_from_addr(state.registers[start_from_register].val)
+    state.registers[start_to_register] = Register(new_val, RegisterType.GLOBAL_DATA_POINTER, Integrity.ENTIRE)
+    state.registers[start_to_register].data_type = data_type
+    decompiler_data.make_version(state, start_to_register)
 
 
 def upload(state, to_registers, from_registers, offset, kernel_params):
-    first_to, last_to, name_of_to, name_of_from, first_from, _ \
-        = find_first_last_num_to_from(to_registers, from_registers)
-    from_registers = name_of_from + str(first_from)
-    to_registers = name_of_to + str(first_to)
-    if state.registers[from_registers].type == RegisterType.ARGUMENTS_POINTER:
+    start_from_register, _ = check_and_split_regs(from_registers)
+    if state.registers[start_from_register].type == RegisterType.ARGUMENTS_POINTER:
         if offset == "0x0":
-            upload_offset_0x0(state, to_registers, name_of_to, first_to, last_to)
+            upload_offset_0x0(state, to_registers)
         elif offset == "0x8":
-            upload_offset_0x8(state, to_registers, name_of_to, first_to, last_to)
+            upload_offset_0x8(state, to_registers)
         elif offset == "0x10":
-            upload_offset_0x10(state, to_registers, name_of_to, first_to)
+            upload_offset_0x10(state, to_registers)
         else:
             upload_kernel_param(state, offset, kernel_params)
-    elif state.registers[from_registers].type == RegisterType.GLOBAL_DATA_POINTER:
+    elif state.registers[start_from_register].type == RegisterType.GLOBAL_DATA_POINTER:
         upload_global_data_pointer(state, to_registers, from_registers)
     # TODO: Проанализировать на других программах может ли выполняться этот кусок, сейчас тесты работают
     # else:

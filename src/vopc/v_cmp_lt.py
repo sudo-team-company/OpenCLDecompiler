@@ -20,16 +20,14 @@ class VCmpLt(BaseInstruction):
             self.decompiler_data.write(self.sdst + " = (uint)" + self.src0 +
                                        " < (uint)" + self.src1 + " // v_cmp_lt_u32\n")
             return self.node
-        elif self.suffix == 'f64':
+        if self.suffix == 'f64':
             self.decompiler_data.write(self.sdst + "(LANEID) = as_float(" + self.src0 +
                                        ") < as_float(" + self.src1 + ") // v_cmp_lt_f64\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix == 'f64':
             return compare_values(self.node, self.sdst, self.src0, self.src1, self.new_as_type,
                                   self.new_as_type, " < ", self.suffix)
-        else:
-            return super().to_fill_node()
+        return super().to_fill_node()

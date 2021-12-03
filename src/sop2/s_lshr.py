@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, make_new_value_for_reg
+from src.decompiler_data import make_op, set_reg_value
 from src.register_type import RegisterType
 
 
@@ -15,8 +15,7 @@ class SLshr(BaseInstruction):
             self.decompiler_data.write(self.sdst + " = " + self.ssrc0 + " >> (" + self.ssrc1 + " & 31) // s_lshr_b32\n")
             self.decompiler_data.write("scc = " + self.sdst + "!= 0\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix == 'b32':
@@ -31,8 +30,7 @@ class SLshr(BaseInstruction):
                     and str(pow(2, int(self.ssrc1))) == self.decompiler_data.size_of_work_groups[2]:
                 new_value = "get_num_groups(2)"
             else:
-                new_value, ssrc0_flag, ssrc1_flag = make_op(self.node, self.ssrc0, str(pow(2, int(self.ssrc1))), " / ")
-            return make_new_value_for_reg(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1],
-                                          self.suffix, reg_type=reg_type)
-        else:
-            return super().to_fill_node()
+                new_value, _, _ = make_op(self.node, self.ssrc0, str(pow(2, int(self.ssrc1))), " / ")
+            return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix,
+                                 reg_type=reg_type)
+        return super().to_fill_node()

@@ -1,7 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier
 from src.opencl_types import make_opencl_type
-from src.upload import find_first_last_num_to_from
+from src.register import check_and_split_regs, is_reg
 
 
 class FlatStore(BaseInstruction):
@@ -11,21 +11,19 @@ class FlatStore(BaseInstruction):
         self.vdata = self.instruction[2]
         self.inst_offset = "0" if len(self.instruction) < 4 else self.instruction[3]
 
-        self.first_to, self.last_to, self.name_of_to, self.name_of_from, self.first_from, self.last_from \
-            = find_first_last_num_to_from(self.vaddr, self.vdata)
-        self.from_registers = self.name_of_from + str(self.first_from)
-        self.to_registers = self.name_of_to + str(self.first_to)
+        self.to_registers, _ = check_and_split_regs(self.vaddr)
+        self.from_registers, self.from_registers_1 = check_and_split_regs(self.vdata)
 
     def to_print_unresolved(self):
         if self.suffix in ["dword", "byte"]:
             self.decompiler_data.write("*(uint32*)(" + self.vaddr + " + " + self.inst_offset
                                        + ") = " + self.vdata + " // flat_store_dword\n")
             return self.node
-        elif self.suffix == "dwordx2":
+        if self.suffix == "dwordx2":
             self.decompiler_data.write("*(ulong*)(" + self.vaddr + " + " + self.inst_offset
                                        + " = " + self.vdata + " // flat_store_dwordx2\n")
             return self.node
-        elif self.suffix == "dwordx4":
+        if self.suffix == "dwordx4":
             vm = "vm" + str(self.decompiler_data.number_of_vm)
             self.decompiler_data.write(
                 "short* " + vm + " = (" + self.vaddr + " + " + self.inst_offset + ") // flat_store_dwordx4\n")
@@ -35,15 +33,15 @@ class FlatStore(BaseInstruction):
             self.decompiler_data.write("*(uint*)(" + vm + " + 12) = " + self.vdata + "[3]\n")
             self.decompiler_data.number_of_vm += 1
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix in ["dword", "dwordx2", "dwordx4", "byte"]:
-            if self.first_to == self.last_to:
+            if is_reg(self.vaddr):
                 self.node.state.registers[self.to_registers].version = \
                     self.node.parent[0].state.registers[self.to_registers].version
                 self.node.state.registers[self.to_registers].data_type = self.suffix
+            # TODO: Сделать присвоение в пары
             else:
                 if self.node.state.registers[self.from_registers].data_type is not None \
                         and 'bytes' in self.node.state.registers[self.from_registers].data_type:
@@ -69,8 +67,7 @@ class FlatStore(BaseInstruction):
                             self.decompiler_data.names_of_vars[self.node.state.registers[self.from_registers].val] = \
                                 self.node.state.registers[self.from_registers].data_type
             return self.node
-        else:
-            return super().to_fill_node()
+        return super().to_fill_node()
 
     def to_print(self):
         if self.suffix in ["dword", "dwordx2", "dwordx4", "byte"]:
@@ -80,14 +77,12 @@ class FlatStore(BaseInstruction):
             else:
                 var = "*(" + make_opencl_type(self.decompiler_data.names_of_vars[var]) + "*)(" + var + ")"
             if self.node.state.registers.get(self.from_registers):
-                from_registers_1 = self.name_of_from + str(self.last_from)
                 if self.node.state.registers[self.from_registers].val == "0" \
-                        and self.node.state.registers.get(from_registers_1):
-                    self.output_string = var + " = " + self.node.state.registers[from_registers_1].val
+                        and self.node.state.registers.get(self.from_registers_1):
+                    self.output_string = var + " = " + self.node.state.registers[self.from_registers_1].val
                 else:
                     self.output_string = var + " = " + self.node.state.registers[self.from_registers].val
             else:
                 self.output_string = var + " = " + self.decompiler_data.initial_state.registers[self.from_registers].val
             return self.output_string
-        else:
-            super().to_print()
+        return super().to_print()

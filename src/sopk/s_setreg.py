@@ -19,5 +19,4 @@ class SSetreg(BaseInstruction):
                                        + self.sdst + " << " + self.bitoffset + ") & " + mask + ")\n")
             self.decompiler_data.number_of_mask += 1
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()

@@ -14,5 +14,4 @@ class VCmpxLe(BaseInstruction):
                                        " <= (uint)" + self.src1 + " // v_cmpx_le_u32\n")
             self.decompiler_data.write("exec = " + " = " + self.sdst + "\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()

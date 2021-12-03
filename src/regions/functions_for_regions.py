@@ -7,10 +7,10 @@ from src.regions.region import Region
 
 
 def add_parent_and_child(before_r, next_r, region, pred_child, pred_parent):
-    for i in range(len(before_r)):
-        index = before_r[i].children.index(pred_child[i])
-        before_r[i].children[index] = region
-        region.add_parent(before_r[i])
+    for i, before_r_i in enumerate(before_r):
+        index = before_r_i.children.index(pred_child[i])
+        before_r_i.children[index] = region
+        region.add_parent(before_r_i)
     if next_r is not None:
         index = next_r.parent.index(pred_parent)
         next_r.parent[index] = region
@@ -341,8 +341,8 @@ def process_control_structures_in_loop(region_start, region_end):
             if check_loop(region_start, region_end):
                 process_loop(region_start, region_end)
                 return
-            elif curr_region.type == RegionType.BASIC and len(curr_region.children) == 2 \
-                    and (curr_region.children[0] == after_region_end or curr_region.children[1] == after_region_end):
+            if curr_region.type == RegionType.BASIC and len(curr_region.children) == 2 \
+                    and (after_region_end in [curr_region.children[0], curr_region.children[1]]):
                 curr_region.type = RegionType.BREAK_REGION  # надо отдельно написать на return и обрезание на break
                 next_region = curr_region.children[0] if curr_region.children[1] == after_region_end else \
                     curr_region.children[1]

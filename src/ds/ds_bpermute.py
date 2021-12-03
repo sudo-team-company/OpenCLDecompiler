@@ -26,5 +26,4 @@ class DsBpermute(BaseInstruction):
             self.decompiler_data.write(tab + tab + self.dst + "[i] = " + tmp + "[i]\n")
             self.decompiler_data.number_of_tmp += 1
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()

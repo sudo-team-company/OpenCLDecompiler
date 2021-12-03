@@ -13,5 +13,4 @@ class VCmpGe(BaseInstruction):
             self.decompiler_data.write(self.sdst + " = (uint)" + self.src0 +
                                        " >= (uint)" + self.src1 + " // v_cmp_ge_u32\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()

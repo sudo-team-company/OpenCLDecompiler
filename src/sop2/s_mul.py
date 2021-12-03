@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, make_new_value_for_reg
+from src.decompiler_data import make_op, set_reg_value
 from src.register_type import RegisterType
 
 
@@ -14,8 +14,7 @@ class SMul(BaseInstruction):
         if self.suffix == 'i32':
             self.decompiler_data.write(self.sdst + " = " + self.ssrc0 + " * " + self.ssrc1 + " // s_mul_i32\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix == 'i32':
@@ -31,7 +30,6 @@ class SMul(BaseInstruction):
                 elif self.node.state.registers[self.ssrc0].type == RegisterType.LOCAL_SIZE_Z \
                         and self.node.state.registers[self.ssrc1].type == RegisterType.WORK_GROUP_ID_Z:
                     reg_type = RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE
-            return make_new_value_for_reg(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1],
-                                          self.suffix, reg_type=reg_type)
-        else:
-            return super().to_fill_node()
+            return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix,
+                                 reg_type=reg_type)
+        return super().to_fill_node()

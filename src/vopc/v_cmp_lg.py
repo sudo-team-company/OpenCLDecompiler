@@ -14,15 +14,13 @@ class VCmpLg(BaseInstruction):
             self.decompiler_data.write(self.sdst + " = (int)" + self.src0 +
                                        " != (int)" + self.src1 + " // v_cmp_lg_i32\n")
             return self.node
-        elif self.suffix == 'u32':
+        if self.suffix == 'u32':
             self.decompiler_data.write(self.sdst + " = (uint)" + self.src0 +
                                        " != (uint)" + self.src1 + " // v_cmp_lg_u32\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix == 'i32':
             return compare_values(self.node, self.sdst, self.src0, self.src1, '(int)', '(int)', " != ", self.suffix)
-        else:
-            return super().to_fill_node()
+        return super().to_fill_node()

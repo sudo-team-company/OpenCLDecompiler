@@ -23,5 +23,4 @@ class DsWrite2(BaseInstruction):
             self.decompiler_data.number_of_v0 += 1
             self.decompiler_data.number_of_v1 += 1
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()

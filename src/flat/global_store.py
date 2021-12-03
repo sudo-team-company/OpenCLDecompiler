@@ -14,9 +14,8 @@ class GlobalStore(BaseInstruction):
             self.decompiler_data.write("*(uint*)(" + self.vaddr + " + " + self.saddr + " + " + self.inst_offset
                                        + ") = " + self.vdata + " // global_store_dword\n")
             return self.node
-        elif self.suffix == "dwordx2":
+        if self.suffix == "dwordx2":
             self.decompiler_data.write("*(ulong*)(" + self.vaddr + " + " + self.saddr + " + " + self.inst_offset
                                        + ") = " + self.vdata + " // global_store_dwordx2\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()

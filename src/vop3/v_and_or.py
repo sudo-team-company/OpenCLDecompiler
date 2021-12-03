@@ -14,3 +14,4 @@ class VAndOr(BaseInstruction):
             self.decompiler_data.write(self.vdst + " = (" + self.src0 + " & " + self.src1
                                        + ") | " + self.src2 + " // v_and_or_b32\n")
             return self.node
+        return super().to_print_unresolved()

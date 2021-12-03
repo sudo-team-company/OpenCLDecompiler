@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import check_reg_for_val, make_new_value_for_reg
+from src.decompiler_data import check_reg_for_val, set_reg_value
 
 
 class VMin(BaseInstruction):
@@ -13,14 +13,12 @@ class VMin(BaseInstruction):
         if self.suffix == 'u32':
             self.decompiler_data.write(self.vdst + " = min(" + self.src0 + ", " + self.src1 + ") // v_min_u32\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix == 'u32':
             self.src0, _ = check_reg_for_val(self.node, self.src0)
             self.src1, _ = check_reg_for_val(self.node, self.src1)
             new_value = "min(" + self.src0 + ", " + self.src1 + ")"
-            return make_new_value_for_reg(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix)
-        else:
-            return super().to_fill_node()
+            return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix)
+        return super().to_fill_node()

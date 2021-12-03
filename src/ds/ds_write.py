@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, make_new_value_for_reg
+from src.decompiler_data import make_op, set_reg_value
 
 
 class DsWrite(BaseInstruction):
@@ -18,15 +18,14 @@ class DsWrite(BaseInstruction):
             self.decompiler_data.write("*" + v + " = " + self.vdata0 + "\n")
             self.decompiler_data.number_of_v += 1
             return self.node
-        elif self.suffix == "b64":
+        if self.suffix == "b64":
             v = "V" + str(self.decompiler_data.number_of_v)
             self.decompiler_data.write("ulong* " + v + " // ds_write_b64\n")
             self.decompiler_data.write(v + " = (ulong*)(ds + ((" + self.addr + " + " + str(self.offset) + ") & ~7))\n")
             self.decompiler_data.write("*" + v + " = " + self.vdata0 + "\n")
             self.decompiler_data.number_of_v += 1
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix == "b32":
@@ -34,9 +33,8 @@ class DsWrite(BaseInstruction):
             name = self.decompiler_data.lds_vars[self.offset][0] + "[" + new_value + "]"
             new_value = self.node.state.registers[self.vdata0].val
             reg_type = self.node.state.registers[self.vdata0].type
-            return make_new_value_for_reg(self.node, new_value, name, [], "u" + self.suffix[1:], reg_type=reg_type)
-        else:
-            return super().to_fill_node()
+            return set_reg_value(self.node, new_value, name, [], "u" + self.suffix[1:], reg_type=reg_type)
+        return super().to_fill_node()
 
     def to_print(self):
         if self.suffix == "b32":
@@ -44,5 +42,4 @@ class DsWrite(BaseInstruction):
             name = self.decompiler_data.lds_vars[self.offset][0] + "[" + new_value + "]"
             self.output_string = name + " = " + self.node.state.registers[name].val
             return self.output_string
-        else:
-            super().to_print()
+        return super().to_print()

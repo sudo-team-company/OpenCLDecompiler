@@ -35,5 +35,4 @@ class VDivFixup(BaseInstruction):
             self.decompiler_data.write("else\n")
             self.decompiler_data.write(tab + self.vdst + " = " + sf0 + "\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()

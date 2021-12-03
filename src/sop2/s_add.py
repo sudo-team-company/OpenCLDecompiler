@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, make_new_value_for_reg
+from src.decompiler_data import make_op, set_reg_value
 from src.register_type import RegisterType
 
 
@@ -19,8 +19,7 @@ class SAdd(BaseInstruction):
             self.decompiler_data.write("scc = " + temp + " >> 32\n")
             self.decompiler_data.number_of_temp += 1
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix == 'u32':
@@ -40,11 +39,11 @@ class SAdd(BaseInstruction):
                     name = self.node.state.registers[self.ssrc0].val
                     reg_type = RegisterType.GLOBAL_DATA_POINTER
                     if self.node.state.registers[self.ssrc1].data_type == '4 bytes':
-                        new_value, src0_flag, src1_flag = make_op(self.node, self.ssrc1, "4", " / ", '', '')
+                        new_value, _, _ = make_op(self.node, self.ssrc1, "4", " / ", '', '')
                         new_val, _, _ = make_op(self.node, name, new_value, " + ", '', '')
                         data_type = '4 bytes'
                     else:
-                        new_value, src0_flag, src1_flag = make_op(self.node, self.ssrc1, "8", " / ", '', '')
+                        new_value, _, _ = make_op(self.node, self.ssrc1, "8", " / ", '', '')
                         new_val, _, _ = make_op(self.node, name, new_value, " + ", '', '')
                         data_type = '8 bytes'
                 elif self.node.state.registers[self.ssrc0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
@@ -52,8 +51,8 @@ class SAdd(BaseInstruction):
                     if self.node.state.registers[self.ssrc0].data_type in ['u32', "i32", "gi32", "gu32"]:
                         new_val, _, _ = make_op(self.node, self.ssrc1, "4", " / ", '', '')
                         new_val, _, _ = make_op(self.node, self.ssrc0, new_val, " + ", '', '')
-                elif self.node.state.registers[self.ssrc0].type == RegisterType.KERNEL_ARGUMENT_VALUE \
-                        or self.node.state.registers[self.ssrc1].type == RegisterType.KERNEL_ARGUMENT_VALUE:
+                elif RegisterType.KERNEL_ARGUMENT_VALUE in \
+                        [self.node.state.registers[self.ssrc0].type, self.node.state.registers[self.ssrc1].type]:
                     reg_type = RegisterType.KERNEL_ARGUMENT_VALUE
                 else:
                     reg_type = RegisterType.UNKNOWN
@@ -67,13 +66,10 @@ class SAdd(BaseInstruction):
                     if self.node.state.registers[self.ssrc0].data_type in ['u32', "i32", "gi32", "gu32"]:
                         new_val, _, _ = make_op(self.node, self.ssrc1, "4", " / ", '', '')
                         new_val, _, _ = make_op(self.node, self.ssrc0, new_val, " + ", '', '')
-            if not (self.node.state.registers[self.ssrc0].type == RegisterType.GLOBAL_DATA_POINTER):
-                if self.node.state.registers[self.ssrc0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
-                    if self.ssrc0 == self.sdst:
-                        data_type = self.node.parent[0].state.registers[self.ssrc0].data_type
-                    else:
-                        data_type = self.node.state.registers[self.ssrc0].data_type
-            return make_new_value_for_reg(self.node, new_val, self.sdst, [self.ssrc0, self.ssrc1],
-                                          data_type, reg_type=reg_type)
-        else:
-            return super().to_fill_node()
+            if self.node.state.registers[self.ssrc0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
+                if self.ssrc0 == self.sdst:
+                    data_type = self.node.parent[0].state.registers[self.ssrc0].data_type
+                else:
+                    data_type = self.node.state.registers[self.ssrc0].data_type
+            return set_reg_value(self.node, new_val, self.sdst, [self.ssrc0, self.ssrc1], data_type, reg_type=reg_type)
+        return super().to_fill_node()

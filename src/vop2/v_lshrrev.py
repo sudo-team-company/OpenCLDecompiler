@@ -13,3 +13,4 @@ class VLshrrev(BaseInstruction):
             self.decompiler_data.write(self.vdst + " = " + self.src1 + " >> ("
                                        + self.src0 + " & 63) // v_lshrrev_b64\n")
             return self.node
+        return super().to_print_unresolved()

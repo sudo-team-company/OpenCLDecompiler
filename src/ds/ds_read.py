@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, make_new_value_for_reg
+from src.decompiler_data import make_op, set_reg_value
 
 
 class DsRead(BaseInstruction):
@@ -14,22 +14,20 @@ class DsRead(BaseInstruction):
             self.decompiler_data.write(self.vdst + " = *(uint*)(DS + ((" + self.addr + " + "
                                        + str(self.offset) + ")&~3)) // ds_read_b32\n")
             return self.node
-        elif self.suffix == "b64":
+        if self.suffix == "b64":
             self.decompiler_data.write(self.vdst + " = *(ulong*)(DS + ((" + self.addr + " + "
                                        + str(self.offset) + ")&~7)) // ds_read_b64\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix == "b32":
-            new_value, src0_flag, src1_flag = make_op(self.node, self.addr, "4", " / ")
+            new_value, _, _ = make_op(self.node, self.addr, "4", " / ")
             name = self.decompiler_data.lds_vars[self.offset][0] + "[" + new_value + "]"
             reg_type = self.node.state.registers[name].type
-            return make_new_value_for_reg(self.node, name, self.vdst, [], "u" + self.suffix[1:], reg_type=reg_type)
-        elif self.suffix == "b64":
+            return set_reg_value(self.node, name, self.vdst, [], "u" + self.suffix[1:], reg_type=reg_type)
+        if self.suffix == "b64":
             name = self.decompiler_data.lds_vars[self.offset][0] + "[" + self.node.state.registers[self.addr].var + "]"
             reg_type = self.node.state.registers[name].type
-            return make_new_value_for_reg(self.node, name, self.vdst, [], "u" + self.suffix[1:], reg_type=reg_type)
-        else:
-            return super().to_fill_node()
+            return set_reg_value(self.node, name, self.vdst, [], "u" + self.suffix[1:], reg_type=reg_type)
+        return super().to_fill_node()

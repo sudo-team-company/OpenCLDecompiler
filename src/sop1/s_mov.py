@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_new_value_for_reg
+from src.decompiler_data import set_reg_value
 from src.global_data import get_gdata_offset
 from src.register_type import RegisterType
 
@@ -14,8 +14,7 @@ class SMov(BaseInstruction):
         if self.suffix in ['b32', 'b64']:
             self.decompiler_data.write(self.sdst + " = " + self.ssrc0 + " // s_mov_" + self.suffix + "\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix in ['b32', 'b64']:
@@ -31,6 +30,5 @@ class SMov(BaseInstruction):
                     new_value = self.ssrc0
                     reg_type = RegisterType.INT32
                 data_type = self.suffix
-            return make_new_value_for_reg(self.node, new_value, self.sdst, [], data_type, reg_type=reg_type)
-        else:
-            return super().to_fill_node()
+            return set_reg_value(self.node, new_value, self.sdst, [], data_type, reg_type=reg_type)
+        return super().to_fill_node()

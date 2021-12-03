@@ -13,13 +13,11 @@ class SAndSaveexec(BaseInstruction):
             self.decompiler_data.write("exec = " + self.ssrc0 + " & exec\n")
             self.decompiler_data.write("scc = exec != 0\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix == 'b64':
             self.node.state.registers[self.sdst] = self.node.state.registers["exec"]
             self.node.state.registers["exec"] = self.node.state.registers[self.ssrc0]
             return self.node
-        else:
-            return super().to_fill_node()
+        return super().to_fill_node()

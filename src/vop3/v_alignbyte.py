@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import check_reg_for_val, make_new_value_for_reg
+from src.decompiler_data import check_reg_for_val, set_reg_value
 
 
 class VAlignbyte(BaseInstruction):
@@ -15,8 +15,7 @@ class VAlignbyte(BaseInstruction):
             self.decompiler_data.write(self.vdst + " = (((ulong)" + self.src0 + ") << 32) | " + self.src1
                                        + ") >> ((" + self.src2 + " & 3) * 8) // v_alignbyte_b32\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix == 'b32':
@@ -24,7 +23,5 @@ class VAlignbyte(BaseInstruction):
             self.src1, _ = check_reg_for_val(self.node, self.src1)
             self.src2, _ = check_reg_for_val(self.node, self.src2)
             new_value = 'amd_bytealign(' + self.src0 + ', ' + self.src1 + ', ' + self.src2 + ')'
-            return make_new_value_for_reg(self.node, new_value, self.vdst,
-                                          [self.src0, self.src1, self.src2], self.suffix)
-        else:
-            return super().to_fill_node()
+            return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1, self.src2], self.suffix)
+        return super().to_fill_node()

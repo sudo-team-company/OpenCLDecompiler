@@ -11,8 +11,8 @@ from src.register_type import RegisterType
 from src.state import State
 
 
-def make_new_value_for_reg(node, new_value, to_reg, from_regs, data_type,
-                           reg_type=RegisterType.UNKNOWN, reg_entire=Integrity.ENTIRE):
+def set_reg_value(node, new_value, to_reg, from_regs, data_type,
+                  reg_type=RegisterType.UNKNOWN, reg_entire=Integrity.ENTIRE):
     decompiler_data = DecompilerData()
     node.state.registers[to_reg] = Register(new_value, reg_type, reg_entire)
     decompiler_data.make_version(node.state, to_reg)
@@ -41,7 +41,7 @@ def make_new_type_without_modifier(node, register):
 
 def compare_values(node, to_reg, from_reg0, from_reg1, type0, type1, operation, suffix):
     new_value, _, _ = make_op(node, from_reg0, from_reg1, operation, type0, type1)
-    make_new_value_for_reg(node, new_value, to_reg, [from_reg0, from_reg1], suffix)
+    set_reg_value(node, new_value, to_reg, [from_reg0, from_reg1], suffix)
     return node
 
 

@@ -14,9 +14,8 @@ class GlobalLoad(BaseInstruction):
             self.decompiler_data.write(self.vdst + " = *(uint*)(" + self.vaddr + " + " + self.saddr + " + "
                                        + self.inst_offset + ") // global_load_dword\n")
             return self.node
-        elif self.suffix == "dwordx2":
+        if self.suffix == "dwordx2":
             self.decompiler_data.write(self.vdst + " = *(ulong*)(" + self.vaddr + " + " + self.saddr + " + "
                                        + self.inst_offset + ")  // global_load_dwordx2\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()

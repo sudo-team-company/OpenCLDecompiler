@@ -12,13 +12,11 @@ class SCmpLt(BaseInstruction):
         if self.suffix == 'i32':
             self.decompiler_data.write("scc = (int)" + self.ssrc0 + " < (int)" + self.ssrc1 + " // s_cmp_lt_i32\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix == 'i32':
             return compare_values(self.node, "scc", self.ssrc0, self.ssrc1, "(int)", "(int)", " < ", self.suffix)
-        elif self.suffix == 'u32':
+        if self.suffix == 'u32':
             return compare_values(self.node, "scc", self.ssrc0, self.ssrc1, "", "", " < ", self.suffix)
-        else:
-            return super().to_fill_node()
+        return super().to_fill_node()

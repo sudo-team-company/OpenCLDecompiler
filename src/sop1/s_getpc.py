@@ -10,5 +10,4 @@ class SGetpc(BaseInstruction):
         if self.suffix == 'b64':
             self.decompiler_data.write(self.sdst + " = pc + 4 // s_getpc_b64\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()

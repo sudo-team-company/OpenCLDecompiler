@@ -2,7 +2,7 @@ from src.base_instruction import BaseInstruction
 
 
 class VCmpxEq(BaseInstruction):
-    def __int__(self, node, suffix):
+    def __init__(self, node, suffix):
         super().__init__(node, suffix)
         self.sdst = self.instruction[1]
         self.src0 = self.instruction[2]
@@ -14,5 +14,4 @@ class VCmpxEq(BaseInstruction):
                                        ") == as_double(" + self.src1 + ") // v_cmpx_eq_f64\n")
             self.decompiler_data.write("exec = " + self.sdst + "\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()

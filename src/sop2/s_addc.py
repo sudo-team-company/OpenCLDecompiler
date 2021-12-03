@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, make_new_value_for_reg
+from src.decompiler_data import make_op, set_reg_value
 from src.register_type import RegisterType
 
 
@@ -19,8 +19,7 @@ class SAddc(BaseInstruction):
             self.decompiler_data.write("scc = " + temp + " >> 32\n")
             self.decompiler_data.number_of_temp += 1
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix == 'u32':
@@ -41,7 +40,6 @@ class SAddc(BaseInstruction):
                     data_type = self.node.state.registers[self.ssrc0].data_type
             else:
                 data_type = self.suffix
-            return make_new_value_for_reg(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1],
-                                          data_type, reg_type=reg_type)
-        else:
-            return super().to_fill_node()
+            return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], data_type,
+                                 reg_type=reg_type)
+        return super().to_fill_node()

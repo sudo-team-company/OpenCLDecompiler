@@ -1,8 +1,8 @@
 from opencl_types import make_opencl_type
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier, make_new_value_for_reg
+from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier, set_reg_value
 from src.register_type import RegisterType
-from src.upload import find_first_last_num_to_from
+from src.register import check_and_split_regs, is_range, get_next_reg
 
 
 class FlatLoad(BaseInstruction):
@@ -11,21 +11,20 @@ class FlatLoad(BaseInstruction):
         self.vdst = self.instruction[1]
         self.vaddr = self.instruction[2]
         self.inst_offset = self.instruction[3] if len(self.instruction) > 3 else "0"
-        self.first_to, self.last_to, self.name_of_to, self.name_of_from, self.first_from, self.last_from \
-            = find_first_last_num_to_from(self.vdst, self.vaddr)
-        self.from_registers = self.name_of_from + str(self.first_from)
-        self.to_registers = self.name_of_to + str(self.first_to)
+
+        self.to_registers, _ = check_and_split_regs(self.vdst)
+        self.from_registers, _ = check_and_split_regs(self.vaddr)
 
     def to_print_unresolved(self):
         if self.suffix == "dword":
             self.decompiler_data.write(self.vdst + " = *(uint*)(" + self.vaddr + " + "
                                        + self.inst_offset + ") // flat_load_dword\n")
             return self.node
-        elif self.suffix == "dwordx2":
+        if self.suffix == "dwordx2":
             self.decompiler_data.write(self.vdst + " = *(uint*)(" + self.vaddr + " + "
                                        + self.inst_offset + ") // flat_load_dword2\n")
             return self.node
-        elif self.suffix == "dwordx4":
+        if self.suffix == "dwordx4":
             vm = "vm" + str(self.decompiler_data.number_of_vm)
             self.decompiler_data.write("short* " + vm + " = (" + self.vaddr + " + "
                                        + self.inst_offset + ") // flat_load_dwordx4\n")
@@ -35,8 +34,7 @@ class FlatLoad(BaseInstruction):
             self.decompiler_data.write(self.vdst + "[3] = *(uint*)(" + vm + " + 12)\n")
             self.decompiler_data.number_of_vm += 1
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):  # нужно ли здесь делать self.node
         if self.suffix in ["dword", "dwordx2", "dwordx4"]:
@@ -47,15 +45,14 @@ class FlatLoad(BaseInstruction):
             register_type = RegisterType.KERNEL_ARGUMENT_PTR \
                 if self.node.state.registers[self.from_registers].type == RegisterType.ADDRESS_KERNEL_ARGUMENT \
                 else RegisterType.KERNEL_ARGUMENT_ELEMENT
-            node = make_new_value_for_reg(self.node, variable, self.to_registers, [], data_type, reg_type=register_type)
+            node = set_reg_value(self.node, variable, self.to_registers, [], data_type, reg_type=register_type)
             self.decompiler_data.make_var(node.state.registers[self.to_registers].version, variable, data_type)
-            if self.first_to != self.last_to:
-                to_now = self.name_of_to + str(self.first_to + 1)
-                node = make_new_value_for_reg(node, variable, to_now, [], data_type, reg_type=register_type)
+            if is_range(self.vdst):
+                to_now = get_next_reg(self.to_registers)
+                node = set_reg_value(node, variable, to_now, [], data_type, reg_type=register_type)
                 self.decompiler_data.make_var(node.state.registers[to_now].version, variable, data_type)
             return node
-        else:
-            return super().to_fill_node()
+        return super().to_fill_node()
 
     def to_print(self):
         if self.suffix in ["dword", "dwordx2", "dwordx4"]:
@@ -69,5 +66,4 @@ class FlatLoad(BaseInstruction):
                 output = "*(" + make_opencl_type(self.decompiler_data.names_of_vars[output]) + "*)(" + output + ")"
             self.output_string = self.node.state.registers[self.to_registers].val + " = " + output
             return self.output_string
-        else:
-            super().to_print()
+        return super().to_print()

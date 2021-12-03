@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_new_value_for_reg
+from src.decompiler_data import set_reg_value
 
 
 class SMovk(BaseInstruction):
@@ -12,11 +12,9 @@ class SMovk(BaseInstruction):
         if self.suffix == 'i32':
             self.decompiler_data.write("scc = " + self.simm16 + " // s_movk_i32\n")
             return self.node
-        else:
-            return super().to_print_unresolved()
+        return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix == 'i32':
-            return make_new_value_for_reg(self.node, self.simm16, self.sdst, [], self.suffix)
-        else:
-            return super().to_fill_node()
+            return set_reg_value(self.node, self.simm16, self.sdst, [], self.suffix)
+        return super().to_fill_node()
