@@ -1,44 +1,21 @@
 from src.decompiler_data import DecompilerData
 
 
-def change_to_normal_offset(offset):
-    changed_to_letter = {10: 'a', 11: 'b', 12: 'c', 13: 'd', 14: 'e', 15: 'f'}
-    if len(offset[2:]) > 2:
-        offset = '0x' + changed_to_letter[int(offset[2:-1])] + offset[-1]
-    return offset
-
-
-def helper_for_get_offset(last_offset):
-    if 'a' <= last_offset[2:-1] <= 'z':
-        return '0x' + chr(ord(last_offset[2:-1]) + 1) + '0'
-    return '0x' + str(int(last_offset[2:-1]) + 1) + '0'
-
-
 def get_current_offset_for_not_first_param(offset_num, last_name, name_of_param, num_of_param):
     decompiler_data = DecompilerData()
     last_offset = sorted(offset_num.keys())[-1]
+    # TODO: добавить и проверку на long, когда решится вопрос с векторным типом
     if last_name[0] == '*':
-        if last_offset[-1] == '0':
-            curr_offset = change_to_normal_offset(last_offset[:-1] + '8')
-        else:  # last_offset[-1] == '8':
-            curr_offset = change_to_normal_offset(helper_for_get_offset(last_offset))
-
+        curr_offset = hex(int(last_offset, 16) + 8)
     else:
         if name_of_param[0] == "*" \
                 or 'long' in decompiler_data.type_params.get(decompiler_data.params["param" + num_of_param]):
             if last_offset[-1] < '8':
                 curr_offset = last_offset[:-1] + '8'
             else:
-                curr_offset = change_to_normal_offset(helper_for_get_offset(last_offset))
+                curr_offset = hex(int(last_offset, 16) + 8) if last_offset[-1] == '8' else hex(int(last_offset, 16) + 4)
         else:
-            if last_offset[-1] == '0':
-                curr_offset = change_to_normal_offset(last_offset[:-1] + '4')
-            elif last_offset[-1] == '4':
-                curr_offset = change_to_normal_offset(last_offset[:-1] + '8')
-            elif last_offset[-1] == '8':
-                curr_offset = change_to_normal_offset(last_offset[:-1] + 'c')
-            else:  # if last_offset[-1] == 'c':
-                curr_offset = change_to_normal_offset(helper_for_get_offset(last_offset))
+            curr_offset = hex(int(last_offset, 16) + 4)
     return curr_offset
 
 
@@ -102,7 +79,7 @@ def process_kernel_params(set_of_instructions):
     for instruction in set_of_instructions:
         list_instruction = instruction.strip().replace(',', ' ').split()
         if "s_load_dword" in list_instruction[0] and len(list_instruction[3]) == 4 \
-                and list_instruction[3] >= '0x30':
+                and int(list_instruction[3], 16) >= int('0x30', 16):
             offsets_of_kernel_params[list_instruction[3]] = list_instruction
     offset_num = get_offsets_to_regs()
     get_kernel_params(offsets_of_kernel_params, offset_num)

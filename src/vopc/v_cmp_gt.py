@@ -24,18 +24,23 @@ class VCmpGt(BaseInstruction):
             self.decompiler_data.write(self.sdst + " = (uint)" + self.src0 + " > (uint)"
                                        + self.src1 + " // v_cmp_gt_u32\n")
             return self.node
+        if self.suffix == 'f64':
+            self.decompiler_data.write(self.sdst + " = (double)" + self.src0 + " > (double)"
+                                       + self.src1 + " // v_cmp_gt_f64\n")
         return super().to_print_unresolved()
 
     def to_fill_node(self):
         if self.suffix == 'u64':
             # TODO: Сделать честное присвоение
-            start_src0_register, _ = check_and_split_regs(self.src0)
-            start_src1_register, _ = check_and_split_regs(self.src1)
-            self.src0 = start_src0_register
-            self.src1 = start_src1_register
-            return compare_values(self.node, self.sdst, self.src0, self.src1, '(ulong)', '(uint)', " > ", self.suffix)
+            start_src0, _ = check_and_split_regs(self.src0)
+            start_src1, _ = check_and_split_regs(self.src1)
+            return compare_values(self.node, self.sdst, start_src0, start_src1, '(ulong)', '(uint)', " > ", self.suffix)
         if self.suffix == 'i32':
             return compare_values(self.node, self.sdst, self.src0, self.src1, '(int)', '(int)', " > ", self.suffix)
         if self.suffix == 'u32':
             return compare_values(self.node, self.sdst, self.src0, self.src1, '(uint)', '(uint)', " > ", self.suffix)
+        if self.suffix == 'f64':
+            start_src0, _ = check_and_split_regs(self.src0)
+            start_src1, _ = check_and_split_regs(self.src1)
+            return compare_values(self.node, self.sdst, start_src0, start_src1, '(uint)', '(uint)', " > ", self.suffix)
         return super().to_fill_node()

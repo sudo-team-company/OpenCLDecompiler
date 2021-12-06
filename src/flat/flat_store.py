@@ -1,7 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier
 from src.opencl_types import make_opencl_type
-from src.register import check_and_split_regs, is_reg
+from src.register import check_and_split_regs, is_vgpr
 
 
 class FlatStore(BaseInstruction):
@@ -37,7 +37,7 @@ class FlatStore(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in ["dword", "dwordx2", "dwordx4", "byte"]:
-            if is_reg(self.vaddr):
+            if is_vgpr(self.vaddr):
                 self.node.state.registers[self.to_registers].version = \
                     self.node.parent[0].state.registers[self.to_registers].version
                 self.node.state.registers[self.to_registers].data_type = self.suffix

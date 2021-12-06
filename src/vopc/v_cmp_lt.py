@@ -1,6 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import compare_values
 from src.opencl_types import make_opencl_type
+from src.register import check_and_split_regs
 
 
 class VCmpLt(BaseInstruction):
@@ -28,6 +29,8 @@ class VCmpLt(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'f64':
-            return compare_values(self.node, self.sdst, self.src0, self.src1, self.new_as_type,
+            start_src0, _ = check_and_split_regs(self.src0)
+            start_src1, _ = check_and_split_regs(self.src1)
+            return compare_values(self.node, self.sdst, start_src0, start_src1, self.new_as_type,
                                   self.new_as_type, " < ", self.suffix)
         return super().to_fill_node()
