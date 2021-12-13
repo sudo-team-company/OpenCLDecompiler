@@ -75,7 +75,10 @@ class FlatStore(BaseInstruction):
             if " + " in var:
                 var = make_elem_from_addr(var)
             else:
-                var = "*(" + make_opencl_type(self.decompiler_data.names_of_vars[var]) + "*)(" + var + ")"
+                if self.decompiler_data.names_of_vars.get(var):
+                    var = "*(" + make_opencl_type(self.decompiler_data.names_of_vars[var]) + "*)(" + var + ")"
+                else:
+                    var = "*" + var
             if self.node.state.registers.get(self.from_registers):
                 if self.node.state.registers[self.from_registers].val == "0" \
                         and self.node.state.registers.get(self.from_registers_1):

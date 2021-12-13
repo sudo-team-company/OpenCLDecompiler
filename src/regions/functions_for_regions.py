@@ -189,6 +189,8 @@ def process_if_statement_region(curr_region, visited, start_region, q):
     if region.children:
         for child in region.children:
             if child not in visited:
+                if child in q:
+                    q.remove(child)
                 q.append(child)
     else:
         q = deque()
@@ -428,19 +430,15 @@ def preprocess_if_and_if_else(curr_region, visited, start_region, q):
                 for child in curr_region.children:
                     if child not in visited:
                         q.append(child)
-            else:
-                q = deque()
-                q.append(start_region)
-                visited = []
     else:
         if curr_region.children:
             for child in curr_region.children:
                 if child not in visited:
                     q.append(child)
-        else:
-            q = deque()
-            q.append(start_region)
-            visited = []
+    if not q:
+        q = deque()
+        q.append(start_region)
+        visited = []
     return visited, q, start_region
 
 

@@ -150,13 +150,16 @@ class VAdd(BaseInstruction):
                                  reg_entire=reg_entire)
         if self.suffix == 'f64':
             # TODO: Сделать честное присвоение в пару
-            start_from_src0_register, _ = check_and_split_regs(self.src0)
-            start_from_src1_register, _ = check_and_split_regs(self.src1)
+            start_from_src0, _ = check_and_split_regs(self.src0)
+            start_from_src1, _ = check_and_split_regs(self.src1)
             start_to_register, _ = check_and_split_regs(self.vdst)
-            data_type = most_common_type(self.node.state.registers[start_from_src0_register].data_type,
-                                         self.node.state.registers[start_from_src1_register].data_type)
-            reg_type = self.node.state.registers[start_from_src1_register].type
-            new_value = self.node.state.registers[start_from_src1_register].val
+            data_type = most_common_type(self.node.state.registers[start_from_src0].data_type,
+                                         self.node.state.registers[start_from_src1].data_type)
+            reg_type = self.node.state.registers[start_from_src1].type
+            if self.node.state.registers[start_from_src1].val == self.node.state.registers[start_from_src0].val:
+                new_value = self.node.state.registers[start_from_src1].val
+            else:
+                new_value = make_op(self.node, start_from_src0, start_from_src1, " + ", '(double)', '(double)')
             return set_reg_value(self.node, new_value, start_to_register,
-                                 [start_from_src0_register, start_from_src1_register], data_type, reg_type=reg_type)
+                                 [start_from_src0, start_from_src1], data_type, reg_type=reg_type)
         return super().to_fill_node()

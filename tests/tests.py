@@ -116,6 +116,9 @@ class BranchingKernelsTest(unittest.TestCase):
     def test_if_else_in_if_and_else_of_if_else(self):
         template(self, 'branching_kernels', 'if_else_in_if_and_else_of_if_else')
 
+    def test_if_in_if_in_if(self):
+        template(self, 'branching_kernels', 'if_in_if_in_if')
+
 
 class LinearKernelsTest(unittest.TestCase):
     def test_addition(self):

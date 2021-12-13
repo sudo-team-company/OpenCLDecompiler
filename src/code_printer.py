@@ -211,3 +211,5 @@ def make_output_from_region(region, indent):
         decompiler_data.write(indent + "continue;\n")
     elif region.type == RegionType.BREAK_REGION:
         make_output_from_break_region(region, indent)
+    elif region.type == RegionType.RETURN_REGION:
+        decompiler_data.write(indent + "return;\n")
