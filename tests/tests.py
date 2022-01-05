@@ -6,7 +6,7 @@ from pathlib import Path
 
 def template(self, path_to_dir, dir_name, flag=None):
     path_to_exec_file = str(Path("..") / "src" / "parser_for_instructions.py")
-    path_to_clrxdisasm = str(Path('./clrxdisasm.exe' if platform.system() == 'Windows' else './clrxdisasm'))
+    path_to_clrxdisasm = str(Path('./clrxdisasm.exe' if platform.system() == 'Windows' else './clrxdisasm').absolute())
     test_root = Path(".") / path_to_dir / dir_name
     in_file = str(test_root / f"{dir_name}.asm")
     out_file = str(test_root / f"{dir_name}_dcmpl.cl")
