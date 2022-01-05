@@ -1,3 +1,4 @@
+import platform
 import subprocess
 import unittest
 from pathlib import Path
@@ -5,6 +6,7 @@ from pathlib import Path
 
 def template(self, path_to_dir, dir_name, flag=None):
     path_to_exec_file = Path("..") / "src" / "parser_for_instructions.py"
+    path_to_clrxdisasm = Path('./clrxdisasm.exe' if platform.system() == 'Windows' else './clrxdisasm')
     test_root = Path(".") / path_to_dir / dir_name
     in_file = test_root / f"{dir_name}.asm"
     out_file = test_root / f"{dir_name}_dcmpl.cl"
@@ -12,7 +14,7 @@ def template(self, path_to_dir, dir_name, flag=None):
     flag_option = ["-f", flag] if flag else []
 
     with open(in_file, "w", encoding="utf-8") as stdout:
-        subprocess.run(["./clrxdisasm.exe", test_root / f"{dir_name}.bin", "-dCfs"], stdout=stdout, check=True)
+        subprocess.run([path_to_clrxdisasm, test_root / f"{dir_name}.bin", "-dCfs"], stdout=stdout, check=True)
 
     subprocess.run(["python", path_to_exec_file, "-i", in_file, "-o", out_file] + flag_option, check=True)
 
