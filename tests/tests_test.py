@@ -12,7 +12,7 @@ def template(self, path_to_dir, dir_name, flag=None):
     flag_option = ["-f", flag] if flag else []
 
     with open(in_file, "w", encoding="utf-8") as stdout:
-        subprocess.run(["clrxdisasm.exe", test_root / f"{dir_name}.bin", "-dCfs"], stdout=stdout, check=True)
+        subprocess.run(["./clrxdisasm.exe", test_root / f"{dir_name}.bin", "-dCfs"], stdout=stdout, check=True)
 
     subprocess.run(["python", path_to_exec_file, "-i", in_file, "-o", out_file] + flag_option, check=True)
 
@@ -138,31 +138,31 @@ class LinearKernelsTest(unittest.TestCase):
         template(self, 'linear_kernels', 'many_linears')
 
     def test_copy_x(self):
-        template(self, 'linear_kernels\\work_item_built_in_functions', 'copy_x')
+        template(self, 'linear_kernels/work_item_built_in_functions', 'copy_x')
 
     def test_copy_get_global_offset(self):
-        template(self, 'linear_kernels\\work_item_built_in_functions', 'copy_get_global_offset')
+        template(self, 'linear_kernels/work_item_built_in_functions', 'copy_get_global_offset')
 
     def test_copy_get_local_id(self):
-        template(self, 'linear_kernels\\work_item_built_in_functions', 'copy_get_local_id')
+        template(self, 'linear_kernels/work_item_built_in_functions', 'copy_get_local_id')
 
     def test_copy_get_group_id(self):
-        template(self, 'linear_kernels\\work_item_built_in_functions', 'copy_get_group_id')
+        template(self, 'linear_kernels/work_item_built_in_functions', 'copy_get_group_id')
 
     def test_copy_get_local_size(self):
-        template(self, 'linear_kernels\\work_item_built_in_functions', 'copy_get_local_size')
+        template(self, 'linear_kernels/work_item_built_in_functions', 'copy_get_local_size')
 
     def test_copy_get_global_id(self):
-        template(self, 'linear_kernels\\work_item_built_in_functions', 'copy_get_global_id')
+        template(self, 'linear_kernels/work_item_built_in_functions', 'copy_get_global_id')
 
     def test_copy_get_global_size(self):
-        template(self, 'linear_kernels\\work_item_built_in_functions', 'copy_get_global_size')
+        template(self, 'linear_kernels/work_item_built_in_functions', 'copy_get_global_size')
 
     def test_copy_get_num_groups(self):
-        template(self, 'linear_kernels\\work_item_built_in_functions', 'copy_get_num_groups')
+        template(self, 'linear_kernels/work_item_built_in_functions', 'copy_get_num_groups')
 
     def test_copy_get_work_dim(self):
-        template(self, 'linear_kernels\\work_item_built_in_functions', 'copy_get_work_dim')
+        template(self, 'linear_kernels/work_item_built_in_functions', 'copy_get_work_dim')
 
 
 class LocalMemoryKernelsTest(unittest.TestCase):
