@@ -23,7 +23,7 @@ def template(self, path_to_dir, dir_name, flag=None):
             unittest.TestCase.assertMultiLineEqual(self, first=hands_decompilation.read(), second=decompiled.read())
 
 
-class GlobalDataTest(unittest.TestCase):
+class TestGlobalData(unittest.TestCase):
     def test_int_array(self):
         template(self, 'global_data_usage', 'int_kernels')
 
@@ -82,7 +82,7 @@ class GlobalDataTest(unittest.TestCase):
     #     template(self, 'global_data_usage', 'int8_to_int8')
 
 
-class BranchingKernelsTest(unittest.TestCase):
+class TestBranchingKernels(unittest.TestCase):
     def test_if_first(self):
         template(self, 'branching_kernels', 'if_1')
 
@@ -126,7 +126,7 @@ class BranchingKernelsTest(unittest.TestCase):
         template(self, 'branching_kernels', 'if_in_if_in_if')
 
 
-class LinearKernelsTest(unittest.TestCase):
+class TestLinearKernels(unittest.TestCase):
     def test_addition(self):
         template(self, 'linear_kernels', 'addition')
 
@@ -167,12 +167,12 @@ class LinearKernelsTest(unittest.TestCase):
         template(self, 'linear_kernels/work_item_built_in_functions', 'copy_get_work_dim')
 
 
-class LocalMemoryKernelsTest(unittest.TestCase):
+class TestLocalMemoryKernels(unittest.TestCase):
     def test_barrier_1(self):
         template(self, 'local_memory_kernels', 'barrier_1')
 
 
-class UnusedParams(unittest.TestCase):
+class TestUnusedParams(unittest.TestCase):
     def test_one_unused_param(self):
         template(self, 'unused_params', 'one_unused_param')
 
@@ -186,7 +186,7 @@ class UnusedParams(unittest.TestCase):
         template(self, 'unused_params', 'four_unused_params')
 
 
-class RealKernels(unittest.TestCase):
+class TestRealKernels(unittest.TestCase):
     def test_mask_kernel(self):
         template(self, 'real_kernels', 'mask_kernel')
 
@@ -194,7 +194,7 @@ class RealKernels(unittest.TestCase):
         template(self, 'real_kernels', 'weighted_sum_kernel')
 
 
-class DifferentTypes(unittest.TestCase):
+class TestDifferentTypes(unittest.TestCase):
     def test_uint8_type_test(self):
         template(self, 'different_types', 'uint8_type_test')
 
@@ -202,7 +202,7 @@ class DifferentTypes(unittest.TestCase):
         template(self, 'different_types', 'big_type_test')
 
 
-class DifferentFlags(unittest.TestCase):
+class TestDifferentFlags(unittest.TestCase):
     def test_flag_auto_decompilation(self):
         template(self, 'different_flags', 'flag_auto_decompilation')
 
@@ -213,7 +213,7 @@ class DifferentFlags(unittest.TestCase):
         template(self, 'different_flags', 'flag_only_opencl', 'ONLY_OPENCL')
 
 
-class LoopsKernels(unittest.TestCase):
+class TestLoopsKernels(unittest.TestCase):
     def test_simple_loop_kernels(self):
         template(self, 'loops_kernels', 'simple_loop_kernels')
 
