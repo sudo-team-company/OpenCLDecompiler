@@ -33,4 +33,4 @@ jobs:
         PYTHONPATH: D:\a\OpenCLDecompiler\OpenCLDecompiler
       run: |
         cd tests
-        pytest decompiler_test.py
+        pytest

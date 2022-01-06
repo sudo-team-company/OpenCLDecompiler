@@ -26,4 +26,4 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
       run: |
         cd tests
-        pytest decompiler_test.py
+        pytest
