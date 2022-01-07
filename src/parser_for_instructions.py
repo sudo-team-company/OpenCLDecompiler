@@ -4,6 +4,7 @@ import sys
 
 from src.decompiler import process_src
 from src.decompiler_data import DecompilerData
+from src.driver_format import DriverFormat
 
 
 def get_global_data_bytes(row, set_of_global_data_bytes):
@@ -32,13 +33,14 @@ def main(input_par, output_par, flag_for_decompilation):
         set_of_global_data_bytes = []
         name_of_program = ""
         decompiler_data = DecompilerData()
+        driver_format = DriverFormat(body_of_file)
         for row in body_of_file:
             row = re.sub(r"/\*(.*?)\*/", '', row)
             row = row.strip()
             if ".kernel " in row:
                 if status_of_parse == "instruction":
                     status_of_parse = "kernel"
-                    decompiler_data.reset(output_file, flag_for_decompilation)
+                    decompiler_data.reset(output_file, flag_for_decompilation, driver_format)
                     process_src(name_of_program, set_of_config, set_of_instructions, set_of_global_data_bytes,
                                 set_of_global_data_instruction)
                     output_file.write("\n")
@@ -59,7 +61,7 @@ def main(input_par, output_par, flag_for_decompilation):
                 set_of_config.append(row)
             elif status_of_parse == "global_data":
                 set_of_global_data_bytes = get_global_data_bytes(row, set_of_global_data_bytes)
-        decompiler_data.reset(output_file, flag_for_decompilation)
+        decompiler_data.reset(output_file, flag_for_decompilation, driver_format)
         process_src(name_of_program, set_of_config, set_of_instructions, set_of_global_data_bytes,
                     set_of_global_data_instruction)
 

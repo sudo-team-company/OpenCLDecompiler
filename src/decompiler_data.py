@@ -3,6 +3,7 @@ import struct
 
 import sympy
 
+from src.driver_format import DriverFormat
 from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.register import Register, is_reg, is_range
@@ -160,6 +161,7 @@ class Singleton(type):
 
 class DecompilerData(metaclass=Singleton):
     def __init__(self):
+        self.driver_format: DriverFormat = DriverFormat.UNKNOWN
         self.output_file = ""
         self.usesetup = False
         self.size_of_work_groups = []
@@ -267,7 +269,9 @@ class DecompilerData(metaclass=Singleton):
         self.flag_for_decompilation = None
         self.address_params = set()
 
-    def reset(self, output_file, flag_for_decompilation):
+    def reset(self, output_file, flag_for_decompilation,
+              driver_format: DriverFormat):
+        self.driver_format = driver_format
         self.output_file = output_file
         self.usesetup = False
         self.size_of_work_groups = []
