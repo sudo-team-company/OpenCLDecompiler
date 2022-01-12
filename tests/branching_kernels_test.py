@@ -1,0 +1,45 @@
+from .conftest import template
+
+
+class TestBranchingKernels:
+    def test_if_first(self):
+        template('branching_kernels', 'if_1')
+
+    def test_if_second(self):
+        template('branching_kernels', 'if_2')
+
+    def test_if_and_if(self):
+        template('branching_kernels', 'if_and_if')
+
+    def test_if_else_0_labels(self):
+        template('branching_kernels', 'if_else_0_labels')
+
+    def test_if_else_1_labels(self):
+        template('branching_kernels', 'if_else_1_label')
+
+    def test_if_else_2_labels(self):
+        template('branching_kernels', 'if_else_2_labels')
+
+    def test_if_in_if(self):
+        template('branching_kernels', 'if_in_if')
+
+    def test_if_else_in_if(self):
+        template('branching_kernels', 'if_else_in_if')
+
+    def test_if_else_and_if_else(self):
+        template('branching_kernels', 'if_else_and_if_else')
+
+    def test_if_else_and_if_else_0_labels(self):
+        template('branching_kernels', 'if_else_and_if_else_0_labels')
+
+    def test_if_else_in_if_of_if_else(self):
+        template('branching_kernels', 'if_else_in_if_of_if_else')
+
+    def test_if_else_in_else_of_if_else(self):
+        template('branching_kernels', 'if_else_in_else_of_if_else')
+
+    def test_if_else_in_if_and_else_of_if_else(self):
+        template('branching_kernels', 'if_else_in_if_and_else_of_if_else')
+
+    def test_if_in_if_in_if(self):
+        template('branching_kernels', 'if_in_if_in_if')
