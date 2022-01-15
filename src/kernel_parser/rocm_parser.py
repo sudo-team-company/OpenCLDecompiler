@@ -1,9 +1,9 @@
 import re
-from typing import Tuple
+from typing import Dict, List, Set, Tuple
 
 
-def parse_common_configuration(lines: list[str]) -> list[str]:
-    res: list[str] = []
+def parse_common_configuration(lines: List[str]) -> List[str]:
+    res: List[str] = []
     for line in lines:
         if line.startswith(".kernel "):
             break
@@ -11,13 +11,13 @@ def parse_common_configuration(lines: list[str]) -> list[str]:
     return res
 
 
-def split_configurations_and_text(lines: list[str]) -> Tuple[list[str], list[str]]:
+def split_configurations_and_text(lines: List[str]) -> Tuple[List[str], List[str]]:
     index: int = lines.index(".text")
     return lines[:index], lines[index + 1:]
 
 
-def split_kernels_configurations(lines: list[str]) -> dict[str, list[str]]:
-    result: dict[str, list[str]] = {}
+def split_kernels_configurations(lines: List[str]) -> Dict[str, List[str]]:
+    result: Dict[str, List[str]] = {}
     current_kernel: str = ""
 
     for line in lines:
@@ -30,8 +30,8 @@ def split_kernels_configurations(lines: list[str]) -> dict[str, list[str]]:
     return result
 
 
-def split_kernels_texts(lines: list[str], names: set[str]) -> dict[str, list[str]]:
-    result: dict[str, list[str]] = {}
+def split_kernels_texts(lines: List[str], names: Set[str]) -> Dict[str, List[str]]:
+    result: Dict[str, List[str]] = {}
     current_kernel: str = ""
 
     for line in lines:
@@ -53,13 +53,13 @@ def split_kernels_texts(lines: list[str], names: set[str]) -> dict[str, list[str
     return result
 
 
-def parse_kernel(text: list[str]):
-    lines: list[str] = [line.strip() for line in text]
+def parse_kernel(text: List[str]):
+    lines: List[str] = [line.strip() for line in text]
 
-    common_configuration: list[str] = parse_common_configuration(lines)
+    common_configuration: List[str] = parse_common_configuration(lines)
     configurations, text = split_configurations_and_text(lines[len(common_configuration):])
 
-    kernels_configurations: dict[str, list[str]] = split_kernels_configurations(configurations)
+    kernels_configurations: Dict[str, List[str]] = split_kernels_configurations(configurations)
     kernels_texts = split_kernels_texts(text, set(kernels_configurations.keys()))
 
     set_of_global_data_bytes = []
