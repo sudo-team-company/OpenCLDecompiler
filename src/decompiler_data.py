@@ -161,10 +161,11 @@ class Singleton(type):
 
 class DecompilerData(metaclass=Singleton):
     def __init__(self):
+        self.name_of_program = None
         self.driver_format: DriverFormat = DriverFormat.UNKNOWN
         self.output_file = None
         self.usesetup = False
-        self.size_of_work_groups = []
+        self.size_of_work_groups = None
         self.cfg = None
         self.improve_cfg = None
         self.number_of_temp = 0
@@ -269,9 +270,10 @@ class DecompilerData(metaclass=Singleton):
         self.flag_for_decompilation = None
         self.address_params = set()
 
-    def reset(self):
+    def reset(self, name_of_program):
+        self.name_of_program = name_of_program
         self.usesetup = False
-        self.size_of_work_groups = []
+        self.size_of_work_groups = None
         self.cfg = None
         self.improve_cfg = None
         self.number_of_temp = 0
@@ -427,18 +429,18 @@ class DecompilerData(metaclass=Singleton):
         self.params["param" + str(num_of_param)] = name_param
         self.type_params[name_param] = type_param
 
-    def process_size_of_work_groups(self, cws, set_of_config_1):
-        if cws:
-            self.size_of_work_groups = set_of_config_1.replace(',', ' ').split()[1:]
-            self.configuration_output += "__kernel __attribute__((reqd_work_group_size(" \
-                                         + self.size_of_work_groups[0] + ", " + self.size_of_work_groups[1] \
-                                         + ", " + self.size_of_work_groups[2] + ")))\n"
+    def process_size_of_work_groups(self, size):
+        self.size_of_work_groups = size
+        if self.size_of_work_groups:
+            self.configuration_output += "__kernel __attribute__((reqd_work_group_size("
+            self.configuration_output += ", ".join(map(str, self.size_of_work_groups))
+            self.configuration_output += ")))\n"
         else:
             self.configuration_output += "__kernel "
 
-    def process_local_size(self, localsize, set_of_config_4):
+    def process_local_size(self, localsize):
         if localsize:
-            self.localsize = int(set_of_config_4[11:])
+            self.localsize = localsize
 
     def remove_unusable_versions(self):
         keys = []
