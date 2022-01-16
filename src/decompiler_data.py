@@ -162,7 +162,7 @@ class Singleton(type):
 class DecompilerData(metaclass=Singleton):
     def __init__(self):
         self.driver_format: DriverFormat = DriverFormat.UNKNOWN
-        self.output_file = ""
+        self.output_file = None
         self.usesetup = False
         self.size_of_work_groups = []
         self.cfg = None
@@ -269,10 +269,7 @@ class DecompilerData(metaclass=Singleton):
         self.flag_for_decompilation = None
         self.address_params = set()
 
-    def reset(self, output_file, flag_for_decompilation,
-              driver_format: DriverFormat):
-        self.driver_format = driver_format
-        self.output_file = output_file
+    def reset(self):
         self.usesetup = False
         self.size_of_work_groups = []
         self.cfg = None
@@ -376,12 +373,6 @@ class DecompilerData(metaclass=Singleton):
         self.loops_variables = {}
         self.loops_nodes_for_variables = {}
         self.configuration_output = ""
-        if flag_for_decompilation == "AUTO_DECOMPILATION":
-            self.flag_for_decompilation = FlagType.AUTO_DECOMPILATION
-        elif flag_for_decompilation == "ONLY_OPENCL":
-            self.flag_for_decompilation = FlagType.ONLY_OPENCL
-        else:
-            self.flag_for_decompilation = FlagType.ONLY_CLRX
         self.address_params = set()
 
     def write(self, output):
