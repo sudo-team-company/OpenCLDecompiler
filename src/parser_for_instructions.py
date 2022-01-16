@@ -17,12 +17,7 @@ def main(input_par, output_par, flag_for_decompilation):
         decompiler_data = DecompilerData()
         decompiler_data.driver_format = DriverFormat(body_of_file)
         decompiler_data.output_file = output_file
-        if flag_for_decompilation == "AUTO_DECOMPILATION":
-            decompiler_data.flag_for_decompilation = FlagType.AUTO_DECOMPILATION
-        elif flag_for_decompilation == "ONLY_OPENCL":
-            decompiler_data.flag_for_decompilation = FlagType.ONLY_OPENCL
-        else:
-            decompiler_data.flag_for_decompilation = FlagType.ONLY_CLRX
+        decompiler_data.flag_for_decompilation = FlagType(flag_for_decompilation)
 
         flag_newline = False
         for name_of_program, set_of_config, set_of_instructions, \
