@@ -2,7 +2,7 @@ import copy
 
 from src.cfg import change_cfg_for_else_structure, make_cfg_node, make_unresolved_node
 from src.code_printer import create_opencl_body
-from src.config import process_config
+from src.config_handler import process_config
 from src.decompiler_data import DecompilerData, optimize_names_of_vars
 from src.flag_type import FlagType
 from src.global_data import process_global_data, gdata_type_processing
