@@ -94,6 +94,7 @@ def process_src_with_unresolved_instruction(set_of_instructions):
 def process_src(name_of_program, set_of_config, set_of_instructions, set_of_global_data_bytes,
                 set_of_global_data_instruction):
     decompiler_data = DecompilerData()
+    decompiler_data.reset()
     initial_set_of_instructions = set_of_instructions
     process_global_data(set_of_global_data_instruction, set_of_global_data_bytes)
     process_config(set_of_config, name_of_program)

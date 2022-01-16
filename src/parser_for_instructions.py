@@ -20,16 +20,11 @@ def main(input_par, output_par, flag_for_decompilation):
         decompiler_data.flag_for_decompilation = FlagType(flag_for_decompilation)
 
         flag_newline = False
-        for name_of_program, set_of_config, set_of_instructions, \
-            set_of_global_data_bytes, set_of_global_data_instruction \
-                in parse_kernel(body_of_file):
+        for function_data in parse_kernel(body_of_file):
             if flag_newline:
                 output_file.write("\n")
             flag_newline = True
-            decompiler_data.reset()
-            process_src(name_of_program, set_of_config, set_of_instructions,
-                        set_of_global_data_bytes,
-                        set_of_global_data_instruction)
+            process_src(*function_data)
 
 
 def create_parser():
