@@ -1,9 +1,50 @@
 import re
-from typing import Dict, List, Set, Tuple
+from typing import Dict, Set, List, Optional, Tuple
+
+from src.utils.config_data import ConfigData
 
 
-def process_config(*_):
-    raise NotImplementedError("ROCM format is not implemented yet.")
+def get_dimensions(set_of_config: List[str]) -> str:
+    for row in set_of_config:
+        if row.startswith(".dims "):
+            return row.removeprefix(".dims ")
+    return ""
+
+
+def get_size_of_work_groups(set_of_config: List[str]) -> Optional[List[int]]:
+    for row in set_of_config:
+        if row.startswith(".reqd_work_group_size "):
+            return [int(it.strip()) for it in row.removeprefix(".reqd_work_group_size ").split(',')]
+    return None
+
+
+# TODO: implement local_size parsing for rocm
+def get_local_size(*_) -> Optional[int]:
+    return None
+
+
+def process_arg_row(row: str) -> Tuple[str, str]:
+    _, arg_name, arg_type, *other = row.strip().replace(',', ' ').split()
+    arg_type = arg_type[1:-1]
+    if "global" in other:
+        arg_type = "__global " + arg_type
+    if arg_type[-1] == "*":
+        return arg_type[:-1], "*" + arg_name
+    return arg_type, arg_name
+
+
+def get_params(set_of_config: List[str]) -> List[Tuple[str, str]]:
+    return [process_arg_row(row) for row in set_of_config if ".arg" in row and not row.startswith('.arg , "",')]
+
+
+def process_config(set_of_config: List[str]) -> ConfigData:
+    return ConfigData(
+        dimensions=get_dimensions(set_of_config),
+        usesetup=".use_dispatch_ptr" in set_of_config,
+        size_of_work_groups=get_size_of_work_groups(set_of_config),
+        local_size=get_local_size(set_of_config),
+        params=get_params(set_of_config),
+    )
 
 
 def parse_common_configuration(lines: List[str]) -> List[str]:
