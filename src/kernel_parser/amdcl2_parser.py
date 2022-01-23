@@ -1,5 +1,7 @@
 import re
 
+from .config_handler.amdcl2_handler import process_config
+
 
 def get_global_data_bytes(row, set_of_global_data_bytes):
     line_of_bytes = row.split()
@@ -28,7 +30,7 @@ def parse_kernel(text):
         if ".kernel " in row:
             if status_of_parse == "instruction":
                 status_of_parse = "kernel"
-                yield (name_of_program, set_of_config, set_of_instructions,
+                yield (name_of_program, process_config(set_of_config), set_of_instructions,
                        set_of_global_data_bytes, set_of_global_data_instruction)
                 set_of_instructions = []
                 set_of_config = []
@@ -48,5 +50,5 @@ def parse_kernel(text):
         elif status_of_parse == "global_data":
             set_of_global_data_bytes = \
                 get_global_data_bytes(row, set_of_global_data_bytes)
-    yield name_of_program, set_of_config, set_of_instructions, \
+    yield name_of_program, process_config(set_of_config), set_of_instructions, \
           set_of_global_data_bytes, set_of_global_data_instruction

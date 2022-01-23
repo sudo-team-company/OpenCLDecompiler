@@ -2,7 +2,6 @@ import copy
 
 from src.cfg import change_cfg_for_else_structure, make_cfg_node, make_unresolved_node
 from src.code_printer import create_opencl_body
-from src.config_handler import process_config
 from src.decompiler_data import DecompilerData, optimize_names_of_vars
 from src.flag_type import FlagType
 from src.global_data import process_global_data, gdata_type_processing
@@ -91,13 +90,13 @@ def process_src_with_unresolved_instruction(set_of_instructions):
         # result_for_check = process_single_instruction(set_of_instructions, num, curr_node, last_node_state, last_node)
 
 
-def process_src(name_of_program, set_of_config, set_of_instructions, set_of_global_data_bytes,
+def process_src(name_of_program, config_data, set_of_instructions, set_of_global_data_bytes,
                 set_of_global_data_instruction):
     decompiler_data = DecompilerData()
     decompiler_data.reset(name_of_program)
     initial_set_of_instructions = set_of_instructions
     process_global_data(set_of_global_data_instruction, set_of_global_data_bytes)
-    decompiler_data.set_config_data(process_config(set_of_config))
+    decompiler_data.set_config_data(config_data)
     process_kernel_params(set_of_instructions)
     last_node = Node([""], decompiler_data.initial_state)
     curr_node = last_node
