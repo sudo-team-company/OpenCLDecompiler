@@ -1,5 +1,6 @@
 import binascii
 import struct
+from typing import Optional
 
 import sympy
 
@@ -9,6 +10,7 @@ from src.integrity import Integrity
 from src.register import Register, is_reg, is_range
 from src.register_type import RegisterType
 from src.state import State
+from src.utils.config_data import ConfigData
 
 
 def set_reg_value(node, new_value, to_reg, from_regs, data_type,
@@ -162,10 +164,9 @@ class Singleton(type):
 class DecompilerData(metaclass=Singleton):
     def __init__(self):
         self.name_of_program = None
+        self.config_data: Optional[ConfigData] = None
         self.driver_format: DriverFormat = DriverFormat.UNKNOWN
         self.output_file = None
-        self.usesetup = False
-        self.size_of_work_groups = None
         self.cfg = None
         self.improve_cfg = None
         self.number_of_temp = 0
@@ -256,7 +257,6 @@ class DecompilerData(metaclass=Singleton):
             "exec": 0
         }
         self.names_of_vars = {}
-        self.localsize = 0
         self.lds_vars = {}
         self.lds_var_number = 0
         self.num_of_var = 0
@@ -266,14 +266,12 @@ class DecompilerData(metaclass=Singleton):
         self.back_edges = []
         self.loops_variables = {}
         self.loops_nodes_for_variables = {}
-        self.configuration_output = ""
         self.flag_for_decompilation = None
         self.address_params = set()
 
     def reset(self, name_of_program):
         self.name_of_program = name_of_program
-        self.usesetup = False
-        self.size_of_work_groups = None
+        self.config_data = None
         self.cfg = None
         self.improve_cfg = None
         self.number_of_temp = 0
@@ -364,7 +362,6 @@ class DecompilerData(metaclass=Singleton):
             "exec": 0
         }
         self.names_of_vars = {}
-        self.localsize = 0
         self.lds_vars = {}
         self.lds_var_number = 0
         self.num_of_var = 0
@@ -374,7 +371,6 @@ class DecompilerData(metaclass=Singleton):
         self.back_edges = []
         self.loops_variables = {}
         self.loops_nodes_for_variables = {}
-        self.configuration_output = ""
         self.address_params = set()
 
     def write(self, output):
@@ -389,9 +385,9 @@ class DecompilerData(metaclass=Singleton):
         state.registers[reg].add_version(reg, self.versions[reg])
         self.versions[reg] += 1
 
-    def init_work_group(self, dimensions, usesetup):
-        self.usesetup = usesetup
-        if usesetup:
+    def init_work_group(self):
+        dimensions = self.config_data.dimensions
+        if self.config_data.usesetup:
             g_id = ["s8", "s9", "s10"]
         else:
             g_id = ["s6", "s7", "s8"]
@@ -410,7 +406,7 @@ class DecompilerData(metaclass=Singleton):
             self.versions[v_dim] += 1
 
     def process_initial_state(self):
-        if self.usesetup:
+        if self.config_data.usesetup:
             self.initial_state.registers["s6"] = Register("s6", RegisterType.ARGUMENTS_POINTER, Integrity.LOW_PART)
             self.initial_state.registers["s6"].add_version("s6", self.versions["s6"])
             self.versions["s6"] += 1
@@ -429,18 +425,24 @@ class DecompilerData(metaclass=Singleton):
         self.params["param" + str(num_of_param)] = name_param
         self.type_params[name_param] = type_param
 
-    def process_size_of_work_groups(self, size):
-        self.size_of_work_groups = size
-        if self.size_of_work_groups:
-            self.configuration_output += "__kernel __attribute__((reqd_work_group_size("
-            self.configuration_output += ", ".join(map(str, self.size_of_work_groups))
-            self.configuration_output += ")))\n"
-        else:
-            self.configuration_output += "__kernel "
+    def set_config_data(self, config_data: ConfigData):
+        self.config_data = config_data
+        self.init_work_group()
+        self.process_initial_state()
+        for num_of_param, (type_param, name_param) in enumerate(config_data.params):
+            self.make_params(num_of_param, name_param, type_param)
 
-    def process_local_size(self, localsize):
-        if localsize:
-            self.localsize = localsize
+    def get_function_definition(self) -> str:
+        definition: str = "__kernel "
+
+        if self.config_data.size_of_work_groups:
+            size_of_work_groups = ", ".join(map(str, self.config_data.size_of_work_groups))
+            definition += f"__attribute__((reqd_work_group_size({size_of_work_groups})))\n"
+
+        params = ", ".join([f"{ptype} {pname}" for ptype, pname in self.config_data.params])
+        definition += f"void {self.name_of_program}({params})\n"
+
+        return definition
 
     def remove_unusable_versions(self):
         keys = []

@@ -97,7 +97,7 @@ def process_src(name_of_program, set_of_config, set_of_instructions, set_of_glob
     decompiler_data.reset(name_of_program)
     initial_set_of_instructions = set_of_instructions
     process_global_data(set_of_global_data_instruction, set_of_global_data_bytes)
-    process_config(set_of_config)
+    decompiler_data.set_config_data(process_config(set_of_config))
     process_kernel_params(set_of_instructions)
     last_node = Node([""], decompiler_data.initial_state)
     curr_node = last_node

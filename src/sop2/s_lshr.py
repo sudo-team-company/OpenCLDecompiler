@@ -21,13 +21,13 @@ class SLshr(BaseInstruction):
         if self.suffix == 'b32':
             reg_type = self.node.state.registers[self.ssrc0].type
             if self.node.state.registers[self.ssrc0].type == RegisterType.GLOBAL_SIZE_X \
-                    and pow(2, int(self.ssrc1)) == self.decompiler_data.size_of_work_groups[0]:
+                    and pow(2, int(self.ssrc1)) == self.decompiler_data.config_data.size_of_work_groups[0]:
                 new_value = "get_num_groups(0)"
             elif self.node.state.registers[self.ssrc0].type == RegisterType.GLOBAL_SIZE_Y \
-                    and pow(2, int(self.ssrc1)) == self.decompiler_data.size_of_work_groups[1]:
+                    and pow(2, int(self.ssrc1)) == self.decompiler_data.config_data.size_of_work_groups[1]:
                 new_value = "get_num_groups(1)"
             elif self.node.state.registers[self.ssrc0].type == RegisterType.GLOBAL_SIZE_Z \
-                    and pow(2, int(self.ssrc1)) == self.decompiler_data.size_of_work_groups[2]:
+                    and pow(2, int(self.ssrc1)) == self.decompiler_data.config_data.size_of_work_groups[2]:
                 new_value = "get_num_groups(2)"
             else:
                 new_value = make_op(self.node, self.ssrc0, str(pow(2, int(self.ssrc1))), " / ")
