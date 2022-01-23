@@ -2,6 +2,10 @@ import re
 from typing import Dict, List, Set, Tuple
 
 
+def process_config(*_):
+    raise NotImplementedError("ROCM format is not implemented yet.")
+
+
 def parse_common_configuration(lines: List[str]) -> List[str]:
     res: List[str] = []
     for line in lines:
@@ -66,6 +70,6 @@ def parse_kernel(text: List[str]):
     set_of_global_data_instruction = []
 
     for name_of_program, set_of_instructions in kernels_texts.items():
-        set_of_config = kernels_configurations[name_of_program]
-        yield name_of_program, set_of_config, set_of_instructions, \
+        config_data = process_config(kernels_configurations[name_of_program])
+        yield name_of_program, config_data, set_of_instructions, \
               set_of_global_data_bytes, set_of_global_data_instruction
