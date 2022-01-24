@@ -1,6 +1,5 @@
-from src.decompiler_data import DecompilerData
-from src.driver_format import DriverFormat
 from . import amdcl2_parser, rocm_parser, unknown_parser
+from ..utils import DriverFormat
 
 parsers = {
     DriverFormat.AMDCL2: amdcl2_parser,
@@ -10,4 +9,5 @@ parsers = {
 
 
 def parse_kernel(text):
-    return parsers[DecompilerData().driver_format].parse_kernel(text)
+    driver_format = DriverFormat(text)
+    return driver_format, parsers[driver_format].parse_kernel(text)

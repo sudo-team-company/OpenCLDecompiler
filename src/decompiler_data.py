@@ -4,13 +4,12 @@ from typing import Optional
 
 import sympy
 
-from src.driver_format import DriverFormat
 from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.register import Register, is_reg, is_range
 from src.register_type import RegisterType
 from src.state import State
-from src.utils.config_data import ConfigData
+from src.utils import ConfigData, DriverFormat
 
 
 def set_reg_value(node, new_value, to_reg, from_regs, data_type,

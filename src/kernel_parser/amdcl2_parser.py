@@ -1,7 +1,7 @@
 import re
 from typing import List, Tuple, Optional
 
-from src.utils.config_data import ConfigData
+from ..utils import ConfigData
 
 
 def process_size_of_work_groups(set_of_config: List[str]) -> Optional[List[int]]:

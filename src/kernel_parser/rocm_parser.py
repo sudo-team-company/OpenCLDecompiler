@@ -1,7 +1,7 @@
 import re
 from typing import Dict, Set, List, Optional, Tuple
 
-from src.utils.config_data import ConfigData
+from ..utils import ConfigData
 
 
 def get_dimensions(set_of_config: List[str]) -> str:

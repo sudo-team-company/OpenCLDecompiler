@@ -3,7 +3,6 @@ import sys
 
 from src.decompiler import process_src
 from src.decompiler_data import DecompilerData
-from src.driver_format import DriverFormat
 from src.flag_type import FlagType
 from src.kernel_parser import parse_kernel
 
@@ -15,12 +14,13 @@ def main(input_par, output_par, flag_for_decompilation):
             body_of_file = file.read().splitlines()
 
         decompiler_data = DecompilerData()
-        decompiler_data.driver_format = DriverFormat(body_of_file)
         decompiler_data.output_file = output_file
         decompiler_data.flag_for_decompilation = FlagType(flag_for_decompilation)
 
+        decompiler_data.driver_format, functions_data = parse_kernel(body_of_file)
+
         flag_newline = False
-        for function_data in parse_kernel(body_of_file):
+        for function_data in functions_data:
             if flag_newline:
                 output_file.write("\n")
             flag_newline = True
