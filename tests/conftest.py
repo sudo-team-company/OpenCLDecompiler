@@ -1,6 +1,18 @@
+import os
 import platform
 import subprocess
 from pathlib import Path
+
+import pytest
+
+
+@pytest.fixture(autouse=True, scope="session")
+def check_and_set_pythonpath():
+    src_root = str(Path('..').absolute())
+    if 'PYTHONPATH' not in os.environ:
+        os.environ['PYTHONPATH'] = src_root
+    elif src_root not in os.environ['PYTHONPATH']:
+        os.environ['PYTHONPATH'] += os.pathsep + src_root
 
 
 def template(path_to_dir, dir_name, flag=None):
