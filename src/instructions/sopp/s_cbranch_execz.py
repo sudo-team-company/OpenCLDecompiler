@@ -1,4 +1,4 @@
-from src.sopp.s_cbranch import SCbranch
+from instructions.sopp.s_cbranch import SCbranch
 
 
 class SCbranchExecz(SCbranch):
