@@ -386,10 +386,7 @@ class DecompilerData(metaclass=Singleton):
 
     def init_work_group(self):
         dimensions = self.config_data.dimensions
-        if self.config_data.usesetup:
-            g_id = ["s8", "s9", "s10"]
-        else:
-            g_id = ["s6", "s7", "s8"]
+        g_id = ["s8", "s9", "s10"] if self.config_data.usesetup else ["s6", "s7", "s8"]
         if ',' in dimensions:
             dimensions = dimensions.split(',')
             max_dim = dimensions[0]
@@ -405,20 +402,13 @@ class DecompilerData(metaclass=Singleton):
             self.versions[v_dim] += 1
 
     def process_initial_state(self):
-        if self.config_data.usesetup:
-            self.initial_state.registers["s6"] = Register("s6", RegisterType.ARGUMENTS_POINTER, Integrity.LOW_PART)
-            self.initial_state.registers["s6"].add_version("s6", self.versions["s6"])
-            self.versions["s6"] += 1
-            self.initial_state.registers["s7"] = Register("s7", RegisterType.ARGUMENTS_POINTER, Integrity.HIGH_PART)
-            self.initial_state.registers["s7"].add_version("s7", self.versions["s7"])
-            self.versions["s7"] += 1
-        else:
-            self.initial_state.registers["s4"] = Register("s4", RegisterType.ARGUMENTS_POINTER, Integrity.LOW_PART)
-            self.initial_state.registers["s4"].add_version("s4", self.versions["s4"])
-            self.versions["s4"] += 1
-            self.initial_state.registers["s5"] = Register("s5", RegisterType.ARGUMENTS_POINTER, Integrity.HIGH_PART)
-            self.initial_state.registers["s5"].add_version("s5", self.versions["s5"])
-            self.versions["s5"] += 1
+        lp, hp = ("s6", "s7") if self.config_data.usesetup else ("s4", "s5")
+        self.initial_state.registers[lp] = Register(lp, RegisterType.ARGUMENTS_POINTER, Integrity.LOW_PART)
+        self.initial_state.registers[lp].add_version(lp, self.versions[lp])
+        self.versions[lp] += 1
+        self.initial_state.registers[hp] = Register(hp, RegisterType.ARGUMENTS_POINTER, Integrity.HIGH_PART)
+        self.initial_state.registers[hp].add_version(hp, self.versions[hp])
+        self.versions[hp] += 1
 
     def make_params(self, num_of_param, name_param, type_param):
         self.params["param" + str(num_of_param)] = name_param
@@ -428,7 +418,7 @@ class DecompilerData(metaclass=Singleton):
         self.config_data = config_data
         self.init_work_group()
         self.process_initial_state()
-        for num_of_param, (type_param, name_param) in enumerate(config_data.params):
+        for num_of_param, (type_param, name_param) in enumerate(self.config_data.params):
             self.make_params(num_of_param, name_param, type_param)
 
     def get_function_definition(self) -> str:
