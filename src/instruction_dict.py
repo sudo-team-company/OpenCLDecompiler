@@ -44,6 +44,7 @@ from src.instructions.sopp.s_cbranch_scc0 import SCbranchScc0
 from src.instructions.sopp.s_cbranch_scc1 import SCbranchScc1
 from src.instructions.sopp.s_cbranch_vccnz import SCbranchVccnz
 from src.instructions.sopp.s_cbranch_vccz import SCbranchVccz
+from src.instructions.sopp.s_clause import SClause
 from src.instructions.sopp.s_endpgm import SEndpgm
 from src.instructions.sopp.s_nop import SNop
 from src.instructions.sopp.s_set_gpr_idx_off import SSetGprIdxOff
@@ -80,7 +81,6 @@ from src.instructions.vopc.v_cmp_lt import VCmpLt
 from src.instructions.vopc.v_cmpx_class import VCmpxClass
 from src.instructions.vopc.v_cmpx_eq import VCmpxEq
 from src.instructions.vopc.v_cmpx_le import VCmpxLe
-
 
 instruction_dict = {'ds_add': DsAdd,
                     'ds_bpermute': DsBpermute,
@@ -168,5 +168,8 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_sub': VSub,
                     'v_subb': VSub,
                     'v_subrev': VSubrev,
-                    'v_xor': VXor
+                    'v_xor': VXor,
+
+                    # rocm specific instructions
+                    's_clause': SClause,
                     }
