@@ -1,4 +1,5 @@
 from src.decompiler_data import DecompilerData
+from src.utils import DriverFormat
 
 
 def get_current_offset_for_not_first_param(offset_num, last_name, name_of_param, num_of_param):
@@ -35,7 +36,8 @@ def get_offsets_to_regs():
     visited = False
     for num_of_param, name_of_param, type_of_param in data_of_param:
         if num_of_param == '0' and not visited:
-            offset_num['0x30'] = name_of_param
+            shift = '0x30' if DecompilerData().driver_format != DriverFormat.ROCM else "0x0"
+            offset_num[shift] = name_of_param
             visited = True
         else:
             # according to the algorithm first call to get_current_offset_for_not_first_param does not use last_name
@@ -43,6 +45,10 @@ def get_offsets_to_regs():
             curr_offset = get_current_offset_for_not_first_param(offset_num, last_name, name_of_param, num_of_param)
             offset_num[curr_offset] = name_of_param
         last_name = name_of_param
+    if DecompilerData().driver_format == DriverFormat.ROCM:
+        curr_offset = int(sorted(offset_num.keys())[-1][2:], 16)
+        for i in range(3):
+            offset_num[f'{hex(curr_offset + 8 * (i + 1))}'] = f"get_global_offset({i})"
     return offset_num
 
 
@@ -78,8 +84,9 @@ def process_kernel_params(set_of_instructions):
     offsets_of_kernel_params = {}
     for instruction in set_of_instructions:
         list_instruction = instruction.strip().replace(',', ' ').split()
-        if "s_load_dword" in list_instruction[0] and len(list_instruction[3]) == 4 \
-                and int(list_instruction[3], 16) >= int('0x30', 16):
+        if "s_load_dword" in list_instruction[0] and \
+                (int(list_instruction[3], 16) >= int('0x30', 16) or
+                 DecompilerData().driver_format != DriverFormat.AMDCL2):
             offsets_of_kernel_params[list_instruction[3]] = list_instruction
     offset_num = get_offsets_to_regs()
     get_kernel_params(offsets_of_kernel_params, offset_num)
