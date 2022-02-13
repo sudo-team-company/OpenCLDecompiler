@@ -64,6 +64,7 @@ from src.instructions.vop2.v_mul_f32 import VMulF32
 from src.instructions.vop2.v_sub import VSub
 from src.instructions.vop2.v_subrev import VSubrev
 from src.instructions.vop2.v_xor import VXor
+from src.instructions.vop3.v_add3 import VAdd3
 from src.instructions.vop3.v_alignbit import VAlignbit
 from src.instructions.vop3.v_alignbyte import VAlignbyte
 from src.instructions.vop3.v_and_or import VAndOr
@@ -172,4 +173,7 @@ instruction_dict = {'ds_add': DsAdd,
 
                     # rocm specific instructions
                     's_clause': SClause,
+                    'v_add3': VAdd3,
+                    'v_add_co': VAdd,
+                    'v_add_co_ci': VAddc,
                     }
