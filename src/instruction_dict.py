@@ -52,6 +52,7 @@ from src.instructions.sopp.s_waitcnt import SWaitcnt
 from src.instructions.vop1.v_cvt import VCvt
 from src.instructions.vop1.v_mov import VMov
 from src.instructions.vop2.v_add import VAdd
+from src.instructions.vop2.v_add_nc import VAddNc
 from src.instructions.vop2.v_addc import VAddc
 from src.instructions.vop2.v_and import VAnd
 from src.instructions.vop2.v_ashrrev import VAshrrev
@@ -72,6 +73,7 @@ from src.instructions.vop3.v_bfi import VBfi
 from src.instructions.vop3.v_div_fixup import VDivFixup
 from src.instructions.vop3.v_fma import VFma
 from src.instructions.vop3.v_ldexp import VLdexp
+from src.instructions.vop3.v_lshl_or import VLshlOr
 from src.instructions.vop3.v_mul_f64 import VMulF64
 from src.instructions.vop3.v_mul_lo import VMulLo
 from src.instructions.vopc.v_cmp_eq import VCmpEq
@@ -176,4 +178,6 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_add3': VAdd3,
                     'v_add_co': VAdd,
                     'v_add_co_ci': VAddc,
+                    'v_lshl_or': VLshlOr,
+                    'v_add_nc': VAddNc,
                     }
