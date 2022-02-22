@@ -4,22 +4,15 @@ from src.integrity import Integrity
 from src.register import is_reg
 from src.register_type import RegisterType
 
-_types_of_sum_for_global_id = {
+_instruction_internal_mapping_by_types = {
     frozenset({
-        RegisterType.GLOBAL_OFFSET_X,
-        RegisterType.WORK_ITEM_ID_X,
-        RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE,
-    }): ("get_global_id(0)", RegisterType.GLOBAL_ID_X),
-    frozenset({
-        RegisterType.GLOBAL_OFFSET_Y,
-        RegisterType.WORK_ITEM_ID_Y,
-        RegisterType.WORK_GROUP_ID_Y_LOCAL_SIZE,
-    }): ("get_global_id(1)", RegisterType.GLOBAL_ID_Y),
-    frozenset({
-        RegisterType.GLOBAL_OFFSET_Z,
-        RegisterType.WORK_ITEM_ID_Z,
-        RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE,
-    }): ("get_global_id(2)", RegisterType.GLOBAL_ID_Z),
+        RegisterType.__getattr__(f"GLOBAL_OFFSET_{dim}"),
+        RegisterType.__getattr__(f"WORK_ITEM_ID_{dim}"),
+        RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"),
+    }): (
+        f"get_global_id({i})",
+        RegisterType.__getattr__(f"GLOBAL_ID_{dim}"),
+    ) for i, dim in enumerate(["X", "Y", "Z"])
 }
 
 
@@ -50,9 +43,8 @@ class VAdd3(BaseInstruction):
                     self.node.state.registers[self.src1].type,
                     self.node.state.registers[self.src2].type,
                 })
-
-                if src_types in _types_of_sum_for_global_id:
-                    new_value, reg_type = _types_of_sum_for_global_id[src_types]
+                if src_types in _instruction_internal_mapping_by_types:
+                    new_value, reg_type = _instruction_internal_mapping_by_types[src_types]
                     return set_reg_value(
                         node=self.node,
                         new_value=new_value,
@@ -62,5 +54,4 @@ class VAdd3(BaseInstruction):
                         reg_type=reg_type,
                         reg_entire=Integrity.ENTIRE,
                     )
-
         return super().to_fill_node()
