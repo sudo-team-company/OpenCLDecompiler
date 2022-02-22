@@ -65,7 +65,7 @@ setup_argument_dict = {
 
 def upload_setup_argument(state, to_registers, offset):
     decompiler_data = DecompilerData()
-    offset = hex(decompiler_data.config_data.params_offsets_for_global_offsets.index(offset) * 8)
+    offset = hex(decompiler_data.config_data.setup_params_offsets.index(offset) * 8)
     start_to_register, end_to_register = check_and_split_regs(to_registers)
     curr_to_register = start_to_register
     while True:
@@ -86,7 +86,7 @@ def upload_setup_argument(state, to_registers, offset):
 def upload(state, to_registers, from_registers, offset, kernel_params):
     start_from_register, _ = check_and_split_regs(from_registers)
     if state.registers[start_from_register].type == RegisterType.ARGUMENTS_POINTER:
-        if offset in DecompilerData().config_data.params_offsets_for_global_offsets:
+        if offset in DecompilerData().config_data.setup_params_offsets:
             upload_setup_argument(state, to_registers, offset)
         else:
             upload_kernel_param(state, offset, kernel_params)

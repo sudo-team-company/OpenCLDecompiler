@@ -62,7 +62,7 @@ def get_kernel_params(offsets_of_kernel_params, offset_num):
         curr_reg = 0
         name_of_reg = registers[0]
         offset_num_keys = sorted(offset_num.keys())
-        if key in decompiler_data.config_data.params_offsets_for_global_offsets:
+        if key in decompiler_data.config_data.setup_params_offsets:
             continue
         curr_num_offset = offset_num_keys.index(key)
         while curr_reg < num_output_regs:
