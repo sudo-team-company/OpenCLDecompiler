@@ -79,12 +79,14 @@ def get_kernel_params(offsets_of_kernel_params, offset_num):
 
 
 def process_kernel_params(set_of_instructions):
+    decompiler_data = DecompilerData()
+    param_ptr = "s[6:7]" if decompiler_data.config_data.usesetup else "s[4:5]"
     offsets_of_kernel_params = {}
     for instruction in set_of_instructions:
         list_instruction = instruction.strip().replace(',', ' ').split()
         if "s_load_dword" in list_instruction[0] and \
-                (int(list_instruction[3], 16) >= int('0x30', 16) or
-                 DecompilerData().driver_format != DriverFormat.AMDCL2):
+                list_instruction[2] == param_ptr and \
+                list_instruction[3] not in decompiler_data.config_data.setup_params_offsets:
             offsets_of_kernel_params[list_instruction[3]] = list_instruction
     offset_num = get_offsets_to_regs()
     get_kernel_params(offsets_of_kernel_params, offset_num)

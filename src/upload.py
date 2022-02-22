@@ -11,7 +11,8 @@ usesetup_dict = {
     '0x8': Register("get_local_size(2)", RegisterType.LOCAL_SIZE_Z, Integrity.ENTIRE),
     '0xc': Register("get_global_size(0)", RegisterType.GLOBAL_SIZE_X, Integrity.ENTIRE),
     '0x10': Register("get_global_size(1)", RegisterType.GLOBAL_SIZE_Y, Integrity.ENTIRE),
-    '0x14': Register("get_global_size(2)", RegisterType.GLOBAL_SIZE_Z, Integrity.ENTIRE)
+    '0x14': Register("get_global_size(2)", RegisterType.GLOBAL_SIZE_Z, Integrity.ENTIRE),
+    '0x18': Register("", RegisterType.UNKNOWN, Integrity.ENTIRE),
 }
 
 
