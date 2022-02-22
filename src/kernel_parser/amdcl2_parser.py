@@ -34,6 +34,7 @@ def process_config(set_of_config: List[str]) -> ConfigData:
         size_of_work_groups=process_size_of_work_groups(set_of_config),
         local_size=process_local_size(set_of_config),
         params=process_params(set_of_config),
+        params_offsets_for_global_offsets=["0x0", "0x8", "0x10"],
     )
 
 

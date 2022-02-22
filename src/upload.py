@@ -3,7 +3,6 @@ from src.integrity import Integrity
 from src.opencl_types import make_asm_type
 from src.register import Register, check_and_split_regs, get_next_reg
 from src.register_type import RegisterType
-from src.utils.driver_format import DriverFormat
 
 usesetup_dict = {
     '0x0': Register("", RegisterType.GENERAL_SETUP, Integrity.ENTIRE),
@@ -66,6 +65,7 @@ setup_argument_dict = {
 
 def upload_setup_argument(state, to_registers, offset):
     decompiler_data = DecompilerData()
+    offset = hex(decompiler_data.config_data.params_offsets_for_global_offsets.index(offset) * 8)
     start_to_register, end_to_register = check_and_split_regs(to_registers)
     curr_to_register = start_to_register
     while True:
@@ -86,15 +86,7 @@ def upload_setup_argument(state, to_registers, offset):
 def upload(state, to_registers, from_registers, offset, kernel_params):
     start_from_register, _ = check_and_split_regs(from_registers)
     if state.registers[start_from_register].type == RegisterType.ARGUMENTS_POINTER:
-        if DecompilerData().driver_format == DriverFormat.ROCM:
-            last_offset_num = int(sorted(kernel_params.keys())[-1], 16)
-            offsets_of_setup_arguments = [hex(last_offset_num + i * 8) for i in range(1, 4)]
-        else:
-            offsets_of_setup_arguments = ["0x0", "0x8", "0x10"]
-        if offset in offsets_of_setup_arguments:
-            if DecompilerData().driver_format == DriverFormat.ROCM:
-                offset_shift = int(sorted(kernel_params.keys())[-1], 16)
-                offset = hex(int(offset, 16) - offset_shift - 8)
+        if offset in DecompilerData().config_data.params_offsets_for_global_offsets:
             upload_setup_argument(state, to_registers, offset)
         else:
             upload_kernel_param(state, offset, kernel_params)

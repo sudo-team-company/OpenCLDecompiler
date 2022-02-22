@@ -37,6 +37,14 @@ def get_params(set_of_config: List[str]) -> List[Tuple[str, str]]:
     return [process_arg_row(row) for row in set_of_config if ".arg" in row and not row.startswith('.arg , "",')]
 
 
+def get_params_offsets_for_global_offsets(set_of_config: List[str]) -> List[str]:
+    return [
+        hex(i * 8) for i, row in
+        enumerate(row for row in set_of_config if ".arg" in row)
+        if re.match(r"go[xyz]", row.strip().replace(',', ' ').split()[4])
+    ]
+
+
 def process_config(set_of_config: List[str]) -> ConfigData:
     return ConfigData(
         dimensions=get_dimensions(set_of_config),
@@ -44,6 +52,7 @@ def process_config(set_of_config: List[str]) -> ConfigData:
         size_of_work_groups=get_size_of_work_groups(set_of_config),
         local_size=get_local_size(set_of_config),
         params=get_params(set_of_config),
+        params_offsets_for_global_offsets=get_params_offsets_for_global_offsets(set_of_config),
     )
 
 

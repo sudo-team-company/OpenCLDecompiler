@@ -45,10 +45,6 @@ def get_offsets_to_regs():
             curr_offset = get_current_offset_for_not_first_param(offset_num, last_name, name_of_param, num_of_param)
             offset_num[curr_offset] = name_of_param
         last_name = name_of_param
-    if DecompilerData().driver_format == DriverFormat.ROCM:
-        curr_offset = int(sorted(offset_num.keys())[-1][2:], 16)
-        for i in range(3):
-            offset_num[f'{hex(curr_offset + 8 * (i + 1))}'] = f"get_global_offset({i})"
     return offset_num
 
 
@@ -66,6 +62,8 @@ def get_kernel_params(offsets_of_kernel_params, offset_num):
         curr_reg = 0
         name_of_reg = registers[0]
         offset_num_keys = sorted(offset_num.keys())
+        if key in decompiler_data.config_data.params_offsets_for_global_offsets:
+            continue
         curr_num_offset = offset_num_keys.index(key)
         while curr_reg < num_output_regs:
             curr_offset = offset_num_keys[curr_num_offset]
