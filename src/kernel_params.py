@@ -1,5 +1,4 @@
 from src.decompiler_data import DecompilerData
-from src.utils import DriverFormat
 
 
 def get_current_offset_for_not_first_param(offset_num, last_name, name_of_param, num_of_param):
@@ -34,10 +33,12 @@ def get_offsets_to_regs():
         else:
             data_of_param.append([num_of_param, name_of_param, type_of_param])
     visited = False
+    curr_offset = "0x0"
     for num_of_param, name_of_param, type_of_param in data_of_param:
+        while curr_offset in decompiler_data.config_data.setup_params_offsets:
+            curr_offset = hex(int(curr_offset, 16) + 8)
         if num_of_param == '0' and not visited:
-            shift = '0x30' if DecompilerData().driver_format != DriverFormat.ROCM else "0x0"
-            offset_num[shift] = name_of_param
+            offset_num[curr_offset] = name_of_param
             visited = True
         else:
             # according to the algorithm first call to get_current_offset_for_not_first_param does not use last_name
