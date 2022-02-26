@@ -34,6 +34,7 @@ from src.instructions.sopc.s_cmp_ge import SCmpGe
 from src.instructions.sopc.s_cmp_gt import SCmpGt
 from src.instructions.sopc.s_cmp_lt import SCmpLt
 from src.instructions.sopc.s_set_gpr_idx_on import SSetGprIdxOn
+from src.instructions.sopk.s_cmpk_lg import SCmpkLg
 from src.instructions.sopk.s_movk import SMovk
 from src.instructions.sopk.s_mulk import SMulk
 from src.instructions.sopk.s_setreg import SSetreg
@@ -180,4 +181,5 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_add_co_ci': VAddc,
                     'v_lshl_or': VLshlOr,
                     'v_add_nc': VAddNc,
+                    's_cmpk_lg': SCmpkLg,
                     }
