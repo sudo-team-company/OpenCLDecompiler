@@ -404,11 +404,14 @@ class DecompilerData(metaclass=Singleton):
     def process_initial_state(self):
         lp, hp = ("s6", "s7") if self.config_data.usesetup else ("s4", "s5")
         self.initial_state.registers[lp] = Register(lp, RegisterType.ARGUMENTS_POINTER, Integrity.LOW_PART)
-        self.initial_state.registers[lp].add_version(lp, self.versions[lp])
-        self.versions[lp] += 1
+        self.make_version(self.initial_state, lp)
         self.initial_state.registers[hp] = Register(hp, RegisterType.ARGUMENTS_POINTER, Integrity.HIGH_PART)
-        self.initial_state.registers[hp].add_version(hp, self.versions[hp])
-        self.versions[hp] += 1
+        self.make_version(self.initial_state, hp)
+        if self.config_data.usesetup:
+            self.initial_state.registers["s4"] = Register("s4", RegisterType.DISPATCH_POINTER, Integrity.LOW_PART)
+            self.make_version(self.initial_state, "s4")
+            self.initial_state.registers["s5"] = Register("s5", RegisterType.DISPATCH_POINTER, Integrity.HIGH_PART)
+            self.make_version(self.initial_state, "s5")
 
     def make_params(self, num_of_param, name_param, type_param):
         self.params["param" + str(num_of_param)] = name_param
