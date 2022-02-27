@@ -48,5 +48,6 @@ class TestLinearKernels:
     def test_copy_get_num_groups(self, mcpu):
         template('linear_kernels/work_item_built_in_functions', 'copy_get_num_groups', mcpu=mcpu)
 
-    def test_copy_get_work_dim(self):
-        template('linear_kernels/work_item_built_in_functions', 'copy_get_work_dim')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_copy_get_work_dim(self, mcpu):
+        template('linear_kernels/work_item_built_in_functions', 'copy_get_work_dim', mcpu=mcpu)
