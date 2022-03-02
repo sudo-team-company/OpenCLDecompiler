@@ -32,9 +32,8 @@ class SLoad(BaseInstruction):
     def to_fill_node(self):
         if self.suffix in ['dword', 'dwordx2', 'dwordx4', 'dwordx8']:
             if self.node.state.registers[self.from_registers] is not None \
-                    and self.node.state.registers[self.from_registers].type == RegisterType.GLOBAL_DATA_POINTER \
-                    or self.decompiler_data.usesetup is False and self.sbase == "s[4:5]" \
-                    or self.decompiler_data.usesetup is True and self.sbase == "s[6:7]":
+                    and self.node.state.registers[self.from_registers].type \
+                    in (RegisterType.GLOBAL_DATA_POINTER, RegisterType.ARGUMENTS_POINTER):
                 upload(self.node.state, self.sdata, self.sbase, self.offset, self.decompiler_data.kernel_params)
             else:
                 upload_usesetup(self.node.state, self.sdata, self.offset)

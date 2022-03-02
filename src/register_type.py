@@ -23,6 +23,7 @@ class RegisterType(Enum):
     GLOBAL_DATA_POINTER = auto()
 
     ARGUMENTS_POINTER = auto()
+    DISPATCH_POINTER = auto()
 
     WORK_GROUP_ID_X_LOCAL_SIZE = auto()
     WORK_GROUP_ID_Y_LOCAL_SIZE = auto()

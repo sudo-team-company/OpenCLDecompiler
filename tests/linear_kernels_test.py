@@ -1,3 +1,5 @@
+import pytest
+
 from .conftest import template
 
 
@@ -14,29 +16,38 @@ class TestLinearKernels:
     def test_many_linears(self):
         template('linear_kernels', 'many_linears')
 
-    def test_copy_x(self):
-        template('linear_kernels/work_item_built_in_functions', 'copy_x')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_copy_x(self, mcpu):
+        template('linear_kernels/work_item_built_in_functions', 'copy_x', mcpu=mcpu)
 
-    def test_copy_get_global_offset(self):
-        template('linear_kernels/work_item_built_in_functions', 'copy_get_global_offset')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_copy_get_global_offset(self, mcpu):
+        template('linear_kernels/work_item_built_in_functions', 'copy_get_global_offset', mcpu=mcpu)
 
-    def test_copy_get_local_id(self):
-        template('linear_kernels/work_item_built_in_functions', 'copy_get_local_id')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_copy_get_local_id(self, mcpu):
+        template('linear_kernels/work_item_built_in_functions', 'copy_get_local_id', mcpu=mcpu)
 
-    def test_copy_get_group_id(self):
-        template('linear_kernels/work_item_built_in_functions', 'copy_get_group_id')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_copy_get_group_id(self, mcpu):
+        template('linear_kernels/work_item_built_in_functions', 'copy_get_group_id', mcpu=mcpu)
 
-    def test_copy_get_local_size(self):
-        template('linear_kernels/work_item_built_in_functions', 'copy_get_local_size')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_copy_get_local_size(self, mcpu):
+        template('linear_kernels/work_item_built_in_functions', 'copy_get_local_size', mcpu=mcpu)
 
-    def test_copy_get_global_id(self):
-        template('linear_kernels/work_item_built_in_functions', 'copy_get_global_id')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_copy_get_global_id(self, mcpu):
+        template('linear_kernels/work_item_built_in_functions', 'copy_get_global_id', mcpu=mcpu)
 
-    def test_copy_get_global_size(self):
-        template('linear_kernels/work_item_built_in_functions', 'copy_get_global_size')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_copy_get_global_size(self, mcpu):
+        template('linear_kernels/work_item_built_in_functions', 'copy_get_global_size', mcpu=mcpu)
 
-    def test_copy_get_num_groups(self):
-        template('linear_kernels/work_item_built_in_functions', 'copy_get_num_groups')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_copy_get_num_groups(self, mcpu):
+        template('linear_kernels/work_item_built_in_functions', 'copy_get_num_groups', mcpu=mcpu)
 
-    def test_copy_get_work_dim(self):
-        template('linear_kernels/work_item_built_in_functions', 'copy_get_work_dim')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_copy_get_work_dim(self, mcpu):
+        template('linear_kernels/work_item_built_in_functions', 'copy_get_work_dim', mcpu=mcpu)

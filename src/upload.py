@@ -4,7 +4,6 @@ from src.opencl_types import make_asm_type
 from src.register import Register, check_and_split_regs, get_next_reg
 from src.register_type import RegisterType
 
-
 usesetup_dict = {
     '0x0': Register("", RegisterType.GENERAL_SETUP, Integrity.ENTIRE),
     #  TODO: Подумать, как лучше вписать, что здесь и LOCAL_SIZE_X, и LOCAL_SIZE_Y
@@ -12,7 +11,8 @@ usesetup_dict = {
     '0x8': Register("get_local_size(2)", RegisterType.LOCAL_SIZE_Z, Integrity.ENTIRE),
     '0xc': Register("get_global_size(0)", RegisterType.GLOBAL_SIZE_X, Integrity.ENTIRE),
     '0x10': Register("get_global_size(1)", RegisterType.GLOBAL_SIZE_Y, Integrity.ENTIRE),
-    '0x14': Register("get_global_size(2)", RegisterType.GLOBAL_SIZE_Z, Integrity.ENTIRE)
+    '0x14': Register("get_global_size(2)", RegisterType.GLOBAL_SIZE_Z, Integrity.ENTIRE),
+    '0x18': Register("", RegisterType.UNKNOWN, Integrity.ENTIRE),
 }
 
 
@@ -66,12 +66,15 @@ setup_argument_dict = {
 
 def upload_setup_argument(state, to_registers, offset):
     decompiler_data = DecompilerData()
+    offset = hex(decompiler_data.config_data.setup_params_offsets.index(offset) * 8)
     start_to_register, end_to_register = check_and_split_regs(to_registers)
     curr_to_register = start_to_register
     while True:
         # TODO: Учитывать размер - 64 или 32
         state.registers[curr_to_register] = setup_argument_dict[offset]
         decompiler_data.make_version(state, curr_to_register)
+        if curr_to_register == end_to_register:
+            break
         curr_to_register = get_next_reg(curr_to_register)
         state.registers[curr_to_register] = setup_argument_dict[offset]
         decompiler_data.make_version(state, curr_to_register)
@@ -84,7 +87,7 @@ def upload_setup_argument(state, to_registers, offset):
 def upload(state, to_registers, from_registers, offset, kernel_params):
     start_from_register, _ = check_and_split_regs(from_registers)
     if state.registers[start_from_register].type == RegisterType.ARGUMENTS_POINTER:
-        if offset in ["0x0", "0x8", "0x10"]:
+        if offset in DecompilerData().config_data.setup_params_offsets:
             upload_setup_argument(state, to_registers, offset)
         else:
             upload_kernel_param(state, offset, kernel_params)

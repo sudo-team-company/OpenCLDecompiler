@@ -34,6 +34,7 @@ from src.instructions.sopc.s_cmp_ge import SCmpGe
 from src.instructions.sopc.s_cmp_gt import SCmpGt
 from src.instructions.sopc.s_cmp_lt import SCmpLt
 from src.instructions.sopc.s_set_gpr_idx_on import SSetGprIdxOn
+from src.instructions.sopk.s_cmpk_lg import SCmpkLg
 from src.instructions.sopk.s_movk import SMovk
 from src.instructions.sopk.s_mulk import SMulk
 from src.instructions.sopk.s_setreg import SSetreg
@@ -44,6 +45,7 @@ from src.instructions.sopp.s_cbranch_scc0 import SCbranchScc0
 from src.instructions.sopp.s_cbranch_scc1 import SCbranchScc1
 from src.instructions.sopp.s_cbranch_vccnz import SCbranchVccnz
 from src.instructions.sopp.s_cbranch_vccz import SCbranchVccz
+from src.instructions.sopp.s_clause import SClause
 from src.instructions.sopp.s_endpgm import SEndpgm
 from src.instructions.sopp.s_nop import SNop
 from src.instructions.sopp.s_set_gpr_idx_off import SSetGprIdxOff
@@ -51,6 +53,7 @@ from src.instructions.sopp.s_waitcnt import SWaitcnt
 from src.instructions.vop1.v_cvt import VCvt
 from src.instructions.vop1.v_mov import VMov
 from src.instructions.vop2.v_add import VAdd
+from src.instructions.vop2.v_add_nc import VAddNc
 from src.instructions.vop2.v_addc import VAddc
 from src.instructions.vop2.v_and import VAnd
 from src.instructions.vop2.v_ashrrev import VAshrrev
@@ -63,6 +66,7 @@ from src.instructions.vop2.v_mul_f32 import VMulF32
 from src.instructions.vop2.v_sub import VSub
 from src.instructions.vop2.v_subrev import VSubrev
 from src.instructions.vop2.v_xor import VXor
+from src.instructions.vop3.v_add3 import VAdd3
 from src.instructions.vop3.v_alignbit import VAlignbit
 from src.instructions.vop3.v_alignbyte import VAlignbyte
 from src.instructions.vop3.v_and_or import VAndOr
@@ -70,6 +74,7 @@ from src.instructions.vop3.v_bfi import VBfi
 from src.instructions.vop3.v_div_fixup import VDivFixup
 from src.instructions.vop3.v_fma import VFma
 from src.instructions.vop3.v_ldexp import VLdexp
+from src.instructions.vop3.v_lshl_or import VLshlOr
 from src.instructions.vop3.v_mul_f64 import VMulF64
 from src.instructions.vop3.v_mul_lo import VMulLo
 from src.instructions.vopc.v_cmp_eq import VCmpEq
@@ -80,7 +85,6 @@ from src.instructions.vopc.v_cmp_lt import VCmpLt
 from src.instructions.vopc.v_cmpx_class import VCmpxClass
 from src.instructions.vopc.v_cmpx_eq import VCmpxEq
 from src.instructions.vopc.v_cmpx_le import VCmpxLe
-
 
 instruction_dict = {'ds_add': DsAdd,
                     'ds_bpermute': DsBpermute,
@@ -168,5 +172,14 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_sub': VSub,
                     'v_subb': VSub,
                     'v_subrev': VSubrev,
-                    'v_xor': VXor
+                    'v_xor': VXor,
+
+                    # rocm specific instructions
+                    's_clause': SClause,
+                    'v_add3': VAdd3,
+                    'v_add_co': VAdd,
+                    'v_add_co_ci': VAddc,
+                    'v_lshl_or': VLshlOr,
+                    'v_add_nc': VAddNc,
+                    's_cmpk_lg': SCmpkLg,
                     }

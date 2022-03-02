@@ -9,7 +9,7 @@ from src.region_type import RegionType
 def create_opencl_body():
     decompiler_data = DecompilerData()
     write_global_data()
-    decompiler_data.write(decompiler_data.configuration_output)
+    decompiler_data.write(decompiler_data.get_function_definition())
     decompiler_data.write("{\n")
     for var in sorted(decompiler_data.names_of_vars.keys()):
         if " " not in var:
@@ -18,7 +18,7 @@ def create_opencl_body():
                 var = "*" + var
             decompiler_data.write("    " + type_of_var + " " + var + ";\n")
     offsets = list(decompiler_data.lds_vars.keys())
-    offsets.append(decompiler_data.localsize)
+    offsets.append(decompiler_data.config_data.local_size)
     offsets.sort()
     for key in range(len(offsets) - 1):
         size_var = int((offsets[key + 1] - offsets[key]) / (int(decompiler_data.lds_vars[offsets[key]][1][1:]) / 8))

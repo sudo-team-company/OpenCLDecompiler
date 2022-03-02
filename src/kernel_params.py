@@ -33,9 +33,12 @@ def get_offsets_to_regs():
         else:
             data_of_param.append([num_of_param, name_of_param, type_of_param])
     visited = False
+    curr_offset = "0x0"
     for num_of_param, name_of_param, type_of_param in data_of_param:
+        while curr_offset in decompiler_data.config_data.setup_params_offsets:
+            curr_offset = hex(int(curr_offset, 16) + 8)
         if num_of_param == '0' and not visited:
-            offset_num['0x30'] = name_of_param
+            offset_num[curr_offset] = name_of_param
             visited = True
         else:
             # according to the algorithm first call to get_current_offset_for_not_first_param does not use last_name
@@ -60,6 +63,8 @@ def get_kernel_params(offsets_of_kernel_params, offset_num):
         curr_reg = 0
         name_of_reg = registers[0]
         offset_num_keys = sorted(offset_num.keys())
+        if key in decompiler_data.config_data.setup_params_offsets:
+            continue
         curr_num_offset = offset_num_keys.index(key)
         while curr_reg < num_output_regs:
             curr_offset = offset_num_keys[curr_num_offset]
@@ -75,11 +80,14 @@ def get_kernel_params(offsets_of_kernel_params, offset_num):
 
 
 def process_kernel_params(set_of_instructions):
+    decompiler_data = DecompilerData()
+    param_ptr = "s[6:7]" if decompiler_data.config_data.usesetup else "s[4:5]"
     offsets_of_kernel_params = {}
     for instruction in set_of_instructions:
         list_instruction = instruction.strip().replace(',', ' ').split()
-        if "s_load_dword" in list_instruction[0] and len(list_instruction[3]) == 4 \
-                and int(list_instruction[3], 16) >= int('0x30', 16):
+        if "s_load_dword" in list_instruction[0] and \
+                list_instruction[2] == param_ptr and \
+                list_instruction[3] not in decompiler_data.config_data.setup_params_offsets:
             offsets_of_kernel_params[list_instruction[3]] = list_instruction
     offset_num = get_offsets_to_regs()
     get_kernel_params(offsets_of_kernel_params, offset_num)
