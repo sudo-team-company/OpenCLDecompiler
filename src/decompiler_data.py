@@ -6,7 +6,7 @@ import sympy
 
 from src.flag_type import FlagType
 from src.integrity import Integrity
-from src.register import Register, is_reg, is_range
+from src.register import Register, is_reg, is_range, check_and_split_regs
 from src.register_type import RegisterType
 from src.state import State
 from src.utils import ConfigData, DriverFormat
@@ -111,9 +111,28 @@ def optimize_names_of_vars():
             decompiler_data.var_value[key] = new_val
 
 
+# TODO: разобраться, как перейти к общему случаю
+def check_big_values(node, start_register, end_register):
+    if node.state.registers[start_register].val == '0xa2000000' \
+            and node.state.registers[end_register].val == '0x426d1a94':
+        return True, "1e12"
+    return False, 0
+
+
 def check_reg_for_val(node, register):
     if is_reg(register) or is_range(register):  # TODO: Выяснить зачем нужен range
-        new_val = node.state.registers[register].val
+        if node.state.registers.get(register):
+            new_val = node.state.registers[register].val
+        else:
+            if is_range(register):
+                start_register, end_register = check_and_split_regs(register)
+                flag_big_value, value = check_big_values(node, start_register, end_register)
+                if flag_big_value:
+                    new_val = value
+                else:
+                    new_val = node.state.registers[start_register].val
+            else:
+                raise NotImplementedError
     else:
         new_val = register
     return new_val
