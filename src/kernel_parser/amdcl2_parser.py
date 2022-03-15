@@ -94,4 +94,4 @@ def parse_kernel(text):
             set_of_global_data_bytes = \
                 get_global_data_bytes(row, set_of_global_data_bytes)
     yield name_of_program, process_config(set_of_config), set_of_instructions, \
-          set_of_global_data_bytes, set_of_global_data_instruction
+        set_of_global_data_bytes, set_of_global_data_instruction

@@ -16,6 +16,8 @@ def create_opencl_body():
             type_of_var = make_opencl_type(decompiler_data.names_of_vars[var])
             if var in decompiler_data.address_params:
                 var = "*" + var
+            if "___" in var:
+                var = var[:var.find("___")]
             decompiler_data.write("    " + type_of_var + " " + var + ";\n")
     offsets = list(decompiler_data.lds_vars.keys())
     offsets.append(decompiler_data.config_data.local_size)

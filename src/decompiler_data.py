@@ -376,6 +376,7 @@ class DecompilerData(metaclass=Singleton):
         # noinspection PyUnresolvedReferences
         if self.flag_for_decompilation != FlagType.ONLY_CLRX and "Not resolved yet. " not in output:
             output = simplify_opencl_statement(output)
+            output = output.replace("___", ".")
         self.output_file.write(output)
 
     def make_version(self, state, reg):

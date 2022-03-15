@@ -12,8 +12,11 @@ asm_to_opencl_dict = {
     "f64": "double",
     "gf64": "__global double",
     "int2": "int2",
+    "uint2": "uint2",
     "int4": "int4",
+    "uint4": "uint4",
     "int8": "int8",
+    "uint8": "uint8",
     "b32": "uint",
     "b64": "ulong",
     "dword": "int",
@@ -39,11 +42,17 @@ opencl_to_asm_dict = {
     "double": "f64",
     "__global double": "gf64",
     "int2": "int2",
-    "int4": "int4",
-    "int8": "int8",
     "__global int2": "int2",
+    "uint2": "uint2",
+    "__global uint2": "uint2",
+    "int4": "int4",
     "__global int4": "int4",
-    "__global int8": "int8"
+    "uint4": "uint4",
+    "__global uint4": "uint4",
+    "int8": "int8",
+    "__global int8": "int8",
+    "uint8": "uint8",
+    "__global uint8": "uint8"
 }
 
 
