@@ -25,6 +25,10 @@ class Register:
         self.prev_version.append(prev_version)
 
 
+def is_vector_type(data_type: str) -> bool:
+    return data_type in ["int2", "uint2", "int4", "uint4", "int8", "uint8"]
+
+
 def is_sgpr(reg: str) -> bool:
     """Matches s0, s12 and etc."""
     return re.match("s[0-9]+", reg) is not None

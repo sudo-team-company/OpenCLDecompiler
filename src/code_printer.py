@@ -16,6 +16,8 @@ def create_opencl_body():
             type_of_var = make_opencl_type(decompiler_data.names_of_vars[var])
             if var in decompiler_data.address_params:
                 var = "*" + var
+            if "___" in var:
+                var = var[:var.find("___")]
             decompiler_data.write("    " + type_of_var + " " + var + ";\n")
     offsets = list(decompiler_data.lds_vars.keys())
     offsets.append(decompiler_data.config_data.local_size)
@@ -147,12 +149,7 @@ def make_output_from_if_statement_region(region, indent):
 
 def make_output_from_if_else_statement_region(region, indent):
     decompiler_data = DecompilerData()
-    make_output_from_branch_variable(region, indent)
-    decompiler_data.write(indent + "if (")
-    decompiler_data.write(to_opencl(region.start.start, OperationStatus.TO_PRINT))
-    decompiler_data.write(") {\n")
-    make_output_from_part_of_if_else(region, indent, 0)
-    decompiler_data.write(indent + "}\n")
+    make_output_from_if_statement_region(region, indent)
     decompiler_data.write(indent + "else {\n")
     make_output_from_part_of_if_else(region, indent, 1)
     decompiler_data.write(indent + "}\n")
