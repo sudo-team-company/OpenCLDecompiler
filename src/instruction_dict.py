@@ -63,6 +63,7 @@ from src.instructions.vop2.v_lshrrev import VLshrrev
 from src.instructions.vop2.v_mac import VMac
 from src.instructions.vop2.v_min import VMin
 from src.instructions.vop2.v_mul_f32 import VMulF32
+from src.instructions.vop2.v_or import VOr
 from src.instructions.vop2.v_sub import VSub
 from src.instructions.vop2.v_subrev import VSubrev
 from src.instructions.vop2.v_xor import VXor
@@ -182,4 +183,5 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_lshl_or': VLshlOr,
                     'v_add_nc': VAddNc,
                     's_cmpk_lg': SCmpkLg,
+                    'v_or': VOr,
                     }
