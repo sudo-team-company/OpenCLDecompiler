@@ -9,15 +9,16 @@ class VLshlOr(BaseInstruction):
     def __init__(self, node, suffix):
         super().__init__(node, suffix)
         self.vdst, self.src0, self.src1, self.src2 = self.instruction[1:5]
+        size_of_work_groups = self.decompiler_data.config_data.size_of_work_groups
         self._instruction_internal_mapping_by_types = {
             (
                 RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}"),
-                self.decompiler_data.config_data.size_of_work_groups[i],
+                size_of_work_groups[i],
                 RegisterType.__getattr__(f"WORK_ITEM_ID_{dim}"),
             ): (
                 f"get_global_id({i}) - get_global_offset({i})",
                 RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_WORK_ITEM_ID"),
-            ) for i, dim in enumerate(["X", "Y", "Z"])
+            ) for i, dim in enumerate("XYZ") if i < len(size_of_work_groups)
         }
 
     def to_print_unresolved(self):
