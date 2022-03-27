@@ -1,5 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
+from src.register import is_reg
+from src.register_type import RegisterType
 
 
 class VAnd(BaseInstruction):
@@ -17,8 +19,21 @@ class VAnd(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'b32':
-            reg_entire = self.node.state.registers[self.src1].integrity
-            new_value = make_op(self.node, self.src1, self.src0[1:], " * ")
-            return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
-                                 reg_entire=reg_entire)
+            if is_reg(self.src1):
+                if self.node.state.registers[self.src1].type == RegisterType.WORK_DIM and \
+                        self.src0 == "0xffff":
+                    new_value = self.node.state.registers[self.src1].val
+                    reg_type = self.node.state.registers[self.src1].type
+                else:
+                    new_value = make_op(self.node, self.src1, self.src0[1:], " * ")
+                    reg_type = RegisterType.UNKNOWN
+                return set_reg_value(
+                    node=self.node,
+                    new_value=new_value,
+                    to_reg=self.vdst,
+                    from_regs=[self.src0, self.src1],
+                    data_type=self.suffix,
+                    reg_type=reg_type,
+                    reg_entire=self.node.state.registers[self.src1].integrity
+                )
         return super().to_fill_node()
