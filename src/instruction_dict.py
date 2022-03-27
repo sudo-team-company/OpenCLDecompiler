@@ -76,6 +76,7 @@ from src.instructions.vop3.v_bfi import VBfi
 from src.instructions.vop3.v_div_fixup import VDivFixup
 from src.instructions.vop3.v_fma import VFma
 from src.instructions.vop3.v_ldexp import VLdexp
+from src.instructions.vop3.v_lshl_add import VLshlAdd
 from src.instructions.vop3.v_lshl_or import VLshlOr
 from src.instructions.vop3.v_mul_f64 import VMulF64
 from src.instructions.vop3.v_mul_lo import VMulLo
@@ -184,6 +185,7 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_lshl_or': VLshlOr,
                     'v_add_nc': VAddNc,
                     's_cmpk_lg': SCmpkLg,
+                    'v_lshl_add': VLshlAdd,
                     'v_or': VOr,
                     'v_add_lshl': VAddLshl,
                     }

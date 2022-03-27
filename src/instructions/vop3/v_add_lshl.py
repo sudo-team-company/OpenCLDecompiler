@@ -40,7 +40,7 @@ class VAddLshl(BaseInstruction):
                         node=self.node,
                         new_value=new_value,
                         to_reg=self.vdst,
-                        from_regs=[self.src0, self.src1],
+                        from_regs=[self.src0, self.src1, self.src2],
                         data_type=self.suffix,
                     )
         return super().to_fill_node()
