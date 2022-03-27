@@ -19,13 +19,11 @@ class BaseInstruction:
             return self.to_print()
         return None
 
-    @staticmethod
-    def to_print_unresolved():
-        return None
+    def to_print_unresolved(self):
+        pass
 
-    @staticmethod
-    def to_fill_node():
-        return None
+    def to_fill_node(self):
+        pass
 
     def to_print(self):
         return self.output_string
