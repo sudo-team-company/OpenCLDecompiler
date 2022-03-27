@@ -68,6 +68,7 @@ from src.instructions.vop2.v_sub import VSub
 from src.instructions.vop2.v_subrev import VSubrev
 from src.instructions.vop2.v_xor import VXor
 from src.instructions.vop3.v_add3 import VAdd3
+from src.instructions.vop3.v_add_lshl import VAddLshl
 from src.instructions.vop3.v_alignbit import VAlignbit
 from src.instructions.vop3.v_alignbyte import VAlignbyte
 from src.instructions.vop3.v_and_or import VAndOr
@@ -184,4 +185,5 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_add_nc': VAddNc,
                     's_cmpk_lg': SCmpkLg,
                     'v_or': VOr,
+                    'v_add_lshl': VAddLshl,
                     }
