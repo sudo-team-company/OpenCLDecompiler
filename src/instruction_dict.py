@@ -188,4 +188,5 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_lshl_add': VLshlAdd,
                     'v_or': VOr,
                     'v_add_lshl': VAddLshl,
+                    's_mul_hi': VMulLo,
                     }
