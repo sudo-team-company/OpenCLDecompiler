@@ -4,8 +4,9 @@ from .conftest import template
 
 
 class TestLinearKernels:
-    def test_addition(self):
-        template('linear_kernels', 'addition')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_addition(self, mcpu):
+        template('linear_kernels', 'addition', mcpu=mcpu)
 
     def test_subtraction(self):
         template('linear_kernels', 'subtraction')
