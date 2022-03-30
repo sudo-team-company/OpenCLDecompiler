@@ -11,8 +11,9 @@ class TestLinearKernels:
     def test_subtraction(self):
         template('linear_kernels', 'subtraction')
 
-    def test_multiplication(self):
-        template('linear_kernels', 'multiplication')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_multiplication(self, mcpu):
+        template('linear_kernels', 'multiplication', mcpu=mcpu)
 
     def test_many_linears(self):
         template('linear_kernels', 'many_linears')
