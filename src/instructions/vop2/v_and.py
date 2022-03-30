@@ -20,10 +20,23 @@ class VAnd(BaseInstruction):
     def to_fill_node(self):
         if self.suffix == 'b32':
             if is_reg(self.src1):
+                size_of_work_groups = self.decompiler_data.config_data.size_of_work_groups
                 if self.node.state.registers[self.src1].type == RegisterType.WORK_DIM and \
                         self.src0 == "0xffff":
                     new_value = self.node.state.registers[self.src1].val
                     reg_type = self.node.state.registers[self.src1].type
+                elif self.node.state.registers[self.src1].type == RegisterType.GLOBAL_SIZE_X and \
+                        size_of_work_groups[0] == -int(self.src0):
+                    new_value = make_op(self.node, "get_num_groups(0)", str(size_of_work_groups[0]), " * ")
+                    reg_type = RegisterType.UNKNOWN
+                elif self.node.state.registers[self.src1].type == RegisterType.GLOBAL_SIZE_Y and \
+                        size_of_work_groups[1] == -int(self.src0):
+                    new_value = make_op(self.node, "get_num_groups(1)", str(size_of_work_groups[1]), " * ")
+                    reg_type = RegisterType.UNKNOWN
+                elif self.node.state.registers[self.src1].type == RegisterType.GLOBAL_SIZE_Z and \
+                        size_of_work_groups[2] == -int(self.src0):
+                    new_value = make_op(self.node, "get_num_groups(2)", str(size_of_work_groups[2]), " * ")
+                    reg_type = RegisterType.UNKNOWN
                 else:
                     new_value = make_op(self.node, self.src1, self.src0[1:], " * ")
                     reg_type = RegisterType.UNKNOWN
