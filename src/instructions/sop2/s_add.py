@@ -2,6 +2,7 @@ from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
 from src.register import is_sgpr
 from src.register_type import RegisterType
+from src.utils.hex_num_utils import hex_to_dec_with_sign, is_hex_num
 
 _instruction_special_cases = {
     frozenset({
@@ -18,6 +19,12 @@ class SAdd(BaseInstruction):
         self.sdst = self.instruction[1]
         self.ssrc0 = self.instruction[2]
         self.ssrc1 = self.instruction[3]
+        if is_hex_num(self.ssrc0):
+            self.ssrc0 = hex_to_dec_with_sign(self.ssrc0)
+        if is_hex_num(self.ssrc1):
+            self.ssrc1 = hex_to_dec_with_sign(self.ssrc1)
+        if self.ssrc0[0] == '-' and self.ssrc1[0] != '-':
+            self.ssrc0, self.ssrc1 = self.ssrc1, self.ssrc0
 
     def to_print_unresolved(self):
         if self.suffix in {'u32', 'i32'}:
@@ -32,7 +39,10 @@ class SAdd(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in {'u32', 'i32'}:
-            new_value = make_op(self.node, self.ssrc0, self.ssrc1, " + ", '(ulong)', '(ulong)')
+            if self.ssrc1[0] == '-':
+                new_value = make_op(self.node, self.ssrc0, self.ssrc1[1:], " - ", '(ulong)', '(ulong)')
+            else:
+                new_value = make_op(self.node, self.ssrc0, self.ssrc1, " + ", '(ulong)', '(ulong)')
             ssrc0_reg = is_sgpr(self.ssrc0)
             ssrc1_reg = is_sgpr(self.ssrc1)
             data_type = self.suffix
