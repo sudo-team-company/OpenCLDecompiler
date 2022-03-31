@@ -38,7 +38,7 @@ class VAnd(BaseInstruction):
                     new_value = make_op(self.node, "get_num_groups(2)", str(size_of_work_groups[2]), " * ")
                     reg_type = RegisterType.UNKNOWN
                 else:
-                    new_value = make_op(self.node, self.src1, self.src0[1:], " * ")
+                    new_value = self.node.state.registers[self.src1].val
                     reg_type = RegisterType.UNKNOWN
                 return set_reg_value(
                     node=self.node,
