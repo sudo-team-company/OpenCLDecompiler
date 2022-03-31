@@ -41,11 +41,20 @@ class VAddc(BaseInstruction):
             reg_type = RegisterType.UNKNOWN
             reg_entire = Integrity.ENTIRE
             if src0_reg and src1_reg:
-                reg_entire = self.node.state.registers[self.src1].integrity
-                if self.node.state.registers[self.src0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT \
-                        and self.node.state.registers[self.src1].type == RegisterType.GLOBAL_ID_X:
-                    new_value = self.node.state.registers[self.src0].val + "[get_global_id(0)]"
-                    reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT
+                if self.node.state.registers[self.src1].val == "0":
+                    new_value = self.node.state.registers[self.src0].val
+                    reg_type = self.node.state.registers[self.src0].type
+                    reg_entire = self.node.state.registers[self.src0].integrity
+                elif self.node.state.registers[self.src0].val == "0":
+                    new_value = self.node.state.registers[self.src1].val
+                    reg_type = self.node.state.registers[self.src1].type
+                    reg_entire = self.node.state.registers[self.src1].integrity
+                else:
+                    reg_entire = self.node.state.registers[self.src1].integrity
+                    if self.node.state.registers[self.src0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT \
+                            and self.node.state.registers[self.src1].type == RegisterType.GLOBAL_ID_X:
+                        new_value = self.node.state.registers[self.src0].val + "[get_global_id(0)]"
+                        reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT
             else:
                 reg_type = RegisterType.INT32
                 if src0_reg:

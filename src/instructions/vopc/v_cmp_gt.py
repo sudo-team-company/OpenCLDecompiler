@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import compare_values
+from src.decompiler_data import compare_values, set_reg_value
 
 
 class VCmpGt(BaseInstruction):
@@ -29,6 +29,10 @@ class VCmpGt(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
+        if self.src0 in self.node.state.registers and self.src1 in self.node.state.registers and \
+                self.node.state.registers[self.src0].type == self.node.state.registers[self.src1].type and \
+                self.node.state.registers[self.src0].val == self.node.state.registers[self.src1].val:
+            return set_reg_value(self.node, "0", self.sdst, [self.src0, self.src1], self.suffix)
         if self.suffix == 'u64':
             # TODO: Сделать честное присвоение
             return compare_values(self.node, self.sdst, self.src0, self.src1, '(ulong)', '(uint)', " > ", self.suffix)

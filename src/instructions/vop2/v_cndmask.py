@@ -20,8 +20,12 @@ class VCndmask(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'b32':
+            if self.ssrc2 in self.node.state.registers and self.node.state.registers[self.ssrc2].val == "0":
+                return set_reg_value(self.node, self.src0, self.vdst, [self.src0, self.src1], self.suffix)
             variable = "var" + str(self.decompiler_data.num_of_var)
-            if self.node.state.registers[self.vdst].type == RegisterType.KERNEL_ARGUMENT_ELEMENT:
+            if self.vdst in self.node.state.registers and \
+                    self.node.state.registers[self.vdst] is not None and \
+                    self.node.state.registers[self.vdst].type == RegisterType.KERNEL_ARGUMENT_ELEMENT:
                 variable = "*" + variable
             reg_type = RegisterType.PROGRAM_PARAM
             node = set_reg_value(self.node, variable, self.vdst, [self.src0, self.src1], self.suffix, reg_type=reg_type)
@@ -31,6 +35,8 @@ class VCndmask(BaseInstruction):
 
     def to_print(self):
         if self.suffix == 'b32':
+            if self.node.state.registers[self.vdst].val == "0":
+                return ""
             if "?" in self.node.state.registers[self.ssrc2].val:
                 self.node.state.registers[self.ssrc2].val = "(" + self.node.state.registers[self.ssrc2].val + ")"
             if 's' in self.src1 or 'v' in self.src1:

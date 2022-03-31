@@ -63,10 +63,12 @@ from src.instructions.vop2.v_lshrrev import VLshrrev
 from src.instructions.vop2.v_mac import VMac
 from src.instructions.vop2.v_min import VMin
 from src.instructions.vop2.v_mul_f32 import VMulF32
+from src.instructions.vop2.v_or import VOr
 from src.instructions.vop2.v_sub import VSub
 from src.instructions.vop2.v_subrev import VSubrev
 from src.instructions.vop2.v_xor import VXor
 from src.instructions.vop3.v_add3 import VAdd3
+from src.instructions.vop3.v_add_lshl import VAddLshl
 from src.instructions.vop3.v_alignbit import VAlignbit
 from src.instructions.vop3.v_alignbyte import VAlignbyte
 from src.instructions.vop3.v_and_or import VAndOr
@@ -74,6 +76,7 @@ from src.instructions.vop3.v_bfi import VBfi
 from src.instructions.vop3.v_div_fixup import VDivFixup
 from src.instructions.vop3.v_fma import VFma
 from src.instructions.vop3.v_ldexp import VLdexp
+from src.instructions.vop3.v_lshl_add import VLshlAdd
 from src.instructions.vop3.v_lshl_or import VLshlOr
 from src.instructions.vop3.v_mul_f64 import VMulF64
 from src.instructions.vop3.v_mul_lo import VMulLo
@@ -182,4 +185,9 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_lshl_or': VLshlOr,
                     'v_add_nc': VAddNc,
                     's_cmpk_lg': SCmpkLg,
+                    'v_lshl_add': VLshlAdd,
+                    'v_or': VOr,
+                    'v_add_lshl': VAddLshl,
+                    'v_mul_u32_u24': VMulF32,
+                    's_mul_hi': VMulLo,
                     }

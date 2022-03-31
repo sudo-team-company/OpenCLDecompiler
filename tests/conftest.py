@@ -32,6 +32,9 @@ def template(path_to_dir, dir_name, flag=None, mcpu=''):
 
     subprocess.run(["python", path_to_exec_file, "-i", in_file, "-o", out_file] + flag_option, check=True)
 
-    with open(test_root / f"{dir_name}_hands.cl", encoding="utf-8") as hands_decompilation:
+    hands = test_root / f"{dir_name}_hands.cl"
+    if "gfx" in mcpu and (test_root / f"{dir_name}_hands-gfx.cl").exists():
+        hands = test_root / f"{dir_name}_hands-gfx.cl"
+    with open(hands, encoding="utf-8") as hands_decompilation:
         with open(out_file, encoding="utf-8") as decompiled:
             assert hands_decompilation.read() == decompiled.read()

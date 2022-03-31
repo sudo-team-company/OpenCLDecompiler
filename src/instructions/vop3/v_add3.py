@@ -1,18 +1,37 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import set_reg_value
-from src.integrity import Integrity
+from src.decompiler_data import set_reg_value, make_op
 from src.register import is_reg
 from src.register_type import RegisterType
 
 _instruction_internal_mapping_by_types = {
-    frozenset({
-        RegisterType.__getattr__(f"GLOBAL_OFFSET_{dim}"),
-        RegisterType.__getattr__(f"WORK_ITEM_ID_{dim}"),
-        RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"),
-    }): (
-        f"get_global_id({i})",
-        RegisterType.__getattr__(f"GLOBAL_ID_{dim}"),
-    ) for i, dim in enumerate(["X", "Y", "Z"])
+    **{
+        frozenset({
+            RegisterType.__getattr__(f"GLOBAL_OFFSET_{dim}"),
+            RegisterType.__getattr__(f"WORK_ITEM_ID_{dim}"),
+            RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"),
+        }): (
+            f"get_global_id({i})",
+            RegisterType.__getattr__(f"GLOBAL_ID_{dim}"),
+        ) for i, dim in enumerate("XYZ")
+    },
+    **{
+        frozenset({
+            RegisterType.__getattr__(f"GLOBAL_OFFSET_{dim}"),
+            RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_WORK_ITEM_ID"),
+        }): (
+            f"get_global_id({i})",
+            RegisterType.__getattr__(f"GLOBAL_ID_{dim}"),
+        ) for i, dim in enumerate("XYZ")
+    },
+    **{
+        frozenset({
+            RegisterType.__getattr__(f"WORK_ITEM_ID_{dim}"),
+            RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_LOCAL_SIZE_OFFSET"),
+        }): (
+            f"get_global_id({i})",
+            RegisterType.__getattr__(f"GLOBAL_ID_{dim}"),
+        ) for i, dim in enumerate("XYZ")
+    },
 }
 
 
@@ -37,6 +56,23 @@ class VAdd3(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'u32':
+            new_value = make_op(self.node, self.src0, self.src1, " + ", '(ulong)', '(ulong)')
+            new_value = make_op(self.node, new_value, self.src2, " + ", '(ulong)', '(ulong)')
+            reg_type = RegisterType.UNKNOWN
+            reg_permutations_for_sum_mapping = [
+                (self.src0, self.src1, self.src2),
+                (self.src0, self.src2, self.src1),
+                (self.src1, self.src2, self.src0),
+            ]
+            for src0, src1, src2 in reg_permutations_for_sum_mapping:
+                if is_reg(src0) and is_reg(src1):
+                    src_types = frozenset({
+                        self.node.state.registers[src0].type,
+                        self.node.state.registers[src1].type,
+                    })
+                    if src_types in _instruction_internal_mapping_by_types:
+                        new_value, _ = _instruction_internal_mapping_by_types[src_types]
+                        new_value = make_op(self.node, new_value, src2, " + ", '(ulong)', '(ulong)')
             if is_reg(self.src0) and is_reg(self.src1) and is_reg(self.src2):
                 src_types = frozenset({
                     self.node.state.registers[self.src0].type,
@@ -45,13 +81,12 @@ class VAdd3(BaseInstruction):
                 })
                 if src_types in _instruction_internal_mapping_by_types:
                     new_value, reg_type = _instruction_internal_mapping_by_types[src_types]
-                    return set_reg_value(
-                        node=self.node,
-                        new_value=new_value,
-                        to_reg=self.vdst,
-                        from_regs=[self.src0, self.src1, self.src2],
-                        data_type=self.suffix,
-                        reg_type=reg_type,
-                        reg_entire=Integrity.ENTIRE,
-                    )
+            return set_reg_value(
+                node=self.node,
+                new_value=new_value,
+                to_reg=self.vdst,
+                from_regs=[self.src0, self.src1, self.src2],
+                data_type=self.suffix,
+                reg_type=reg_type,
+            )
         return super().to_fill_node()

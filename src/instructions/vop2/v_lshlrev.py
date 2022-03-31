@@ -13,18 +13,20 @@ class VLshlrev(BaseInstruction):
         self.src1 = self.instruction[3]
 
     def to_print_unresolved(self):
-        if self.suffix == 'b32':
-            self.decompiler_data.write(self.vdst + " = " + self.src1 + " << (" + self.src0 + "&31) // v_lshlrev_b32\n")
-            return self.node
-        if self.suffix == 'b64':
-            self.decompiler_data.write(self.vdst + " = " + self.src1 + " << (" + self.src0 + "&63) // v_lshlrev_b64\n")
+        if self.suffix in ['b16', 'b32', 'b64']:
+            num = int(self.suffix[1:]) - 1
+            self.decompiler_data.write(f"{self.vdst} = {self.src1} << ({self.src0}&{num}) // {self.instruction[0]}\n")
             return self.node
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix == 'b32':
-            new_value = make_op(self.node, self.src1, str(pow(2, int(self.src0))), " * ")
-            reg_type = self.node.state.registers[self.src1].type
+        if self.suffix in ['b16', 'b32']:
+            if is_reg(self.src1) and self.node.state.registers[self.src1].val == '0':
+                new_value = '0'
+                reg_type = RegisterType.INT32
+            else:
+                new_value = make_op(self.node, self.src1, str(pow(2, int(self.src0))), " * ")
+                reg_type = self.node.state.registers[self.src1].type
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                  reg_type=reg_type)
         if self.suffix == 'b64':

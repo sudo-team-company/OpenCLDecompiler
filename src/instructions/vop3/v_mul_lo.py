@@ -10,13 +10,13 @@ class VMulLo(BaseInstruction):
         self.src1 = self.instruction[3]
 
     def to_print_unresolved(self):
-        if self.suffix == 'u32':
-            self.decompiler_data.write(self.vdst + " = " + self.src0 + " * " + self.src1 + " // v_mul_lo_u32\n")
+        if self.suffix in {'u16', 'u32', 'i32'}:
+            self.decompiler_data.write(f"{self.vdst} = {self.src0} * {self.src1} // {self.instruction[0]}\n")
             return self.node
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix == 'u32':
+        if self.suffix in {'u16', 'u32', 'i32'}:
             reg_entire = self.node.state.registers[self.src0].integrity
             new_value = make_op(self.node, self.src0, self.src1, " * ")
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,

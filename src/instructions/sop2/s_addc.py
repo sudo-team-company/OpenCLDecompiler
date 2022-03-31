@@ -31,10 +31,11 @@ class SAddc(BaseInstruction):
             data_type = self.suffix
             if self.ssrc0.isdigit() and int(self.ssrc0) == 0 and ssrc1_reg:
                 new_value = self.node.state.registers[self.ssrc1].val
+                reg_type = self.node.state.registers[self.ssrc1].type
             if self.ssrc1.isdigit() and int(self.ssrc1) == 0 and ssrc0_reg:
                 new_value = self.node.state.registers[self.ssrc0].val
-            if ssrc0_reg:
                 reg_type = self.node.state.registers[self.ssrc0].type
+            if ssrc0_reg:
                 if self.node.state.registers[self.ssrc0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
                     if self.node.state.registers[self.ssrc0].data_type in ['u32', 'i32', 'gu32', 'gi32']:
                         new_value = make_op(self.node, self.ssrc1, "4", " / ", '', '')
@@ -43,8 +44,7 @@ class SAddc(BaseInstruction):
                         data_type = self.node.parent[0].state.registers[self.ssrc0].data_type
                     else:
                         data_type = self.node.state.registers[self.ssrc0].data_type
-            elif ssrc1_reg:
-                reg_type = self.node.state.registers[self.ssrc1].type
+                    reg_type = self.node.state.registers[self.ssrc0].type
             return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], data_type,
                                  reg_type=reg_type)
         return super().to_fill_node()
