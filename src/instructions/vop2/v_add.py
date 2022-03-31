@@ -4,7 +4,6 @@ from src.integrity import Integrity
 from src.opencl_types import most_common_type, make_asm_type
 from src.register import check_and_split_regs, is_reg
 from src.register_type import RegisterType
-from src.utils.hex_num_utils import hex_to_dec_with_sign, is_hex_num
 
 
 class VAdd(BaseInstruction):
@@ -18,12 +17,6 @@ class VAdd(BaseInstruction):
         else:
             self.src0 = self.instruction[2]
             self.src1 = self.instruction[3]
-        if is_hex_num(self.src0):
-            self.src0 = hex_to_dec_with_sign(self.src0)
-        if is_hex_num(self.src1):
-            self.src1 = hex_to_dec_with_sign(self.src1)
-        if self.src0[0] == '-' and self.src1[0] != '-':
-            self.src0, self.src1 = self.src1, self.src0
 
     def to_print_unresolved(self):
         if self.suffix == 'u32':
@@ -43,10 +36,7 @@ class VAdd(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'u32':
-            if self.src1[0] == '-':
-                new_value = make_op(self.node, self.src0, self.src1[1:], " - ", '(ulong)', '(ulong)')
-            else:
-                new_value = make_op(self.node, self.src0, self.src1, " + ", '(ulong)', '(ulong)')
+            new_value = make_op(self.node, self.src0, self.src1, " + ", '(ulong)', '(ulong)')
             src0_reg = is_reg(self.src0)
             src1_reg = is_reg(self.src1)
             data_type = self.suffix
