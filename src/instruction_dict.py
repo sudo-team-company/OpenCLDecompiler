@@ -65,6 +65,7 @@ from src.instructions.vop2.v_min import VMin
 from src.instructions.vop2.v_mul_f32 import VMulF32
 from src.instructions.vop2.v_or import VOr
 from src.instructions.vop2.v_sub import VSub
+from src.instructions.vop2.v_sub_nc import VSubNc
 from src.instructions.vop2.v_subrev import VSubrev
 from src.instructions.vop2.v_xor import VXor
 from src.instructions.vop3.v_add3 import VAdd3
@@ -190,4 +191,6 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_add_lshl': VAddLshl,
                     'v_mul_u32_u24': VMulF32,
                     's_mul_hi': VMulLo,
+                    'v_subrev_nc': VSubNc,
+                    'v_sub_nc': VSubNc,
                     }
