@@ -193,4 +193,7 @@ instruction_dict = {'ds_add': DsAdd,
                     's_mul_hi': VMulLo,
                     'v_subrev_nc': VSubNc,
                     'v_sub_nc': VSubNc,
+                    'v_subrev_co_ci': VSubrev,
+                    'v_sub_co': VSub,
+                    'v_sub_co_ci': VSub,
                     }
