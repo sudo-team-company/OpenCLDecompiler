@@ -29,13 +29,17 @@ class SSub(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ['u32', 'i32']:
+        reg_entire = Integrity.ENTIRE
+        if is_reg(self.ssrc1):
+            reg_entire = self.node.state.registers[self.ssrc1].integrity
+        elif is_reg(self.ssrc0):
+            reg_entire = self.node.state.registers[self.ssrc0].integrity
+        if self.suffix == 'u32':
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, " - ", '(ulong)', '(ulong)')
-            reg_entire = Integrity.ENTIRE
-            if is_reg(self.ssrc1):
-                reg_entire = self.node.state.registers[self.ssrc1].integrity
-            elif is_reg(self.ssrc0):
-                reg_entire = self.node.state.registers[self.ssrc0].integrity
+            return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix,
+                                 reg_entire=reg_entire)
+        if self.suffix == 'i32':
+            new_value = make_op(self.node, self.ssrc0, self.ssrc1, " - ", '(long)', '(long)')
             return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix,
                                  reg_entire=reg_entire)
         return super().to_fill_node()
