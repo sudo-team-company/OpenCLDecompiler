@@ -86,7 +86,7 @@ class VAdd(BaseInstruction):
                     elif self.decompiler_data.type_params.get("*" + argument) in \
                             ["long", "ulong", "__global long", "__global ulong",
                              "double", "__global double",
-                             "int2", "__global int2"]:
+                             "int2", "__global int2", "uint2", "__global uint 2"]:
                         if "1073741824" in self.node.state.registers[self.src1].val:
                             new_value = make_op(self.node, self.src1, "1073741824", " * ")
                         else:
@@ -96,7 +96,8 @@ class VAdd(BaseInstruction):
                             ["char", "uchar", "__global char", "__global uchar"]:
                         new_value = make_op(self.node, argument, self.node.state.registers[self.src1].val, " + ")
                         # TODO: Проанализировать, почему нет присвоения типов
-                    elif self.decompiler_data.type_params.get("*" + argument) in ["int4", "__global int4"]:
+                    elif self.decompiler_data.type_params.get("*" + argument) in \
+                            ["int4", "__global int4", "uint4", "__global uint4"]:
                         if "1073741824" in self.node.state.registers[self.src1].val:
                             new_value = make_op(self.node, self.src1, "1073741824", " * ")
                         else:

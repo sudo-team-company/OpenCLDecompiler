@@ -1,7 +1,52 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier
 from src.opencl_types import make_opencl_type
-from src.register import check_and_split_regs, is_vgpr
+from src.register import check_and_split_regs, is_vgpr, is_vector_type, get_next_reg
+
+
+def get_vector_name(vector_element):
+    separator = vector_element.find("__")
+    vector_name = vector_element[:separator]
+    return vector_name
+
+
+def get_vector_element_number(vector_element):
+    separator = vector_element.find("__")
+    vector_element_number = int(vector_element[separator + 4:])
+    return vector_element_number
+
+
+def check_vector_part(new_vector):
+    el_name = get_vector_name(new_vector[0])
+    el_number = get_vector_element_number(new_vector[0])
+    for new_el in new_vector[1:]:
+        new_el_number = get_vector_element_number(new_el)
+        if el_name != get_vector_name(new_el) or el_number + 1 != new_el_number:
+            return False
+        el_number = new_el_number
+    return True
+
+
+def prepare_vector_type_output(from_registers, from_registers_1, suffix, to_registers, node):
+    curr_reg = from_registers
+    new_vector = [node.state.registers[curr_reg].val]
+    while curr_reg != from_registers_1:
+        curr_reg = get_next_reg(curr_reg)
+        new_vector.append(node.state.registers[curr_reg].val)
+    if check_vector_part(new_vector):
+        output_string = get_vector_name(node.state.registers[from_registers].val)
+        if len(new_vector) != int(suffix[-1]):
+            output_string += "."
+            start_number = get_vector_element_number(new_vector[0])
+            end_number = get_vector_element_number(new_vector[-1])
+            for s_id in range(start_number, end_number + 1):
+                output_string = output_string + "s" + str(s_id)
+    else:
+        output_string = "(" + node.state.registers[to_registers].data_type + ")("
+        for el in new_vector:
+            output_string = output_string + el + ", "
+        output_string = output_string[:-2] + ")"
+    return output_string
 
 
 class FlatStore(BaseInstruction):
@@ -51,7 +96,8 @@ class FlatStore(BaseInstruction):
                         self.node.state.registers[self.to_registers].data_type
                 else:
                     if str(self.node.state.registers[self.from_registers].data_type) not in \
-                            self.node.state.registers[self.to_registers].data_type:
+                            self.node.state.registers[self.to_registers].data_type \
+                            and not is_vector_type(self.node.state.registers[self.from_registers].data_type):
                         if self.node.state.registers[self.from_registers].val in self.decompiler_data.names_of_vars:
                             val = self.node.state.registers[self.from_registers].val
                             self.node.state.registers[self.from_registers].val = \
@@ -82,10 +128,14 @@ class FlatStore(BaseInstruction):
             if self.node.state.registers.get(self.from_registers):
                 if self.node.state.registers[self.from_registers].val == "0" \
                         and self.node.state.registers.get(self.from_registers_1):
-                    self.output_string = var + " = " + self.node.state.registers[self.from_registers_1].val
+                    self.output_string = self.node.state.registers[self.from_registers_1].val
                 else:
-                    self.output_string = var + " = " + self.node.state.registers[self.from_registers].val
+                    if is_vector_type(self.node.state.registers[self.to_registers].data_type):
+                        self.output_string = prepare_vector_type_output(self.from_registers, self.from_registers_1,
+                                                                        self.suffix, self.to_registers, self.node)
+                    else:
+                        self.output_string = self.node.state.registers[self.from_registers].val
             else:
-                self.output_string = var + " = " + self.decompiler_data.initial_state.registers[self.from_registers].val
-            return self.output_string
+                self.output_string = self.decompiler_data.initial_state.registers[self.from_registers].val
+            return var + " = " + self.output_string
         return super().to_print()

@@ -50,11 +50,11 @@ class TestGlobalData:
     def test_int2_array(self):
         template('global_data_usage', 'int2_array')
 
-    def test_int2_to_int2(self):
-        template('global_data_usage', 'int2_to_int2')
-
-    def test_int4_to_int4(self):
-        template('global_data_usage', 'int4_to_int4')
+    # def test_int2_to_int2(self):
+    #     template('global_data_usage', 'int2_to_int2')
+    #
+    # def test_int4_to_int4(self):
+    #     template('global_data_usage', 'int4_to_int4')
 
     # def test_int8_to_int8(self):
     #     template('global_data_usage', 'int8_to_int8')
