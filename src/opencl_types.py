@@ -67,19 +67,19 @@ def evaluate_size(asm_type, only_size=False):
             information = (4, 1)
         else:
             information = (4, 0)
-    elif asm_type in ("gu64", "u64", "gi64", "i64", "f64", "gf64", "uint2", "b64", "dword2"):
+    elif asm_type in ("gu64", "u64", "gi64", "i64", "f64", "gf64", "uint2", "int2", "b64", "dword2"):
         if asm_type == "f64:":
             information = (8, 1)
         else:
             information = (8, 0)
+    elif asm_type in ["uint4", "int4"]:
+        information = (16, 0)
+    elif asm_type in ["uint8", "int8"]:
+        information = (32, 0)
+    elif asm_type == "char":
+        information = (1, 1)
     elif only_size:
-        if asm_type == "uint4":
-            information = (16, 0)
-        elif asm_type == "uint8":
-            information = (32, 0)
-        elif asm_type == "char":
-            information = (1, 1)
-        elif "bytes" in asm_type:
+        if "bytes" in asm_type:
             information = (int(asm_type[0]), 1)
         else:
             information = (1, 1)
