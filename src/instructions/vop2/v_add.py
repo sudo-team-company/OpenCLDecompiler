@@ -1,7 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
 from src.integrity import Integrity
-from src.opencl_types import most_common_type, make_asm_type
+from src.opencl_types import most_common_type, make_asm_type, evaluate_size
 from src.register import check_and_split_regs, is_reg
 from src.register_type import RegisterType
 
@@ -66,52 +66,14 @@ class VAdd(BaseInstruction):
                     reg_type = RegisterType.GLOBAL_ID_Z
                 elif self.node.state.registers[self.src0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
                     reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT
-                    if '.s' in self.node.state.registers[self.src0].val:
-                        argument = self.node.state.registers[self.src0].val[:-3]
-                    else:
-                        argument = self.node.state.registers[self.src0].val
-
+                    argument = self.node.state.registers[self.src0].val
                     if self.decompiler_data.type_params.get("*" + argument):
                         data_type = make_asm_type(self.decompiler_data.type_params["*" + argument])
                     else:
-                        data_type = 'int2'
-                    # TODO: Проанализировать, есть ли в "int" и "uint" необходимость
-                    if self.decompiler_data.type_params.get("*" + argument) in \
-                            ["int", "uint", "__global int", "__global uint", "float", "__global float"]:
-                        if "1073741824" in self.node.state.registers[self.src1].val:
-                            new_value = make_op(self.node, self.src1, "1073741824", " * ")
-                        else:
-                            new_value = make_op(self.node, self.src1, "4", ' / ')
-                        new_value = make_op(self.node, argument, new_value, " + ")
-                    elif self.decompiler_data.type_params.get("*" + argument) in \
-                            ["long", "ulong", "__global long", "__global ulong",
-                             "double", "__global double",
-                             "int2", "__global int2", "uint2", "__global uint 2"]:
-                        if "1073741824" in self.node.state.registers[self.src1].val:
-                            new_value = make_op(self.node, self.src1, "1073741824", " * ")
-                        else:
-                            new_value = make_op(self.node, self.src1, "8", " / ")
-                        new_value = make_op(self.node, argument, new_value, " + ")
-                    elif self.decompiler_data.type_params.get("*" + argument) in \
-                            ["char", "uchar", "__global char", "__global uchar"]:
-                        new_value = make_op(self.node, argument, self.node.state.registers[self.src1].val, " + ")
-                        # TODO: Проанализировать, почему нет присвоения типов
-                    elif self.decompiler_data.type_params.get("*" + argument) in \
-                            ["int4", "__global int4", "uint4", "__global uint4"]:
-                        if "1073741824" in self.node.state.registers[self.src1].val:
-                            new_value = make_op(self.node, self.src1, "1073741824", " * ")
-                        else:
-                            new_value = make_op(self.node, self.src1, "16", " / ")
-                        new_value = make_op(self.node, argument, new_value, " + ")
-                    elif self.decompiler_data.type_params.get("*" + argument) in ["int8", "__global int8"]:
-                        if "1073741824" in self.node.state.registers[self.src1].val:
-                            new_value = make_op(self.node, self.src1, "1073741824", " * ")
-                        else:
-                            new_value = make_op(self.node, self.src1, "32", " / ")
-                        new_value = make_op(self.node, argument, new_value, " + ")
-                    else:
-                        new_value = make_op(self.node, self.src1, "8", " / ")
-                        new_value = make_op(self.node, argument, new_value, " + ")
+                        data_type = self.node.state.registers[self.src0].data_type
+                    data_size, _ = evaluate_size(data_type, True)
+                    new_value = make_op(self.node, self.src1, str(data_size), " / ")
+                    new_value = make_op(self.node, argument, new_value, " + ")
                 elif self.node.state.registers[self.src0].type == RegisterType.GLOBAL_DATA_POINTER:
                     data_type = self.node.state.registers[self.src1].data_type
                     name = self.node.state.registers[self.src0].val
@@ -145,6 +107,12 @@ class VAdd(BaseInstruction):
                 reg_type = RegisterType.INT32
                 if src0_reg:
                     reg_type = self.node.state.registers[self.src0].type
+                    if self.node.state.registers[self.src0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT:
+                        reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT
+                        data_type = self.node.state.registers[self.src0].data_type
+                        data_size, _ = evaluate_size(data_type, True)
+                        new_value = make_op(self.node, self.src1, str(data_size), " / ")
+                        new_value = make_op(self.node, self.src0, new_value, " + ")
                 if src1_reg:
                     reg_type = self.node.state.registers[self.src1].type
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], data_type, reg_type=reg_type,
