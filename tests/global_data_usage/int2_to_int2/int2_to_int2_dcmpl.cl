@@ -5,5 +5,5 @@ void int_test(__global int2 *out, int i)
 {
     int2 var0;
     var0 = gdata0[get_global_id(0)];
-    out[get_global_id(0)] = (int2)(var0, var0);
+    out[get_global_id(0)] = var0;
 }
