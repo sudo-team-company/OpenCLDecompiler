@@ -25,3 +25,6 @@ class TestVectorTypeParams:
 
     def test_uint2_first_fourth_element_uint4(self):
         template('vector_type_params', 'uint2_first_fourth_element_uint4')
+
+    def test_uint2_first_and_first_uint4(self):
+        template('vector_type_params', 'uint2_first_and_first_uint4')

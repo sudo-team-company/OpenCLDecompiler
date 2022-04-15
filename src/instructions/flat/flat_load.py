@@ -20,7 +20,11 @@ def get_output_for_different_vector_types(output, var_type, data_type):
     else:
         curr_element = 0
     output += "___s"
-    new_size = int(var_type[-1]) + curr_element
+    new_size = curr_element
+    if make_opencl_type(var_type)[-1].isdigit():
+        new_size += int(var_type[-1])
+    else:
+        new_size = 1
     while curr_element < new_size:
         output += str(curr_element)
         curr_element += 1
@@ -73,8 +77,12 @@ class FlatLoad(BaseInstruction):
             while True:
                 if is_vector_type(data_type):
                     reg_val = variable + "___s" + str(vector_position)
-                    data_type = data_type[:-1] + self.suffix[-1]
                     vector_position += 1
+                    data_type = data_type[:-1]
+                    if self.suffix[-1].isdigit():
+                        data_type += self.suffix[-1]
+                    else:
+                        data_type = make_asm_type(data_type)
                 self.node = set_reg_value(self.node, reg_val, to_now, [], data_type, reg_type=register_type)
                 if to_now == self.end_to_registers:
                     break
