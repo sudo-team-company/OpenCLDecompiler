@@ -76,13 +76,14 @@ class FlatLoad(BaseInstruction):
             reg_val = variable
             while True:
                 if is_vector_type(data_type):
-                    reg_val = variable + "___s" + str(vector_position)
-                    vector_position += 1
                     data_type = data_type[:-1]
                     if self.suffix[-1].isdigit():
+                        reg_val = variable + "___s" + str(vector_position)
                         data_type += self.suffix[-1]
                     else:
                         data_type = make_asm_type(data_type)
+
+                    vector_position += 1
                 self.node = set_reg_value(self.node, reg_val, to_now, [], data_type, reg_type=register_type)
                 if to_now == self.end_to_registers:
                     break
@@ -105,8 +106,9 @@ class FlatLoad(BaseInstruction):
             else:
                 output = "*(" + make_opencl_type(self.decompiler_data.names_of_vars[output]) + "*)(" + output + ")"
             var_name = self.node.state.registers[self.start_to_registers].val
-            if var_name[-2] == 's' and var_name[-1].isdigit():
-                var_name = var_name[:-5]
+            if is_vector_type(data_type):
+                if var_name[-2] == 's' and var_name[-1].isdigit():
+                    var_name = var_name[:-5]
                 var_type = self.node.state.registers[self.start_to_registers].data_type
                 if data_type != var_type:
                     output = get_output_for_different_vector_types(output, var_type, data_type)

@@ -5,8 +5,11 @@ from src.register import check_and_split_regs, is_vgpr, is_vector_type, get_next
 
 
 def get_vector_name(vector_element):
-    separator = vector_element.find("__")
-    vector_name = vector_element[:separator]
+    if vector_element.find("__") != -1:
+        separator = vector_element.find("__")
+        vector_name = vector_element[:separator]
+    else:
+        vector_name = vector_element
     return vector_name
 
 
