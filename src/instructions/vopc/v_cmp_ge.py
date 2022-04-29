@@ -1,4 +1,5 @@
 from src.base_instruction import BaseInstruction
+from src.decompiler_data import compare_values
 
 
 class VCmpGe(BaseInstruction):
@@ -14,3 +15,8 @@ class VCmpGe(BaseInstruction):
                                        " >= (uint)" + self.src1 + " // v_cmp_ge_u32\n")
             return self.node
         return super().to_print_unresolved()
+
+    def to_fill_node(self):
+        if self.suffix == 'u32':
+            return compare_values(self.node, self.sdst, self.src0, self.src1, '(uint)', '(uint)', " >= ", self.suffix)
+        return super().to_fill_node()

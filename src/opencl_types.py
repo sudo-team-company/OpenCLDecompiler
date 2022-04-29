@@ -17,6 +17,7 @@ asm_to_opencl_dict = {
     "uint4": "uint4",
     "int8": "int8",
     "uint8": "uint8",
+    "float4": "float4",
     "b32": "uint",
     "b64": "ulong",
     "dword": "int",
@@ -52,7 +53,9 @@ opencl_to_asm_dict = {
     "int8": "int8",
     "__global int8": "int8",
     "uint8": "uint8",
-    "__global uint8": "uint8"
+    "__global uint8": "uint8",
+    "float4": "float4",
+    "__global float4": "float4"
 }
 
 

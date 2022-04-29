@@ -29,8 +29,8 @@ class TestGlobalData:
     def test_cvt_f64_i32(self):
         template('global_data_usage', 'cvt_f64_i32')
 
-    def test_cvt_f64_i64(self):
-        template('global_data_usage', 'cvt_f64_i64')
+    # def test_cvt_f64_i64(self):
+    #     template('global_data_usage', 'cvt_f64_i64')
 
     def test_int4(self):
         template('global_data_usage', 'int4')

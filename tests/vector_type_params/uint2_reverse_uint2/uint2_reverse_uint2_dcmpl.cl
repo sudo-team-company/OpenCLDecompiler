@@ -3,5 +3,5 @@ void uint2_reverse_uint2(__global uint2 *edges1, __global uint2 *edges2)
 {
     uint2 var0;
     var0 = edges2[get_global_id(0)];
-    edges1[get_global_id(0)] = (uint2)(var0.s1, var0.s0);
+    edges1[get_global_id(0)] = var0.s10;
 }

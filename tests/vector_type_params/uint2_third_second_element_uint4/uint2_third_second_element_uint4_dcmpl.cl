@@ -3,5 +3,5 @@ void uint2_third_second_element_uint4(__global uint2 *edges1, __global uint4 *ed
 {
     uint2 var0;
     var0 = edges2[get_global_id(0)].s12;
-    edges1[get_global_id(0)] = (uint2)(var0.s1, var0.s0);
+    edges1[get_global_id(0)] = var0.s10;
 }
