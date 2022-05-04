@@ -1,7 +1,7 @@
 from src.decompiler_data import DecompilerData, make_elem_from_addr
 from src.integrity import Integrity
 from src.opencl_types import make_asm_type
-from src.register import Register, check_and_split_regs, get_next_reg
+from src.register import Register, check_and_split_regs, get_next_reg, check_and_split_regs_range_to_full_list
 from src.register_type import RegisterType
 
 usesetup_dict = {
@@ -31,7 +31,7 @@ def upload_usesetup(state, to_registers, offset):
 
 def upload_kernel_param(state, offset, kernel_params, to_registers):
     decompiler_data = DecompilerData()
-    to_registers = check_and_split_regs(to_registers)
+    to_registers = check_and_split_regs_range_to_full_list(to_registers)
     for (reg, val) in kernel_params[offset]:
         if reg not in to_registers:
             continue

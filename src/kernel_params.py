@@ -94,6 +94,5 @@ def process_kernel_params(set_of_instructions):
             if offsets_of_kernel_params.get(list_instruction[3]) is None:
                 offsets_of_kernel_params[list_instruction[3]] = []
             offsets_of_kernel_params[list_instruction[3]] += [list_instruction]
-    print(offsets_of_kernel_params)
     offset_num = get_offsets_to_regs()
     get_kernel_params(offsets_of_kernel_params, offset_num)

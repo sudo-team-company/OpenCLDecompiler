@@ -93,5 +93,12 @@ def check_and_split_regs(reg: str) -> (str, str):
     return split_range(reg) if is_range(reg) else (reg, reg)
 
 
+def check_and_split_regs_range_to_full_list(reg: str) -> [str]:
+    if not is_range(reg):
+        return [reg]
+    start, end = reg.split(':')
+    return [reg[0] + str(i) for i in range(int(start[2:]), int(end[:-1]) + 1)]
+
+
 def get_next_reg(reg: str) -> str:
     return reg[0] + str(int(reg[1:]) + 1)

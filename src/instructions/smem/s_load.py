@@ -31,7 +31,8 @@ class SLoad(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in ['dword', 'dwordx2', 'dwordx4', 'dwordx8']:
-            self.offset = hex(int(self.offset, 16) + int(self.node.state.registers[self.from_registers].val))
+            if self.node.state.registers[self.from_registers].val.isdigit():
+                self.offset = hex(int(self.offset, 16) + int(self.node.state.registers[self.from_registers].val))
             if self.node.state.registers[self.from_registers] is not None \
                     and self.node.state.registers[self.from_registers].type \
                     in (RegisterType.GLOBAL_DATA_POINTER, RegisterType.ARGUMENTS_POINTER):
