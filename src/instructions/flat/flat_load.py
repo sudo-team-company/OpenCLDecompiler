@@ -100,7 +100,7 @@ class FlatLoad(BaseInstruction):
                 data_type = self.node.parent[0].state.registers[self.from_registers].data_type
             else:
                 output = self.node.state.registers[self.from_registers].val
-                data_type = self.node.parent[0].state.registers[self.from_registers].data_type
+                data_type = self.node.state.registers[self.from_registers].data_type
             if " + " in output:
                 output = make_elem_from_addr(output)
             else:

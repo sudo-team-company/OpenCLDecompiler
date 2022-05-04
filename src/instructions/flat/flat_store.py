@@ -1,7 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier
 from src.opencl_types import make_opencl_type
-from src.register import check_and_split_regs, is_vgpr, is_vector_type, get_next_reg
+from src.register import check_and_split_regs, is_vgpr, is_vector_type, check_and_split_regs_range_to_full_list
 
 
 def get_vector_name(vector_element):
@@ -38,12 +38,8 @@ def is_right_order(src_registers):
     return True
 
 
-def prepare_vector_type_output(from_registers, from_registers_1, to_registers, node):
-    curr_reg = from_registers
-    new_vector = [node.state.registers[curr_reg].val]
-    while curr_reg != from_registers_1:
-        curr_reg = get_next_reg(curr_reg)
-        new_vector.append(node.state.registers[curr_reg].val)
+def prepare_vector_type_output(from_registers, vdata, to_registers, node):
+    new_vector = [node.state.registers[reg].val for reg in check_and_split_regs_range_to_full_list(vdata)]
     to_type = node.state.registers[to_registers].data_type
     from_type = node.state.registers[from_registers].data_type
     if is_same_name(new_vector) \
@@ -92,10 +88,10 @@ class FlatStore(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in ["dword", "dwordx2", "dwordx4", "byte"]:
-            repeater = 1
+            suffix_size = 1
             if self.suffix[-1].isdigit():
-                repeater = int(self.suffix[-1])
-            for _ in range(repeater):
+                suffix_size = int(self.suffix[-1])
+            for self.from_registers in check_and_split_regs_range_to_full_list(self.vdata)[:suffix_size]:
                 if is_vgpr(self.vaddr):
                     self.node.state.registers[self.to_registers].version = \
                         self.node.parent[0].state.registers[self.to_registers].version
@@ -125,7 +121,6 @@ class FlatStore(BaseInstruction):
                                 # init var - i32, gdata - i64. var = gdata -> var - i64
                                 self.decompiler_data.names_of_vars[val] = \
                                     self.node.state.registers[self.from_registers].data_type
-                self.from_registers = get_next_reg(self.from_registers)
             return self.node
         return super().to_fill_node()
 
@@ -145,7 +140,7 @@ class FlatStore(BaseInstruction):
                     self.output_string = self.node.state.registers[self.from_registers_1].val
                 else:
                     if is_vector_type(self.node.state.registers[self.to_registers].data_type):
-                        self.output_string = prepare_vector_type_output(self.from_registers, self.from_registers_1,
+                        self.output_string = prepare_vector_type_output(self.from_registers, self.vdata,
                                                                         self.to_registers, self.node)
                     else:
                         self.output_string = self.node.state.registers[self.from_registers].val
