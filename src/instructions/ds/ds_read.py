@@ -1,5 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
+from src.register_type import RegisterType
 
 
 class DsRead(BaseInstruction):
@@ -24,7 +25,10 @@ class DsRead(BaseInstruction):
         if self.suffix == "b32":
             new_value = make_op(self.node, self.addr, "4", " / ")
             name = self.decompiler_data.lds_vars[self.offset][0] + "[" + new_value + "]"
-            reg_type = self.node.state.registers[name].type
+            if self.node.state.registers.get(name):
+                reg_type = self.node.state.registers[name].type
+            else:
+                reg_type = RegisterType.UNKNOWN
             return set_reg_value(self.node, name, self.vdst, [], "u" + self.suffix[1:], reg_type=reg_type)
         if self.suffix == "b64":
             name = self.decompiler_data.lds_vars[self.offset][0] + "[" + self.node.state.registers[self.addr].var + "]"
