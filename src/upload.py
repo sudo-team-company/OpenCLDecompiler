@@ -36,8 +36,8 @@ def upload_kernel_param(state, offset, kernel_params, to_registers):
         if reg not in to_registers:
             continue
         value_for_type = val
-        if value_for_type.find(".") != -1:
-            value_for_type = value_for_type[:value_for_type.find(".")]
+        if value_for_type.find("___") != -1:
+            value_for_type = value_for_type[:value_for_type.find("___")]
         data_type = make_asm_type(decompiler_data.type_params[value_for_type])
         if val[0] == "*":
             type_param = RegisterType.ADDRESS_KERNEL_ARGUMENT

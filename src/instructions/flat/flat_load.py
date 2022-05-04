@@ -1,8 +1,34 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier, set_reg_value
-from src.opencl_types import make_opencl_type
+from src.opencl_types import make_opencl_type, evaluate_size, make_asm_type
 from src.register import check_and_split_regs, get_next_reg, is_vector_type
 from src.register_type import RegisterType
+
+
+def get_output_for_different_vector_types(output, var_type, data_type):
+    if output.find(" + ") != -1:
+        open_square_bracket_position = output.find("[")
+        close_square_bracket_position = output.find("]")
+        element_number = output[open_square_bracket_position + 1:close_square_bracket_position]
+        second_term_separator = element_number.find(" + ")
+        size_type_part = element_number[second_term_separator + 3:]
+        dividend_separator = size_type_part.find("/")
+        size_elements = size_type_part[:dividend_separator]
+        one_element_size, _ = evaluate_size(make_asm_type(data_type[:-1]), True)
+        curr_element = int(int(size_elements) / one_element_size)
+        output = output[:output.find(" + ")] + "]"
+    else:
+        curr_element = 0
+    output += "___s"
+    new_size = curr_element
+    if make_opencl_type(var_type)[-1].isdigit():
+        new_size += int(var_type[-1])
+    else:
+        new_size = 1
+    while curr_element < new_size:
+        output += str(curr_element)
+        curr_element += 1
+    return output
 
 
 class FlatLoad(BaseInstruction):
@@ -50,13 +76,18 @@ class FlatLoad(BaseInstruction):
             reg_val = variable
             while True:
                 if is_vector_type(data_type):
-                    reg_val = variable + "___s" + str(vector_position)
+                    data_type = data_type[:-1]
+                    if self.suffix[-1].isdigit():
+                        reg_val = variable + "___s" + str(vector_position)
+                        data_type += self.suffix[-1]
+                    else:
+                        data_type = make_asm_type(data_type)
+
                     vector_position += 1
                 self.node = set_reg_value(self.node, reg_val, to_now, [], data_type, reg_type=register_type)
                 if to_now == self.end_to_registers:
                     break
                 to_now = get_next_reg(to_now)
-
             self.decompiler_data.make_var(self.node.state.registers[self.start_to_registers].version,
                                           self.node.state.registers[self.start_to_registers].val, data_type)
             return self.node
@@ -66,15 +97,21 @@ class FlatLoad(BaseInstruction):
         if self.suffix in ["dword", "dwordx2", "dwordx4"]:
             if self.start_to_registers == self.from_registers:
                 output = self.node.parent[0].state.registers[self.from_registers].val
+                data_type = self.node.parent[0].state.registers[self.from_registers].data_type
             else:
                 output = self.node.state.registers[self.from_registers].val
+                data_type = self.node.state.registers[self.from_registers].data_type
             if " + " in output:
                 output = make_elem_from_addr(output)
             else:
                 output = "*(" + make_opencl_type(self.decompiler_data.names_of_vars[output]) + "*)(" + output + ")"
             var_name = self.node.state.registers[self.start_to_registers].val
-            if var_name[-2] == 's' and var_name[-1].isdigit():
-                var_name = var_name[:-5]
+            if is_vector_type(data_type):
+                if var_name[-2] == 's' and var_name[-1].isdigit():
+                    var_name = var_name[:-5]
+                var_type = self.node.state.registers[self.start_to_registers].data_type
+                if data_type != var_type:
+                    output = get_output_for_different_vector_types(output, var_type, data_type)
             self.output_string = var_name + " = " + output
             return self.output_string
         return super().to_print()

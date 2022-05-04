@@ -830,8 +830,8 @@ __kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void subtract_long_get_global_offset_get_global_offset(int x, __global long *data)
 {
     data[get_global_id(0)] = (ulong)0 - (ulong)0;
-    data[get_global_id(1)] = (long)(ulong)0 - (ulong)0;
-    data[get_global_id(2)] = (long)(ulong)0 - (ulong)0;
+    data[get_global_id(1)] = (ulong)0 - (ulong)0;
+    data[get_global_id(2)] = (ulong)0 - (ulong)0;
 }
 
 __kernel __attribute__((reqd_work_group_size(8, 4, 2)))

@@ -27,9 +27,9 @@ def get_offsets_to_regs():
         num_of_param = str(num_of_param)
         name_of_param = decompiler_data.params["param" + num_of_param]
         type_of_param = decompiler_data.type_params.get(name_of_param)
-        if type_of_param[-1] == '8':
-            for i in range(8):
-                data_of_param.append([num_of_param, name_of_param + '.s' + str(i), type_of_param])
+        if type_of_param[-1].isdigit() and name_of_param[0] != '*':
+            for i in range(int(type_of_param[-1])):
+                data_of_param.append([num_of_param, name_of_param + '___s' + str(i), type_of_param])
         else:
             data_of_param.append([num_of_param, name_of_param, type_of_param])
     visited = False

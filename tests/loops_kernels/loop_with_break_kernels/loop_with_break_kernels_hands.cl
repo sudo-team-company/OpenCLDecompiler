@@ -20,8 +20,8 @@ void loop_break_kernel(__global uint *data, uint x, uint y, uint unrollingBreake
                 break;
             }
             var7 = (var7) * x;
-            var8 = var8 + (4 / 4);
-            var9 = var9 + (0 / 4);
+            var8 = var8 + 4 / 4;
+            var9 = var9 + 0 / 4;
             var10 = (ulong)var10 + (ulong)1;
         } while (!(((ulong)var10 + (ulong)1) >= unrollingBreaker));
     }
