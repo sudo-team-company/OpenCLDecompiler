@@ -14,13 +14,12 @@ class VSubrev(BaseInstruction):
         if self.suffix == 'u32':
             temp = "temp" + str(self.decompiler_data.number_of_temp)
             mask = "mask" + str(self.decompiler_data.number_of_mask)
-            self.decompiler_data.write("ulong " + temp + " = (ulong)" + self.src1
-                                       + " - (ulong)" + self.src0 + " // v_subrev_u32\n")
-            self.decompiler_data.write(self.vdst + " = CLAMP ? (" + temp + ">>32 ? 0 : " + temp + ") : " + temp + "\n")
-            self.decompiler_data.write(self.vcc + " = 0\n")  # vop2, sdst
-            self.decompiler_data.write("ulong " + mask + " = (1ULL<<LANEID)\n")
-            self.decompiler_data.write(self.vcc + " = (" + self.vcc + "&~" + mask + ") | (("
-                                       + temp + ">>32) ? " + mask + " : 0)\n")
+            self.decompiler_data.write(
+                f"ulong {temp} = (ulong){self.src1} - (ulong){self.src0} // {self.instruction[0]}\n")
+            self.decompiler_data.write(f"{self.vdst} = CLAMP ? ({temp}>>32 ? 0 : {temp}) : {temp}\n")
+            self.decompiler_data.write(f"{self.vcc} = 0\n")  # vop2, sdst
+            self.decompiler_data.write(f"ulong {mask} = (1ULL<<LANEID)\n")
+            self.decompiler_data.write(f"{self.vcc} = ({self.vcc}&~{mask}) | (({temp}>>32) ? {mask} : 0)\n")
             self.decompiler_data.number_of_temp += 1
             self.decompiler_data.number_of_mask += 1
             return self.node

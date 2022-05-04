@@ -29,19 +29,18 @@ class VSub(BaseInstruction):
         if self.suffix == 'u32':
             temp = "temp" + str(self.decompiler_data.number_of_temp)
             mask = "mask" + str(self.decompiler_data.number_of_mask)
-            self.decompiler_data.write("ulong " + temp + " = (ulong)" + self.src0 +
-                                       " - (ulong)" + self.src1 + " // v_sub_u32\n")
-            self.decompiler_data.write(self.vdst + " = CLAMP ? (" + temp + ">>32 ? 0 : " + temp + ") : " + temp + "\n")
-            self.decompiler_data.write(self.vcc + " = 0\n")  # vop2, sdst
-            self.decompiler_data.write("ulong " + mask + " = (1ULL<<LANEID)\n")
-            self.decompiler_data.write(self.vcc + " = (" + self.vcc + "&~" + mask + ") | (("
-                                  + temp + ">>32) ? " + mask + " : 0)\n")
+            self.decompiler_data.write(
+                f"ulong {temp} = (ulong){self.src0} - (ulong){self.src1} // {self.instruction[0]}\n")
+            self.decompiler_data.write(f"{self.vdst} = CLAMP ? ({temp}>>32 ? 0 : {temp}) : {temp}\n")
+            self.decompiler_data.write(f"{self.vcc} = 0\n")  # vop2, sdst
+            self.decompiler_data.write(f"ulong {mask} = (1ULL<<LANEID)\n")
+            self.decompiler_data.write(f"{self.vcc} = ({self.vcc}&~{mask}) | (({temp}>>32) ? {mask} : 0)\n")
             self.decompiler_data.number_of_temp += 1
             self.decompiler_data.number_of_mask += 1
             return self.node
         if self.suffix == 'f32':
-            self.decompiler_data.write(self.vdst + " = as_float(" + self.src0 +
-                                       ") - as_float(" + self.src1 + ") // v_sub_f32\n")
+            self.decompiler_data.write(
+                f"{self.vdst} = as_float({self.src0}) - as_float({self.src1}) // {self.instruction[0]}\n")
             return self.node
         return super().to_print_unresolved()
 

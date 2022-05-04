@@ -36,7 +36,12 @@ class SAdd(BaseInstruction):
             ssrc0_reg = is_sgpr(self.ssrc0)
             ssrc1_reg = is_sgpr(self.ssrc1)
             data_type = self.suffix
-            if ssrc0_reg and ssrc1_reg:
+            if self.ssrc1.isdigit() and ssrc0_reg and \
+                    self.node.state.registers[self.ssrc0].type == RegisterType.ARGUMENTS_POINTER:
+                assert self.node.state.registers[self.ssrc0].val.isdigit()
+                new_value = f"{int(self.node.state.registers[self.ssrc0].val) + int(self.ssrc1)}"
+                reg_type = RegisterType.ARGUMENTS_POINTER
+            elif ssrc0_reg and ssrc1_reg:
                 ssrc0_type = self.node.state.registers[self.ssrc0].type
                 ssrc1_type = self.node.state.registers[self.ssrc1].type
                 src_types = frozenset({ssrc0_type, ssrc1_type})

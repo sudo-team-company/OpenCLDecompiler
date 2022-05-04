@@ -8,15 +8,17 @@ class TestLinearKernels:
     def test_addition(self, mcpu):
         template('linear_kernels', 'addition', mcpu=mcpu)
 
-    def test_subtraction(self):
-        template('linear_kernels', 'subtraction')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_subtraction(self, mcpu):
+        template('linear_kernels', 'subtraction', mcpu=mcpu)
 
     @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
     def test_multiplication(self, mcpu):
         template('linear_kernels', 'multiplication', mcpu=mcpu)
 
-    def test_many_linears(self):
-        template('linear_kernels', 'many_linears')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_many_linears(self, mcpu):
+        template('linear_kernels', 'many_linears', mcpu=mcpu)
 
     @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
     def test_copy_x(self, mcpu):

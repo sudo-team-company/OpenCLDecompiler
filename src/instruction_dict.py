@@ -34,6 +34,7 @@ from src.instructions.sopc.s_cmp_ge import SCmpGe
 from src.instructions.sopc.s_cmp_gt import SCmpGt
 from src.instructions.sopc.s_cmp_lt import SCmpLt
 from src.instructions.sopc.s_set_gpr_idx_on import SSetGprIdxOn
+from src.instructions.sopk.s_addk import SAddK
 from src.instructions.sopk.s_cmpk_lg import SCmpkLg
 from src.instructions.sopk.s_movk import SMovk
 from src.instructions.sopk.s_mulk import SMulk
@@ -65,6 +66,7 @@ from src.instructions.vop2.v_min import VMin
 from src.instructions.vop2.v_mul_f32 import VMulF32
 from src.instructions.vop2.v_or import VOr
 from src.instructions.vop2.v_sub import VSub
+from src.instructions.vop2.v_sub_nc import VSubNc
 from src.instructions.vop2.v_subrev import VSubrev
 from src.instructions.vop2.v_xor import VXor
 from src.instructions.vop3.v_add3 import VAdd3
@@ -190,4 +192,10 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_add_lshl': VAddLshl,
                     'v_mul_u32_u24': VMulF32,
                     's_mul_hi': VMulLo,
+                    'v_subrev_nc': VSubNc,
+                    'v_sub_nc': VSubNc,
+                    'v_subrev_co_ci': VSubrev,
+                    'v_sub_co': VSub,
+                    'v_sub_co_ci': VSub,
+                    's_addk': SAddK,
                     }

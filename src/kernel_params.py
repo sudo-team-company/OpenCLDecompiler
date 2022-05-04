@@ -52,31 +52,34 @@ def get_offsets_to_regs():
 def get_kernel_params(offsets_of_kernel_params, offset_num):
     decompiler_data = DecompilerData()
     for key in sorted(offsets_of_kernel_params.keys()):
-        instr = offsets_of_kernel_params[key][0]
-        registers = offsets_of_kernel_params[key][1]
-        if instr[-1] == 'd':
-            num_output_regs = 1
-            first_num_of_reg = int(registers[1:])
-        else:
-            num_output_regs = int(instr[-1])
-            first_num_of_reg = int(registers[2:registers.find(':')])
-        curr_reg = 0
-        name_of_reg = registers[0]
-        offset_num_keys = sorted(offset_num.keys())
-        if key in decompiler_data.config_data.setup_params_offsets:
-            continue
-        curr_num_offset = offset_num_keys.index(key)
-        while curr_reg < num_output_regs:
-            curr_offset = offset_num_keys[curr_num_offset]
-            name_of_param = offset_num[curr_offset]
-            decompiler_data.add_to_kernel_params(key, (name_of_reg + str(first_num_of_reg + curr_reg), name_of_param))
-            curr_reg += 1
-            if name_of_param[0] == "*" or (decompiler_data.type_params.get(name_of_param)
-                                           and 'long' in decompiler_data.type_params.get(name_of_param)):
+        for list_instruction in offsets_of_kernel_params[key]:
+            instr = list_instruction[0]
+            registers = list_instruction[1]
+            if instr[-1] == 'd':
+                num_output_regs = 1
+                first_num_of_reg = int(registers[1:])
+            else:
+                num_output_regs = int(instr[-1])
+                first_num_of_reg = int(registers[2:registers.find(':')])
+            curr_reg = 0
+            name_of_reg = registers[0]
+            offset_num_keys = sorted(offset_num.keys())
+            if key in decompiler_data.config_data.setup_params_offsets:
+                continue
+            curr_num_offset = offset_num_keys.index(key)
+            while curr_reg < num_output_regs:
+                curr_offset = offset_num_keys[curr_num_offset]
+                name_of_param = offset_num[curr_offset]
                 decompiler_data.add_to_kernel_params(key,
                                                      (name_of_reg + str(first_num_of_reg + curr_reg), name_of_param))
                 curr_reg += 1
-            curr_num_offset += 1
+                if name_of_param[0] == "*" or (decompiler_data.type_params.get(name_of_param)
+                                               and 'long' in decompiler_data.type_params.get(name_of_param)):
+                    decompiler_data.add_to_kernel_params(key,
+                                                         (
+                                                         name_of_reg + str(first_num_of_reg + curr_reg), name_of_param))
+                    curr_reg += 1
+                curr_num_offset += 1
 
 
 def process_kernel_params(set_of_instructions):
@@ -88,6 +91,8 @@ def process_kernel_params(set_of_instructions):
         if "s_load_dword" in list_instruction[0] and \
                 list_instruction[2] == param_ptr and \
                 list_instruction[3] not in decompiler_data.config_data.setup_params_offsets:
-            offsets_of_kernel_params[list_instruction[3]] = list_instruction
+            if offsets_of_kernel_params.get(list_instruction[3]) is None:
+                offsets_of_kernel_params[list_instruction[3]] = []
+            offsets_of_kernel_params[list_instruction[3]] += [list_instruction]
     offset_num = get_offsets_to_regs()
     get_kernel_params(offsets_of_kernel_params, offset_num)
