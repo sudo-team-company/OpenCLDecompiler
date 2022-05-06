@@ -1,6 +1,6 @@
 from src.integrity import Integrity
 from src.register import Register
-from src.type_of_reg import Type
+from src.register_type import RegisterType
 
 
 class State:
@@ -60,15 +60,15 @@ class State:
     def init_work_group(self, dim, g_id_dim, version_g_id, version_v):
         v_dim = "v" + str(dim)
         if dim == 0:
-            type_g = Type.work_group_id_x
-            type_v = Type.work_item_id_x
+            type_g = RegisterType.WORK_GROUP_ID_X
+            type_v = RegisterType.WORK_ITEM_ID_X
         elif dim == 1:
-            type_g = Type.work_group_id_y
-            type_v = Type.work_item_id_y
+            type_g = RegisterType.WORK_GROUP_ID_Y
+            type_v = RegisterType.WORK_ITEM_ID_Y
         else:
-            type_g = Type.work_group_id_z
-            type_v = Type.work_item_id_z
-        self.registers[g_id_dim] = Register("get_group_id(" + str(dim) + ")", type_g, Integrity.entire)
+            type_g = RegisterType.WORK_GROUP_ID_Z
+            type_v = RegisterType.WORK_ITEM_ID_Z
+        self.registers[g_id_dim] = Register("get_group_id(" + str(dim) + ")", type_g, Integrity.ENTIRE)
         self.registers[g_id_dim].add_version(g_id_dim, version_g_id)
-        self.registers[v_dim] = Register("get_local_id(" + str(dim) + ")", type_v, Integrity.entire)
+        self.registers[v_dim] = Register("get_local_id(" + str(dim) + ")", type_v, Integrity.ENTIRE)
         self.registers[v_dim].add_version(v_dim, version_v)

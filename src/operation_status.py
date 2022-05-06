@@ -2,6 +2,6 @@ from enum import Enum, auto
 
 
 class OperationStatus(Enum):
-    to_print = auto()
-    to_fill_node = auto()
-    to_print_unresolved = auto()
+    TO_PRINT = auto()
+    TO_FILL_NODE = auto()
+    TO_PRINT_UNRESOLVED = auto()

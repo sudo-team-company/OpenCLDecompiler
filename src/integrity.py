@@ -2,6 +2,6 @@ from enum import Enum, auto
 
 
 class Integrity(Enum):
-    entire = auto()
-    low_part = auto()
-    high_part = auto()
+    ENTIRE = auto()
+    LOW_PART = auto()
+    HIGH_PART = auto()

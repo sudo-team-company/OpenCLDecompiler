@@ -370,7 +370,7 @@ ignore-docstrings=yes
 ignore-imports=no
 
 # Minimum lines number of a similarity.
-min-similarity-lines=4
+min-similarity-lines=15
 
 
 [SPELLING]
@@ -515,16 +515,16 @@ valid-metaclass-classmethod-first-arg=cls
 [DESIGN]
 
 # Maximum number of arguments for function / method.
-max-args=7
+max-args=8
 
 # Maximum number of attributes for a class (see R0902).
-max-attributes=54
+max-attributes=56
 
 # Maximum number of boolean expressions in an if statement (see R0916).
 max-bool-expr=6
 
 # Maximum number of branch for function / method body.
-max-branches=16
+max-branches=37
 
 # Maximum number of locals for function / method body.
 max-locals=20
@@ -536,10 +536,10 @@ max-parents=7
 max-public-methods=24
 
 # Maximum number of return / yield for function / method body.
-max-returns=6
+max-returns=9
 
 # Maximum number of statements in function / method body.
-max-statements=60
+max-statements=97
 
 # Minimum number of public methods for a class (see R0903).
 min-public-methods=1

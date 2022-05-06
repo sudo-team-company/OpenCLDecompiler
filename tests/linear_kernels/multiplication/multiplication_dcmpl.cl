@@ -1077,7 +1077,7 @@ void mul_long_get_local_size_get_local_size(int x, __global ulong *data)
 __kernel __attribute__((reqd_work_group_size(2, 2, 4)))
 void mul_long_get_global_id_get_local_size(int x, __global ulong *data)
 {
-    data[get_global_id(0) - get_global_offset(0)] = (((ulong)(get_global_id(0) - get_global_offset(0)) + (ulong)get_global_offset(0)) * 2) * 2;
+    data[get_global_id(0) - get_global_offset(0)] = ((ulong)(get_global_id(0) - get_global_offset(0)) + (ulong)get_global_offset(0)) * 2;
     data[get_global_id(1)] = get_global_id(1) * 2;
     data[get_global_id(2)] = get_global_id(2) * 4;
 }

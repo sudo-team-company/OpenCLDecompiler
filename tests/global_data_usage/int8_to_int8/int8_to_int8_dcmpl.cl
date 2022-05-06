@@ -5,8 +5,3 @@ void int_test(__global int8 *out, int i)
 {
     uint var0;
     int8 var2;
-    var0 = (ulong)(gdata0[get_global_id(0)]) + (ulong)16;
-    var2 = gdata0[get_global_id(0)];
-    (ulong)(out[get_global_id(0)]) + (ulong)16 = var0;
-    out[get_global_id(0)] = var2;
-}

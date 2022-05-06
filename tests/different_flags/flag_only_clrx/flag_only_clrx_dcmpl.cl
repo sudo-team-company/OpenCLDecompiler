@@ -4,7 +4,7 @@ s1 = *(uint*)(smem + (0x40 & ~3)) // s_load_dword
 s_waitcnt       lgkmcnt(0)
 s0 = s0 & 0xffff // s_and_b32
 scc = s0 != 0
-v_cmp_gt_u32    vcc, s1, v0
+vcc = (uint)s1 > (uint)v0 // v_cmp_gt_u32
 s[2:3] = exec // s_and_saveexec_b64
 exec = vcc & exec
 scc = exec != 0
@@ -54,7 +54,7 @@ uint temp4 = (ulong)v5 + (ulong)v2 + cc1
 vcc = 0
 v2 = CLAMP ? min(temp4, 0xffffffff) : temp4
 vcc = (vcc&~mask4) | ((temp4 >> 32) ? mask4 : 0)
-v_cmp_gt_u32    vcc, s1, v3
+vcc = (uint)s1 > (uint)v3 // v_cmp_gt_u32
 exec = exec & vcc // s_and_b64
 scc = exec != 0
 s_cbranch_execnz .L96_0
