@@ -1,1 +1,0 @@
-clrxdisasm.exe %1 -dCfs > %2

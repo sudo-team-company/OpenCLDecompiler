@@ -1,7 +1,7 @@
-from enum import Enum, auto
+from enum import Enum
 
 
 class FlagType(Enum):
-    auto_decompilation = auto()
-    only_opencl = auto()
-    only_clrx = auto()
+    AUTO_DECOMPILATION = "AUTO_DECOMPILATION"
+    ONLY_OPENCL = "ONLY_OPENCL"
+    ONLY_CLRX = "ONLY_CLRX"

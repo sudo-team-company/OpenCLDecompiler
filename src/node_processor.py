@@ -15,7 +15,7 @@ def check_realisation_for_node(curr_node, row):
 
 def process_label_node(node, flag_of_status):
     decompiler_data = DecompilerData()
-    if flag_of_status == OperationStatus.to_fill_node:
+    if flag_of_status == OperationStatus.TO_FILL_NODE:
         decompiler_data.set_to_node(node.instruction[0][:-1], node)
         if decompiler_data.from_node.get(node.instruction[0][:-1]) is not None:
             for wait_node in decompiler_data.from_node[node.instruction[0][:-1]]:
@@ -28,7 +28,7 @@ def process_label_node(node, flag_of_status):
                     node.state = copy.deepcopy(node.parent[-1].state)
 
         return node
-    if flag_of_status == OperationStatus.to_print_unresolved:
+    if flag_of_status == OperationStatus.TO_PRINT_UNRESOLVED:
         decompiler_data.write(node.instruction[0])
         return node
     return ""
@@ -50,7 +50,6 @@ def decode_instruction(node, flag_of_status):
                         "byte", "ubyte", "ubyte0", "ubyte1", "ubyte2", "ubyte3", "sbyte",
                         "ushort", "sshort",
                         "dword", "dwordx2", "dwordx4", "dwordx8", "dwordx16"]:
-                # TODO: Дописать
                 if suffix != "":
                     suffix = suffix + "_" + part
                 else:
@@ -60,9 +59,9 @@ def decode_instruction(node, flag_of_status):
     prefix_root = prefix + "_" + root
     return_value = None
     if instruction_dict.get(prefix_root):
-        return_value = instruction_dict[prefix_root].execute(node, instruction, flag_of_status, suffix)
+        return_value = instruction_dict[prefix_root](node, suffix).execute(flag_of_status)
     elif instruction_dict.get(node.instruction[0]):
-        return_value = instruction_dict[node.instruction[0]].execute(node, instruction, flag_of_status, suffix)
+        return_value = instruction_dict[node.instruction[0]](node, suffix).execute(flag_of_status)
     return return_value
 
 

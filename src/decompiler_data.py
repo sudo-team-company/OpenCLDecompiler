@@ -1,14 +1,26 @@
 import binascii
-import re
 import struct
+from typing import Optional
 
 import sympy
 
 from src.flag_type import FlagType
 from src.integrity import Integrity
-from src.register import Register
+from src.register import Register, is_reg, is_range, check_and_split_regs
 from src.register_type import RegisterType
 from src.state import State
+from src.utils import ConfigData, DriverFormat
+
+
+def set_reg_value(node, new_value, to_reg, from_regs, data_type,
+                  reg_type=RegisterType.UNKNOWN, reg_entire=Integrity.ENTIRE):
+    decompiler_data = DecompilerData()
+    node.state.registers[to_reg] = Register(new_value, reg_type, reg_entire)
+    decompiler_data.make_version(node.state, to_reg)
+    if to_reg in from_regs:
+        node.state.registers[to_reg].make_prev()
+    node.state.registers[to_reg].data_type = data_type
+    return node
 
 
 def make_elem_from_addr(var):
@@ -21,31 +33,16 @@ def make_elem_from_addr(var):
 
 # TODO: Проанализировать, может ли не быть "g" (или другого модификатора)
 def make_new_type_without_modifier(node, register):
-    if "g" in node.state.registers[register].type_of_data:
-        new_from_reg_type = node.state.registers[register].type_of_data[1:]
+    if "g" in node.state.registers[register].data_type:
+        new_from_reg_type = node.state.registers[register].data_type[1:]
     else:
-        new_from_reg_type = node.state.registers[register].type_of_data
+        new_from_reg_type = node.state.registers[register].data_type
     return new_from_reg_type
 
 
 def compare_values(node, to_reg, from_reg0, from_reg1, type0, type1, operation, suffix):
-    decompiler_data = DecompilerData()
-    new_val, _, _ = make_op(node, from_reg0, from_reg1, operation, type0, type1)
-    node.state.registers[to_reg] = Register(new_val, RegisterType.unknown, Integrity.entire)
-    decompiler_data.make_version(node.state, to_reg)
-    if to_reg in [from_reg0, from_reg1]:
-        node.state.registers[to_reg].make_prev()
-    node.state.registers[to_reg].type_of_data = suffix
-    return node
-
-
-def update_register(asm_type, from_registers, to_registers, node):
-    decompiler_data = DecompilerData()
-    decompiler_data.names_of_vars[node.state.registers[from_registers].val] = asm_type
-    new_val = node.state.registers[from_registers].val
-    type_of_reg = node.state.registers[from_registers].type
-    node.state.registers[to_registers] = Register(new_val, type_of_reg, Integrity.entire)
-    node.state.registers[to_registers].type_of_data = asm_type
+    new_value = make_op(node, from_reg0, from_reg1, operation, type0, type1)
+    set_reg_value(node, new_value, to_reg, [from_reg0, from_reg1], suffix)
     return node
 
 
@@ -114,36 +111,51 @@ def optimize_names_of_vars():
             decompiler_data.var_value[key] = new_val
 
 
+# TODO: разобраться, как перейти к общему случаю
+def check_big_values(node, start_register, end_register):
+    if node.state.registers[start_register].val == '0xa2000000' \
+            and node.state.registers[end_register].val == '0x426d1a94':
+        return True, "1e12"
+    return False, 0
+
+
 def check_reg_for_val(node, register):
-    register_flag = True
-    if re.compile(r'^[vs](([0-9]+)|(\[[0-9]+:[0-9]+\]))$').match(register):
-        new_val = node.state.registers[register].val
+    if is_reg(register) or is_range(register):  # TODO: Выяснить зачем нужен range
+        if node.state.registers.get(register):
+            new_val = node.state.registers[register].val
+        else:
+            if is_range(register):
+                start_register, end_register = check_and_split_regs(register)
+                flag_big_value, value = check_big_values(node, start_register, end_register)
+                if flag_big_value:
+                    new_val = value
+                else:
+                    new_val = node.state.registers[start_register].val
+            else:
+                raise NotImplementedError
     else:
         new_val = register
-        register_flag = False
-    return new_val, register_flag
+    return new_val
 
 
-def make_op(node, register0, register1, operation, type0, type1):
-    new_val0, register0_flag = check_reg_for_val(node, register0)
-    new_val1, register1_flag = check_reg_for_val(node, register1)
-    if "-" in new_val0 or "+" in new_val0 or "*" in new_val0 or "/" in new_val0:
-        new_val0 = "(" + new_val0 + ")"
-    if "-" in new_val1 or "+" in new_val1 or "*" in new_val1 or "/" in new_val1:
-        new_val1 = "(" + new_val1 + ")"
+def change_vals_for_make_op(node, register, reg_type, operation):
     decompiler_data = DecompilerData()
-    if type0 != '':
-        decompiler_data.type_conversion[new_val0] = type0
-    if type1 != '':
-        decompiler_data.type_conversion[new_val1] = type1
-    new_val0 = type0 + new_val0
-    new_val1 = type1 + new_val1
-    if len(type0) > 0 and ')' not in type0:
-        new_val0 += ')'
-    if len(type1) > 0 and ')' not in type1:
-        new_val1 += ')'
+    new_val = check_reg_for_val(node, register)
+    if (operation != " + " or reg_type) and ("-" in new_val or "+" in new_val or "*" in new_val or "/" in new_val):
+        new_val = "(" + new_val + ")"
+    if reg_type != '':
+        decompiler_data.type_conversion[new_val] = reg_type
+    new_val = reg_type + new_val
+    if len(reg_type) > 0 and ')' not in reg_type:
+        new_val += ')'
+    return new_val
+
+
+def make_op(node, register0, register1, operation, type0='', type1=''):
+    new_val0 = change_vals_for_make_op(node, register0, type0, operation)
+    new_val1 = change_vals_for_make_op(node, register1, type1, operation)
     new_val = new_val0 + operation + new_val1
-    return new_val, register0_flag, register1_flag
+    return new_val
 
 
 def evaluate_from_hex(global_data, size, flag):
@@ -169,9 +181,10 @@ class Singleton(type):
 
 class DecompilerData(metaclass=Singleton):
     def __init__(self):
-        self.output_file = ""
-        self.usesetup = False
-        self.size_of_work_groups = []
+        self.name_of_program = None
+        self.config_data: Optional[ConfigData] = None
+        self.driver_format: DriverFormat = DriverFormat.UNKNOWN
+        self.output_file = None
         self.cfg = None
         self.improve_cfg = None
         self.number_of_temp = 0
@@ -262,7 +275,6 @@ class DecompilerData(metaclass=Singleton):
             "exec": 0
         }
         self.names_of_vars = {}
-        self.localsize = 0
         self.lds_vars = {}
         self.lds_var_number = 0
         self.num_of_var = 0
@@ -272,14 +284,12 @@ class DecompilerData(metaclass=Singleton):
         self.back_edges = []
         self.loops_variables = {}
         self.loops_nodes_for_variables = {}
-        self.configuration_output = ""
         self.flag_for_decompilation = None
         self.address_params = set()
 
-    def reset(self, output_file, flag_for_decompilation):
-        self.output_file = output_file
-        self.usesetup = False
-        self.size_of_work_groups = []
+    def reset(self, name_of_program):
+        self.name_of_program = name_of_program
+        self.config_data = None
         self.cfg = None
         self.improve_cfg = None
         self.number_of_temp = 0
@@ -370,7 +380,6 @@ class DecompilerData(metaclass=Singleton):
             "exec": 0
         }
         self.names_of_vars = {}
-        self.localsize = 0
         self.lds_vars = {}
         self.lds_var_number = 0
         self.num_of_var = 0
@@ -380,19 +389,13 @@ class DecompilerData(metaclass=Singleton):
         self.back_edges = []
         self.loops_variables = {}
         self.loops_nodes_for_variables = {}
-        self.configuration_output = ""
-        if flag_for_decompilation == "auto_decompilation":
-            self.flag_for_decompilation = FlagType.auto_decompilation
-        elif flag_for_decompilation == "only_opencl":
-            self.flag_for_decompilation = FlagType.only_opencl
-        else:
-            self.flag_for_decompilation = FlagType.only_clrx
         self.address_params = set()
 
     def write(self, output):
         # noinspection PyUnresolvedReferences
-        if self.flag_for_decompilation != FlagType.only_clrx and "Not resolved yet. " not in output:
+        if self.flag_for_decompilation != FlagType.ONLY_CLRX and "Not resolved yet. " not in output:
             output = simplify_opencl_statement(output)
+            output = output.replace("___", ".")
         self.output_file.write(output)
 
     def make_version(self, state, reg):
@@ -401,12 +404,9 @@ class DecompilerData(metaclass=Singleton):
         state.registers[reg].add_version(reg, self.versions[reg])
         self.versions[reg] += 1
 
-    def init_work_group(self, dimensions, usesetup):
-        self.usesetup = usesetup
-        if usesetup:
-            g_id = ["s8", "s9", "s10"]
-        else:
-            g_id = ["s6", "s7", "s8"]
+    def init_work_group(self):
+        dimensions = self.config_data.dimensions
+        g_id = ["s8", "s9", "s10"] if self.config_data.usesetup else ["s6", "s7", "s8"]
         if ',' in dimensions:
             dimensions = dimensions.split(',')
             max_dim = dimensions[0]
@@ -422,37 +422,39 @@ class DecompilerData(metaclass=Singleton):
             self.versions[v_dim] += 1
 
     def process_initial_state(self):
-        if self.usesetup:
-            self.initial_state.registers["s6"] = Register("s6", RegisterType.arguments_pointer, Integrity.low_part)
-            self.initial_state.registers["s6"].add_version("s6", self.versions["s6"])
-            self.versions["s6"] += 1
-            self.initial_state.registers["s7"] = Register("s7", RegisterType.arguments_pointer, Integrity.high_part)
-            self.initial_state.registers["s7"].add_version("s7", self.versions["s7"])
-            self.versions["s7"] += 1
-        else:
-            self.initial_state.registers["s4"] = Register("s4", RegisterType.arguments_pointer, Integrity.low_part)
-            self.initial_state.registers["s4"].add_version("s4", self.versions["s4"])
-            self.versions["s4"] += 1
-            self.initial_state.registers["s5"] = Register("s5", RegisterType.arguments_pointer, Integrity.high_part)
-            self.initial_state.registers["s5"].add_version("s5", self.versions["s5"])
-            self.versions["s5"] += 1
+        lp, hp = ("s6", "s7") if self.config_data.usesetup else ("s4", "s5")
+        self.initial_state.registers[lp] = Register("0", RegisterType.ARGUMENTS_POINTER, Integrity.LOW_PART)
+        self.make_version(self.initial_state, lp)
+        self.initial_state.registers[hp] = Register("0", RegisterType.ARGUMENTS_POINTER, Integrity.HIGH_PART)
+        self.make_version(self.initial_state, hp)
+        if self.config_data.usesetup:
+            self.initial_state.registers["s4"] = Register("0", RegisterType.DISPATCH_POINTER, Integrity.LOW_PART)
+            self.make_version(self.initial_state, "s4")
+            self.initial_state.registers["s5"] = Register("0", RegisterType.DISPATCH_POINTER, Integrity.HIGH_PART)
+            self.make_version(self.initial_state, "s5")
 
     def make_params(self, num_of_param, name_param, type_param):
         self.params["param" + str(num_of_param)] = name_param
         self.type_params[name_param] = type_param
 
-    def process_size_of_work_groups(self, cws, set_of_config_1):
-        if cws:
-            self.size_of_work_groups = set_of_config_1.replace(',', ' ').split()[1:]
-            self.configuration_output += "__kernel __attribute__((reqd_work_group_size(" \
-                                         + self.size_of_work_groups[0] + ", " + self.size_of_work_groups[1] \
-                                         + ", " + self.size_of_work_groups[2] + ")))\n"
-        else:
-            self.configuration_output += "__kernel "
+    def set_config_data(self, config_data: ConfigData):
+        self.config_data = config_data
+        self.init_work_group()
+        self.process_initial_state()
+        for num_of_param, (type_param, name_param) in enumerate(self.config_data.params):
+            self.make_params(num_of_param, name_param, type_param)
 
-    def process_local_size(self, localsize, set_of_config_4):
-        if localsize:
-            self.localsize = int(set_of_config_4[11:])
+    def get_function_definition(self) -> str:
+        definition: str = "__kernel "
+
+        if self.config_data.size_of_work_groups:
+            size_of_work_groups = ", ".join(map(str, self.config_data.size_of_work_groups))
+            definition += f"__attribute__((reqd_work_group_size({size_of_work_groups})))\n"
+
+        params = ", ".join([f"{ptype} {pname}" for ptype, pname in self.config_data.params])
+        definition += f"void {self.name_of_program}({params})\n"
+
+        return definition
 
     def remove_unusable_versions(self):
         keys = []
@@ -469,18 +471,18 @@ class DecompilerData(metaclass=Singleton):
         self.checked_variables[curr_node.state.registers[reg].version] = variable
         self.versions[reg] = max_version + 1
 
-    def set_name_of_vars(self, var_name, type_of_data):
-        self.names_of_vars[var_name] = type_of_data
+    def set_name_of_vars(self, var_name, data_type):
+        self.names_of_vars[var_name] = data_type
 
     def check_lds_vars(self, offset, suffix):
         if self.lds_vars.get(offset) is None:
             self.lds_vars[offset] = ["lds" + str(self.lds_var_number), "u" + suffix[1:]]
             self.lds_var_number += 1
 
-    def make_var(self, register_version, variable, type_of_data):
+    def make_var(self, register_version, variable, data_type):
         self.num_of_var += 1
         self.variables[register_version] = variable
-        self.names_of_vars[variable] = type_of_data
+        self.names_of_vars[variable] = data_type
 
     def set_starts_regions(self, node, region):
         self.starts_regions[node] = region
@@ -511,7 +513,6 @@ class DecompilerData(metaclass=Singleton):
     def make_label(self, node):
         self.label = node
         self.parents_of_label = node.parent
-        self.flag_of_else = True
 
     def change_cfg_for_else_structure(self, instruction, curr_node, from_node):
         self.from_node[instruction[1]].remove(curr_node)
@@ -522,7 +523,7 @@ class DecompilerData(metaclass=Singleton):
                 self.from_node[from_node].append(parents_of_label)
         self.flag_of_else = False
 
-    def to_fill_node(self, node, instruction):
+    def to_fill_branch_node(self, node, instruction):
         reladdr = instruction[1]
         if self.to_node.get(reladdr) is not None:
             node.add_child(self.to_node[reladdr])
