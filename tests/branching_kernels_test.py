@@ -1,12 +1,16 @@
+import pytest
+
 from .conftest import template
 
 
 class TestBranchingKernels:
-    def test_if_first(self):
-        template('branching_kernels', 'if_1')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_if_first(self, mcpu):
+        template('branching_kernels', 'if_1', mcpu=mcpu)
 
-    def test_if_second(self):
-        template('branching_kernels', 'if_2')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_if_second(self, mcpu):
+        template('branching_kernels', 'if_2', mcpu=mcpu)
 
     def test_if_and_if(self):
         template('branching_kernels', 'if_and_if')
