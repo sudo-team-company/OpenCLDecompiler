@@ -9,6 +9,7 @@ from src.kernel_params import process_kernel_params
 from src.node import Node
 from src.node_processor import check_realisation_for_node
 from src.regions.functions_for_regions import make_region_graph_from_cfg, process_region_graph
+from src.utils import DriverFormat
 from src.versions import find_max_and_prev_versions, change_values, check_for_use_new_version
 
 
@@ -90,11 +91,67 @@ def process_src_with_unresolved_instruction(set_of_instructions):
         # result_for_check = process_single_instruction(set_of_instructions, num, curr_node, last_node_state, last_node)
 
 
+def transform_rocm_branching(set_of_instructions):
+    if DecompilerData().driver_format != DriverFormat.ROCM:
+        return set_of_instructions
+
+    markers = [x for x in set_of_instructions if x.startswith("s_and_saveexec_b32 ")]
+
+    if 0 == len(markers) or 1 < len(markers):
+        return set_of_instructions
+    try:
+        s_and_saveexec_b32: str = markers[0]
+        _, reg, src = s_and_saveexec_b32.strip().replace(",", " ").split()
+
+        i_if = set_of_instructions.index(f"s_and_saveexec_b32 {reg}, {src}")  # start of "if"
+        assert set_of_instructions[i_if - 1].startswith("v_cmp")
+        i___ = set_of_instructions.index(f"s_xor_b32       {reg}, exec_lo, {reg}")
+        assert i_if + 1 == i___
+        i_same = set_of_instructions.index(f"s_or_saveexec_b32 {reg}, {reg}")  # start of same part
+        assert i___ < i_same
+        i_else = set_of_instructions.index(f"s_xor_b32       exec_lo, exec_lo, {reg}")  # start of else
+        assert i_same < i_else
+        i_end = set_of_instructions.index(f"s_or_b32        exec_lo, exec_lo, {reg}")  # finish else
+        assert i_else < i_end
+
+        label = f"BL{i_if}"
+        before_block = set_of_instructions[:i___ + 1]
+        if_block = set_of_instructions[i___ + 1:i_else + 1]
+        else_block = set_of_instructions[i_same + 1:i_else] + set_of_instructions[i_else + 1:i_end]
+        after_block = set_of_instructions[i_end:]
+
+        cmp: str = set_of_instructions[i_if - 1]
+        if cmp.startswith("v_cmp_lg_u32    vcc, "):
+            _, s0, s1 = cmp.split(", ")
+            cmp = f"s_cmp_lg_u32 {s0}, {s1}"
+            if s0.isdigit():
+                cmp = f"s_cmp_lg_u32 {s1}, {s0}"
+        else:
+            assert False
+
+        return \
+            before_block + [
+                cmp,
+                f"s_cbranch_scc0  .{label}_1"
+            ] + if_block + [
+                f"s_branch        .{label}_0",
+                f".{label}_1:"
+            ] + else_block + [
+                f".{label}_0:"
+            ] + after_block
+    except ValueError:
+        pass
+    except AssertionError:
+        pass
+    return set_of_instructions
+
+
 def process_src(name_of_program, config_data, set_of_instructions, set_of_global_data_bytes,
                 set_of_global_data_instruction):
     decompiler_data = DecompilerData()
     decompiler_data.reset(name_of_program)
     initial_set_of_instructions = copy.deepcopy(set_of_instructions)
+    set_of_instructions = transform_rocm_branching(set_of_instructions)
     process_global_data(set_of_global_data_instruction, set_of_global_data_bytes)
     decompiler_data.set_config_data(config_data)
     process_kernel_params(set_of_instructions)
