@@ -3,6 +3,7 @@ import re
 from collections import deque
 
 from src.decompiler_data import DecompilerData
+from src.register import check_and_split_regs_range_to_full_list
 from src.register_type import RegisterType
 
 
@@ -47,14 +48,12 @@ def check_for_use_new_version_in_one_instruction(curr_node, instruction):
                 and "cnd" not in curr_node.instruction[0]:
             if register[1] == "[":
                 register = register[0] + register[2: register.find(":")]
-            first_reg = curr_node.instruction[1]
-            if first_reg[1] == "[":
-                first_reg = first_reg[0] + first_reg[2: first_reg.find(":")]
+            first_reg = check_and_split_regs_range_to_full_list(curr_node.instruction[1])
             if curr_node.state.registers.get(register) is not None:
                 checked_version = curr_node.state.registers[register].version
             else:
                 continue
-            if first_reg == register:
+            if register in first_reg:
                 checked_version = curr_node.parent[0].state.registers[register].version
             if curr_node.state.registers.get(register) is not None \
                     and decompiler_data.checked_variables.get(checked_version) is not None \
