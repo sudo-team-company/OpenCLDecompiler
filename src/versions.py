@@ -1,4 +1,5 @@
 import copy
+import re
 from collections import deque
 
 from src.decompiler_data import DecompilerData
@@ -40,7 +41,7 @@ def check_for_use_new_version_in_one_instruction(curr_node, instruction):
     decompiler_data = DecompilerData()
     for num_of_reg in range(1, len(curr_node.instruction)):
         register = curr_node.instruction[num_of_reg]
-        if ("flat_store" in curr_node.instruction[0]
+        if (re.match(r"(flat|global)_store", curr_node.instruction[0])
             or num_of_reg > 1) \
                 and len(register) > 1 \
                 and "cnd" not in curr_node.instruction[0]:
@@ -112,7 +113,7 @@ def update_val_from_changes(curr_node, register, changes, check_version, num_of_
             and changes.get(check_version) \
             and curr_node.state.registers[register].data_type is not None \
             and (register != "vcc" or "and_saveexec" in instruction[0]):
-        if "flat_store" in instruction[0]:
+        if re.match(r"(flat|global)_store", instruction[0]):
             if num_of_reg == 1:
                 node_registers = curr_node.parent[0].state.registers
             else:
@@ -159,11 +160,11 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
                 curr_node.state.registers[first_reg].val = \
                     curr_node.state.registers[first_reg].val.replace(val_reg,
                                                                      decompiler_data.checked_variables[check_version])
-            elif "flat_store" in instruction[0]:
+            elif re.match(r"(flat|global)_store", instruction[0]):
                 curr_node.state.registers[register].val = \
                     curr_node.state.registers[register].val.replace(val_reg,
                                                                     decompiler_data.checked_variables[check_version])
-            elif "flat_load" in instruction[0]:
+            elif re.match(r"(flat|global)_load", instruction[0]):
                 curr_node.state.registers[register].val = \
                     curr_node.state.registers[register].val.replace(val_reg,
                                                                     decompiler_data.checked_variables[check_version])
@@ -171,7 +172,7 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
         elif curr_node.state.registers[first_reg].val.find(val_reg) != -1:
             curr_node.state.registers[first_reg].val = \
                 curr_node.state.registers[first_reg].val.replace(val_reg, decompiler_data.variables[check_version])
-        elif "flat_store" in instruction[0]:
+        elif re.match(r"(flat|global)_store", instruction[0]):
             curr_node.state.registers[register].val = \
                 curr_node.state.registers[register].val.replace(val_reg, decompiler_data.variables[check_version])
         copy_val_last = curr_node.state.registers[first_reg].val
@@ -183,7 +184,7 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
 def change_values_for_one_instruction(curr_node, changes):
     for num_of_reg in range(1, len(curr_node.instruction)):
         register = curr_node.instruction[num_of_reg]
-        if ("flat_store" in curr_node.instruction[0] or num_of_reg > 1 or "s_cmp" in curr_node.instruction[0]) \
+        if (re.match(r"(flat|global)_store", curr_node.instruction[0]) or num_of_reg > 1 or "s_cmp" in curr_node.instruction[0]) \
                 and len(register) > 1 \
                 and "cnd" not in curr_node.instruction[0]:
             if register[1] == "[" and "s_or" not in curr_node.instruction[0] \
