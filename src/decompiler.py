@@ -94,7 +94,7 @@ def process_src(name_of_program, config_data, set_of_instructions, set_of_global
                 set_of_global_data_instruction):
     decompiler_data = DecompilerData()
     decompiler_data.reset(name_of_program)
-    initial_set_of_instructions = set_of_instructions
+    initial_set_of_instructions = copy.deepcopy(set_of_instructions)
     process_global_data(set_of_global_data_instruction, set_of_global_data_bytes)
     decompiler_data.set_config_data(config_data)
     process_kernel_params(set_of_instructions)
