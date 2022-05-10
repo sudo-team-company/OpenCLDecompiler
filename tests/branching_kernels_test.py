@@ -19,8 +19,9 @@ class TestBranchingKernels:
     def test_if_else_0_labels(self, mcpu):
         template('branching_kernels', 'if_else_0_labels', mcpu=mcpu)
 
-    def test_if_else_1_labels(self):
-        template('branching_kernels', 'if_else_1_label')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_if_else_1_labels(self, mcpu):
+        template('branching_kernels', 'if_else_1_label', mcpu=mcpu)
 
     def test_if_else_2_labels(self):
         template('branching_kernels', 'if_else_2_labels')
