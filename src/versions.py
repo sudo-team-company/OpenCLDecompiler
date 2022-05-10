@@ -184,7 +184,8 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
 def change_values_for_one_instruction(curr_node, changes):
     for num_of_reg in range(1, len(curr_node.instruction)):
         register = curr_node.instruction[num_of_reg]
-        if (re.match(r"(flat|global)_store", curr_node.instruction[0]) or num_of_reg > 1 or "s_cmp" in curr_node.instruction[0]) \
+        if (re.match(r"(flat|global)_store", curr_node.instruction[0]) or
+            num_of_reg > 1 or "s_cmp" in curr_node.instruction[0]) \
                 and len(register) > 1 \
                 and "cnd" not in curr_node.instruction[0]:
             if register[1] == "[" and "s_or" not in curr_node.instruction[0] \
