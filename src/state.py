@@ -54,7 +54,7 @@ class State:
                 "pc": None,
                 "scc": None,
                 "vcc": None,
-                "exec": None
+                "exec": Register("0xffffffffffffffff", RegisterType.UNKNOWN, Integrity.ENTIRE)
             }
 
     def init_work_group(self, dim, g_id_dim, version_g_id, version_v):
