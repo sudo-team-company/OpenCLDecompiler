@@ -33,6 +33,7 @@ from src.instructions.sop2.s_xor import SXor
 from src.instructions.sopc.s_cmp_eq import SCmpEq
 from src.instructions.sopc.s_cmp_ge import SCmpGe
 from src.instructions.sopc.s_cmp_gt import SCmpGt
+from src.instructions.sopc.s_cmp_lg import SCmpLg
 from src.instructions.sopc.s_cmp_lt import SCmpLt
 from src.instructions.sopc.s_set_gpr_idx_on import SSetGprIdxOn
 from src.instructions.sopk.s_addk import SAddK
@@ -118,6 +119,7 @@ instruction_dict = {'ds_add': DsAdd,
                     's_cbranch_vccnz': SCbranchVccnz,
                     's_cbranch_vccz': SCbranchVccz,
                     's_cmp_eq': SCmpEq,
+                    's_cmp_lg': SCmpLg,
                     's_cmp_ge': SCmpGe,
                     's_cmp_gt': SCmpGt,
                     's_cmp_lt': SCmpLt,
