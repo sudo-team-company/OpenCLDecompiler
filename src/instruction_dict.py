@@ -14,6 +14,7 @@ from src.instructions.sop1.s_and_saveexec import SAndSaveexec
 from src.instructions.sop1.s_getpc import SGetpc
 from src.instructions.sop1.s_mov import SMov
 from src.instructions.sop1.s_not import SNot
+from src.instructions.sop1.s_or_saveexec import SOrSaveexec
 from src.instructions.sop1.s_setpc import SSetpc
 from src.instructions.sop1.s_swappc import SSwappc
 from src.instructions.sop2.s_add import SAdd
@@ -203,4 +204,5 @@ instruction_dict = {'ds_add': DsAdd,
                     's_addk': SAddK,
                     's_waitcnt_decptr': SWaitcnt,
                     's_xor': SXor,
+                    's_or_saveexec': SOrSaveexec,
                     }
