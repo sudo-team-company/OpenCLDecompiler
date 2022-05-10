@@ -29,6 +29,7 @@ from src.instructions.sop2.s_min import SMin
 from src.instructions.sop2.s_mul import SMul
 from src.instructions.sop2.s_or import SOr
 from src.instructions.sop2.s_sub import SSub
+from src.instructions.sop2.s_xor import SXor
 from src.instructions.sopc.s_cmp_eq import SCmpEq
 from src.instructions.sopc.s_cmp_ge import SCmpGe
 from src.instructions.sopc.s_cmp_gt import SCmpGt
@@ -199,4 +200,5 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_sub_co_ci': VSub,
                     's_addk': SAddK,
                     's_waitcnt_decptr': SWaitcnt,
+                    's_xor': SXor,
                     }
