@@ -20,6 +20,20 @@ class VCndmask(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'b32':
+            if self.src1 in self.node.state.registers and \
+                    self.node.state.registers[self.src1].type == RegisterType.DIVISION_PT8:
+                new_value = self.node.state.registers[self.src1].val
+                return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
+                                     reg_type=RegisterType.DIVISION_PT9)
+            if self.src1 in self.node.state.registers and \
+                    self.node.state.registers[self.src1].type == RegisterType.DIVISION_PT10:
+                new_value = self.node.state.registers[self.src1].val
+                return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
+                                     reg_type=RegisterType.UNKNOWN)
+            if self.ssrc2 in self.node.state.registers and \
+                    self.node.state.registers[self.ssrc2].type == RegisterType.DIVISION_PASS:
+                return set_reg_value(self.node, "", self.vdst, [self.src0, self.src1], self.suffix,
+                                     reg_type=RegisterType.DIVISION_PASS)
             if self.ssrc2 in self.node.state.registers and self.node.state.registers[self.ssrc2].val == "0":
                 return set_reg_value(self.node, self.src0, self.vdst, [self.src0, self.src1], self.suffix)
             variable = "var" + str(self.decompiler_data.num_of_var)
@@ -35,6 +49,12 @@ class VCndmask(BaseInstruction):
 
     def to_print(self):
         if self.suffix == 'b32':
+            if self.node.state.registers[self.vdst].type == RegisterType.DIVISION_PT9:
+                return ""
+            if self.node.state.registers[self.vdst].type == RegisterType.DIVISION_PASS:
+                return ""
+            if self.node.state.registers[self.ssrc2].type == RegisterType.DIVISION_PASS:
+                return ""
             if self.node.state.registers[self.vdst].val == "0":
                 return ""
             if "?" in self.node.state.registers[self.ssrc2].val:

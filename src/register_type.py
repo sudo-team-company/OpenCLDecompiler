@@ -59,3 +59,15 @@ class RegisterType(Enum):
     WORK_DIM = auto()
 
     GENERAL_SETUP = auto()
+
+    DIVISION_RECIPROCAL = auto()
+    DIVISION_PT2 = auto()
+    DIVISION_PT3 = auto()
+    DIVISION_PT4 = auto()
+    DIVISION_PT5 = auto()
+    DIVISION_PT6 = auto()
+    DIVISION_PT7 = auto()
+    DIVISION_PT8 = auto()
+    DIVISION_PT9 = auto()
+    DIVISION_PT10 = auto()
+    DIVISION_PASS = auto()

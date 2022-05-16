@@ -56,6 +56,7 @@ from src.instructions.sopp.s_set_gpr_idx_off import SSetGprIdxOff
 from src.instructions.sopp.s_waitcnt import SWaitcnt
 from src.instructions.vop1.v_cvt import VCvt
 from src.instructions.vop1.v_mov import VMov
+from src.instructions.vop1.v_rcp_iflag import VRcpIflag
 from src.instructions.vop2.v_add import VAdd
 from src.instructions.vop2.v_add_nc import VAddNc
 from src.instructions.vop2.v_addc import VAddc
@@ -88,6 +89,7 @@ from src.instructions.vop3.v_mul_lo import VMulLo
 from src.instructions.vopc.v_cmp_eq import VCmpEq
 from src.instructions.vopc.v_cmp_ge import VCmpGe
 from src.instructions.vopc.v_cmp_gt import VCmpGt
+from src.instructions.vopc.v_cmp_le import VCmpLe
 from src.instructions.vopc.v_cmp_lg import VCmpLg
 from src.instructions.vopc.v_cmp_lt import VCmpLt
 from src.instructions.vopc.v_cmpx_class import VCmpxClass
@@ -205,4 +207,6 @@ instruction_dict = {'ds_add': DsAdd,
                     's_waitcnt_decptr': SWaitcnt,
                     's_xor': SXor,
                     's_or_saveexec': SOrSaveexec,
+                    'v_cmp_le': VCmpLe,
+                    'v_rcp_iflag': VRcpIflag,
                     }

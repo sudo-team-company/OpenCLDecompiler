@@ -27,6 +27,21 @@ class VAddNc(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in ['u16', 'u32']:
+            if self.src1 in self.node.state.registers and \
+                    self.node.state.registers[self.src1].type == RegisterType.DIVISION_PT5:
+                new_value = self.node.state.registers[self.src1].val
+                return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
+                                     reg_type=RegisterType.DIVISION_PT6)
+            if self.src1 in self.node.state.registers and \
+                    self.node.state.registers[self.src1].type == RegisterType.DIVISION_PT7:
+                new_value = self.node.state.registers[self.src1].val
+                return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
+                                     reg_type=RegisterType.DIVISION_PT8)
+            if self.src1 in self.node.state.registers and \
+                    self.node.state.registers[self.src1].type == RegisterType.DIVISION_PT9:
+                new_value = self.node.state.registers[self.src1].val
+                return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
+                                     reg_type=RegisterType.DIVISION_PT10)
             new_value = make_op(self.node, self.src0, self.src1, " + ", '(ulong)', '(ulong)')
             reg_type = RegisterType.UNKNOWN
             if is_reg(self.src0) and is_reg(self.src1):
