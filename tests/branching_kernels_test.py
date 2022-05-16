@@ -1,27 +1,35 @@
+import pytest
+
 from .conftest import template
 
 
 class TestBranchingKernels:
-    def test_if_first(self):
-        template('branching_kernels', 'if_1')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_if_first(self, mcpu):
+        template('branching_kernels', 'if_1', mcpu=mcpu)
 
-    def test_if_second(self):
-        template('branching_kernels', 'if_2')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_if_second(self, mcpu):
+        template('branching_kernels', 'if_2', mcpu=mcpu)
 
     def test_if_and_if(self):
         template('branching_kernels', 'if_and_if')
 
-    def test_if_else_0_labels(self):
-        template('branching_kernels', 'if_else_0_labels')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_if_else_0_labels(self, mcpu):
+        template('branching_kernels', 'if_else_0_labels', mcpu=mcpu)
 
-    def test_if_else_1_labels(self):
-        template('branching_kernels', 'if_else_1_label')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_if_else_1_labels(self, mcpu):
+        template('branching_kernels', 'if_else_1_label', mcpu=mcpu)
 
-    def test_if_else_2_labels(self):
-        template('branching_kernels', 'if_else_2_labels')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_if_else_2_labels(self, mcpu):
+        template('branching_kernels', 'if_else_2_labels', mcpu=mcpu)
 
-    def test_if_in_if(self):
-        template('branching_kernels', 'if_in_if')
+    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
+    def test_if_in_if(self, mcpu):
+        template('branching_kernels', 'if_in_if', mcpu=mcpu)
 
     def test_if_else_in_if(self):
         template('branching_kernels', 'if_else_in_if')
