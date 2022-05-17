@@ -1,5 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
+from src.opencl_types import make_opencl_type
 from src.register import check_and_split_regs
 from src.register_type import RegisterType
 
@@ -54,7 +55,8 @@ class VCvt(BaseInstruction):
 
             asm_type = self.suffix[4:]
             self.decompiler_data.names_of_vars[self.node.state.registers[self.from_registers].val] = asm_type
-            new_value = self.node.state.registers[self.from_registers].val
+            new_value = "(" + make_opencl_type(self.suffix[:3]) + ")" \
+                        + self.node.state.registers[self.from_registers].val
             reg_type = self.node.state.registers[self.from_registers].type
             return set_reg_value(self.node, new_value, self.to_registers, [], asm_type, reg_type=reg_type)
         return super().to_fill_node()
