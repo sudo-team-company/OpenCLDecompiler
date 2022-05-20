@@ -5,5 +5,5 @@ void float_test(__global int *out, int i)
 {
     double var0;
     var0 = gdata0[get_global_id(0)];
-    out[get_global_id(0)] = var0;
+    out[get_global_id(0)] = (int)var0;
 }
