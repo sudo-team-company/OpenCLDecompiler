@@ -1,10 +1,10 @@
-from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
+from src.instructions.flat.flat_load import FlatLoad
 from src.register import check_and_split_regs
 from src.register_type import RegisterType
 
 
-class GlobalLoad(BaseInstruction):
+class GlobalLoad(FlatLoad):
     def __init__(self, node, suffix):
         super().__init__(node, suffix)
         self.vdst = self.instruction[1]

@@ -104,6 +104,7 @@ def make_output_from_part_of_if_else(region, indent, num_of_branch):
     decompiler_data = DecompilerData()
     branch_body = region.start.children[num_of_branch]
     make_output_from_region(branch_body, indent + '    ')
+    to_print: dict = {}
     for key in decompiler_data.variables.keys():
         reg = key[:key.find("_")]
         r_node_parent = region.start.children[num_of_branch].end
@@ -116,12 +117,14 @@ def make_output_from_part_of_if_else(region, indent, num_of_branch):
                 and (region.start.start.parent[0].state.registers[reg] is None
                      or r_node_parent.state.registers[reg].version !=
                      region.start.start.parent[0].state.registers[reg].version):
-            if '*' not in decompiler_data.variables[key]:
-                decompiler_data.write(indent + "    " + decompiler_data.variables[key]
-                                      + " = " + r_node_parent.state.registers[reg].val + ";\n")
-            else:
-                decompiler_data.write(indent + "    " + decompiler_data.variables[key][1:]
-                                      + " = " + r_node_parent.state.registers[reg].val + ";\n")
+            to_print[decompiler_data.variables[key].removeprefix("*")] = r_node_parent.state.registers[reg].val
+    queue = list(to_print.keys())
+    while len(queue) > 0:
+        i = 0
+        while any(var in to_print[queue[i]] for var in queue):
+            i += 1
+        decompiler_data.write(f"{indent}    {queue[i]} = {to_print[queue[i]]};\n")
+        queue.remove(queue[i])
 
 
 def make_output_from_branch_variable(region, indent):
@@ -132,6 +135,8 @@ def make_output_from_branch_variable(region, indent):
                 and region.start.start.parent[0].state.registers[reg].version == key \
                 and decompiler_data.variables[key] in decompiler_data.names_of_vars.keys() \
                 and decompiler_data.variables[key] != region.start.start.parent[0].state.registers[reg].val:
+            if "exec" in region.start.start.parent[0].state.registers[reg].val:
+                continue
             decompiler_data.write(
                 indent + decompiler_data.variables[key] + " = "
                 + region.start.start.parent[0].state.registers[reg].val + ";\n")

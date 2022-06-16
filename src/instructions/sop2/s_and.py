@@ -19,7 +19,9 @@ class SAnd(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in ['b32', 'b64']:
-            if self.ssrc0 in self.node.state.registers:
+            if self.ssrc0 == "exec" and self.ssrc1 in self.node.state.registers:
+                reg = self.node.state.registers[self.ssrc1]
+            elif self.ssrc0 in self.node.state.registers:
                 reg = self.node.state.registers[self.ssrc0]
             else:
                 ssrc0 = check_and_split_regs(self.ssrc0)[0]

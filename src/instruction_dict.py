@@ -14,6 +14,7 @@ from src.instructions.sop1.s_and_saveexec import SAndSaveexec
 from src.instructions.sop1.s_getpc import SGetpc
 from src.instructions.sop1.s_mov import SMov
 from src.instructions.sop1.s_not import SNot
+from src.instructions.sop1.s_or_saveexec import SOrSaveexec
 from src.instructions.sop1.s_setpc import SSetpc
 from src.instructions.sop1.s_swappc import SSwappc
 from src.instructions.sop2.s_add import SAdd
@@ -29,9 +30,11 @@ from src.instructions.sop2.s_min import SMin
 from src.instructions.sop2.s_mul import SMul
 from src.instructions.sop2.s_or import SOr
 from src.instructions.sop2.s_sub import SSub
+from src.instructions.sop2.s_xor import SXor
 from src.instructions.sopc.s_cmp_eq import SCmpEq
 from src.instructions.sopc.s_cmp_ge import SCmpGe
 from src.instructions.sopc.s_cmp_gt import SCmpGt
+from src.instructions.sopc.s_cmp_lg import SCmpLg
 from src.instructions.sopc.s_cmp_lt import SCmpLt
 from src.instructions.sopc.s_set_gpr_idx_on import SSetGprIdxOn
 from src.instructions.sopk.s_addk import SAddK
@@ -53,6 +56,7 @@ from src.instructions.sopp.s_set_gpr_idx_off import SSetGprIdxOff
 from src.instructions.sopp.s_waitcnt import SWaitcnt
 from src.instructions.vop1.v_cvt import VCvt
 from src.instructions.vop1.v_mov import VMov
+from src.instructions.vop1.v_rcp_iflag import VRcpIflag
 from src.instructions.vop2.v_add import VAdd
 from src.instructions.vop2.v_add_nc import VAddNc
 from src.instructions.vop2.v_addc import VAddc
@@ -85,6 +89,7 @@ from src.instructions.vop3.v_mul_lo import VMulLo
 from src.instructions.vopc.v_cmp_eq import VCmpEq
 from src.instructions.vopc.v_cmp_ge import VCmpGe
 from src.instructions.vopc.v_cmp_gt import VCmpGt
+from src.instructions.vopc.v_cmp_le import VCmpLe
 from src.instructions.vopc.v_cmp_lg import VCmpLg
 from src.instructions.vopc.v_cmp_lt import VCmpLt
 from src.instructions.vopc.v_cmpx_class import VCmpxClass
@@ -117,6 +122,7 @@ instruction_dict = {'ds_add': DsAdd,
                     's_cbranch_vccnz': SCbranchVccnz,
                     's_cbranch_vccz': SCbranchVccz,
                     's_cmp_eq': SCmpEq,
+                    's_cmp_lg': SCmpLg,
                     's_cmp_ge': SCmpGe,
                     's_cmp_gt': SCmpGt,
                     's_cmp_lt': SCmpLt,
@@ -198,4 +204,9 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_sub_co': VSub,
                     'v_sub_co_ci': VSub,
                     's_addk': SAddK,
+                    's_waitcnt_decptr': SWaitcnt,
+                    's_xor': SXor,
+                    's_or_saveexec': SOrSaveexec,
+                    'v_cmp_le': VCmpLe,
+                    'v_rcp_iflag': VRcpIflag,
                     }

@@ -127,7 +127,9 @@ class FlatStore(BaseInstruction):
     def to_print(self):
         if self.suffix in ["dword", "dwordx2", "dwordx4", "byte"]:
             var = self.node.state.registers[self.to_registers].val
-            if " + " in var:
+            if self.inst_offset == "inst_offset:4":
+                var = var + "[get_global_id(0)]"
+            elif " + " in var:
                 var = make_elem_from_addr(var)
             else:
                 if self.decompiler_data.names_of_vars.get(var):
