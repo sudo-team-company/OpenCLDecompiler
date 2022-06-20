@@ -55,7 +55,12 @@ opencl_to_asm_dict = {
     "uint8": "uint8",
     "__global uint8": "uint8",
     "float4": "float4",
-    "__global float4": "float4"
+    "__global float4": "float4",
+    "char": "char",
+    "char4": "char4",
+    "__global char2": "char2",
+    "__global char4": "char4",
+    "short": "short"
 }
 
 
@@ -81,6 +86,8 @@ def evaluate_size(asm_type, only_size=False):
         information = (32, 0)
     elif asm_type == "char":
         information = (1, 1)
+    elif asm_type in ["short", "char2"]:
+        information = (2, 1)
     elif only_size:
         if "bytes" in asm_type:
             information = (int(asm_type[0]), 1)

@@ -286,6 +286,7 @@ class DecompilerData(metaclass=Singleton):
         self.loops_nodes_for_variables = {}
         self.flag_for_decompilation = None
         self.address_params = set()
+        self.bfe_offsets = {}
 
     def reset(self, name_of_program):
         self.name_of_program = name_of_program
@@ -390,6 +391,7 @@ class DecompilerData(metaclass=Singleton):
         self.loops_variables = {}
         self.loops_nodes_for_variables = {}
         self.address_params = set()
+        self.bfe_offsets = {}
 
     def write(self, output):
         # noinspection PyUnresolvedReferences

@@ -97,7 +97,7 @@ def transform_rocm_branching(set_of_instructions):
 
     markers = [x for x in set_of_instructions if x.startswith("s_and_saveexec_b32 ")]
 
-    if 0 == len(markers) or 1 < len(markers):
+    if len(markers) == 0 or len(markers) > 1:
         return set_of_instructions
     try:
         s_and_saveexec_b32: str = markers[0]
