@@ -1,4 +1,36 @@
-asm_to_opencl_dict = {
+vector_type_dict = {
+    'char2': 'char2',
+    'char4': 'char4',
+    'char8': 'char8',
+    'uchar2': 'uchar2',
+    'uchar4': 'uchar4',
+    'uchar8': 'uchar8',
+    'short2': 'short2',
+    'short4': 'short4',
+    'short8': 'short8',
+    'ushort2': 'ushort2',
+    'ushort4': 'ushort4',
+    'ushort8': 'ushort8',
+    'int2': 'int2',
+    'int4': 'int4',
+    'int8': 'int8',
+    'uint2': 'uint2',
+    'uint4': 'uint4',
+    'uint8': 'uint8',
+    'long2': 'long2',
+    'long4': 'long4',
+    'long8': 'long8',
+    'ulong2': 'ulong2',
+    'ulong4': 'ulong4',
+    'ulong8': 'ulong8',
+    'float2': 'float2',
+    'float4': 'float4',
+    'float8': 'float8',
+    'half2': 'half2',
+    'half4': 'half4',
+    'half8': 'half8'}
+
+asm_to_opencl_scalar_dict = {
     "u32": "uint",
     "gu32": "__global uint",
     "i32": "int",
@@ -11,13 +43,6 @@ asm_to_opencl_dict = {
     "gf32": "__global float",
     "f64": "double",
     "gf64": "__global double",
-    "int2": "int2",
-    "uint2": "uint2",
-    "int4": "int4",
-    "uint4": "uint4",
-    "int8": "int8",
-    "uint8": "uint8",
-    "float4": "float4",
     "b32": "uint",
     "b64": "ulong",
     "dword": "int",
@@ -26,7 +51,7 @@ asm_to_opencl_dict = {
 
 
 def make_opencl_type(asm_type):
-    return asm_to_opencl_dict.get(asm_type, "unknown type")
+    return {**asm_to_opencl_scalar_dict, **vector_type_dict}.get(asm_type, "unknown type")
 
 
 opencl_to_asm_dict = {
@@ -42,22 +67,14 @@ opencl_to_asm_dict = {
     "__global float": "gf32",
     "double": "f64",
     "__global double": "gf64",
-    "int2": "int2",
     "__global int2": "int2",
-    "uint2": "uint2",
     "__global uint2": "uint2",
-    "int4": "int4",
     "__global int4": "int4",
-    "uint4": "uint4",
     "__global uint4": "uint4",
-    "int8": "int8",
     "__global int8": "int8",
-    "uint8": "uint8",
     "__global uint8": "uint8",
-    "float4": "float4",
     "__global float4": "float4",
     "char": "char",
-    "char4": "char4",
     "__global char2": "char2",
     "__global char4": "char4",
     "short": "short"
@@ -65,7 +82,7 @@ opencl_to_asm_dict = {
 
 
 def make_asm_type(opencl_type):
-    return opencl_to_asm_dict.get(opencl_type, "unknown type")
+    return {**opencl_to_asm_dict, **vector_type_dict}.get(opencl_type, "unknown type")
 
 
 # get size and priority

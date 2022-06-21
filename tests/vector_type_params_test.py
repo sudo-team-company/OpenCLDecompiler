@@ -8,6 +8,9 @@ class TestVectorTypeParams:
     def test_char2_reverse_char2(self):
         template('vector_type_params', 'char2_reverse_char2')
 
+    def test_char2_first_and_first_char4(self):
+        template('vector_type_params', 'char2_first_and_first_char4')
+
     def test_uint2_uint(self):
         template('vector_type_params', 'uint2_uint')
 

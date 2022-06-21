@@ -69,8 +69,10 @@ def get_offsets_to_regs():
         # according to the algorithm first call to get_current_offset_for_not_first_param does not use last_name
         # noinspection PyUnboundLocalVariable
         curr_offset, probably_offset = get_current_offset(name_of_param, num_of_param, probably_offset)
-        offset_num[curr_offset] = name_of_param
-        get_bfe_offset(name_of_param, num_of_param, curr_offset, offset_num)
+        if int(curr_offset, 16) % 4 == 0:
+            offset_num[curr_offset] = name_of_param
+        if "short" in type_of_param or "char" in type_of_param:
+            get_bfe_offset(name_of_param, num_of_param, curr_offset, offset_num)
     return offset_num
 
 
