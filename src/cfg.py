@@ -7,10 +7,10 @@ from src.operation_status import OperationStatus
 
 
 def make_cfg_node(instruction, last_node_state, last_node):
-    for i, _ in enumerate(instruction):
-        if instruction[i] == "vcc_lo":
+    for i, instr in enumerate(instruction):
+        if instr == "vcc_lo":
             instruction[i] = "vcc"
-        if instruction[i] == "exec_lo":
+        if instr == "exec_lo":
             instruction[i] = "exec"
     node = Node(instruction, last_node_state)
     if last_node.instruction != "branch":

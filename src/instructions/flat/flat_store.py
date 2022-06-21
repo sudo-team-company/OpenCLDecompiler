@@ -87,7 +87,7 @@ class FlatStore(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ["dword", "dwordx2", "dwordx4", "byte"]:
+        if self.suffix in ["dword", "dwordx2", "dwordx4", "byte", "short"]:
             suffix_size = 1
             if self.suffix[-1].isdigit():
                 suffix_size = int(self.suffix[-1])
@@ -125,7 +125,7 @@ class FlatStore(BaseInstruction):
         return super().to_fill_node()
 
     def to_print(self):
-        if self.suffix in ["dword", "dwordx2", "dwordx4", "byte"]:
+        if self.suffix in ["dword", "dwordx2", "dwordx4", "byte", "short"]:
             var = self.node.state.registers[self.to_registers].val
             if self.inst_offset == "inst_offset:4":
                 var = var + "[get_global_id(0)]"

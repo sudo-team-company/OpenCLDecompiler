@@ -203,6 +203,9 @@ class DecompilerData(metaclass=Singleton):
         self.number_of_v = 0
         self.number_of_vm = 0
         self.number_of_p = 0
+        self.number_of_qword = 0
+        self.number_of_choice = 0
+        self.number_of_result = 0
         self.initial_state = State()  # start state of registers (начальное состояние регистров)
         self.sgprsnum = 0  # number of s registers used by system (количество s регистров, используемых системой)
         self.vgprsnum = 0  # number of v registers used by system (количество v регистров, используемых системой)
@@ -286,6 +289,7 @@ class DecompilerData(metaclass=Singleton):
         self.loops_nodes_for_variables = {}
         self.flag_for_decompilation = None
         self.address_params = set()
+        self.bfe_offsets = {}
 
     def reset(self, name_of_program):
         self.name_of_program = name_of_program
@@ -308,6 +312,9 @@ class DecompilerData(metaclass=Singleton):
         self.number_of_v = 0
         self.number_of_vm = 0
         self.number_of_p = 0
+        self.number_of_qword = 0
+        self.number_of_choice = 0
+        self.number_of_result = 0
         self.initial_state = State()  # start state of registers (начальное состояние регистров)
         self.sgprsnum = 0  # number of s registers used by system (количество s регистров, используемых системой)
         self.vgprsnum = 0  # number of v registers used by system (количество v регистров, используемых системой)
@@ -390,6 +397,7 @@ class DecompilerData(metaclass=Singleton):
         self.loops_variables = {}
         self.loops_nodes_for_variables = {}
         self.address_params = set()
+        self.bfe_offsets = {}
 
     def write(self, output):
         # noinspection PyUnresolvedReferences

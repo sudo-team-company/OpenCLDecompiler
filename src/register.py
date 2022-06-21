@@ -2,6 +2,7 @@ import re
 
 from src.integrity import Integrity
 from src.register_type import RegisterType
+from src.opencl_types import vector_type_dict
 
 
 class Register:
@@ -26,7 +27,7 @@ class Register:
 
 
 def is_vector_type(data_type: str) -> bool:
-    return data_type in ["int2", "uint2", "int4", "uint4", "int8", "uint8"]
+    return data_type in vector_type_dict
 
 
 def is_sgpr(reg: str) -> bool:

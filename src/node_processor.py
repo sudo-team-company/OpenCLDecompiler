@@ -48,7 +48,7 @@ def decode_instruction(node, flag_of_status):
                         "i4", "i16", "i24", "i32", "i64",
                         "f16", "f32", "f64",
                         "byte", "ubyte", "ubyte0", "ubyte1", "ubyte2", "ubyte3", "sbyte",
-                        "ushort", "sshort",
+                        "ushort", "sshort", "short",
                         "dword", "dwordx2", "dwordx4", "dwordx8", "dwordx16"]:
                 if suffix != "":
                     suffix = suffix + "_" + part

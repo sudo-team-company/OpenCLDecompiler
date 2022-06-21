@@ -24,7 +24,7 @@ def get_output_for_different_vector_types(output, var_type, data_type):
     if make_opencl_type(var_type)[-1].isdigit():
         new_size += int(var_type[-1])
     else:
-        new_size = 1
+        new_size += 1
     while curr_element < new_size:
         output += str(curr_element)
         curr_element += 1

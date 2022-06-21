@@ -53,10 +53,17 @@ class SBfe(BaseInstruction):
             elif self.ssrc1 == '0x100010':
                 new_value = "get_local_size(1)"
                 reg_type = RegisterType.LOCAL_SIZE_Y
+            elif self.decompiler_data.bfe_offsets.get((self.node.state.registers[self.ssrc0].val, self.ssrc1)):
+                new_value = self.decompiler_data.bfe_offsets[self.node.state.registers[self.ssrc0].val, self.ssrc1]
+                reg_type = RegisterType.KERNEL_ARGUMENT_VALUE
             else:
                 print("Unknown pattern in s_bfe")
                 raise NotImplementedError()
             return set_reg_value(self.node, new_value, self.sdst, [], self.suffix, reg_type=reg_type)
         if self.suffix == 'i32':
+            if self.decompiler_data.bfe_offsets.get((self.node.state.registers[self.ssrc0].val, self.ssrc1)):
+                new_value = self.decompiler_data.bfe_offsets[self.node.state.registers[self.ssrc0].val, self.ssrc1]
+                reg_type = RegisterType.KERNEL_ARGUMENT_VALUE
+                set_reg_value(self.node, new_value, self.sdst, [], self.suffix, reg_type=reg_type)
             return self.node
         return super().to_fill_node()

@@ -86,6 +86,7 @@ from src.instructions.vop3.v_lshl_add import VLshlAdd
 from src.instructions.vop3.v_lshl_or import VLshlOr
 from src.instructions.vop3.v_mul_f64 import VMulF64
 from src.instructions.vop3.v_mul_lo import VMulLo
+from src.instructions.vop3.v_perm import VPerm
 from src.instructions.vopc.v_cmp_eq import VCmpEq
 from src.instructions.vopc.v_cmp_ge import VCmpGe
 from src.instructions.vopc.v_cmp_gt import VCmpGt
@@ -179,6 +180,7 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_mul_hi': VMulLo,
                     'v_mul_lo': VMulLo,
                     'v_mov': VMov,
+                    'v_perm': VPerm,
                     'v_readfirstlane': VMov,
                     'v_sub': VSub,
                     'v_subb': VSub,

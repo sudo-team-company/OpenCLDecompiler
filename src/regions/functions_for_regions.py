@@ -319,7 +319,7 @@ def process_loop(region_start, region_end):
                     and curr_node.state.registers.get(register):
                 separation = first_reg_version.find("_")
                 first_reg_prev_version = first_reg_version[:separation + 1] \
-                                         + str(int(first_reg_version[separation + 1:]) - 1)
+                    + str(int(first_reg_version[separation + 1:]) - 1)
                 if first_reg_prev_version in used_versions_of_registers:
                     make_var_for_loop(curr_node, register, first_reg_version, first_reg_prev_version)
         curr_node = curr_node.children[0]

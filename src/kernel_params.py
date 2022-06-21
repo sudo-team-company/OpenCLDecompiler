@@ -1,22 +1,51 @@
 from src.decompiler_data import DecompilerData
+from src.opencl_types import evaluate_size, make_asm_type
+from src.register import is_vector_type
 
 
-def get_current_offset_for_not_first_param(offset_num, last_name, name_of_param, num_of_param):
+def get_param_type(num_of_param):
     decompiler_data = DecompilerData()
-    last_offset = sorted(offset_num.keys())[-1]
-    # TODO: добавить и проверку на long, когда решится вопрос с векторным типом
-    if last_name[0] == '*':
-        curr_offset = hex(int(last_offset, 16) + 8)
+    param_type = decompiler_data.type_params.get(decompiler_data.params["param" + num_of_param])
+    return param_type
+
+
+def get_basic_param_type(num_of_param):
+    param_type = get_param_type(num_of_param)
+    if is_vector_type(param_type):
+        param_type = param_type[:-1]
+    return param_type
+
+
+def get_param_size(name_of_param, param_type):
+    if name_of_param[0] == "*":
+        param_size = 8
     else:
-        if name_of_param[0] == "*" \
-                or 'long' in decompiler_data.type_params.get(decompiler_data.params["param" + num_of_param]):
-            if last_offset[-1] < '8':
-                curr_offset = last_offset[:-1] + '8'
-            else:
-                curr_offset = hex(int(last_offset, 16) + 8) if last_offset[-1] == '8' else hex(int(last_offset, 16) + 4)
+        param_size, _ = evaluate_size(make_asm_type(param_type))
+    return param_size
+
+
+def get_bfe_offset(name_of_param, num_of_param, curr_offset, offset_num):
+    decompiler_data = DecompilerData()
+    param_type = get_basic_param_type(num_of_param)
+    param_size = get_param_size(name_of_param, param_type)
+    if "char" in param_type or "short" in param_type:
+        load_offset = hex(int(curr_offset, 16) - int(curr_offset, 16) % 4)
+        param_size_bit = hex(param_size * 8)
+        offset_in_reg = hex((int(curr_offset, 16) - int(load_offset, 16)) * 8)
+        bfe_offset = param_size_bit + ''.rjust(4 - len(offset_in_reg[2:]), '0') + offset_in_reg[2:]
+        if offset_num.get(load_offset):
+            decompiler_data.bfe_offsets[(offset_num[load_offset], bfe_offset)] = name_of_param
         else:
-            curr_offset = hex(int(last_offset, 16) + 4)
-    return curr_offset
+            decompiler_data.bfe_offsets[(name_of_param, bfe_offset)] = name_of_param
+
+
+def get_current_offset(name_of_param, num_of_param, probably_offset):
+    param_type = get_basic_param_type(num_of_param)
+    param_size = get_param_size(name_of_param, param_type)
+    probably_offset = hex(int(probably_offset, 16) + (param_size - int(probably_offset, 16) % param_size) % param_size)
+    curr_offset = probably_offset
+    probably_offset = hex(int(probably_offset, 16) + param_size)
+    return curr_offset, probably_offset
 
 
 def get_offsets_to_regs():
@@ -32,20 +61,18 @@ def get_offsets_to_regs():
                 data_of_param.append([num_of_param, name_of_param + '___s' + str(i), type_of_param])
         else:
             data_of_param.append([num_of_param, name_of_param, type_of_param])
-    visited = False
-    curr_offset = "0x0"
+
+    probably_offset = "0x0"
     for num_of_param, name_of_param, type_of_param in data_of_param:
-        while curr_offset in decompiler_data.config_data.setup_params_offsets:
-            curr_offset = hex(int(curr_offset, 16) + 8)
-        if num_of_param == '0' and not visited:
+        while probably_offset in decompiler_data.config_data.setup_params_offsets:
+            probably_offset = hex(int(probably_offset, 16) + 8)
+        # according to the algorithm first call to get_current_offset_for_not_first_param does not use last_name
+        # noinspection PyUnboundLocalVariable
+        curr_offset, probably_offset = get_current_offset(name_of_param, num_of_param, probably_offset)
+        if int(curr_offset, 16) % 4 == 0:
             offset_num[curr_offset] = name_of_param
-            visited = True
-        else:
-            # according to the algorithm first call to get_current_offset_for_not_first_param does not use last_name
-            # noinspection PyUnboundLocalVariable
-            curr_offset = get_current_offset_for_not_first_param(offset_num, last_name, name_of_param, num_of_param)
-            offset_num[curr_offset] = name_of_param
-        last_name = name_of_param
+        if "short" in type_of_param or "char" in type_of_param:
+            get_bfe_offset(name_of_param, num_of_param, curr_offset, offset_num)
     return offset_num
 
 
@@ -76,8 +103,8 @@ def get_kernel_params(offsets_of_kernel_params, offset_num):
                 if name_of_param[0] == "*" or (decompiler_data.type_params.get(name_of_param)
                                                and 'long' in decompiler_data.type_params.get(name_of_param)):
                     decompiler_data.add_to_kernel_params(key,
-                                                         (
-                                                         name_of_reg + str(first_num_of_reg + curr_reg), name_of_param))
+                                                         (name_of_reg + str(first_num_of_reg + curr_reg),
+                                                          name_of_param))
                     curr_reg += 1
                 curr_num_offset += 1
 
