@@ -8,5 +8,8 @@ class Node:
     def add_child(self, child):
         self.children.append(child)
 
+    def add_first_child(self, child):
+        self.children.insert(0, child)
+
     def add_parent(self, parent):
         self.parent.append(parent)
