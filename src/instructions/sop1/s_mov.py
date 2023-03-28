@@ -18,6 +18,10 @@ class SMov(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in ['b32', 'b64']:
+            if self.sdst == "exec":
+                self.node.state.exec_condition.pop()
+            if "exec" in [self.sdst, self.ssrc0]:
+                return set_reg_value(self.node, "exec", self.sdst, [], None)
             if self.node.state.registers.get(self.ssrc0) is not None:
                 new_value = self.node.state.registers[self.ssrc0].val
                 reg_type = self.node.state.registers[self.ssrc0].type

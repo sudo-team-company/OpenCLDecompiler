@@ -6,15 +6,13 @@ from src.node_processor import to_opencl
 from src.operation_status import OperationStatus
 
 
-def make_cfg_node(instruction, last_node_state, last_node):
+def make_cfg_node(instruction, state):
     for i, instr in enumerate(instruction):
         if instr == "vcc_lo":
             instruction[i] = "vcc"
         if instr == "exec_lo":
             instruction[i] = "exec"
-    node = Node(instruction, last_node_state)
-    if last_node.instruction != "branch":
-        node.add_parent(last_node)
+    node = Node(instruction, copy.deepcopy(state))
     return to_opencl(node, OperationStatus.TO_FILL_NODE)
 
 

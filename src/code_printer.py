@@ -131,15 +131,15 @@ def make_output_from_branch_variable(region, indent):
     decompiler_data = DecompilerData()
     for key in decompiler_data.variables.keys():
         reg = key[:key.find("_")]
-        if region.start.start.parent[0].state.registers[reg] is not None \
-                and region.start.start.parent[0].state.registers[reg].version == key \
+        if region.start.start.state.registers[reg] is not None \
+                and region.start.start.state.registers[reg].version == key \
                 and decompiler_data.variables[key] in decompiler_data.names_of_vars.keys() \
-                and decompiler_data.variables[key] != region.start.start.parent[0].state.registers[reg].val:
-            if "exec" in region.start.start.parent[0].state.registers[reg].val:
+                and decompiler_data.variables[key] != region.start.start.state.registers[reg].val:
+            if "exec" in region.start.start.state.registers[reg].val:
                 continue
             decompiler_data.write(
                 indent + decompiler_data.variables[key] + " = "
-                + region.start.start.parent[0].state.registers[reg].val + ";\n")
+                + region.start.start.state.registers[reg].val + ";\n")
 
 
 def make_output_from_if_statement_region(region, indent):

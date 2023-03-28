@@ -1,4 +1,5 @@
 from src.base_instruction import BaseInstruction
+from src.decompiler_data import set_reg_value
 
 
 class SAndn2(BaseInstruction):
@@ -16,4 +17,8 @@ class SAndn2(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
+        if self.sdst == "exec":
+            self.node.state.exec_condition.deny_top()
+        if "exec" in [self.sdst, self.ssrc0, self.ssrc1]:
+            return set_reg_value(self.node, "exec", self.sdst, [], None)
         return self.node

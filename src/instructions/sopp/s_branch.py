@@ -12,6 +12,4 @@ class SBranch(BaseInstruction):
         return self.node
 
     def to_fill_node(self):
-        self.node = self.decompiler_data.to_fill_branch_node(self.node, self.instruction)
-        self.node.instruction = "branch"
         return self.node

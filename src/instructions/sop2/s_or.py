@@ -18,6 +18,10 @@ class SOr(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in ["b32", "b64"]:
+            if self.sdst == "exec":
+                self.node.state.exec_condition.pop()
+            if "exec" in [self.sdst, self.ssrc0, self.ssrc1]:
+                return set_reg_value(self.node, "exec", self.sdst, [], None)
             if self.sdst == "exec" and self.ssrc0 == "exec" and self.node.state.registers.get(self.ssrc1) is None:
                 new_value = self.node.state.registers[self.ssrc0].val
                 reg_entire = self.node.state.registers[self.ssrc0].integrity
