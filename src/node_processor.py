@@ -1,8 +1,6 @@
-import copy
-
 from src.decompiler_data import DecompilerData
 from src.instruction_dict import instruction_dict
-from src.operation_status import OperationStatus
+from src.instructions.label import Label
 
 
 def check_realisation_for_node(curr_node, row):
@@ -11,16 +9,6 @@ def check_realisation_for_node(curr_node, row):
         decompiler_data.write("Not resolved yet. " + row + "\n")
         return False
     return True
-
-
-def process_label_node(node, flag_of_status):
-    decompiler_data = DecompilerData()
-    if flag_of_status == OperationStatus.TO_FILL_NODE:
-        return node
-    if flag_of_status == OperationStatus.TO_PRINT_UNRESOLVED:
-        decompiler_data.write(node.instruction[0])
-        return node
-    return ""
 
 
 def decode_instruction(node, flag_of_status):
@@ -56,5 +44,5 @@ def decode_instruction(node, flag_of_status):
 
 def to_opencl(node, flag_of_status):
     if node.instruction[0][0] == ".":
-        return process_label_node(node, flag_of_status)
+        return Label(node, "").execute(flag_of_status)
     return decode_instruction(node, flag_of_status)

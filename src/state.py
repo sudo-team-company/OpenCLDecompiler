@@ -6,7 +6,6 @@ from src.register_type import RegisterType
 
 class State:
     def __init__(self):
-        self.exec_condition = None
         self.registers = \
             {
                 "s0": None,
@@ -76,6 +75,7 @@ class State:
         self.registers[v_dim].add_version(v_dim, version_v)
 
     def init_exec(self, version):
-        self.registers["exec"] = Register("0xffffffffffffffff", RegisterType.UNKNOWN, Integrity.ENTIRE)
+        val = "0xffffffffffffffff"
+        self.registers["exec"] = Register(val, RegisterType.UNKNOWN, Integrity.ENTIRE)
         self.registers["exec"].add_version("exec", version)
-        self.exec_condition = ExecCondition([])
+        self.registers["exec"].exec_condition = ExecCondition([val])

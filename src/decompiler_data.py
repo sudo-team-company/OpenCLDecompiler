@@ -13,13 +13,14 @@ from src.utils import ConfigData, DriverFormat
 
 
 def set_reg_value(node, new_value, to_reg, from_regs, data_type,
-                  reg_type=RegisterType.UNKNOWN, reg_entire=Integrity.ENTIRE):
+                  exec_condition=None, reg_type=RegisterType.UNKNOWN, reg_entire=Integrity.ENTIRE):
     decompiler_data = DecompilerData()
     node.state.registers[to_reg] = Register(new_value, reg_type, reg_entire)
     decompiler_data.make_version(node.state, to_reg)
     if to_reg in from_regs:
         node.state.registers[to_reg].make_prev()
     node.state.registers[to_reg].data_type = data_type
+    node.state.registers[to_reg].exec_condition = exec_condition
     return node
 
 
@@ -535,15 +536,15 @@ class DecompilerData(metaclass=Singleton):
         self.flag_of_else = False
 
     def to_fill_branch_node(self, node, instruction):
-        reladdr = instruction[1]
-        if self.to_node.get(reladdr) is not None:
-            node.add_child(self.to_node[reladdr])
-            self.to_node[reladdr].add_parent(node)
-            self.loops.append(self.to_node[reladdr])
+        label = instruction[1]
+        to_node = self.to_node.get(label)
+        if to_node is not None:
+            node.add_child(to_node)
+            to_node.add_parent(node)
+            self.loops.append(to_node)
             self.back_edges.append(node)
         else:
-            if self.from_node.get(reladdr) is None:
-                self.from_node[reladdr] = [node]
-            else:
-                self.from_node[reladdr].append(node)
+            if self.from_node.get(label) is None:
+                self.from_node[label] = []
+            self.from_node[label].append(node)
         return node

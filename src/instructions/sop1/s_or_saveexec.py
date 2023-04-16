@@ -1,5 +1,4 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import set_reg_value
 
 
 class SOrSaveexec(BaseInstruction):
@@ -18,7 +17,4 @@ class SOrSaveexec(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ["b32", "b64"]:
-            set_reg_value(self.node, "exec", self.sdst, [], None)
-            return set_reg_value(self.node, "exec", "exec", [], None)
-        return super().to_fill_node()
+        return self.node

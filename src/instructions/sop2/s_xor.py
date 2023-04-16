@@ -18,10 +18,12 @@ class SXor(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'b32':
-            if self.sdst == "exec":
-                self.node.state.exec_condition.deny_top()
             if "exec" in [self.sdst, self.ssrc0, self.ssrc1]:
-                return set_reg_value(self.node, "exec", self.sdst, [], None)
+                assert self.ssrc0 == "exec"
+                new_exec_condition = self.node.state.registers[self.ssrc0].exec_condition \
+                                     ^ self.node.state.registers[self.ssrc1].exec_condition
+                return set_reg_value(self.node, new_exec_condition.top(), self.sdst, [self.ssrc0, self.ssrc1], None,
+                                     exec_condition=new_exec_condition)
             reg_entire = Integrity.ENTIRE
             if self.node.state.registers.get(self.ssrc1) is not None:
                 reg_entire = self.node.state.registers[self.ssrc1].integrity

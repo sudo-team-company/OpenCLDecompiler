@@ -3,17 +3,32 @@ class ExecCondition:
         self.and_chain = and_chain
 
     def top(self) -> str:
-        return self.and_chain[0]
+        return self.and_chain[-1]
 
-    def push(self, other: str) -> None:
-        self.and_chain.append(other)
+    def __and__(self, cond: str) -> 'ExecCondition':
+        new_and_chain = self.and_chain[::]
+        new_and_chain.append(cond)
+        return ExecCondition(new_and_chain)
 
-    def pop(self) -> str:
-        return self.and_chain.pop()
+    def __or__(self, other: 'ExecCondition') -> 'ExecCondition':
+        new_and_chain = []
+        i = 0
+        while i < len(other.and_chain) and self.and_chain[i] == other.and_chain[i]:
+            new_and_chain.append(self.and_chain[i])
+            i += 1
+        return ExecCondition(new_and_chain)
 
-    def deny_top(self) -> None:
-        self.push(self.make_not(self.pop()))
+    def __xor__(self, other: 'ExecCondition') -> 'ExecCondition':
+        assert other.and_chain == self.and_chain[:-1]
+        assert len(other.and_chain) == len(self.and_chain) - 1
+        new_and_chain = self.and_chain[:-1:] + [self.make_not(self.top())]
+        return ExecCondition(new_and_chain)
 
     @staticmethod
     def make_not(cond: str) -> str:
         return "!(" + cond + ")"
+
+    @staticmethod
+    def is_closing_for(end_exec_condition: 'ExecCondition', pre_exec_condition: 'ExecCondition') -> bool:
+        return len(pre_exec_condition.and_chain) >= len(end_exec_condition.and_chain) \
+            and pre_exec_condition.and_chain[:len(end_exec_condition.and_chain)] == end_exec_condition.and_chain

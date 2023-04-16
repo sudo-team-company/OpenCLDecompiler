@@ -13,6 +13,7 @@ class Register:
         self.version = None
         self.prev_version = []
         self.data_type = None
+        self.exec_condition = None
 
     def add_version(self, name_version, num_version):
         self.version = name_version + "_" + str(num_version + 1)
