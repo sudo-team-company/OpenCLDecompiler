@@ -191,7 +191,7 @@ def process_if_else_statement_region(curr_region):
     if len(region.end.parent) > 2:
         region.end = create_new_region(child0, child1, child0.children[0])
     before_r = curr_region.parent[0]
-    next_r = region.end.children[0]
+    next_r = None if region.end.children == [] else region.end.children[0]
     add_parent_and_child(before_r, next_r, region, curr_region, region.end)
     return join_regions(before_r, region, next_r)
 
@@ -214,7 +214,7 @@ def make_var_for_loop(curr_node, register, version, prev_version):
     decompiler_data.names_of_vars[variable] = data_type
     decompiler_data.variables[prev_version] = variable
     if curr_node.state.registers[register].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
-        decompiler_data.address_params.add_cond(variable)
+        decompiler_data.address_params.add(variable)
 
 
 def check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_version_node):

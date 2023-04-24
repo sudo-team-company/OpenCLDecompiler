@@ -4,6 +4,7 @@ from src.node_processor import to_opencl
 from src.opencl_types import make_opencl_type
 from src.operation_status import OperationStatus
 from src.region_type import RegionType
+from src.register import is_vgpr
 
 
 def create_opencl_body():
@@ -89,6 +90,14 @@ def make_output_for_linear_region(region, indent):
                 make_output_for_loop_vars(curr_node, indent)
             elif new_output != "" and new_output is not None:
                 decompiler_data.write(indent + new_output + ";\n")
+            if len(curr_node.instruction) > 1 and is_vgpr(curr_node.instruction[1]):
+                reg = curr_node.instruction[1]
+                var = decompiler_data.variables.get(curr_node.state.registers[reg].version)
+                if var is not None and var != curr_node.state.registers[reg].val:
+                    decompiler_data.write(indent +
+                                          (var if var not in decompiler_data.map_names_of_vars.keys() else
+                                          decompiler_data.map_names_of_vars[var]) +
+                                          " = " + curr_node.state.registers[reg].val + ";\n")
             if curr_node == region.end:
                 break
             curr_node = curr_node.children[0]
@@ -104,27 +113,27 @@ def make_output_from_part_of_if_else(region, indent, num_of_branch):
     decompiler_data = DecompilerData()
     branch_body = region.start.children[num_of_branch]
     make_output_from_region(branch_body, indent + '    ')
-    to_print: dict = {}
-    for key in decompiler_data.variables.keys():
-        reg = key[:key.find("_")]
-        r_node_parent = region.start.children[num_of_branch].end
-        while not isinstance(r_node_parent, Node):
-            r_node_parent = r_node_parent.end
-        if r_node_parent.state.registers.get(reg) is not None \
-                and r_node_parent.state.registers[reg].version == key \
-                and decompiler_data.variables[key] in decompiler_data.names_of_vars.keys() \
-                and decompiler_data.variables[key] != r_node_parent.state.registers[reg].val \
-                and (region.start.start.parent[0].state.registers[reg] is None
-                     or r_node_parent.state.registers[reg].version !=
-                     region.start.start.parent[0].state.registers[reg].version):
-            to_print[decompiler_data.variables[key].removeprefix("*")] = r_node_parent.state.registers[reg].val
-    queue = list(to_print.keys())
-    while len(queue) > 0:
-        i = 0
-        while any(var in to_print[queue[i]] for var in queue):
-            i += 1
-        decompiler_data.write(f"{indent}    {queue[i]} = {to_print[queue[i]]};\n")
-        queue.remove(queue[i])
+    # to_print: dict = {}
+    # for key in decompiler_data.variables.keys():
+    #     reg = key[:key.find("_")]
+    #     r_node_parent = region.start.children[num_of_branch].end
+    #     while not isinstance(r_node_parent, Node):
+    #         r_node_parent = r_node_parent.end
+    #     if r_node_parent.state.registers.get(reg) is not None \
+    #             and r_node_parent.state.registers[reg].version == key \
+    #             and decompiler_data.variables[key] in decompiler_data.names_of_vars.keys() \
+    #             and decompiler_data.variables[key] != r_node_parent.state.registers[reg].val \
+    #             and (region.start.start.parent[0].state.registers[reg] is None
+    #                  or r_node_parent.state.registers[reg].version !=
+    #                  region.start.start.parent[0].state.registers[reg].version):
+    #         to_print[decompiler_data.variables[key].removeprefix("*")] = r_node_parent.state.registers[reg].val
+    # queue = list(to_print.keys())
+    # while len(queue) > 0:
+    #     i = 0
+    #     while any(var in to_print[queue[i]] for var in queue):
+    #         i += 1
+    #     decompiler_data.write(f"{indent}    {queue[i]} = {to_print[queue[i]]};\n")
+    #     queue.remove(queue[i])
 
 
 def make_output_from_branch_variable(region, indent):
@@ -144,7 +153,7 @@ def make_output_from_branch_variable(region, indent):
 
 def make_output_from_if_statement_region(region, indent):
     decompiler_data = DecompilerData()
-    make_output_from_branch_variable(region, indent)
+    # make_output_from_branch_variable(region, indent)
     decompiler_data.write(indent + "if (")
     decompiler_data.write(to_opencl(region.start.start, OperationStatus.TO_PRINT))
     decompiler_data.write(") {\n")

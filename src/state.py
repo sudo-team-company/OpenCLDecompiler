@@ -75,7 +75,6 @@ class State:
         self.registers[v_dim].add_version(v_dim, version_v)
 
     def init_exec(self, version):
-        val = "0xffffffffffffffff"
-        self.registers["exec"] = Register(val, RegisterType.UNKNOWN, Integrity.ENTIRE)
+        self.registers["exec"] = Register(ExecCondition.DEFAULT, RegisterType.UNKNOWN, Integrity.ENTIRE)
         self.registers["exec"].add_version("exec", version)
-        self.registers["exec"].exec_condition = ExecCondition([val])
+        self.registers["exec"].exec_condition = ExecCondition.default()

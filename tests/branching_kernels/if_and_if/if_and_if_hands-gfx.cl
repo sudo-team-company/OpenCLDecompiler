@@ -8,6 +8,7 @@ void if_and_if(int x, __global int *data, int y)
     }
     data[var2] = x;
     if ((int)x >= (int)y) {
+        var2 = get_global_id(2);
     }
-    data[var5] = y;
+    data[var2] = y;
 }

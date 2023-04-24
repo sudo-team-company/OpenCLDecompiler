@@ -279,6 +279,7 @@ class DecompilerData(metaclass=Singleton):
             "exec": 0
         }
         self.names_of_vars = {}
+        self.map_names_of_vars = {}
         self.lds_vars = {}
         self.lds_var_number = 0
         self.num_of_var = 0
@@ -388,6 +389,7 @@ class DecompilerData(metaclass=Singleton):
             "exec": 0
         }
         self.names_of_vars = {}
+        self.map_names_of_vars = {}
         self.lds_vars = {}
         self.lds_var_number = 0
         self.num_of_var = 0
@@ -406,6 +408,7 @@ class DecompilerData(metaclass=Singleton):
             output = simplify_opencl_statement(output)
             output = output.replace("___", ".")
         self.output_file.write(output)
+        self.output_file.flush()
 
     def make_version(self, state, reg):
         if reg not in self.versions:

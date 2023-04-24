@@ -7,7 +7,7 @@ void if_else_in_if(int x, __global int *data, int y)
         if ((int)y <= (int)var0) {
             data[get_global_id(1)] = 0;
         }
-        if ((int)y <= (int)var0) {
+        else {
             data[get_global_id(2)] = x;
         }
     }

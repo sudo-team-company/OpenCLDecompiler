@@ -19,8 +19,11 @@ class SAnd(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in ['b32', 'b64']:
-            if self.ssrc0 == "exec" and self.ssrc1 in self.node.state.registers:
-                reg = self.node.state.registers[self.ssrc1]
+            if "exec" in [self.sdst, self.ssrc0, self.ssrc1]:
+                new_exec_condition = self.node.state.registers[self.ssrc0].exec_condition \
+                                     & self.node.state.registers[self.ssrc1].val
+                return set_reg_value(self.node, new_exec_condition.top(), self.sdst, [self.ssrc0, self.ssrc1], None,
+                                     exec_condition=new_exec_condition)
             elif self.ssrc0 in self.node.state.registers:
                 reg = self.node.state.registers[self.ssrc0]
             else:
@@ -36,3 +39,8 @@ class SAnd(BaseInstruction):
                 reg_entire=reg.integrity
             )
         return super().to_fill_node()
+
+    def to_print(self):
+        if self.sdst == "exec":
+            self.output_string = self.node.state.registers["exec"].val
+        return self.output_string

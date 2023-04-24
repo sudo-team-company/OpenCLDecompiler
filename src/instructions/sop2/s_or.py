@@ -24,12 +24,8 @@ class SOr(BaseInstruction):
                     | self.node.state.registers[self.ssrc1].exec_condition
                 return set_reg_value(self.node, new_exec_condition.top(), self.sdst, [self.ssrc0, self.ssrc1], None,
                                      exec_condition=new_exec_condition)
-            if self.sdst == "exec" and self.ssrc0 == "exec" and self.node.state.registers.get(self.ssrc1) is None:
-                new_value = self.node.state.registers[self.ssrc0].val
-                reg_entire = self.node.state.registers[self.ssrc0].integrity
-            else:
-                new_value = make_op(self.node, self.ssrc0, self.ssrc1, " | ")
-                reg_entire = self.node.state.registers[self.ssrc1].integrity
+            new_value = make_op(self.node, self.ssrc0, self.ssrc1, " | ")
+            reg_entire = self.node.state.registers[self.ssrc1].integrity
             return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix,
                                  reg_entire=reg_entire)
         return super().to_fill_node()

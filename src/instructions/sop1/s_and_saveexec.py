@@ -29,5 +29,5 @@ class SAndSaveexec(BaseInstruction):
         return super().to_fill_node()
 
     def to_print(self):
-        self.output_string = self.node.state.registers["exec"].exec_condition.top()
+        self.output_string = self.node.state.registers["exec"].val
         return self.output_string

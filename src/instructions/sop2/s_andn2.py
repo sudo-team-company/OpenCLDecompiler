@@ -18,9 +18,9 @@ class SAndn2(BaseInstruction):
 
     def to_fill_node(self):
         if "exec" in [self.sdst, self.ssrc0, self.ssrc1]:
-            assert self.ssrc0 == "exec"
-            new_exec_condition = self.node.state.registers[self.ssrc0].exec_condition \
-                                 ^ self.node.state.registers[self.ssrc1].exec_condition
+            ssrc0, ssrc1 = (self.ssrc0, self.ssrc1) if self.ssrc0 == "exec" else (self.ssrc1, self.ssrc0)
+            new_exec_condition = self.node.state.registers[ssrc0].exec_condition \
+                                 ^ self.node.state.registers[ssrc1].exec_condition
             return set_reg_value(self.node, new_exec_condition.top(), self.sdst, [self.ssrc0, self.ssrc1], None,
                                  exec_condition=new_exec_condition)
         return self.node

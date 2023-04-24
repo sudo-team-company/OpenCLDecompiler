@@ -1,4 +1,6 @@
 class ExecCondition:
+    DEFAULT = "0xffffffffffffffff"
+
     def __init__(self, and_chain):
         self.and_chain = and_chain
 
@@ -23,6 +25,10 @@ class ExecCondition:
         assert len(other.and_chain) == len(self.and_chain) - 1
         new_and_chain = self.and_chain[:-1:] + [self.make_not(self.top())]
         return ExecCondition(new_and_chain)
+
+    @staticmethod
+    def default():
+        return ExecCondition([ExecCondition.DEFAULT])
 
     @staticmethod
     def make_not(cond: str) -> str:
