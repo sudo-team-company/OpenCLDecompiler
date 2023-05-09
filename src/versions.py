@@ -34,7 +34,10 @@ def update_reg_version(reg, curr_node, max_version, prev_versions_of_reg):
     for prev in prev_versions_of_reg:
         if decompiler_data.checked_variables.get(prev):
             # decompiler_data.map_names_of_vars[decompiler_data.checked_variables[prev][0]] = variable
-            variable = decompiler_data.checked_variables[prev][0]
+            # variable = decompiler_data.checked_variables[prev][0]
+            old_var = decompiler_data.checked_variables[prev][0]
+            decompiler_data.checked_variables[prev][0] = variable
+            decompiler_data.variables = {k: v.replace(old_var, variable) for k, v in decompiler_data.variables.items()}
     curr_node.state.registers[reg].val = variable
     if curr_node.state.registers[reg].type in [RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT,
                                                RegisterType.ADDRESS_KERNEL_ARGUMENT]:
@@ -52,9 +55,6 @@ def add_vars(checked_version):
         return
     if decompiler_data.names_of_vars.get(var) is None:
         decompiler_data.names_of_vars[var] = data_type
-
-    for version in prev_versions:
-        add_vars(version)
 
 
 def check_for_use_new_version_in_one_instruction(curr_node):

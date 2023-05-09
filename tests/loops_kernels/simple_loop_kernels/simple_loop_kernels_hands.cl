@@ -2,11 +2,11 @@ __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
 void loop_kernel_0(__global uint *data, uint x, uint y, uint unrollingBreaker)
 {
     uint var0;
-    __global uint *var10;
     __global uint *var11;
     uint var12;
     __global uint *var13;
     uint var9;
+    __global uint *var10;
     if (unrollingBreaker == 0) {
         var9 = 0x1;
         var10 = data;
@@ -29,11 +29,11 @@ __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
 void loop_kernel_1(__global uint *data, uint x, uint y, uint unrollingBreaker)
 {
     uint var0;
-    __global uint *var10;
     uint var11;
     uint var12;
     __global uint *var13;
     __global uint *var9;
+    __global uint *var10;
     var11 = unrollingBreaker;
     if (var11 == 0) {
         var9 = data;

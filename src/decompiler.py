@@ -39,7 +39,6 @@ def process_src_with_unresolved_instruction(set_of_instructions):
         curr_node = make_unresolved_node(instruction, last_node_state)
         if curr_node is None:
             decompiler_data.write(row + "\n")
-        # result_for_check = process_single_instruction(set_of_instructions, num, curr_node, last_node_state, last_node)
 
 
 def process_src(name_of_program, config_data, set_of_instructions, set_of_global_data_bytes,
@@ -53,8 +52,7 @@ def process_src(name_of_program, config_data, set_of_instructions, set_of_global
     last_node = Node([""], decompiler_data.initial_state)
     decompiler_data.set_cfg(last_node)
 
-    # branch = []
-    saveexec = []
+    last_before_if_and_else = []
     common_if_else_part_start_index = []
     num = 0
 
@@ -69,43 +67,22 @@ def process_src(name_of_program, config_data, set_of_instructions, set_of_global
 
         if 's_and_saveexec' in instruction[0] \
                 or ('s_and_b' in instruction[0] and 'exec' in instruction[1]):
-            saveexec.append([last_node])
+            last_before_if_and_else.append([last_node])
             common_if_else_part_start_index.append(None)
-        elif 's_or_saveexec' in instruction[0] and common_if_else_part_start_index[-1] is None:
+        if 's_or_saveexec' in instruction[0]:
             common_if_else_part_start_index[-1] = num + 1
-        elif ('s_andn2' in instruction[0] or 's_xor' in instruction[0]) and \
+        if ('s_andn2' in instruction[0] or 's_xor' in instruction[0]) and \
                 'exec' in instruction[1]:
-            assert len(saveexec[-1][0].children) == 1
-            temp = saveexec[-1][0].children[0]
-            state = temp.state
-            parents = [temp]
-            if 's_xor' in instruction[0]:
+            before_if = last_before_if_and_else[-1][0].children[0]
+            state = before_if.state
+            parents = [before_if]
+            if common_if_else_part_start_index[-1] is not None:
                 common_part = set_of_instructions[
                               common_if_else_part_start_index[-1]:num]
                 set_of_instructions = set_of_instructions[:num + 1] + common_part + set_of_instructions[num + 1:]
-            saveexec[-1].append(last_node)
-        # elif num + 1 < len(set_of_instructions) and 's_endpgm' in set_of_instructions[num+1]:
-        #     common_if_else_part_start_index = []
-        #     parents = [last_node, *saveexec[-1]]
-        #     saveexec.pop()
-        elif last_node.instruction[0] == 's_branch':
+            last_before_if_and_else[-1].append(last_node)
+        if last_node.instruction[0] == 's_branch':
             parents = []
-        # elif instruction[0][0] == '.' and len(branch) > 0:
-        #     label = instruction[0][:-1]
-        #     if branch[-1].instruction[1] == label:
-        #         branch_top = branch.pop()
-        #         parents = [last_node, branch_top]
-        #         state = branch_top.state
-        #         if branch_top.instruction[0] == 's_branch':
-        #             assert len(branch) >= 1
-        #             branch.pop()
-        #     else:
-        #         assert 's_branch' in set_of_instructions[num - 1]
-        #         assert branch[-1].instruction[1] in set_of_instructions[num - 1]
-        #         assert len(branch) >= 2
-        #         assert branch[-2].instruction[1] == label
-        #         parents = [branch[-2]]
-        #         state = branch[-2].state
 
         last_node = process_single_instruction(row, state, parents)
         if last_node is None:
@@ -118,31 +95,20 @@ def process_src(name_of_program, config_data, set_of_instructions, set_of_global
         if ('s_or' in instruction[0] or 's_mov' in instruction[0]) and \
                 'exec' in instruction[1] or 's_endpgm' in instruction[0]:
             end_exec_condition = last_node.state.registers["exec"].exec_condition
-            before = None
-            while saveexec:
-                pre_and_if_last_nodes = saveexec[-1]
+            while last_before_if_and_else:
+                pre_and_if_last_nodes = last_before_if_and_else[-1]
                 pre_exec_condition = pre_and_if_last_nodes[0].state.registers["exec"].exec_condition
                 if ExecCondition.is_closing_for(end_exec_condition, pre_exec_condition):
                     parent = pre_and_if_last_nodes[0].children[0] \
                         if len(pre_and_if_last_nodes) == 1 else \
                         pre_and_if_last_nodes[1]
-                    before = pre_and_if_last_nodes[0]
                     parent.add_child(last_node)
                     last_node.add_parent(parent)
                     parents.append(parent)
-                    saveexec.pop()
+                    last_before_if_and_else.pop()
                     common_if_else_part_start_index.pop()
                 else:
                     break
-        # if 's_and_saveexec' in instruction[0]:
-        #     saveexec.append([last_node])
-        #     common_if_else_part_start_index.append(None)
-        # elif 'branch' in instruction[0] and 'execz' not in instruction[0]:
-        #     branch.append(last_node)
-        # if instruction[0] == 's_or_b32':
-        #     find_max_and_prev_versions(last_node, parents + [before])
-        # else:
-        #     find_max_and_prev_versions(last_node, last_node.parent)
         if len(last_node.parent) > 1:
             find_max_and_prev_versions(last_node)
         num += 1

@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import set_reg_value
+from src.decompiler_data import set_reg_value, DecompilerData
 
 
 class SAndn2(BaseInstruction):
@@ -17,10 +17,15 @@ class SAndn2(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if "exec" in [self.sdst, self.ssrc0, self.ssrc1]:
-            ssrc0, ssrc1 = (self.ssrc0, self.ssrc1) if self.ssrc0 == "exec" else (self.ssrc1, self.ssrc0)
-            new_exec_condition = self.node.state.registers[ssrc0].exec_condition \
-                                 ^ self.node.state.registers[ssrc1].exec_condition
-            return set_reg_value(self.node, new_exec_condition.top(), self.sdst, [self.ssrc0, self.ssrc1], None,
-                                 exec_condition=new_exec_condition)
-        return self.node
+        if self.suffix in ['b32', 'b64']:
+            if "exec" in [self.sdst, self.ssrc0, self.ssrc1]:
+                decompiler_data = DecompilerData()
+                if self.ssrc1 == "exec":
+                    self.ssrc1, self.ssrc0 = self.ssrc0, self.ssrc1
+                new_exec_condition = decompiler_data.exec_registers[self.ssrc0] ^ decompiler_data.exec_registers[
+                    self.ssrc1]
+                decompiler_data.exec_registers[self.sdst] = new_exec_condition
+                return set_reg_value(self.node, new_exec_condition.top(), self.sdst, [self.ssrc0, self.ssrc1], None,
+                                     exec_condition=new_exec_condition)
+            return self.node
+        return super().to_fill_node()

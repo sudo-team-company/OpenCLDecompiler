@@ -1,19 +1,22 @@
 __kernel __attribute__((reqd_work_group_size(4, 4, 4)))
 void if_else_in_else_of_if_else(int x, __global int *data, int y)
 {
-    uint var0;
-    int var5;
-    uint var6;
-    var6 = get_global_id(0);
-    if ((int)1 == (int)var6) {
-        var5 = (ulong)(get_global_id(1) * x) - (ulong)y;
+    int var7;
+    uint var8;
+    if ((uint)1 != (uint)get_global_id(0)) {
+        data[get_global_id(0)] = get_global_id(0) * y;
+        var8 = get_global_id(2);
+        if ((int)x >= (int)y) {
+            var7 = (ulong)y + (ulong)get_global_id(1);
+        }
+        else {
+            var7 = (ulong)x + (ulong)get_global_id(2);
+        }
     }
     else {
-        var6 = get_global_id(2);
-        data[get_global_id(0)] = get_global_id(0) * y;
-        var0 = ((int)x >= (int)y ? 1 : 0) ? (ulong)y + (ulong)get_global_id(1) : (ulong)((ulong)get_global_offset(2) + (ulong)x) + (ulong)(get_global_id(2) - get_global_offset(2));
-        var5 = var0;
+        var8 = 1;
+        var7 = (uint)(get_global_id(1) * x) - (uint)y;
     }
-    data[var6] = var5;
+    data[var8] = var7;
     data[get_global_id(1)] = x;
 }

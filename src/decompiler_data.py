@@ -6,6 +6,8 @@ import sympy
 
 from src.flag_type import FlagType
 from src.integrity import Integrity
+from src.logical_variable import ExecCondition
+from src.node import Node
 from src.register import Register, is_reg, is_range, check_and_split_regs
 from src.register_type import RegisterType
 from src.state import State
@@ -292,6 +294,7 @@ class DecompilerData(metaclass=Singleton):
         self.flag_for_decompilation = None
         self.address_params = set()
         self.bfe_offsets = {}
+        self.exec_registers = {"exec": ExecCondition.default()}
 
     def reset(self, name_of_program):
         self.name_of_program = name_of_program
@@ -401,6 +404,7 @@ class DecompilerData(metaclass=Singleton):
         self.loops_nodes_for_variables = {}
         self.address_params = set()
         self.bfe_offsets = {}
+        self.exec_registers = {"exec": ExecCondition.default()}
 
     def write(self, output):
         # noinspection PyUnresolvedReferences
@@ -528,15 +532,6 @@ class DecompilerData(metaclass=Singleton):
     def make_label(self, node):
         self.label = node
         self.parents_of_label = node.parent
-
-    def change_cfg_for_else_structure(self, instruction, curr_node, from_node):
-        self.from_node[instruction[1]].remove(curr_node)
-        if self.from_node.get(from_node) is None:
-            self.from_node[from_node] = []
-        for parents_of_label in self.parents_of_label:
-            if parents_of_label != self.parents_of_label[1]:
-                self.from_node[from_node].append(parents_of_label)
-        self.flag_of_else = False
 
     def to_fill_branch_node(self, node, instruction):
         label = instruction[1]
