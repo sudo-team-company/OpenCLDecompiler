@@ -34,10 +34,12 @@ class ExecCondition:
 
     @staticmethod
     def make_not(cond: str) -> str:
+        if len(cond) >= 3 and cond[:2] == '!(' and cond[-1] == ')':
+            return cond[2:-1:]
         return "!(" + cond + ")"
 
     def __str__(self):
-        return " & ".join(list(map(lambda x: "(" + x + ")", self.and_chain)))
+        return " && ".join(list(map(lambda x: "(" + x + ")", self.and_chain)))
 
     @staticmethod
     def default():
@@ -45,7 +47,8 @@ class ExecCondition:
 
     @staticmethod
     def is_closing_for(end_exec_condition: 'ExecCondition',
-                       pre_exec_condition: 'ExecCondition') -> bool:
-        return len(pre_exec_condition.and_chain) >= len(end_exec_condition.and_chain) \
-            and pre_exec_condition.and_chain[:len(end_exec_condition.and_chain)] \
+                       if_exec_condition: 'ExecCondition') -> bool:
+        end_len = len(end_exec_condition.and_chain)
+        return len(if_exec_condition.and_chain) > end_len \
+            and if_exec_condition.and_chain[:end_len] \
             == end_exec_condition.and_chain

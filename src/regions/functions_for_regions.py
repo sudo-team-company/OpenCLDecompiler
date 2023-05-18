@@ -20,22 +20,22 @@ def add_parent_and_child(before_r, next_r, region, prev_child, prev_parent):
 
 def check_if(curr_region):
     return curr_region.type == RegionType.BASIC and len(curr_region.children) == 2 \
-        and (len(curr_region.children[0].children) > 0
-             and curr_region.children[0].children[0] == curr_region.children[1]
-             or len(curr_region.children[1].children) > 0
-             and curr_region.children[1].children[0] == curr_region.children[0])
+    and (len(curr_region.children[0].children) > 0
+         and curr_region.children[0].children[0] == curr_region.children[1]
+         or len(curr_region.children[1].children) > 0
+         and curr_region.children[1].children[0] == curr_region.children[0])
 
 
 def check_if_else(curr_region):
     return curr_region.type == RegionType.BASIC and len(curr_region.children) == 2 \
-        and len(curr_region.children[0].children) > 0 \
-        and len(curr_region.children[1].children) > 0 \
-        and curr_region.children[0].children[0] == curr_region.children[1].children[0]
+    and len(curr_region.children[0].children) > 0 \
+    and len(curr_region.children[1].children) > 0 \
+    and curr_region.children[0].children[0] == curr_region.children[1].children[0]
 
 
 def check_loop(region_start, region_end):
     return len(region_start.children) == 1 and len(region_start.children[0].children) == 1 \
-        and region_start.children[0].children[0] == region_end
+    and region_start.children[0].children[0] == region_end
 
 
 def create_new_region(prev_reg_1, prev_reg_2, next_reg):
@@ -203,14 +203,10 @@ def make_var_for_loop(curr_node, register, version, prev_version):
     else:
         variable = "var" + str(decompiler_data.num_of_var)
         decompiler_data.num_of_var += 1
-    # decompiler_data.make_var(first_reg_prev_version, variable,
-    #                          curr_node.state.registers[register].data_type)
     data_type = curr_node.state.registers[register].data_type
-    decompiler_data.checked_variables[prev_version] = [variable, data_type, [prev_version]]
-    # decompiler_data.checked_variables[first_reg_version] = variable
+    decompiler_data.checked_variables[prev_version] = variable
     decompiler_data.loops_variables[version] = variable
     decompiler_data.loops_nodes_for_variables[curr_node] = version
-    # decompiler_data.variables[first_reg_version] = variable
     decompiler_data.names_of_vars[variable] = data_type
     decompiler_data.variables[prev_version] = variable
     if curr_node.state.registers[register].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:

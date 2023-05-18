@@ -96,11 +96,8 @@ def make_output_for_linear_region(region, indent):
                 version = curr_node.state.registers[reg].version
                 var = decompiler_data.variables.get(version)
                 if var is not None and var != curr_node.state.registers[reg].val and \
-                        version not in decompiler_data.loops_variables.keys():
-                    decompiler_data.write(indent +
-                                          (var if var not in decompiler_data.map_names_of_vars.keys() else
-                                           decompiler_data.map_names_of_vars[var]) +
-                                          " = " + curr_node.state.registers[reg].val + ";\n")
+                        'cmp' not in curr_node.instruction[0]: # версия поменялась по сравнению с предком
+                    decompiler_data.write(indent + var + " = " + curr_node.state.registers[reg].val + ";\n")
             if curr_node == region.end:
                 break
             curr_node = curr_node.children[0]
@@ -136,20 +133,6 @@ def make_output_from_if_else_statement_region(region, indent):
 
 def make_output_from_loop_region(region, indent):
     decompiler_data = DecompilerData()
-    printed_vars = []
-    for key in decompiler_data.variables.keys():
-        reg = key[:key.find("_")]
-        probably_printed_var = decompiler_data.variables[key]
-        if region.start.start.parent[0].state.registers[reg] is not None \
-                and region.start.start.parent[0].state.registers[reg].version == key \
-                and probably_printed_var in decompiler_data.names_of_vars.keys() \
-                and probably_printed_var not in printed_vars:
-            printed_vars.append(probably_printed_var)
-            if "*" in probably_printed_var:
-                probably_printed_var = probably_printed_var[1:]
-            decompiler_data.write(
-                indent + probably_printed_var + " = "
-                + region.start.start.parent[0].state.registers[reg].val + ";\n")
     decompiler_data.write(indent + "do {\n")
     make_output_from_region(region.start.children[0], indent + '    ')
     decompiler_data.write(indent + "} while (")

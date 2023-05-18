@@ -1,6 +1,6 @@
 from src.decompiler_data import DecompilerData
 from src.instruction_dict import instruction_dict
-from src.instructions.endpgm import EndPgm
+from src.instructions.sopp.s_endpgm import SEndpgm
 from src.instructions.label import Label
 
 
@@ -47,5 +47,5 @@ def to_opencl(node, flag_of_status):
     if node.instruction[0][0] == ".":
         return Label(node, "").execute(flag_of_status)
     if node.instruction[0] == "s_endpgm":
-        return EndPgm(node, "").execute(flag_of_status)
+        return SEndpgm(node, "").execute(flag_of_status)
     return decode_instruction(node, flag_of_status)

@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import set_reg_value, DecompilerData
+from src.decompiler_data import set_reg_value
 
 
 class SAndSaveexec(BaseInstruction):
@@ -19,16 +19,15 @@ class SAndSaveexec(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in ["b32", "b64"]:
-            decompiler_data = DecompilerData()
-            old_exec_condition = decompiler_data.exec_registers["exec"]
+            old_exec_condition = self.decompiler_data.exec_registers["exec"]
             new_cond = self.node.state.registers[self.ssrc0].val
 
-            decompiler_data.exec_registers[self.sdst] = old_exec_condition
+            self.decompiler_data.exec_registers[self.sdst] = old_exec_condition
             set_reg_value(self.node, old_exec_condition.top(), self.sdst, ["exec"], None,
                           exec_condition=old_exec_condition)
 
             new_exec_condition = old_exec_condition & new_cond
-            decompiler_data.exec_registers["exec"] = new_exec_condition
+            self.decompiler_data.exec_registers["exec"] = new_exec_condition
             return set_reg_value(self.node, new_exec_condition.top(), "exec", ["exec", self.ssrc0], None,
                                  exec_condition=new_exec_condition)
         return super().to_fill_node()

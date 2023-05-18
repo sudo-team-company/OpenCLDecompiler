@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, set_reg_value, DecompilerData
+from src.decompiler_data import make_op, set_reg_value
 
 
 class SOr(BaseInstruction):
@@ -19,10 +19,9 @@ class SOr(BaseInstruction):
     def to_fill_node(self):
         if self.suffix in ["b32", "b64"]:
             if self.sdst == "exec" and self.ssrc0 == "exec":
-                decompiler_data = DecompilerData()
-                new_exec_condition = decompiler_data.exec_registers[self.ssrc0] | decompiler_data.exec_registers[
-                    self.ssrc1]
-                decompiler_data.exec_registers[self.sdst] = new_exec_condition
+                new_exec_condition = self.decompiler_data.exec_registers[self.ssrc0] | \
+                                     self.decompiler_data.exec_registers[self.ssrc1]
+                self.decompiler_data.exec_registers[self.sdst] = new_exec_condition
                 return set_reg_value(self.node, new_exec_condition.top(), self.sdst, [self.ssrc0, self.ssrc1], None,
                                      exec_condition=new_exec_condition)
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, " | ")

@@ -59,3 +59,7 @@ class TestBranchingKernels:
     @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
     def test_if_in_if_in_if(self, mcpu):
         template('branching_kernels', 'if_in_if_in_if', mcpu=mcpu)
+
+    @pytest.mark.parametrize("mcpu", ["gfx1010", "gfx1030"])
+    def test_if_with_long_expr(self, mcpu):
+        template('branching_kernels', 'if_with_long_expr', mcpu=mcpu)

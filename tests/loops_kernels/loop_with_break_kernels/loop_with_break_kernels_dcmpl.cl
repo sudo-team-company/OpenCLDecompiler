@@ -12,10 +12,6 @@ void loop_break_kernel(__global uint *data, uint x, uint y, uint unrollingBreake
         var8 = data;
         var6 = y;
         var9 = 0x0;
-        var6 = y;
-        var7 = data;
-        var8 = data;
-        var9 = 0x0;
         do {
             var0 = *(__global uint*)(var7);
             var6 = (ulong)var0 + (ulong)var6;

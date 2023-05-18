@@ -1,5 +1,4 @@
 from src.instructions.sopp.s_cbranch import SCbranch
-from src.logical_variable import ExecCondition
 
 
 class SCbranchScc1(SCbranch):

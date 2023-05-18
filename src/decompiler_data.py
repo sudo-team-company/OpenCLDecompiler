@@ -7,7 +7,6 @@ import sympy
 from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
-from src.node import Node
 from src.register import Register, is_reg, is_range, check_and_split_regs
 from src.register_type import RegisterType
 from src.state import State
@@ -281,7 +280,6 @@ class DecompilerData(metaclass=Singleton):
             "exec": 0
         }
         self.names_of_vars = {}
-        self.map_names_of_vars = {}
         self.lds_vars = {}
         self.lds_var_number = 0
         self.num_of_var = 0
@@ -392,7 +390,6 @@ class DecompilerData(metaclass=Singleton):
             "exec": 0
         }
         self.names_of_vars = {}
-        self.map_names_of_vars = {}
         self.lds_vars = {}
         self.lds_var_number = 0
         self.num_of_var = 0
@@ -486,8 +483,7 @@ class DecompilerData(metaclass=Singleton):
         self.num_of_var += 1
         for prev_version in prev_versions_of_reg:
             self.variables[prev_version] = variable
-        self.checked_variables[curr_node.state.registers[reg].version] = \
-            [variable, curr_node.state.registers[reg].data_type, prev_versions_of_reg]
+        self.checked_variables[curr_node.state.registers[reg].version] = variable
         self.versions[reg] = max_version + 1
 
     def set_name_of_vars(self, var_name, data_type):

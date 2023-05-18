@@ -38,7 +38,7 @@ def is_sgpr(reg: str) -> bool:
 
 def is_vgpr(reg: str) -> bool:
     """Matches v0, v12 and etc."""
-    return re.match("v[0-9]+", reg) is not None
+    return re.match("v[0-9]+", reg) is not None or reg == 'vcc'
 
 
 def is_reg(reg: str) -> bool:

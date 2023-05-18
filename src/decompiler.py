@@ -21,13 +21,6 @@ def process_single_instruction(row, state, parents):
     return curr_node
 
 
-def copy_registers_with_exec_condition(last_state, new_state):
-    for reg_name in new_state.registers:
-        reg = last_state.registers.get(reg_name)
-        if reg is not None and reg.exec_condition is not None:
-            new_state.registers[reg_name] = copy.deepcopy(reg)
-
-
 def process_src_with_unresolved_instruction(set_of_instructions):
     decompiler_data = DecompilerData()
     last_node_state = decompiler_data.initial_state
@@ -65,21 +58,19 @@ def process_src(name_of_program, config_data, set_of_instructions, set_of_global
         state = last_node.state
         parents = [last_node]
 
-        if 's_and_saveexec' in instruction[0] \
-                or ('s_and_b' in instruction[0] and 'exec' in instruction[1]):
-            last_before_if_and_else.append([last_node])
-            common_if_else_part_start_index.append(None)
         if 's_or_saveexec' in instruction[0]:
             common_if_else_part_start_index[-1] = num + 1
-        if ('s_andn2' in instruction[0] or 's_xor' in instruction[0]) and \
-                'exec' in instruction[1]:
-            before_if = last_before_if_and_else[-1][0].children[0]
-            state = before_if.state
-            parents = [before_if]
+        if ('s_andn2' in instruction[0] or 's_xor' in instruction[0]) \
+                and 'exec' in instruction[1]:
+            if_node = last_before_if_and_else[-1][0]
+            state = if_node.state
+            parents = [if_node]
             if common_if_else_part_start_index[-1] is not None:
                 common_part = set_of_instructions[
                               common_if_else_part_start_index[-1]:num]
-                set_of_instructions = set_of_instructions[:num + 1] + common_part + set_of_instructions[num + 1:]
+                set_of_instructions = set_of_instructions[:num + 1] \
+                                      + common_part \
+                                      + set_of_instructions[num + 1:]
             last_before_if_and_else[-1].append(last_node)
         if last_node.instruction[0] == 's_branch':
             parents = []
@@ -92,23 +83,27 @@ def process_src(name_of_program, config_data, set_of_instructions, set_of_global
             process_src_with_unresolved_instruction(initial_set_of_instructions)
             return
 
+        if 's_and_saveexec' in instruction[0] or \
+                ('s_and_b' in instruction[0] and 'exec' in instruction[1]):
+            last_before_if_and_else.append([last_node])
+            common_if_else_part_start_index.append(None)
         if ('s_or' in instruction[0] or 's_mov' in instruction[0]) and \
                 'exec' in instruction[1] or 's_endpgm' in instruction[0]:
-            end_exec_condition = last_node.state.registers["exec"].exec_condition
-            while last_before_if_and_else:
-                pre_and_if_last_nodes = last_before_if_and_else[-1]
-                pre_exec_condition = pre_and_if_last_nodes[0].state.registers["exec"].exec_condition
-                if ExecCondition.is_closing_for(end_exec_condition, pre_exec_condition):
-                    parent = pre_and_if_last_nodes[0].children[0] \
-                        if len(pre_and_if_last_nodes) == 1 else \
-                        pre_and_if_last_nodes[1]
-                    parent.add_child(last_node)
-                    last_node.add_parent(parent)
-                    parents.append(parent)
-                    last_before_if_and_else.pop()
-                    common_if_else_part_start_index.pop()
-                else:
-                    break
+            end_exec_condition = last_node.state.registers["exec"] \
+                .exec_condition
+            while last_before_if_and_else and \
+                    ExecCondition.is_closing_for(
+                        end_exec_condition,
+                        last_before_if_and_else[-1][0] \
+                                .state.registers["exec"].exec_condition):
+                if_and_last_in_if_nodes = last_before_if_and_else[-1]
+                parent = if_and_last_in_if_nodes[0] \
+                    if len(if_and_last_in_if_nodes) == 1 else \
+                    if_and_last_in_if_nodes[1]
+                parent.add_child(last_node)
+                last_node.add_parent(parent)
+                last_before_if_and_else.pop()
+                common_if_else_part_start_index.pop()
         if len(last_node.parent) > 1:
             find_max_and_prev_versions(last_node)
         num += 1
