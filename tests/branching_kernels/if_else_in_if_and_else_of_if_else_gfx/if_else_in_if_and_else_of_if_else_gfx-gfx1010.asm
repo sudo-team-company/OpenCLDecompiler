@@ -1,11 +1,11 @@
-/* Disassembling 'branching_kernels\if_else_in_if_and_else_of_if_else\if_else_in_if_and_else_of_if_else-gfx1030.bin' */
+/* Disassembling 'branching_kernels\if_else_in_if_and_else_of_if_else_gfx\if_else_in_if_and_else_of_if_else_gfx-gfx1010.bin' */
 .rocm
-.gpu GFX1000
-.arch_minor 3
+.gpu GFX1010
+.arch_minor 1
 .arch_stepping 0
-.eflags 54
+.eflags 51
 .newbinfmt
-.target "amdgcn-amd-amdhsa--gfx1030"
+.target "amdgcn-amd-amdhsa--gfx1010"
 .md_version 1, 0
 .kernel if_else_in_if_and_else_of_if_else_1
     .config
@@ -21,7 +21,7 @@
         .pgmrsrc1 0x60af0080
         .pgmrsrc2 0x0000138c
         .codeversion 1, 2
-        .machine 1, 10, 3, 0
+        .machine 1, 10, 1, 0
         .kernel_code_entry_offset 0x100
         .use_private_segment_buffer
         .use_kernarg_segment_ptr
@@ -73,7 +73,7 @@
         .pgmrsrc1 0x60af0081
         .pgmrsrc2 0x0000138c
         .codeversion 1, 2
-        .machine 1, 10, 3, 0
+        .machine 1, 10, 1, 0
         .kernel_code_entry_offset 0x100
         .use_private_segment_buffer
         .use_kernarg_segment_ptr
@@ -146,36 +146,36 @@ if_else_in_if_and_else_of_if_else_1:
 /*0000000001ac*/ v_add_nc_u32    v4, s0, v2
 .L432_0:
 /*0000000001b0*/ s_or_saveexec_b32 s4, s4
-/*0000000001b4*/ s_xor_b32       exec_lo, exec_lo, s4
-/*0000000001b8*/ s_cbranch_execz .L504_0
-/*0000000001bc*/ v_mul_lo_u32    v1, v0, s0
-/*0000000001c4*/ v_mov_b32       v4, s3
-/*0000000001c8*/ v_mov_b32       v3, s2
-/*0000000001cc*/ s_cmp_ge_i32    s0, s1
-/*0000000001d0*/ v_subrev_nc_u32 v1, s1, v1
-/*0000000001d4*/ global_store_dword v[3:4], v1, off inst_offset:4
-/*0000000001dc*/ s_cbranch_scc0  .L496_0
-/*0000000001e0*/ v_mul_lo_u32    v4, v0, s1
-/*0000000001e8*/ s_cbranch_execz .L496_0
-/*0000000001ec*/ s_branch        .L504_0
-.L496_0:
-/*0000000001f0*/ v_mul_lo_u32    v4, v2, s0
-.L504_0:
-/*0000000001f8*/ s_or_b32        exec_lo, exec_lo, s4
-/*0000000001fc*/ v_mov_b32       v3, 0
-/*000000000200*/ v_mov_b32       v7, s0
-/*000000000204*/ v_mov_b32       v1, v3
-/*000000000208*/ v_lshlrev_b64   v[2:3], 2, v[2:3]
-/*000000000210*/ v_lshlrev_b64   v[0:1], 2, v[0:1]
-/*000000000218*/ v_add_co_u32    v2, vcc, s2, v2
-/*000000000220*/ v_add_co_ci_u32 v3, vcc, s3, v3, vcc
-/*000000000224*/ v_add_co_u32    v0, vcc, s2, v0
-/*00000000022c*/ v_add_co_ci_u32 v1, vcc, s3, v1, vcc
-/*000000000230*/ global_store_dword v[2:3], v4, off
-/*000000000238*/ global_store_dword v[0:1], v7, off
-/*000000000240*/ s_endpgm
-/*000000000244*/ s_nop           0x0
-/*000000000248*/ s_nop           0x0
+/*0000000001b4*/ s_waitcnt_decptr 0xffe3
+/*0000000001b8*/ s_xor_b32       exec_lo, exec_lo, s4
+/*0000000001bc*/ s_cbranch_execz .L508_0
+/*0000000001c0*/ v_mul_lo_u32    v1, v0, s0
+/*0000000001c8*/ v_mov_b32       v4, s3
+/*0000000001cc*/ v_mov_b32       v3, s2
+/*0000000001d0*/ s_cmp_ge_i32    s0, s1
+/*0000000001d4*/ v_subrev_nc_u32 v1, s1, v1
+/*0000000001d8*/ global_store_dword v[3:4], v1, off inst_offset:4
+/*0000000001e0*/ s_cbranch_scc0  .L500_0
+/*0000000001e4*/ v_mul_lo_u32    v4, v0, s1
+/*0000000001ec*/ s_cbranch_execz .L500_0
+/*0000000001f0*/ s_branch        .L508_0
+.L500_0:
+/*0000000001f4*/ v_mul_lo_u32    v4, v2, s0
+.L508_0:
+/*0000000001fc*/ s_waitcnt_decptr 0xffe3
+/*000000000200*/ s_or_b32        exec_lo, exec_lo, s4
+/*000000000204*/ v_mov_b32       v3, 0
+/*000000000208*/ v_mov_b32       v7, s0
+/*00000000020c*/ v_mov_b32       v1, v3
+/*000000000210*/ v_lshlrev_b64   v[2:3], 2, v[2:3]
+/*000000000218*/ v_lshlrev_b64   v[0:1], 2, v[0:1]
+/*000000000220*/ v_add_co_u32    v2, vcc, s2, v2
+/*000000000228*/ v_add_co_ci_u32 v3, vcc, s3, v3, vcc
+/*00000000022c*/ v_add_co_u32    v0, vcc, s2, v0
+/*000000000234*/ v_add_co_ci_u32 v1, vcc, s3, v1, vcc
+/*000000000238*/ global_store_dword v[2:3], v4, off
+/*000000000240*/ global_store_dword v[0:1], v7, off
+/*000000000248*/ s_endpgm
 /*00000000024c*/ s_nop           0x0
 /*000000000250*/ s_nop           0x0
 /*000000000254*/ s_nop           0x0
@@ -239,7 +239,7 @@ if_else_in_if_and_else_of_if_else_2:
 /*00000000045c*/ v_cmp_lg_u32    vcc, 1, v3
 /*000000000460*/ s_and_saveexec_b32 s4, vcc_lo
 /*000000000464*/ s_xor_b32       s4, exec_lo, s4
-/*000000000468*/ s_cbranch_execz .L1204_0
+/*000000000468*/ s_cbranch_execz .L1208_0
 /*00000000046c*/ v_mov_b32       v4, 0
 /*000000000470*/ v_mul_lo_u32    v9, v3, s3
 /*000000000478*/ v_lshlrev_b64   v[4:5], 2, v[3:4]
@@ -251,36 +251,36 @@ if_else_in_if_and_else_of_if_else_2:
 /*00000000049c*/ s_xor_b32       s5, exec_lo, s5
 /*0000000004a0*/ v_add_nc_u32    v2, s3, v1
 /*0000000004a4*/ s_or_saveexec_b32 s5, s5
-/*0000000004a8*/ s_xor_b32       exec_lo, exec_lo, s5
-/*0000000004ac*/ v_add_nc_u32    v2, s2, v1
-/*0000000004b0*/ s_or_b32        exec_lo, exec_lo, s5
-.L1204_0:
-/*0000000004b4*/ s_or_saveexec_b32 s4, s4
-/*0000000004b8*/ s_xor_b32       exec_lo, exec_lo, s4
-/*0000000004bc*/ s_cbranch_execz .L1284_0
-/*0000000004c0*/ v_mul_lo_u32    v2, v1, s2
-/*0000000004c8*/ v_cmp_ge_u32    vcc, v1, v0
-/*0000000004cc*/ v_subrev_nc_u32 v4, s3, v2
-/*0000000004d0*/ v_mov_b32       v3, s1
-/*0000000004d4*/ v_mov_b32       v2, s0
-/*0000000004d8*/ global_store_dword v[2:3], v4, off inst_offset:4
-/*0000000004e0*/ s_and_saveexec_b32 s5, vcc_lo
-/*0000000004e4*/ s_xor_b32       s5, exec_lo, s5
-/*0000000004e8*/ v_mul_lo_u32    v2, v1, s3
-/*0000000004f0*/ s_or_saveexec_b32 s3, s5
-/*0000000004f4*/ s_xor_b32       exec_lo, exec_lo, s3
-/*0000000004f8*/ v_mul_lo_u32    v2, v0, s2
-/*000000000500*/ s_or_b32        exec_lo, exec_lo, s3
-.L1284_0:
-/*000000000504*/ s_or_b32        exec_lo, exec_lo, s4
-/*000000000508*/ v_mov_b32       v1, 0
-/*00000000050c*/ v_lshlrev_b64   v[0:1], 2, v[0:1]
-/*000000000514*/ v_add_co_u32    v0, vcc, s0, v0
-/*00000000051c*/ v_add_co_ci_u32 v1, vcc, s1, v1, vcc
-/*000000000520*/ global_store_dword v[0:1], v2, off
-/*000000000528*/ s_endpgm
-/*00000000052c*/ s_code_end
-/*000000000530*/ s_code_end
+/*0000000004a8*/ s_waitcnt_decptr 0xffe3
+/*0000000004ac*/ s_xor_b32       exec_lo, exec_lo, s5
+/*0000000004b0*/ v_add_nc_u32    v2, s2, v1
+/*0000000004b4*/ s_or_b32        exec_lo, exec_lo, s5
+.L1208_0:
+/*0000000004b8*/ s_or_saveexec_b32 s4, s4
+/*0000000004bc*/ s_xor_b32       exec_lo, exec_lo, s4
+/*0000000004c0*/ s_cbranch_execz .L1292_0
+/*0000000004c4*/ v_mul_lo_u32    v2, v1, s2
+/*0000000004cc*/ v_cmp_ge_u32    vcc, v1, v0
+/*0000000004d0*/ v_subrev_nc_u32 v4, s3, v2
+/*0000000004d4*/ v_mov_b32       v3, s1
+/*0000000004d8*/ v_mov_b32       v2, s0
+/*0000000004dc*/ global_store_dword v[2:3], v4, off inst_offset:4
+/*0000000004e4*/ s_and_saveexec_b32 s5, vcc_lo
+/*0000000004e8*/ s_xor_b32       s5, exec_lo, s5
+/*0000000004ec*/ v_mul_lo_u32    v2, v1, s3
+/*0000000004f4*/ s_or_saveexec_b32 s3, s5
+/*0000000004f8*/ s_waitcnt_decptr 0xffe3
+/*0000000004fc*/ s_xor_b32       exec_lo, exec_lo, s3
+/*000000000500*/ v_mul_lo_u32    v2, v0, s2
+/*000000000508*/ s_or_b32        exec_lo, exec_lo, s3
+.L1292_0:
+/*00000000050c*/ s_or_b32        exec_lo, exec_lo, s4
+/*000000000510*/ v_mov_b32       v1, 0
+/*000000000514*/ v_lshlrev_b64   v[0:1], 2, v[0:1]
+/*00000000051c*/ v_add_co_u32    v0, vcc, s0, v0
+/*000000000524*/ v_add_co_ci_u32 v1, vcc, s1, v1, vcc
+/*000000000528*/ global_store_dword v[0:1], v2, off
+/*000000000530*/ s_endpgm
 /*000000000534*/ s_code_end
 /*000000000538*/ s_code_end
 /*00000000053c*/ s_code_end

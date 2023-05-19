@@ -36,25 +36,37 @@ class TestBranchingKernels:
     def test_if_else_in_if(self, mcpu):
         template('branching_kernels', 'if_else_in_if', mcpu=mcpu)
 
-    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
-    def test_if_else_and_if_else(self, mcpu):
-        template('branching_kernels', 'if_else_and_if_else', mcpu=mcpu)
+    def test_if_else_and_if_else(self):
+        template('branching_kernels', 'if_else_and_if_else')
+
+    @pytest.mark.parametrize("mcpu", ["gfx1010", "gfx1030"])
+    def test_if_else_and_if_else_gfx(self, mcpu):
+        template('branching_kernels', 'if_else_and_if_else_gfx', mcpu=mcpu)
 
     @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
     def test_if_else_and_if_else_0_labels(self, mcpu):
         template('branching_kernels', 'if_else_and_if_else_0_labels', mcpu=mcpu)
 
-    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
-    def test_if_else_in_if_of_if_else(self, mcpu):
-        template('branching_kernels', 'if_else_in_if_of_if_else', mcpu=mcpu)
+    def test_if_else_in_if_of_if_else(self):
+        template('branching_kernels', 'if_else_in_if_of_if_else')
 
-    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
-    def test_if_else_in_else_of_if_else(self, mcpu):
-        template('branching_kernels', 'if_else_in_else_of_if_else', mcpu=mcpu)
+    @pytest.mark.parametrize("mcpu", ["gfx1010", "gfx1030"])
+    def test_if_else_in_if_of_if_else_gfx(self, mcpu):
+        template('branching_kernels', 'if_else_in_if_of_if_else_gfx', mcpu=mcpu)
 
-    @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
-    def test_if_else_in_if_and_else_of_if_else(self, mcpu):
-        template('branching_kernels', 'if_else_in_if_and_else_of_if_else', mcpu=mcpu)
+    def test_if_else_in_else_of_if_else(self):
+        template('branching_kernels', 'if_else_in_else_of_if_else')
+
+    @pytest.mark.parametrize("mcpu", ["gfx1010", "gfx1030"])
+    def test_if_else_in_else_of_if_else_gfx(self, mcpu):
+        template('branching_kernels', 'if_else_in_else_of_if_else_gfx', mcpu=mcpu)
+
+    def test_if_else_in_if_and_else_of_if_else(self):
+        template('branching_kernels', 'if_else_in_if_and_else_of_if_else')
+
+    @pytest.mark.parametrize("mcpu", ["gfx1010", "gfx1030"])
+    def test_if_else_in_if_and_else_of_if_else_gfx(self, mcpu):
+        template('branching_kernels', 'if_else_in_if_and_else_of_if_else_gfx', mcpu=mcpu)
 
     @pytest.mark.parametrize("mcpu", ["", "gfx1010", "gfx1030"])
     def test_if_in_if_in_if(self, mcpu):

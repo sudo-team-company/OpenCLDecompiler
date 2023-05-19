@@ -1,11 +1,11 @@
-/* Disassembling 'branching_kernels\if_else_and_if_else\if_else_and_if_else-gfx1010.bin' */
+/* Disassembling 'branching_kernels\if_else_and_if_else_gfx\if_else_and_if_else_gfx-gfx1030.bin' */
 .rocm
-.gpu GFX1010
-.arch_minor 1
+.gpu GFX1000
+.arch_minor 3
 .arch_stepping 0
-.eflags 51
+.eflags 54
 .newbinfmt
-.target "amdgcn-amd-amdhsa--gfx1010"
+.target "amdgcn-amd-amdhsa--gfx1030"
 .md_version 1, 0
 .kernel if_else_and_if_else_1
     .config
@@ -21,7 +21,7 @@
         .pgmrsrc1 0x60af0081
         .pgmrsrc2 0x0000138c
         .codeversion 1, 2
-        .machine 1, 10, 1, 0
+        .machine 1, 10, 3, 0
         .kernel_code_entry_offset 0x100
         .use_private_segment_buffer
         .use_kernarg_segment_ptr
@@ -73,7 +73,7 @@
         .pgmrsrc1 0x60af0040
         .pgmrsrc2 0x0000098c
         .codeversion 1, 2
-        .machine 1, 10, 1, 0
+        .machine 1, 10, 3, 0
         .kernel_code_entry_offset 0x100
         .use_private_segment_buffer
         .use_kernarg_segment_ptr
@@ -178,40 +178,40 @@ if_else_and_if_else_2:
 /*000000000360*/ global_store_dword v[3:4], v6, off
 .L872_0:
 /*000000000368*/ s_or_saveexec_b32 s3, s3
-/*00000000036c*/ s_waitcnt_decptr 0xffe3
-/*000000000370*/ s_xor_b32       exec_lo, exec_lo, s3
-/*000000000374*/ s_cbranch_execz .L912_0
-/*000000000378*/ s_sub_i32       s6, 0, s2
-/*00000000037c*/ v_mov_b32       v4, s1
-/*000000000380*/ v_mov_b32       v3, s0
-/*000000000384*/ v_mov_b32       v6, s6
-/*000000000388*/ global_store_dword v[3:4], v6, off
-.L912_0:
-/*000000000390*/ s_waitcnt_decptr 0xffe3
-/*000000000394*/ s_or_b32        exec_lo, exec_lo, s3
-/*000000000398*/ s_lshl_b32      s3, s7, 2
-/*00000000039c*/ v_add3_u32      v1, s10, s3, v1
-/*0000000003a4*/ v_cmp_lg_u32    vcc, 1, v1
-/*0000000003a8*/ s_and_saveexec_b32 s3, vcc_lo
-/*0000000003ac*/ s_xor_b32       s3, exec_lo, s3
-/*0000000003b0*/ v_mul_lo_u32    v0, v1, s2
-/*0000000003b8*/ v_mov_b32       v3, 0
-/*0000000003bc*/ s_or_saveexec_b32 s3, s3
-/*0000000003c0*/ s_xor_b32       exec_lo, exec_lo, s3
-/*0000000003c4*/ s_cbranch_execz .L996_0
-/*0000000003c8*/ s_load_dword    s4, s[4:5], 0x0
-/*0000000003d0*/ v_mov_b32       v2, 1
-/*0000000003d4*/ v_mov_b32       v3, 0
-/*0000000003d8*/ s_waitcnt       lgkmcnt(0)
-/*0000000003dc*/ s_sub_i32       s2, s4, s2
-/*0000000003e0*/ v_mov_b32       v0, s2
-.L996_0:
-/*0000000003e4*/ s_or_b32        exec_lo, exec_lo, s3
-/*0000000003e8*/ v_lshlrev_b64   v[1:2], 2, v[2:3]
-/*0000000003f0*/ v_add_co_u32    v1, vcc, s0, v1
-/*0000000003f8*/ v_add_co_ci_u32 v2, vcc, s1, v2, vcc
-/*0000000003fc*/ global_store_dword v[1:2], v0, off
-/*000000000404*/ s_endpgm
+/*00000000036c*/ s_xor_b32       exec_lo, exec_lo, s3
+/*000000000370*/ s_cbranch_execz .L908_0
+/*000000000374*/ s_sub_i32       s6, 0, s2
+/*000000000378*/ v_mov_b32       v4, s1
+/*00000000037c*/ v_mov_b32       v3, s0
+/*000000000380*/ v_mov_b32       v6, s6
+/*000000000384*/ global_store_dword v[3:4], v6, off
+.L908_0:
+/*00000000038c*/ s_or_b32        exec_lo, exec_lo, s3
+/*000000000390*/ s_lshl_b32      s3, s7, 2
+/*000000000394*/ v_add3_u32      v1, s10, s3, v1
+/*00000000039c*/ v_cmp_lg_u32    vcc, 1, v1
+/*0000000003a0*/ s_and_saveexec_b32 s3, vcc_lo
+/*0000000003a4*/ s_xor_b32       s3, exec_lo, s3
+/*0000000003a8*/ v_mul_lo_u32    v0, v1, s2
+/*0000000003b0*/ v_mov_b32       v3, 0
+/*0000000003b4*/ s_or_saveexec_b32 s3, s3
+/*0000000003b8*/ s_xor_b32       exec_lo, exec_lo, s3
+/*0000000003bc*/ s_cbranch_execz .L988_0
+/*0000000003c0*/ s_load_dword    s4, s[4:5], 0x0
+/*0000000003c8*/ v_mov_b32       v2, 1
+/*0000000003cc*/ v_mov_b32       v3, 0
+/*0000000003d0*/ s_waitcnt       lgkmcnt(0)
+/*0000000003d4*/ s_sub_i32       s2, s4, s2
+/*0000000003d8*/ v_mov_b32       v0, s2
+.L988_0:
+/*0000000003dc*/ s_or_b32        exec_lo, exec_lo, s3
+/*0000000003e0*/ v_lshlrev_b64   v[1:2], 2, v[2:3]
+/*0000000003e8*/ v_add_co_u32    v1, vcc, s0, v1
+/*0000000003f0*/ v_add_co_ci_u32 v2, vcc, s1, v2, vcc
+/*0000000003f4*/ global_store_dword v[1:2], v0, off
+/*0000000003fc*/ s_endpgm
+/*000000000400*/ s_code_end
+/*000000000404*/ s_code_end
 /*000000000408*/ s_code_end
 /*00000000040c*/ s_code_end
 /*000000000410*/ s_code_end
@@ -258,19 +258,3 @@ if_else_and_if_else_2:
 /*0000000004b4*/ s_code_end
 /*0000000004b8*/ s_code_end
 /*0000000004bc*/ s_code_end
-/*0000000004c0*/ s_code_end
-/*0000000004c4*/ s_code_end
-/*0000000004c8*/ s_code_end
-/*0000000004cc*/ s_code_end
-/*0000000004d0*/ s_code_end
-/*0000000004d4*/ s_code_end
-/*0000000004d8*/ s_code_end
-/*0000000004dc*/ s_code_end
-/*0000000004e0*/ s_code_end
-/*0000000004e4*/ s_code_end
-/*0000000004e8*/ s_code_end
-/*0000000004ec*/ s_code_end
-/*0000000004f0*/ s_code_end
-/*0000000004f4*/ s_code_end
-/*0000000004f8*/ s_code_end
-/*0000000004fc*/ s_code_end
