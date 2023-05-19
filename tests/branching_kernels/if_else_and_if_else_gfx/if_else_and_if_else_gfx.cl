@@ -24,17 +24,16 @@ void if_else_and_if_else_2(int x, __global int *data, int y)
 {
   uint id0 = get_global_id(0);
   uint id1 = get_global_id(1);
-  uint id2 = get_global_id(2);
-  if (id0 == 1) {
-    data[id0] = x * id1 - y;
+  if (id0 == 0) {
+    data[id0] = x * id0 - y;
   }
   else {
     data[id0] = y * id0;
   }
   if (id1 == 1) {
-    data[id1] = x + id2;
+    data[id1] = x * id1 - y;
   }
   else {
-    data[id0] = y + id1;
+    data[id0] = y * id1;
   }
 }
