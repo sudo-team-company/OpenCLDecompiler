@@ -21,7 +21,7 @@ void loop_kernel_0(__global uint *data, uint x, uint y, uint unrollingBreaker)
             var11 = (ulong)var0 + (ulong)var11;
             *(__global uint*)(var12) = var11;
             var11 = (var11) * x;
-        } while ((((ulong)0 - (ulong)unrollingBreaker) == var8 ? 1 : 0) | var8 > 63 ? 1 : 0);
+        } while ((((ulong)0 - (ulong)unrollingBreaker) == var8 ? 1 : 0) || var8 > 63 ? 1 : 0);
     }
 }
 
