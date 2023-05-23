@@ -45,7 +45,7 @@ def process_src(name_of_program, config_data, set_of_instructions, set_of_global
     last_node = Node([""], decompiler_data.initial_state)
     decompiler_data.set_cfg(last_node)
 
-    last_before_if_and_else = []
+    if_and_last_in_if_body_nodes = []
     common_if_else_part_start_index = []
     num = 0
 
@@ -62,7 +62,7 @@ def process_src(name_of_program, config_data, set_of_instructions, set_of_global
             common_if_else_part_start_index[-1] = num + 1
         if ('s_andn2' in instruction[0] or 's_xor' in instruction[0]) \
                 and 'exec' in instruction[1]:
-            if_node = last_before_if_and_else[-1][0]
+            if_node = if_and_last_in_if_body_nodes[-1][0]
             state = if_node.state
             parents = [if_node]
             if common_if_else_part_start_index[-1] is not None:
@@ -71,7 +71,7 @@ def process_src(name_of_program, config_data, set_of_instructions, set_of_global
                 set_of_instructions = set_of_instructions[:num + 1] \
                                       + common_part \
                                       + set_of_instructions[num + 1:]
-            last_before_if_and_else[-1].append(last_node)
+            if_and_last_in_if_body_nodes[-1].append(last_node)
         if last_node.instruction[0] == 's_branch':
             parents = []
 
@@ -85,24 +85,24 @@ def process_src(name_of_program, config_data, set_of_instructions, set_of_global
 
         if 's_and_saveexec' in instruction[0] or \
                 ('s_and_b' in instruction[0] and 'exec' in instruction[1]):
-            last_before_if_and_else.append([last_node])
+            if_and_last_in_if_body_nodes.append([last_node])
             common_if_else_part_start_index.append(None)
         if ('s_or' in instruction[0] or 's_mov' in instruction[0]) and \
                 'exec' in instruction[1] or 's_endpgm' in instruction[0]:
             end_exec_condition = last_node.state.registers["exec"] \
                 .exec_condition
-            while last_before_if_and_else and \
+            while if_and_last_in_if_body_nodes and \
                     ExecCondition.is_closing_for(
                         end_exec_condition,
-                        last_before_if_and_else[-1][0] \
+                        if_and_last_in_if_body_nodes[-1][0] \
                                 .state.registers["exec"].exec_condition):
-                if_and_last_in_if_nodes = last_before_if_and_else[-1]
+                if_and_last_in_if_nodes = if_and_last_in_if_body_nodes[-1]
                 parent = if_and_last_in_if_nodes[0] \
                     if len(if_and_last_in_if_nodes) == 1 else \
                     if_and_last_in_if_nodes[1]
                 parent.add_child(last_node)
                 last_node.add_parent(parent)
-                last_before_if_and_else.pop()
+                if_and_last_in_if_body_nodes.pop()
                 common_if_else_part_start_index.pop()
         if len(last_node.parent) > 1:
             find_max_and_prev_versions(last_node)
