@@ -1,4 +1,5 @@
 from src.integrity import Integrity
+from src.logical_variable import ExecCondition
 from src.register import Register
 from src.register_type import RegisterType
 
@@ -54,7 +55,7 @@ class State:
                 "pc": None,
                 "scc": None,
                 "vcc": None,
-                "exec": Register("0xffffffffffffffff", RegisterType.UNKNOWN, Integrity.ENTIRE)
+                "exec": None
             }
 
     def init_work_group(self, dim, g_id_dim, version_g_id, version_v):
@@ -72,3 +73,8 @@ class State:
         self.registers[g_id_dim].add_version(g_id_dim, version_g_id)
         self.registers[v_dim] = Register("get_local_id(" + str(dim) + ")", type_v, Integrity.ENTIRE)
         self.registers[v_dim].add_version(v_dim, version_v)
+
+    def init_exec(self, version):
+        self.registers["exec"] = Register(ExecCondition.DEFAULT, RegisterType.UNKNOWN, Integrity.ENTIRE)
+        self.registers["exec"].add_version("exec", version)
+        self.registers["exec"].exec_condition = ExecCondition.default()

@@ -1,4 +1,4 @@
-/* Disassembling 'branching_kernels\if_else_and_if_else\if_else_and_if_else-gfx1030.bin' */
+/* Disassembling 'branching_kernels\if_with_long_expr\if_with_long_expr-gfx1030.bin' */
 .rocm
 .gpu GFX1000
 .arch_minor 3
@@ -7,7 +7,7 @@
 .newbinfmt
 .target "amdgcn-amd-amdhsa--gfx1030"
 .md_version 1, 0
-.kernel if_else_and_if_else
+.kernel if_with_long_expr
     .config
         .dims xyz
         .sgprsnum 24
@@ -29,25 +29,25 @@
         .use_ptr64
         .kernarg_segment_size 80
         .wavefront_sgpr_count 18
-        .workitem_vgpr_count 11
+        .workitem_vgpr_count 8
         .kernarg_segment_align 16
         .group_segment_align 16
         .private_segment_align 16
-        .wavefront_size 32
+        .wavefront_size 64
         .call_convention 0xffffffff
     .control_directive
         .fill 128, 1, 0x00
     .config
-        .md_symname "if_else_and_if_else@kd"
+        .md_symname "if_with_long_expr@kd"
         .md_language "OpenCL C", 1, 2
         .reqd_work_group_size 4, 4, 4
         .md_kernarg_segment_size 80
         .md_kernarg_segment_align 8
         .md_group_segment_fixed_size 0
         .md_private_segment_fixed_size 0
-        .md_wavefront_size 32
+        .md_wavefront_size 64
         .md_sgprsnum 18
-        .md_vgprsnum 11
+        .md_vgprsnum 8
         .max_flat_work_group_size 64
         .arg x, "int", 4, 4, value, struct
         .arg data, "int*", 8, 8, globalbuf, struct, global, default
@@ -60,51 +60,52 @@
         .arg , "", 8, 8, none, struct
         .arg , "", 8, 8, multigridsyncarg, struct
 .text
-if_else_and_if_else:
+if_with_long_expr:
 .skip 256
 /*000000000100*/ s_clause        0x4
 /*000000000104*/ s_load_dwordx4  s[12:15], s[4:5], 0x18
-/*00000000010c*/ s_load_dword    s0, s[4:5], 0x0
-/*000000000114*/ s_load_dwordx2  s[2:3], s[4:5], 0x8
-/*00000000011c*/ s_load_dword    s1, s[4:5], 0x10
-/*000000000124*/ s_load_dwordx2  s[4:5], s[4:5], 0x28
+/*00000000010c*/ s_load_dwordx2  s[0:1], s[4:5], 0x28
+/*000000000114*/ s_load_dword    s3, s[4:5], 0x10
+/*00000000011c*/ s_load_dword    s2, s[4:5], 0x0
+/*000000000124*/ s_load_dwordx2  s[4:5], s[4:5], 0x8
 /*00000000012c*/ v_lshl_or_b32   v0, s6, 2, v0
 /*000000000134*/ s_waitcnt       lgkmcnt(0)
-/*000000000138*/ v_add_co_u32    v3, s[5:6], s12, v0
-/*000000000140*/ v_cmp_lg_u32    vcc, 1, v3
-/*000000000144*/ s_and_saveexec_b32 s5, vcc_lo
-/*000000000148*/ s_xor_b32       s5, exec_lo, s5
-/*00000000014c*/ v_mul_lo_u32    v10, v3, s1
-/*000000000154*/ v_mov_b32       v4, 0
-/*000000000158*/ s_or_saveexec_b32 s5, s5
-/*00000000015c*/ v_lshl_or_b32   v1, s7, 2, v1
-/*000000000164*/ v_add_co_u32    v1, s[6:7], s14, v1
-/*00000000016c*/ s_xor_b32       exec_lo, exec_lo, s5
-/*000000000170*/ v_mul_lo_u32    v0, v1, s0
-/*000000000178*/ v_mov_b32       v3, 1
-/*00000000017c*/ v_mov_b32       v4, 0
-/*000000000180*/ v_subrev_nc_u32 v10, s1, v0
-/*000000000184*/ s_or_b32        exec_lo, exec_lo, s5
-/*000000000188*/ s_lshl_b32      s5, s8, 2
-/*00000000018c*/ v_mov_b32       v6, 0
-/*000000000190*/ v_add3_u32      v5, s4, s5, v2
-/*000000000198*/ v_lshlrev_b64   v[3:4], 2, v[3:4]
-/*0000000001a0*/ s_min_i32       s1, s0, s1
-/*0000000001a4*/ v_mov_b32       v8, s0
-/*0000000001a8*/ v_mov_b32       v2, v6
-/*0000000001ac*/ v_lshlrev_b64   v[5:6], 2, v[5:6]
-/*0000000001b4*/ v_mov_b32       v7, s1
-/*0000000001b8*/ v_add_co_u32    v3, vcc, s2, v3
-/*0000000001c0*/ v_lshlrev_b64   v[1:2], 2, v[1:2]
-/*0000000001c8*/ v_add_co_ci_u32 v4, vcc, s3, v4, vcc
-/*0000000001cc*/ v_add_co_u32    v5, vcc, s2, v5
-/*0000000001d4*/ v_add_co_ci_u32 v6, vcc, s3, v6, vcc
-/*0000000001d8*/ v_add_co_u32    v1, vcc, s2, v1
-/*0000000001e0*/ v_add_co_ci_u32 v2, vcc, s3, v2, vcc
-/*0000000001e4*/ global_store_dword v[3:4], v10, off
-/*0000000001ec*/ global_store_dword v[5:6], v7, off
-/*0000000001f4*/ global_store_dword v[1:2], v8, off
-/*0000000001fc*/ s_endpgm
+/*000000000138*/ s_lshl_b32      s1, s8, 2
+/*00000000013c*/ v_add_co_u32    v3, s[8:9], s12, v0
+/*000000000144*/ v_add3_u32      v0, s0, s1, v2
+/*00000000014c*/ v_cmp_ge_i32    s[8:9], s2, s3
+/*000000000154*/ v_cmp_lg_u32    vcc, 1, v3
+/*000000000158*/ v_cmp_lg_u32    s[0:1], 2, v0
+/*000000000160*/ s_or_b64        s[0:1], vcc, s[0:1]
+/*000000000164*/ s_or_b64        s[0:1], s[8:9], s[0:1]
+/*000000000168*/ s_and_saveexec_b64 s[8:9], s[0:1]
+/*00000000016c*/ s_xor_b64       s[0:1], exec, s[8:9]
+/*000000000170*/ v_mul_lo_u32    v6, v3, s3
+/*000000000178*/ v_mov_b32       v4, 0
+/*00000000017c*/ s_or_saveexec_b64 s[0:1], s[0:1]
+/*000000000180*/ v_lshl_or_b32   v1, s7, 2, v1
+/*000000000188*/ v_add_co_u32    v1, s[6:7], s14, v1
+/*000000000190*/ s_xor_b64       exec, exec, s[0:1]
+/*000000000194*/ v_mul_lo_u32    v0, v1, s2
+/*00000000019c*/ v_mov_b32       v3, 1
+/*0000000001a0*/ v_mov_b32       v4, 0
+/*0000000001a4*/ v_subrev_nc_u32 v6, s3, v0
+/*0000000001a8*/ s_or_b64        exec, exec, s[0:1]
+/*0000000001ac*/ v_mov_b32       v2, 0
+/*0000000001b0*/ v_lshlrev_b64   v[3:4], 2, v[3:4]
+/*0000000001b8*/ v_mov_b32       v7, s2
+/*0000000001bc*/ v_lshlrev_b64   v[1:2], 2, v[1:2]
+/*0000000001c4*/ v_add_co_u32    v3, vcc, s4, v3
+/*0000000001cc*/ v_add_co_ci_u32 v4, vcc, s5, v4, vcc
+/*0000000001d0*/ v_add_co_u32    v1, vcc, s4, v1
+/*0000000001d8*/ v_add_co_ci_u32 v2, vcc, s5, v2, vcc
+/*0000000001dc*/ global_store_dword v[3:4], v6, off
+/*0000000001e4*/ global_store_dword v[1:2], v7, off
+/*0000000001ec*/ s_endpgm
+/*0000000001f0*/ s_code_end
+/*0000000001f4*/ s_code_end
+/*0000000001f8*/ s_code_end
+/*0000000001fc*/ s_code_end
 /*000000000200*/ s_code_end
 /*000000000204*/ s_code_end
 /*000000000208*/ s_code_end

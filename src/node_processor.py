@@ -1,8 +1,7 @@
-import copy
-
 from src.decompiler_data import DecompilerData
 from src.instruction_dict import instruction_dict
-from src.operation_status import OperationStatus
+from src.instructions.sopp.s_endpgm import SEndpgm
+from src.instructions.label import Label
 
 
 def check_realisation_for_node(curr_node, row):
@@ -11,27 +10,6 @@ def check_realisation_for_node(curr_node, row):
         decompiler_data.write("Not resolved yet. " + row + "\n")
         return False
     return True
-
-
-def process_label_node(node, flag_of_status):
-    decompiler_data = DecompilerData()
-    if flag_of_status == OperationStatus.TO_FILL_NODE:
-        decompiler_data.set_to_node(node.instruction[0][:-1], node)
-        if decompiler_data.from_node.get(node.instruction[0][:-1]) is not None:
-            for wait_node in decompiler_data.from_node[node.instruction[0][:-1]]:
-                if node not in wait_node.children:
-                    if 'scc1' not in wait_node.instruction[0]:
-                        wait_node.add_child(node)
-                    else:
-                        wait_node.add_first_child(node)
-                    node.add_parent(wait_node)
-                    node.state = copy.deepcopy(node.parent[-1].state)
-
-        return node
-    if flag_of_status == OperationStatus.TO_PRINT_UNRESOLVED:
-        decompiler_data.write(node.instruction[0])
-        return node
-    return ""
 
 
 def decode_instruction(node, flag_of_status):
@@ -66,9 +44,8 @@ def decode_instruction(node, flag_of_status):
 
 
 def to_opencl(node, flag_of_status):
-    output_string = ""
     if node.instruction[0][0] == ".":
-        return process_label_node(node, flag_of_status)
-    if node.instruction == "branch":
-        return output_string
+        return Label(node, "").execute(flag_of_status)
+    if node.instruction[0] == "s_endpgm":
+        return SEndpgm(node, "").execute(flag_of_status)
     return decode_instruction(node, flag_of_status)

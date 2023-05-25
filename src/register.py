@@ -13,6 +13,7 @@ class Register:
         self.version = None
         self.prev_version = []
         self.data_type = None
+        self.exec_condition = None
 
     def add_version(self, name_version, num_version):
         self.version = name_version + "_" + str(num_version + 1)
@@ -37,7 +38,7 @@ def is_sgpr(reg: str) -> bool:
 
 def is_vgpr(reg: str) -> bool:
     """Matches v0, v12 and etc."""
-    return re.match("v[0-9]+", reg) is not None
+    return re.match("v[0-9]+", reg) is not None or reg == 'vcc'
 
 
 def is_reg(reg: str) -> bool:

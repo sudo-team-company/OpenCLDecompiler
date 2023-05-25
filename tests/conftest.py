@@ -39,4 +39,4 @@ def template(path_to_dir, dir_name, flag=None, mcpu=''):
         hands = test_root / f"{dir_name}_hands-gfx.cl"
     with open(hands, encoding="utf-8") as hands_decompilation:
         with open(out_file, encoding="utf-8") as decompiled:
-            assert hands_decompilation.read() == decompiled.read()
+            assert decompiled.read() == hands_decompilation.read()

@@ -18,12 +18,14 @@ class SOr(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in ["b32", "b64"]:
-            if self.sdst == "exec" and self.ssrc0 == "exec" and self.node.state.registers.get(self.ssrc1) is None:
-                new_value = self.node.state.registers[self.ssrc0].val
-                reg_entire = self.node.state.registers[self.ssrc0].integrity
-            else:
-                new_value = make_op(self.node, self.ssrc0, self.ssrc1, " | ")
-                reg_entire = self.node.state.registers[self.ssrc1].integrity
+            if self.sdst == "exec" and self.ssrc0 == "exec":
+                new_exec_condition = self.decompiler_data.exec_registers[self.ssrc0] | \
+                                     self.decompiler_data.exec_registers[self.ssrc1]
+                self.decompiler_data.exec_registers[self.sdst] = new_exec_condition
+                return set_reg_value(self.node, new_exec_condition.top(), self.sdst, [self.ssrc0, self.ssrc1], None,
+                                     exec_condition=new_exec_condition)
+            new_value = make_op(self.node, self.ssrc0, self.ssrc1, " || ")
+            reg_entire = self.node.state.registers[self.ssrc1].integrity
             return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix,
                                  reg_entire=reg_entire)
         return super().to_fill_node()
