@@ -29,7 +29,7 @@ class SAnd(BaseInstruction):
                 self.decompiler_data.exec_registers[self.ssrc0] = new_exec_condition
                 return set_reg_value(self.node, new_exec_condition.top(), self.sdst, [self.ssrc0, self.ssrc1], None,
                                      exec_condition=new_exec_condition)
-            elif self.ssrc0 in self.node.state.registers:
+            if self.ssrc0 in self.node.state.registers:
                 reg = self.node.state.registers[self.ssrc0]
             else:
                 ssrc0 = check_and_split_regs(self.ssrc0)[0]

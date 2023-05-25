@@ -387,9 +387,9 @@ def find_loops():
 def preprocess_if_and_if_else(curr_region, visited, start_region, q):
     if curr_region.type != RegionType.LINEAR:
         if check_if(curr_region):
-            visited, q, start_region = process_if_statement_region(curr_region, visited, start_region, q)
+            visited, q, start_region = process_if_statement_region(curr_region)
         elif check_if_else(curr_region):
-            visited, q, start_region = process_if_else_statement_region(curr_region, visited, start_region, q)
+            visited, q, start_region = process_if_else_statement_region(curr_region)
         else:
             if curr_region.children:
                 for child in curr_region.children:
@@ -417,7 +417,7 @@ def process_region_graph_dfs(region: Region, visited: set) -> Region:
 
     if region.type == RegionType.LOOP:
         return join_regions(region.parent[0], region, region.children[0])
-    elif region.type != RegionType.LINEAR:
+    if region.type != RegionType.LINEAR:
         if check_if(region):
             return process_if_statement_region(region)
         if check_if_else(region):
