@@ -7,35 +7,35 @@ from src.region_type import RegionType
 from src.regions.region import Region
 
 
-def add_parent_and_child(before_r, next_r, region, pred_child, pred_parent):
-    for i, before_r_i in enumerate(before_r):
-        index = before_r_i.children.index(pred_child[i])
-        before_r_i.children[index] = region
-        region.add_parent(before_r_i)
+def add_parent_and_child(before_r, next_r, region, prev_child, prev_parent):
+    index = before_r.children.index(prev_child)
+    before_r.children[index] = region
+    region.add_parent(before_r)
+
     if next_r is not None:
-        index = next_r.parent.index(pred_parent)
+        index = next_r.parent.index(prev_parent)
         next_r.parent[index] = region
         region.add_child(next_r)
 
 
 def check_if(curr_region):
     return curr_region.type == RegionType.BASIC and len(curr_region.children) == 2 \
-           and (len(curr_region.children[0].children) > 0
-                and curr_region.children[0].children[0] == curr_region.children[1]
-                or len(curr_region.children[1].children) > 0
-                and curr_region.children[1].children[0] == curr_region.children[0])
+    and (len(curr_region.children[0].children) > 0
+         and curr_region.children[0].children[0] == curr_region.children[1]
+         or len(curr_region.children[1].children) > 0
+         and curr_region.children[1].children[0] == curr_region.children[0])
 
 
 def check_if_else(curr_region):
     return curr_region.type == RegionType.BASIC and len(curr_region.children) == 2 \
-           and len(curr_region.children[0].children) > 0 \
-           and len(curr_region.children[1].children) > 0 \
-           and curr_region.children[0].children[0] == curr_region.children[1].children[0]
+    and len(curr_region.children[0].children) > 0 \
+    and len(curr_region.children[1].children) > 0 \
+    and curr_region.children[0].children[0] == curr_region.children[1].children[0]
 
 
 def check_loop(region_start, region_end):
     return len(region_start.children) == 1 and len(region_start.children[0].children) == 1 \
-           and region_start.children[0].children[0] == region_end
+    and region_start.children[0].children[0] == region_end
 
 
 def create_new_region(prev_reg_1, prev_reg_2, next_reg):
@@ -53,54 +53,51 @@ def create_new_region(prev_reg_1, prev_reg_2, next_reg):
     return new_fiction_region
 
 
-def join_regions(before_region, curr_region, next_region, start_region):
-    start_now = start_region
-    if len(before_region) == 1:
-        before_region = before_region[0]
-        if before_region.type != RegionType.BASIC:
-            region = Region(RegionType.LINEAR, before_region)
-            region.end = curr_region
-            if before_region == start_now:
-                start_now = region
-            else:
-                parent = before_region.parent[0]
-                index = parent.children.index(before_region)
-                parent.children[index] = region
-                region.add_parent(parent)
-            if next_region is not None:
-                index = next_region.parent.index(curr_region)
-                next_region.parent[index] = region
-                region.add_child(next_region)
-            if next_region is not None and next_region.type != RegionType.BASIC and len(curr_region.parent) == 1:
+def join_regions(before_region, curr_region, next_region):
+    result = before_region
+    if before_region.type != RegionType.BASIC:
+        region = Region(RegionType.LINEAR, before_region)
+        region.end = curr_region
+        if len(before_region.parent) > 0:
+            parent = before_region.parent[0]
+            index = parent.children.index(before_region)
+            parent.children[index] = region
+            region.add_parent(parent)
+        else:
+            result = region
+        if next_region is not None:
+            index = next_region.parent.index(curr_region)
+            next_region.parent[index] = region
+            region.add_child(next_region)
+            if next_region.type != RegionType.BASIC and len(curr_region.parent) == 1:
                 region_all = Region(RegionType.LINEAR, before_region)
                 region_all.end = next_region
-                if start_now == region:
-                    start_now = region_all
-                else:
+                if len(before_region.parent) > 0:
                     parent = before_region.parent[0]
                     index = parent.children.index(region)
                     parent.children[index] = region_all
                     region_all.add_parent(parent)
+                else:
+                    result = region_all
                 if next_region.children:
                     child = next_region.children[0]
                     index = child.parent.index(next_region)
                     child.parent[index] = region_all
                     region_all.add_child(child)
-            return start_now
+        return result
 
     if next_region is not None and next_region != RegionType.BASIC and len(curr_region.parent) == 1:
         region_all = Region(RegionType.LINEAR, curr_region)
         region_all.end = next_region
-        for prev_r in before_region:
-            index = prev_r.children.index(curr_region)
-            prev_r.children[index] = region_all
-            region_all.add_parent(prev_r)
+        index = before_region.children.index(curr_region)
+        before_region.children[index] = region_all
+        region_all.add_parent(before_region)
         if next_region.children:
             child = next_region.children[0]
             index = child.parent.index(next_region)
             child.parent[index] = region_all
             region_all.add_child(child)
-    return start_region
+    return result
 
 
 def make_region_graph_from_cfg():
@@ -171,59 +168,32 @@ def make_region_graph_from_cfg():
                     decompiler_data.set_parent_for_starts_regions(child, region)
 
 
-def process_if_statement_region(curr_region, visited, start_region, q):
+def process_if_statement_region(curr_region):
     region = Region(RegionType.IF_STATEMENT, curr_region)
     child0 = curr_region.children[0] if len(curr_region.children[0].parent) == 1 else \
         curr_region.children[1]
     child1 = curr_region.children[1] if len(curr_region.children[1].parent) > 1 else \
         curr_region.children[0]
-    before_r = [curr_region.parent[0]]
-    prev_child = [curr_region]
+    before_r = curr_region.parent[0]
     if len(child1.parent) > 2:
         child1 = create_new_region(curr_region, child0, child1)
     region.end = child1
-    visited.append(child1)
-    visited.append(child0)
     next_r = child1.children[0] if len(child1.children) > 0 else None
-    add_parent_and_child(before_r, next_r, region, prev_child, region.end)
-    start_region = join_regions(before_r, region, next_r, start_region)
-    if region.children:
-        for child in region.children:
-            if child not in visited:
-                if child in q:
-                    q.remove(child)
-                q.append(child)
-    else:
-        q = deque()
-        q.append(start_region)
-        visited = []
-    return visited, q, start_region
+    add_parent_and_child(before_r, next_r, region, curr_region, region.end)
+    return join_regions(before_r, region, next_r)
 
 
-def process_if_else_statement_region(curr_region, visited, start_region, q):
+def process_if_else_statement_region(curr_region):
     region = Region(RegionType.IF_ELSE_STATEMENT, curr_region)
     child0 = curr_region.children[0]
     child1 = curr_region.children[1]
     region.end = child0.children[0]
     if len(region.end.parent) > 2:
         region.end = create_new_region(child0, child1, child0.children[0])
-    prev_child = [curr_region]
-    visited.append(child1)
-    visited.append(child0)
-    visited.append(region.end)
-    before_r = [curr_region.parent[0]]
-    next_r = region.end.children[0]
-    add_parent_and_child(before_r, next_r, region, prev_child, region.end)
-    start_region = join_regions(before_r, region, next_r, start_region)
-    if region.children:
-        for child in region.children:
-            if child not in visited:
-                q.append(child)
-    else:
-        q = deque()
-        q.append(start_region)
-        visited = []
-    return visited, q, start_region
+    before_r = curr_region.parent[0]
+    next_r = None if region.end.children == [] else region.end.children[0]
+    add_parent_and_child(before_r, next_r, region, curr_region, region.end)
+    return join_regions(before_r, region, next_r)
 
 
 def make_var_for_loop(curr_node, register, version, prev_version):
@@ -233,14 +203,11 @@ def make_var_for_loop(curr_node, register, version, prev_version):
     else:
         variable = "var" + str(decompiler_data.num_of_var)
         decompiler_data.num_of_var += 1
-    # decompiler_data.make_var(first_reg_prev_version, variable,
-    #                          curr_node.state.registers[register].data_type)
+    data_type = curr_node.state.registers[register].data_type
     decompiler_data.checked_variables[prev_version] = variable
-    # decompiler_data.checked_variables[first_reg_version] = variable
     decompiler_data.loops_variables[version] = variable
     decompiler_data.loops_nodes_for_variables[curr_node] = version
-    # decompiler_data.variables[first_reg_version] = variable
-    decompiler_data.names_of_vars[variable] = curr_node.state.registers[register].data_type
+    decompiler_data.names_of_vars[variable] = data_type
     decompiler_data.variables[prev_version] = variable
     if curr_node.state.registers[register].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
         decompiler_data.address_params.add(variable)
@@ -266,10 +233,9 @@ def check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_v
 def process_loop(region_start, region_end):
     region = Region(RegionType.LOOP, region_start)
     region.end = region_end
-    prev_child = [region_start]
-    before_r = [region_start.parent[0]]
+    before_r = region_start.parent[0]
     next_r = region.end.children[1]
-    add_parent_and_child(before_r, next_r, region, prev_child, region.end)
+    add_parent_and_child(before_r, next_r, region, region_start, region.end)
     used_versions_of_registers = set()
     curr_node = region_start.start
     reg_versions_in_instruction = {}
@@ -319,7 +285,7 @@ def process_loop(region_start, region_end):
                     and curr_node.state.registers.get(register):
                 separation = first_reg_version.find("_")
                 first_reg_prev_version = first_reg_version[:separation + 1] \
-                    + str(int(first_reg_version[separation + 1:]) - 1)
+                                         + str(int(first_reg_version[separation + 1:]) - 1)
                 if first_reg_prev_version in used_versions_of_registers:
                     make_var_for_loop(curr_node, register, first_reg_version, first_reg_prev_version)
         curr_node = curr_node.children[0]
@@ -350,8 +316,7 @@ def process_control_structures_in_loop(region_start, region_end):
                 next_region = curr_region.children[0] if curr_region.children[1] == after_region_end else \
                     curr_region.children[1]
                 curr_region, after_region_end = remove_region_connect(curr_region, after_region_end)
-                join_regions([curr_region.parent[0]], curr_region,
-                             next_region, start_region)  # not good enough
+                join_regions(curr_region.parent[0], curr_region, next_region)  # not good enough
                 if curr_region.children:
                     for child in curr_region.children:
                         if child not in visited:
@@ -369,8 +334,7 @@ def get_one_loop_region(q_loops, curr_region, start_region, region_start, region
         loop_region = q_loops.pop()
         if loop_region.type == RegionType.BACK_EDGE:
             loop_region.type = RegionType.CONTINUE_REGION
-            join_regions([loop_region.parent[0]], loop_region,
-                         loop_region.children[0], start_region)  # not good enough
+            join_regions(loop_region.parent[0], loop_region, loop_region.children[0])  # not good enough
         elif curr_region.start.instruction[1] == loop_region.start.instruction[0][:-1]:
             region_start = loop_region
             curr_loop = None
@@ -443,28 +407,27 @@ def preprocess_if_and_if_else(curr_region, visited, start_region, q):
     return visited, q, start_region
 
 
+def process_region_graph_dfs(region: Region, visited: set) -> Region:
+    visited.add(region)
+    result = region
+
+    for child in region.children:
+        if child not in visited:
+            result = process_region_graph_dfs(child, visited)
+
+    if region.type == RegionType.LOOP:
+        return join_regions(region.parent[0], region, region.children[0])
+    elif region.type != RegionType.LINEAR:
+        if check_if(region):
+            return process_if_statement_region(region)
+        if check_if_else(region):
+            return process_if_else_statement_region(region)
+    return result
+
+
 def process_region_graph():
     decompiler_data = DecompilerData()
-    start_region = decompiler_data.starts_regions[decompiler_data.cfg]
     if decompiler_data.loops:
         find_loops()
-    visited = []
-    q = deque()
-    q.append(start_region)
-    while start_region.children:
-        curr_region = q.popleft()
-        if curr_region not in visited:
-            visited.append(curr_region)
-            if curr_region.type == RegionType.LOOP:
-                start_region = join_regions([curr_region.parent[0]], curr_region, curr_region.children[0], start_region)
-                if curr_region.children:
-                    for child in curr_region.children:
-                        if child not in visited:
-                            q.append(child)
-                else:
-                    q = deque()
-                    q.append(start_region)
-                    visited = []
-            else:
-                visited, q, start_region = preprocess_if_and_if_else(curr_region, visited, start_region, q)
-    decompiler_data.improve_cfg = start_region
+    decompiler_data.improve_cfg = process_region_graph_dfs(
+        decompiler_data.starts_regions[decompiler_data.cfg], set({}))

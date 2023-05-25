@@ -6,6 +6,7 @@ import sympy
 
 from src.flag_type import FlagType
 from src.integrity import Integrity
+from src.logical_variable import ExecCondition
 from src.register import Register, is_reg, is_range, check_and_split_regs
 from src.register_type import RegisterType
 from src.state import State
@@ -13,13 +14,14 @@ from src.utils import ConfigData, DriverFormat
 
 
 def set_reg_value(node, new_value, to_reg, from_regs, data_type,
-                  reg_type=RegisterType.UNKNOWN, reg_entire=Integrity.ENTIRE):
+                  exec_condition=None, reg_type=RegisterType.UNKNOWN, reg_entire=Integrity.ENTIRE):
     decompiler_data = DecompilerData()
     node.state.registers[to_reg] = Register(new_value, reg_type, reg_entire)
     decompiler_data.make_version(node.state, to_reg)
     if to_reg in from_regs:
         node.state.registers[to_reg].make_prev()
     node.state.registers[to_reg].data_type = data_type
+    node.state.registers[to_reg].exec_condition = exec_condition
     return node
 
 
@@ -290,6 +292,7 @@ class DecompilerData(metaclass=Singleton):
         self.flag_for_decompilation = None
         self.address_params = set()
         self.bfe_offsets = {}
+        self.exec_registers = {"exec": ExecCondition.default()}
 
     def reset(self, name_of_program):
         self.name_of_program = name_of_program
@@ -398,6 +401,7 @@ class DecompilerData(metaclass=Singleton):
         self.loops_nodes_for_variables = {}
         self.address_params = set()
         self.bfe_offsets = {}
+        self.exec_registers = {"exec": ExecCondition.default()}
 
     def write(self, output):
         # noinspection PyUnresolvedReferences
@@ -405,6 +409,7 @@ class DecompilerData(metaclass=Singleton):
             output = simplify_opencl_statement(output)
             output = output.replace("___", ".")
         self.output_file.write(output)
+        self.output_file.flush()
 
     def make_version(self, state, reg):
         if reg not in self.versions:
@@ -428,6 +433,8 @@ class DecompilerData(metaclass=Singleton):
             self.initial_state.init_work_group(dim, g_id_dim, self.versions[g_id_dim], self.versions[v_dim])
             self.versions[g_id_dim] += 1
             self.versions[v_dim] += 1
+        self.initial_state.init_exec(self.versions["exec"])
+        self.versions["exec"] += 1
 
     def process_initial_state(self):
         lp, hp = ("s6", "s7") if self.config_data.usesetup else ("s4", "s5")
@@ -522,25 +529,16 @@ class DecompilerData(metaclass=Singleton):
         self.label = node
         self.parents_of_label = node.parent
 
-    def change_cfg_for_else_structure(self, instruction, curr_node, from_node):
-        self.from_node[instruction[1]].remove(curr_node)
-        if self.from_node.get(from_node) is None:
-            self.from_node[from_node] = []
-        for parents_of_label in self.parents_of_label:
-            if parents_of_label != self.parents_of_label[1]:
-                self.from_node[from_node].append(parents_of_label)
-        self.flag_of_else = False
-
     def to_fill_branch_node(self, node, instruction):
-        reladdr = instruction[1]
-        if self.to_node.get(reladdr) is not None:
-            node.add_child(self.to_node[reladdr])
-            self.to_node[reladdr].add_parent(node)
-            self.loops.append(self.to_node[reladdr])
+        label = instruction[1]
+        to_node = self.to_node.get(label)
+        if to_node is not None:
+            node.add_child(to_node)
+            to_node.add_parent(node)
+            self.loops.append(to_node)
             self.back_edges.append(node)
         else:
-            if self.from_node.get(reladdr) is None:
-                self.from_node[reladdr] = [node]
-            else:
-                self.from_node[reladdr].append(node)
+            if self.from_node.get(label) is None:
+                self.from_node[label] = []
+            self.from_node[label].append(node)
         return node

@@ -17,6 +17,6 @@ class VCmpGe(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix == 'u32':
+        if self.suffix in ['u32', 'i32']:
             return compare_values(self.node, self.sdst, self.src0, self.src1, '(uint)', '(uint)', " >= ", self.suffix)
         return super().to_fill_node()

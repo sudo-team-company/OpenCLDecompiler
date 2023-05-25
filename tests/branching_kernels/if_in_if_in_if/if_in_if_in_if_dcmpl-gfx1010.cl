@@ -9,7 +9,7 @@ void if_in_if_in_if(uint nEdges, __global uint *edges_x, __global uint *edges_y,
     if ((uint)nEdges > (uint)get_global_id(0)) {
         var0 = edges_x[get_global_id(0)];
         var1 = d[var0];
-        if ((double)var1 < (double)some_const) {
+        if ((double)var1 < (double)(double)some_const) {
             var2 = edges_y[get_global_id(0)];
             var3 = weights[get_global_id(0)];
             var4 = d[var2];

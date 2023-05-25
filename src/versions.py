@@ -3,12 +3,13 @@ import re
 from collections import deque
 
 from src.decompiler_data import DecompilerData
-from src.register import check_and_split_regs_range_to_full_list
 from src.register_type import RegisterType
 
 
 def find_max_and_prev_versions(curr_node):
-    for reg in curr_node.parent[0].state.registers:
+    for reg in curr_node.state.registers:
+        if reg in ['vcc', 'scc', 'exec']:
+            continue
         prev_versions_of_reg = set()
         max_version = 0
         for parent in curr_node.parent:
@@ -30,6 +31,11 @@ def update_reg_version(reg, curr_node, max_version, prev_versions_of_reg):
     curr_node.state.registers[reg].version = reg + "_" + str(max_version + 1)
     curr_node.state.registers[reg].prev_version = list(prev_versions_of_reg)
     variable = "var" + str(decompiler_data.num_of_var)
+    for prev in prev_versions_of_reg:
+        if decompiler_data.checked_variables.get(prev):
+            old_var = decompiler_data.checked_variables[prev]
+            decompiler_data.checked_variables[prev] = variable
+            decompiler_data.variables = {k: v.replace(old_var, variable) for k, v in decompiler_data.variables.items()}
     curr_node.state.registers[reg].val = variable
     if curr_node.state.registers[reg].type in [RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT,
                                                RegisterType.ADDRESS_KERNEL_ARGUMENT]:
@@ -38,64 +44,37 @@ def update_reg_version(reg, curr_node, max_version, prev_versions_of_reg):
     return curr_node
 
 
-def check_for_use_new_version_in_one_instruction(curr_node, instruction):
-    decompiler_data = DecompilerData()
+def check_for_use_new_version_in_one_instruction(curr_node):
     for num_of_reg in range(1, len(curr_node.instruction)):
         register = curr_node.instruction[num_of_reg]
-        if (re.match(r"(flat|global)_store", curr_node.instruction[0])
-            or num_of_reg > 1) \
-                and len(register) > 1 \
-                and "cnd" not in curr_node.instruction[0]:
+        if (re.match(r"(flat|global)_store", curr_node.instruction[0]) or num_of_reg > 1) \
+                and len(register) > 1 and "cnd" not in curr_node.instruction[0]:
             if register[1] == "[":
                 register = register[0] + register[2: register.find(":")]
-            first_reg = check_and_split_regs_range_to_full_list(curr_node.instruction[1])
-            if curr_node.state.registers.get(register) is not None:
-                checked_version = curr_node.state.registers[register].version
-            else:
-                continue
-            if register in first_reg:
-                checked_version = curr_node.parent[0].state.registers[register].version
-            if curr_node.state.registers.get(register) is not None \
-                    and decompiler_data.checked_variables.get(checked_version) is not None \
-                    and curr_node.state.registers[register].data_type is not None \
-                    and (register != "vcc" or "and_saveexec" in instruction[0]):
-                var_name = decompiler_data.checked_variables[checked_version]
-                if decompiler_data.names_of_vars.get(var_name) is None:
-                    if decompiler_data.checked_variables.get(
-                            curr_node.parent[0].state.registers[register].version) is not None:
-                        decompiler_data.set_name_of_vars(var_name,
-                                                         curr_node.parent[0].state.registers[register].data_type)
-                    else:
-                        decompiler_data.set_name_of_vars(var_name, curr_node.state.registers[register].data_type)
+            parent_register = curr_node.parent[0].state.registers.get(register)
+            if parent_register is not None:
+                decompiler_data = DecompilerData()
+                checked_version = parent_register.version
+                if decompiler_data.checked_variables.get(checked_version) is not None:
+                    var = decompiler_data.checked_variables[checked_version]
+                    data_type = parent_register.data_type
+                    if data_type is not None and decompiler_data.names_of_vars.get(var) is None:
+                        decompiler_data.names_of_vars[var] = data_type
 
 
 def check_for_use_new_version():
-    decompiler_data = DecompilerData()
-    curr_node = decompiler_data.cfg
-    visited = [curr_node]
     queue = deque()
-    queue.append(curr_node.children[0])
-    while queue:
-        curr_node = queue.popleft()
-        if curr_node not in visited:
-            visited.append(curr_node)
-            if len(curr_node.parent) < 2:
-                if decompiler_data.checked_variables != {}:
-                    instruction = curr_node.instruction
-                    if instruction != "branch" and len(instruction) > 1:
-                        check_for_use_new_version_in_one_instruction(curr_node, instruction)
-            else:
-                flag_of_continue = False
-                for c_p in curr_node.parent:
-                    if c_p not in visited:
-                        flag_of_continue = True
-                        break
-                if flag_of_continue:
-                    visited.remove(curr_node)
-                    continue
-            for child in curr_node.children:
-                if child not in visited:
-                    queue.append(child)
+    queue.append(DecompilerData().cfg)
+    visited = []
+
+    while len(queue) > 0:
+        node = queue.popleft()
+        visited.append(node)
+        if len(node.parent) == 1:
+            check_for_use_new_version_in_one_instruction(node)
+        for child in node.children:
+            if child not in visited:
+                queue.append(child)
 
 
 def update_value_for_reg(first_reg, curr_node):
@@ -168,7 +147,7 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
                     curr_node.state.registers[register].val.replace(val_reg,
                                                                     decompiler_data.checked_variables[check_version])
                 # а тут наоборот, наверное, надо сделать присвоение для первого регистра
-        elif curr_node.state.registers[first_reg].val.find(val_reg) != -1:
+        elif curr_node.state.registers[first_reg].val.find(val_reg) != -1 and first_reg in ["vcc", "scc", "exec"]:
             curr_node.state.registers[first_reg].val = \
                 curr_node.state.registers[first_reg].val.replace(val_reg, decompiler_data.variables[check_version])
         elif re.match(r"(flat|global)_store", instruction[0]):
@@ -228,7 +207,7 @@ def change_values():
             visited.append(curr_node)
             if len(curr_node.parent) < 2:
                 instruction = curr_node.instruction
-                if (instruction != "branch" or curr_node in decompiler_data.back_edges) and len(instruction) > 1:
+                if (instruction != "c_branch" or curr_node in decompiler_data.back_edges) and len(instruction) > 1:
                     change_values_for_one_instruction(curr_node, changes)
             else:
                 flag_of_continue = False

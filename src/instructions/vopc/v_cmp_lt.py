@@ -27,7 +27,7 @@ class VCmpLt(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix == 'f64':
+        if self.suffix in ['f64', 'i32']:
             return compare_values(self.node, self.sdst, self.src0, self.src1, self.new_as_type,
                                   self.new_as_type, " < ", self.suffix)
         return super().to_fill_node()
