@@ -10,7 +10,7 @@ from src.logical_variable import ExecCondition
 from src.register import Register, is_reg, is_range, check_and_split_regs
 from src.register_type import RegisterType
 from src.state import State
-from src.utils import ConfigData, DriverFormat
+from src.utils import ConfigData, DriverFormat, Singleton
 
 
 def set_reg_value(node, new_value, to_reg, from_regs, data_type,
@@ -169,16 +169,6 @@ def evaluate_from_hex(global_data, size, flag):
         value = struct.unpack(flag, binascii.unhexlify(string_of_bytes))[0]
         typed_global_data.append(str(value))
     return typed_global_data
-
-
-class Singleton(type):
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            instance = super().__call__(*args, **kwargs)
-            cls._instances[cls] = instance
-        return cls._instances[cls]
 
 
 class DecompilerData(metaclass=Singleton):
