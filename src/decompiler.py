@@ -11,11 +11,11 @@ from src.logical_variable import ExecCondition
 from src.node import Node
 from src.node_processor import check_realisation_for_node
 from src.regions.functions_for_regions import make_region_graph_from_cfg, process_region_graph
-from src.versions import find_max_and_prev_versions, change_values, check_for_use_new_version
 from src.utils import get_context
-
+from src.versions import find_max_and_prev_versions, change_values, check_for_use_new_version
 
 CONTEXT = get_context()
+
 
 def process_single_instruction(row, state, parents):
     instruction = row.strip().replace(',', ' ').split()
@@ -123,7 +123,11 @@ def process_src(name_of_program, config_data, set_of_instructions, set_of_global
     if CONTEXT.get(CONTROL_FLOW_GRAPH_ENABLED_CONTEXT_KEY):
         control_flow_graph = ControlFlowGraph.instance()
         for node in decompiler_data.starts_regions:
-            control_flow_graph.build_by_node(node)
+            control_flow_graph.build_from_node(
+                node=node,
+                program_name=decompiler_data.name_of_program,
+                program_id=decompiler_data.pragram_id,
+            )
         control_flow_graph.render()
     if decompiler_data.checked_variables != {} or decompiler_data.variables != {}:
         change_values()

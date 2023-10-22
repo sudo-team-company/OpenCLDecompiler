@@ -4,6 +4,7 @@ from typing import Optional
 
 import sympy
 
+from src import utils
 from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
@@ -173,6 +174,7 @@ def evaluate_from_hex(global_data, size, flag):
 
 class DecompilerData(metaclass=Singleton):
     def __init__(self):
+        self.pragram_id = utils.generate_uuid()
         self.name_of_program = None
         self.config_data: Optional[ConfigData] = None
         self.driver_format: DriverFormat = DriverFormat.UNKNOWN

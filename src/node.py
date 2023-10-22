@@ -1,10 +1,12 @@
-import uuid
+import utils
+
+from src import base
 
 
 class Node:
     def __init__(self, instruction, state):
-        self.id = str(uuid.uuid4())
-        self.instruction = instruction
+        self.id = utils.generate_uuid()
+        self.instruction: base.Instruction = instruction
         self.children = []
         self.parent = []
         self.state = state
