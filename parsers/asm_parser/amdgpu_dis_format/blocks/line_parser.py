@@ -8,7 +8,7 @@ from parsers.base.ignore_parser import IgnoreParser
 from parsers.base.line_parser import LineParser
 from parsers.base.one_or_zero_parser import OneOrZeroParser
 from parsers.base.parser_element_parser import ParserElementParser
-from parsers.parse_objects.base.lines_parse_object import ListParseObject
+from parsers.parse_objects.base.list_parse_object import ListParseObject
 from parsers.parse_objects.base import ParseObject
 from parsers.parse_objects.base.parse_object import EmptyParseObject
 

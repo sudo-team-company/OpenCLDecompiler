@@ -9,7 +9,7 @@ from parsers.base.base_parser import BaseParser
 from parsers.base.ignore_parser import IgnoreParser
 from parsers.base.line_parser import LineParser
 from parsers.base.one_or_more_parser import OneOrMoreParser
-from parsers.parse_objects.base.lines_parse_object import ListParseObject
+from parsers.parse_objects.base.list_parse_object import ListParseObject
 from parsers.parse_objects.base import ParseObject
 
 
@@ -17,6 +17,7 @@ class AmdGpuDisParser(BaseParser):
     def __init__(self):
         self._function_names = []
         self._function_commands = {}
+        self._config = {}
 
     def parse(self, text: str) -> Optional[tuple[ParseObject, str]]:
         parser = OneOrMoreParser(
@@ -42,13 +43,12 @@ class AmdGpuDisParser(BaseParser):
                     continue
 
             if isinstance(obj, Config):
-                print(obj)
-                print(obj.args)
-                print(obj.metadata)
+                for config in obj.config:
+                    self._config[config[".name"]] = config
 
         result = []
 
         for name in self._function_names:
-            result.append((name, self._function_commands[name]))
+            result.append((name, self._function_commands[name], self._config[name]))
 
         return ListParseObject(result), ""
