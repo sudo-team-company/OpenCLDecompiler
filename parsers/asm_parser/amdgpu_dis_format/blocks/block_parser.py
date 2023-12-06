@@ -21,8 +21,7 @@ class AmdGpuDisBlockParser(BaseParser):
             ParserElementParser(
                 Regex("[^:\s]+")
             ) +
-            IgnoreParser(ParserElementParser(Literal(":"))) +
-            IgnoreParser(AnyParser())
+            IgnoreParser(ParserElementParser(Literal(":")))
         ).parse(text)
 
         if parse_result is None:

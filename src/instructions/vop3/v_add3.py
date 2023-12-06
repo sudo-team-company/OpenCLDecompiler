@@ -14,6 +14,16 @@ _instruction_internal_mapping_by_types = {
             RegisterType.__getattr__(f"GLOBAL_ID_{dim}"),
         ) for i, dim in enumerate("XYZ")
     },
+**{
+        frozenset({
+            RegisterType.__getattr__("GLOBAL_OFFSET_X"),
+            RegisterType.__getattr__("WORK_ITEM_ID_UNKNOWN"),
+            RegisterType.__getattr__("WORK_GROUP_ID_X_LOCAL_SIZE"),
+        }): (
+            "get_global_id(0)",
+            RegisterType.GLOBAL_ID_X,
+        )
+    },
     **{
         frozenset({
             RegisterType.__getattr__(f"GLOBAL_OFFSET_{dim}"),

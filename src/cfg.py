@@ -11,6 +11,8 @@ def make_cfg_node(instruction, state, parents):
             instruction[i] = "vcc"
         if instr == "exec_lo":
             instruction[i] = "exec"
+        if instr.endswith(".l"):
+            instruction[i] = instruction[i][:-2]
     node = Node(instruction, copy.deepcopy(state))
     for parent in parents:
         node.parent.append(parent)

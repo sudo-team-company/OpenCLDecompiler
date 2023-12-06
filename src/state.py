@@ -2,6 +2,7 @@ from src.integrity import Integrity
 from src.logical_variable import ExecCondition
 from src.register import Register
 from src.register_type import RegisterType
+from src.register_value import RegisterValue
 
 
 class State:
@@ -58,20 +59,30 @@ class State:
                 "exec": None
             }
 
-    def init_work_group(self, dim, g_id_dim, version_g_id, version_v):
+    def init_work_group(self, dim, g_id_dim, version_g_id, version_v, is_rdna3: bool):
         v_dim = "v" + str(dim)
+        if is_rdna3:
+            v_dim = "v0"
+            type_v = RegisterType.WORK_ITEM_ID_UNKNOWN
         if dim == 0:
             type_g = RegisterType.WORK_GROUP_ID_X
-            type_v = RegisterType.WORK_ITEM_ID_X
+            if not is_rdna3:
+                type_v = RegisterType.WORK_ITEM_ID_X
         elif dim == 1:
             type_g = RegisterType.WORK_GROUP_ID_Y
-            type_v = RegisterType.WORK_ITEM_ID_Y
+            if not is_rdna3:
+                type_v = RegisterType.WORK_ITEM_ID_Y
         else:
             type_g = RegisterType.WORK_GROUP_ID_Z
-            type_v = RegisterType.WORK_ITEM_ID_Z
+            if not is_rdna3:
+                type_v = RegisterType.WORK_ITEM_ID_Z
         self.registers[g_id_dim] = Register("get_group_id(" + str(dim) + ")", type_g, Integrity.ENTIRE)
         self.registers[g_id_dim].add_version(g_id_dim, version_g_id)
-        self.registers[v_dim] = Register("get_local_id(" + str(dim) + ")", type_v, Integrity.ENTIRE)
+
+        val = "get_local_id(" + str(dim) + ")"
+        if type_v == RegisterType.WORK_ITEM_ID_UNKNOWN:
+            val = RegisterValue(32, RegisterType.WORK_ITEM_ID_UNKNOWN)
+        self.registers[v_dim] = Register(val, type_v, Integrity.ENTIRE)
         self.registers[v_dim].add_version(v_dim, version_v)
 
     def init_exec(self, version):

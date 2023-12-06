@@ -15,6 +15,9 @@ class RegisterType(Enum):
     WORK_ITEM_ID_X = auto()
     WORK_ITEM_ID_Y = auto()
     WORK_ITEM_ID_Z = auto()
+    WORK_ITEM_ID_YX = auto()
+    WORK_ITEM_ID_ZYX = auto()
+    WORK_ITEM_ID_UNKNOWN = auto()
 
     GLOBAL_OFFSET_X = auto()
     GLOBAL_OFFSET_Y = auto()
@@ -47,6 +50,10 @@ class RegisterType(Enum):
     GLOBAL_SIZE_X = auto()
     GLOBAL_SIZE_Y = auto()
     GLOBAL_SIZE_Z = auto()
+
+    NUM_GROUPS_X = auto()
+    NUM_GROUPS_Y = auto()
+    NUM_GROUPS_Z = auto()
 
     KERNEL_ARGUMENT_VALUE = auto()  # x, y, z
     KERNEL_ARGUMENT_PTR = auto()  # __global *data

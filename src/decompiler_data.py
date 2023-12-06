@@ -9,6 +9,7 @@ from src.integrity import Integrity
 from src.logical_variable import ExecCondition
 from src.register import Register, is_reg, is_range, check_and_split_regs
 from src.register_type import RegisterType
+from src.register_value import RegisterValue
 from src.state import State
 from src.utils import ConfigData, DriverFormat
 
@@ -124,7 +125,7 @@ def check_big_values(node, start_register, end_register):
 def check_reg_for_val(node, register):
     if is_reg(register) or is_range(register):  # TODO: Выяснить зачем нужен range
         if node.state.registers.get(register):
-            new_val = node.state.registers[register].val
+            new_val = node.state.registers[register].get_value()
         else:
             if is_range(register):
                 start_register, end_register = check_and_split_regs(register)
@@ -293,6 +294,36 @@ class DecompilerData(metaclass=Singleton):
         self.address_params = set()
         self.bfe_offsets = {}
         self.exec_registers = {"exec": ExecCondition.default()}
+        self.is_rdna3: bool = False
+
+    @property
+    def setup_argument_dict(self) -> dict[str, Register]:
+        """
+        Returns dict of offset to register based on gpu version
+        """
+
+        if self.is_rdna3:
+            return {
+                '0x10': Register("get_num_groups(0)", RegisterType.NUM_GROUPS_X, Integrity.ENTIRE, size=32),
+                '0x14': Register("get_num_groups(1)", RegisterType.NUM_GROUPS_Y, Integrity.ENTIRE, size=32),
+                '0x18': Register("get_num_groups(2)", RegisterType.NUM_GROUPS_Z, Integrity.ENTIRE, size=32),
+                '0x1c': Register("get_local_size(0)", RegisterType.LOCAL_SIZE_X, Integrity.ENTIRE, size=16),
+                '0x1e': Register("get_local_size(1)", RegisterType.LOCAL_SIZE_Y, Integrity.ENTIRE, size=16),
+                '0x20': Register("get_local_size(2)", RegisterType.LOCAL_SIZE_Z, Integrity.ENTIRE, size=16),
+                '0x22': Register("unknown yet", RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE, Integrity.ENTIRE, size=16),
+                '0x24': Register("unknown yet", RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE, Integrity.ENTIRE, size=16),
+                '0x26': Register("unknown yet", RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE, Integrity.ENTIRE, size=16),
+                '0x38': Register("get_global_offset(0)", RegisterType.GLOBAL_OFFSET_X, Integrity.ENTIRE, size=64),
+                '0x40': Register("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, Integrity.ENTIRE, size=64),
+                '0x48': Register("get_global_offset(2)", RegisterType.GLOBAL_OFFSET_Z, Integrity.ENTIRE, size=64),
+                '0x50': Register("get_work_dim()", RegisterType.WORK_DIM, Integrity.ENTIRE, size=16),
+            }
+        else:
+            return {
+                '0x0': Register("get_global_offset(0)", RegisterType.GLOBAL_OFFSET_X, Integrity.ENTIRE),
+                '0x8': Register("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, Integrity.ENTIRE),
+                '0x10': Register("get_global_offset(2)", RegisterType.GLOBAL_OFFSET_Z, Integrity.ENTIRE)
+            }
 
     def reset(self, name_of_program):
         self.name_of_program = name_of_program
@@ -402,6 +433,7 @@ class DecompilerData(metaclass=Singleton):
         self.address_params = set()
         self.bfe_offsets = {}
         self.exec_registers = {"exec": ExecCondition.default()}
+        self.is_rdna3 = False
 
     def write(self, output):
         # noinspection PyUnresolvedReferences
@@ -420,6 +452,8 @@ class DecompilerData(metaclass=Singleton):
     def init_work_group(self):
         dimensions = self.config_data.dimensions
         g_id = ["s8", "s9", "s10"] if self.config_data.usesetup else ["s6", "s7", "s8"]
+        if self.is_rdna3:
+            g_id = ["s2", "s3", "s4"]
         if ',' in dimensions:
             dimensions = dimensions.split(',')
             max_dim = dimensions[0]
@@ -430,7 +464,13 @@ class DecompilerData(metaclass=Singleton):
         for dim in range(len(dimensions)):
             g_id_dim = g_id[dim]
             v_dim = "v" + str(dim)
-            self.initial_state.init_work_group(dim, g_id_dim, self.versions[g_id_dim], self.versions[v_dim])
+            self.initial_state.init_work_group(
+                dim,
+                g_id_dim,
+                self.versions[g_id_dim],
+                self.versions[v_dim],
+                self.is_rdna3,
+            )
             self.versions[g_id_dim] += 1
             self.versions[v_dim] += 1
         self.initial_state.init_exec(self.versions["exec"])
@@ -438,6 +478,8 @@ class DecompilerData(metaclass=Singleton):
 
     def process_initial_state(self):
         lp, hp = ("s6", "s7") if self.config_data.usesetup else ("s4", "s5")
+        if self.is_rdna3:
+            lp, hp = ("s0", "s1")
         self.initial_state.registers[lp] = Register("0", RegisterType.ARGUMENTS_POINTER, Integrity.LOW_PART)
         self.make_version(self.initial_state, lp)
         self.initial_state.registers[hp] = Register("0", RegisterType.ARGUMENTS_POINTER, Integrity.HIGH_PART)

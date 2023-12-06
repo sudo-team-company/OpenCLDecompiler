@@ -60,31 +60,38 @@ def upload_global_data_pointer(state, to_registers, from_registers):
     decompiler_data.make_version(state, start_to_register)
 
 
-setup_argument_dict = {
-    '0x0': Register("get_global_offset(0)", RegisterType.GLOBAL_OFFSET_X, Integrity.ENTIRE),
-    '0x8': Register("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, Integrity.ENTIRE),
-    '0x10': Register("get_global_offset(2)", RegisterType.GLOBAL_OFFSET_Z, Integrity.ENTIRE)
-}
-
-
 def upload_setup_argument(state, to_registers, offset):
     decompiler_data = DecompilerData()
-    offset = hex(decompiler_data.config_data.setup_params_offsets.index(offset) * 8)
+    if not decompiler_data.is_rdna3:
+        offset = hex(decompiler_data.config_data.setup_params_offsets.index(offset) * 8)
     start_to_register, end_to_register = check_and_split_regs(to_registers)
     curr_to_register = start_to_register
+
+    if decompiler_data.setup_argument_dict[offset].size <= 32:
+        loading_bits = 32
+    else:
+        loading_bits = 64
     while True:
         # TODO: Учитывать размер - 64 или 32
-        state.registers[curr_to_register] = setup_argument_dict[offset]
-        decompiler_data.make_version(state, curr_to_register)
-        if curr_to_register == end_to_register:
-            break
-        curr_to_register = get_next_reg(curr_to_register)
-        state.registers[curr_to_register] = setup_argument_dict[offset]
-        decompiler_data.make_version(state, curr_to_register)
-        offset = hex(int(offset, 16) + 8)
-        if curr_to_register == end_to_register:
-            break
-        curr_to_register = get_next_reg(curr_to_register)
+        if loading_bits == 32:
+            state.registers[curr_to_register] = decompiler_data.setup_argument_dict[offset]
+            decompiler_data.make_version(state, curr_to_register)
+            if curr_to_register == end_to_register:
+                break
+            offset = hex(int(offset, 16) + state.registers[curr_to_register].size // 8)
+            curr_to_register = get_next_reg(curr_to_register)
+        if loading_bits == 64:
+            state.registers[curr_to_register] = decompiler_data.setup_argument_dict[offset]
+            decompiler_data.make_version(state, curr_to_register)
+            if curr_to_register == end_to_register:
+                break
+            curr_to_register = get_next_reg(curr_to_register)
+            state.registers[curr_to_register] = decompiler_data.setup_argument_dict[offset]
+            decompiler_data.make_version(state, curr_to_register)
+            offset = hex(int(offset, 16) + 8)
+            if curr_to_register == end_to_register:
+                break
+            curr_to_register = get_next_reg(curr_to_register)
 
 
 def upload(state, to_registers, from_registers, offset, kernel_params):

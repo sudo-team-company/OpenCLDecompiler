@@ -3,10 +3,11 @@ import re
 from src.integrity import Integrity
 from src.register_type import RegisterType
 from src.opencl_types import vector_type_dict
+from src.register_value import RegisterValue
 
 
 class Register:
-    def __init__(self, val, type_of_elem, integrity):
+    def __init__(self, val, type_of_elem, integrity, size: int = 32):
         self.val = val
         self.type: RegisterType = type_of_elem
         self.integrity: Integrity = integrity
@@ -14,6 +15,22 @@ class Register:
         self.prev_version = []
         self.data_type = None
         self.exec_condition = None
+        self.size = size
+
+    def get_value(self) -> any:
+        if self.type == RegisterType.WORK_ITEM_ID_UNKNOWN:
+            self.type = RegisterType.WORK_ITEM_ID_X
+            self.val = "get_local_id(0)"
+            self.inc_version()
+
+        if isinstance(self.val, RegisterValue):
+            if len(self.val.segments) > 1:
+                raise NotImplementedError
+
+            val = self.val.segments[0].val
+            return val
+        else:
+            return self.val
 
     def add_version(self, name_version, num_version):
         self.version = name_version + "_" + str(num_version + 1)
@@ -25,6 +42,10 @@ class Register:
 
     def add_prev(self, prev_version):
         self.prev_version.append(prev_version)
+
+    def inc_version(self):
+        name, version = self.version.split("_")
+        return name + "_" + str(int(version) + 1)
 
 
 def is_vector_type(data_type: str) -> bool:

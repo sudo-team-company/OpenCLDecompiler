@@ -38,8 +38,8 @@ class AmdGpuDisParser(BaseParser):
                     self._function_commands[obj.name] = obj.args
                     continue
 
-                if len(obj.args) >= 2 and obj.args[-2][0] == ".type" and obj.args[-2][1][-1] == "@function":
-                    self._function_names.append(obj.args[-2][1][0])
+                if len(obj.args) >= 2 and ".type" in obj.args[-2].obj and obj.args[-2].obj.endswith("@function"):
+                    self._function_names.append(obj.args[-2].obj.replace(".type", "").replace(",@function", "").strip())
                     continue
 
             if isinstance(obj, Config):

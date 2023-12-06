@@ -87,10 +87,13 @@ class FlatStore(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ["dword", "dwordx2", "dwordx4", "byte", "short"]:
+        if self.suffix in ["dword", "dwordx2", "dwordx4", "byte", "short", "b32"]:
             suffix_size = 1
-            if self.suffix[-1].isdigit():
-                suffix_size = int(self.suffix[-1])
+            if self.decompiler_data.is_rdna3:
+                suffix_size = int(self.suffix[1:]) // 32
+            else:
+                if self.suffix[-1].isdigit():
+                    suffix_size = int(self.suffix[-1])
             for self.from_registers in check_and_split_regs_range_to_full_list(self.vdata)[:suffix_size]:
                 if is_vgpr(self.vaddr):
                     self.node.state.registers[self.to_registers].version = \
@@ -125,7 +128,7 @@ class FlatStore(BaseInstruction):
         return super().to_fill_node()
 
     def to_print(self):
-        if self.suffix in ["dword", "dwordx2", "dwordx4", "byte", "short"]:
+        if self.suffix in ["dword", "dwordx2", "dwordx4", "byte", "short", "b32"]:
             var = self.node.state.registers[self.to_registers].val
             if self.inst_offset == "inst_offset:4":
                 var = var + "[get_global_id(0)]"

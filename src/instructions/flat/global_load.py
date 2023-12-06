@@ -1,6 +1,6 @@
 from src.decompiler_data import set_reg_value
 from src.instructions.flat.flat_load import FlatLoad
-from src.register import check_and_split_regs
+from src.register import check_and_split_regs, is_reg
 from src.register_type import RegisterType
 
 
@@ -9,15 +9,21 @@ class GlobalLoad(FlatLoad):
         super().__init__(node, suffix)
         self.vdst = self.instruction[1]
         self.vaddr = self.instruction[2]
-        if self.instruction[3] != "off":
-            raise NotImplementedError(
-                f"Only 'off' as saddr implemented for global_load instructions. "
-                f"Current instruction: '{' '.join(self.instruction)}'"
-            )
-        self.saddr = "0"
+        self.saddr = self.instruction[3]
+        if self.instruction[3] == "off":
+            self.saddr = "0"
         self.inst_offset = "0" if len(self.instruction) == 4 else self.instruction[4]
 
-        self.from_registers, _ = check_and_split_regs(self.vaddr)
+        if self.saddr == "off":
+            self.from_registers, _ = check_and_split_regs(self.vaddr)
+        else:
+            begin_registers, end_registers = check_and_split_regs(self.saddr)
+
+            if self.suffix == "u16":
+                self.from_registers = end_registers
+                self.extra_registers = begin_registers
+            else:
+                self.from_registers = begin_registers
 
     def to_print_unresolved(self):
         if self.suffix == "dword":
@@ -43,4 +49,27 @@ class GlobalLoad(FlatLoad):
                 data_type=self.suffix,
                 reg_type=RegisterType.WORK_DIM,
             )
+
+        if self.suffix in ["b32", "u16"]:
+            if self.node.state.registers[self.from_registers].type == RegisterType.ARGUMENTS_POINTER:
+                offset = hex(int(self.inst_offset.split(":")[-1]))
+                if self.suffix == "u16":
+                    # Dirty hack
+                    if "12 : 18" in self.node.state.registers[self.extra_registers].val:
+                        offset = "0x1c"
+                    if "14 : 20" in self.node.state.registers[self.extra_registers].val:
+                        offset = "0x1e"
+                    if "16 : 22" in self.node.state.registers[self.extra_registers].val:
+                        offset = "0x20"
+
+                reg = self.decompiler_data.setup_argument_dict[offset]
+
+                return set_reg_value(
+                    node=self.node,
+                    new_value=reg.val,
+                    to_reg=self.vdst,
+                    from_regs=[self.from_registers],
+                    data_type=self.suffix,
+                    reg_type=reg.type,
+                )
         return super().to_fill_node()
