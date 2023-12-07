@@ -1,4 +1,4 @@
-/* Disassembling 'linear_kernels\work_item_built_in_functions\copy_get_global_offset\copy_get_global_offset.bin' */
+/* Disassembling 'linear_kernels/work_item_built_in_functions/copy_get_global_offset/copy_get_global_offset.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

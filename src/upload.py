@@ -67,7 +67,7 @@ def upload_setup_argument(state, to_registers, offset):
     start_to_register, end_to_register = check_and_split_regs(to_registers)
     curr_to_register = start_to_register
 
-    if decompiler_data.setup_argument_dict[offset].size <= 32:
+    if decompiler_data.setup_argument_dict[offset].size <= 32 and decompiler_data.is_rdna3:
         loading_bits = 32
     else:
         loading_bits = 64

@@ -1,4 +1,4 @@
-/* Disassembling 'linear_kernels\work_item_built_in_functions\copy_get_group_id\copy_get_group_id.bin' */
+/* Disassembling 'linear_kernels/work_item_built_in_functions/copy_get_group_id/copy_get_group_id.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

@@ -1,4 +1,4 @@
-/* Disassembling 'linear_kernels\work_item_built_in_functions\copy_get_num_groups\copy_get_num_groups-gfx1010.bin' */
+/* Disassembling 'linear_kernels/work_item_built_in_functions/copy_get_num_groups/copy_get_num_groups-gfx1010.bin' */
 .rocm
 .gpu GFX1010
 .arch_minor 1

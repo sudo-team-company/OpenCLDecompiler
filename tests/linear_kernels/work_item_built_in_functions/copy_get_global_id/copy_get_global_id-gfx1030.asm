@@ -1,4 +1,4 @@
-/* Disassembling 'linear_kernels\work_item_built_in_functions\copy_get_global_id\copy_get_global_id-gfx1030.bin' */
+/* Disassembling 'linear_kernels/work_item_built_in_functions/copy_get_global_id/copy_get_global_id-gfx1030.bin' */
 .rocm
 .gpu GFX1000
 .arch_minor 3

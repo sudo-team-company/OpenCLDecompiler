@@ -1,4 +1,4 @@
-/* Disassembling 'linear_kernels\work_item_built_in_functions\copy_get_local_size\copy_get_local_size-gfx1030.bin' */
+/* Disassembling 'linear_kernels/work_item_built_in_functions/copy_get_local_size/copy_get_local_size-gfx1030.bin' */
 .rocm
 .gpu GFX1000
 .arch_minor 3

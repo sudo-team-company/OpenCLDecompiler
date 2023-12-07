@@ -42,7 +42,11 @@ def main(input_par, output_par, flag_for_decompilation, is_new_parser: bool):
                         local_size=None,
                         params=[
                             (
-                                arg['.type_name'].strip("\'").strip("*"),
+                                (
+                                    f"__{arg['.address_space']} "
+                                    if ".address_space" in arg
+                                    else ""
+                                ) + arg['.type_name'].strip("\'").strip("*"),
                                 ('*' if arg['.type_name'].strip("\'").endswith('*') else '') + f"arg{idx}"
                             )
                             for idx, arg
@@ -65,6 +69,7 @@ def main(input_par, output_par, flag_for_decompilation, is_new_parser: bool):
 
         flag_newline = False
         for function_data in functions_data:
+
             if flag_newline:
                 output_file.write("\n")
             flag_newline = True

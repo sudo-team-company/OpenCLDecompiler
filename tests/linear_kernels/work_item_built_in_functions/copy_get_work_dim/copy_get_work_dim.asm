@@ -1,4 +1,4 @@
-/* Disassembling 'linear_kernels\work_item_built_in_functions\copy_get_work_dim\copy_get_work_dim.bin' */
+/* Disassembling 'linear_kernels/work_item_built_in_functions/copy_get_work_dim/copy_get_work_dim.bin' */
 .amdcl2
 .gpu Iceland
 .64bit
