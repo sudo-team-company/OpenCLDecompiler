@@ -1,6 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value, make_op
-from src.register import is_reg
+from src.register import is_reg, Register
 from src.register_type import RegisterType
 
 _instruction_internal_mapping_by_types = {
@@ -13,16 +13,6 @@ _instruction_internal_mapping_by_types = {
             f"get_global_id({i})",
             RegisterType.__getattr__(f"GLOBAL_ID_{dim}"),
         ) for i, dim in enumerate("XYZ")
-    },
-**{
-        frozenset({
-            RegisterType.__getattr__("GLOBAL_OFFSET_X"),
-            RegisterType.__getattr__("WORK_ITEM_ID_UNKNOWN"),
-            RegisterType.__getattr__("WORK_GROUP_ID_X_LOCAL_SIZE"),
-        }): (
-            "get_global_id(0)",
-            RegisterType.GLOBAL_ID_X,
-        )
     },
     **{
         frozenset({
@@ -84,10 +74,16 @@ class VAdd3(BaseInstruction):
                         new_value, _ = _instruction_internal_mapping_by_types[src_types]
                         new_value = make_op(self.node, new_value, src2, " + ", '(ulong)', '(ulong)')
             if is_reg(self.src0) and is_reg(self.src1) and is_reg(self.src2):
+                def unwrap_type(register: Register):
+                    if register.type == RegisterType.COMBINE and register.val.get_count() > 0:
+                        return register.val.maybe_get_by_idx(0).type
+                    else:
+                        return register.type
+
                 src_types = frozenset({
-                    self.node.state.registers[self.src0].type,
-                    self.node.state.registers[self.src1].type,
-                    self.node.state.registers[self.src2].type,
+                    unwrap_type(self.node.state.registers[self.src0]),
+                    unwrap_type(self.node.state.registers[self.src1]),
+                    unwrap_type(self.node.state.registers[self.src2]),
                 })
                 if src_types in _instruction_internal_mapping_by_types:
                     new_value, reg_type = _instruction_internal_mapping_by_types[src_types]

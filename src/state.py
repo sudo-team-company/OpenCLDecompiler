@@ -1,13 +1,16 @@
+from typing import Optional
+
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
 from src.register import Register
+from src.register_content import RegisterContent
+from src.register_content_combiner import RegisterContentCombiner
 from src.register_type import RegisterType
-from src.register_value import RegisterValue
 
 
 class State:
     def __init__(self):
-        self.registers = \
+        self.registers: dict[str, Optional[Register]] = \
             {
                 "s0": None,
                 "s1": None,
@@ -63,7 +66,7 @@ class State:
         v_dim = "v" + str(dim)
         if is_rdna3:
             v_dim = "v0"
-            type_v = RegisterType.WORK_ITEM_ID_UNKNOWN
+            type_v = RegisterType.COMBINE
         if dim == 0:
             type_g = RegisterType.WORK_GROUP_ID_X
             if not is_rdna3:
@@ -80,8 +83,23 @@ class State:
         self.registers[g_id_dim].add_version(g_id_dim, version_g_id)
 
         val = "get_local_id(" + str(dim) + ")"
-        if type_v == RegisterType.WORK_ITEM_ID_UNKNOWN:
-            val = RegisterValue(32, RegisterType.WORK_ITEM_ID_UNKNOWN)
+        if type_v == RegisterType.COMBINE:
+            val = RegisterContentCombiner()
+            val.append_content(RegisterContent(
+                content="get_local_id(0)",
+                type_=RegisterType.WORK_ITEM_ID_X,
+                size=10,
+            ))
+            val.append_content(RegisterContent(
+                content="get_local_id(1)",
+                type_=RegisterType.WORK_ITEM_ID_Y,
+                size=10,
+            ))
+            val.append_content(RegisterContent(
+                content="get_local_id(2)",
+                type_=RegisterType.WORK_ITEM_ID_Z,
+                size=10,
+            ))
         self.registers[v_dim] = Register(val, type_v, Integrity.ENTIRE)
         self.registers[v_dim].add_version(v_dim, version_v)
 

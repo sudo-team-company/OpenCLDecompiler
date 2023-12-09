@@ -8,8 +8,9 @@ from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
 from src.register import Register, is_reg, is_range, check_and_split_regs
+from src.register_content import RegisterContent
+from src.register_content_combiner import RegisterContentCombiner
 from src.register_type import RegisterType
-from src.register_value import RegisterValue
 from src.state import State
 from src.utils import ConfigData, DriverFormat
 
@@ -18,6 +19,7 @@ def set_reg_value(node, new_value, to_reg, from_regs, data_type,
                   exec_condition=None, reg_type=RegisterType.UNKNOWN, reg_entire=Integrity.ENTIRE):
     decompiler_data = DecompilerData()
     node.state.registers[to_reg] = Register(new_value, reg_type, reg_entire)
+    node.state.registers[to_reg].try_unwrap_value()
     decompiler_data.make_version(node.state, to_reg)
     if to_reg in from_regs:
         node.state.registers[to_reg].make_prev()
@@ -125,7 +127,11 @@ def check_big_values(node, start_register, end_register):
 def check_reg_for_val(node, register):
     if is_reg(register) or is_range(register):  # TODO: Выяснить зачем нужен range
         if node.state.registers.get(register):
-            new_val = node.state.registers[register].get_value()
+            if isinstance(node.state.registers[register].val, RegisterContentCombiner):
+                combiner: RegisterContentCombiner = node.state.registers[register].val
+                new_val = combiner.maybe_get_by_idx(0).content
+            else:
+                new_val = node.state.registers[register].val
         else:
             if is_range(register):
                 start_register, end_register = check_and_split_regs(register)
@@ -297,32 +303,32 @@ class DecompilerData(metaclass=Singleton):
         self.is_rdna3: bool = False
 
     @property
-    def setup_argument_dict(self) -> dict[str, Register]:
+    def setup_argument_dict(self) -> dict[str, RegisterContent]:
         """
-        Returns dict of offset to register based on gpu version
+        Returns dict of offset to register content based on gpu version
         """
 
         if self.is_rdna3:
             return {
-                '0x10': Register("get_num_groups(0)", RegisterType.NUM_GROUPS_X, Integrity.ENTIRE, size=32),
-                '0x14': Register("get_num_groups(1)", RegisterType.NUM_GROUPS_Y, Integrity.ENTIRE, size=32),
-                '0x18': Register("get_num_groups(2)", RegisterType.NUM_GROUPS_Z, Integrity.ENTIRE, size=32),
-                '0x1c': Register("get_local_size(0)", RegisterType.LOCAL_SIZE_X, Integrity.ENTIRE, size=16),
-                '0x1e': Register("get_local_size(1)", RegisterType.LOCAL_SIZE_Y, Integrity.ENTIRE, size=16),
-                '0x20': Register("get_local_size(2)", RegisterType.LOCAL_SIZE_Z, Integrity.ENTIRE, size=16),
-                '0x22': Register("unknown yet", RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE, Integrity.ENTIRE, size=16),
-                '0x24': Register("unknown yet", RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE, Integrity.ENTIRE, size=16),
-                '0x26': Register("unknown yet", RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE, Integrity.ENTIRE, size=16),
-                '0x38': Register("get_global_offset(0)", RegisterType.GLOBAL_OFFSET_X, Integrity.ENTIRE, size=64),
-                '0x40': Register("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, Integrity.ENTIRE, size=64),
-                '0x48': Register("get_global_offset(2)", RegisterType.GLOBAL_OFFSET_Z, Integrity.ENTIRE, size=64),
-                '0x50': Register("get_work_dim()", RegisterType.WORK_DIM, Integrity.ENTIRE, size=16),
+                '0x10': RegisterContent("get_num_groups(0)", RegisterType.NUM_GROUPS_X, 32),
+                '0x14': RegisterContent("get_num_groups(1)", RegisterType.NUM_GROUPS_Y, 32),
+                '0x18': RegisterContent("get_num_groups(2)", RegisterType.NUM_GROUPS_Z, 32),
+                '0x1c': RegisterContent("get_local_size(0)", RegisterType.LOCAL_SIZE_X, 16),
+                '0x1e': RegisterContent("get_local_size(1)", RegisterType.LOCAL_SIZE_Y, 16),
+                '0x20': RegisterContent("get_local_size(2)", RegisterType.LOCAL_SIZE_Z, 16),
+                '0x22': RegisterContent("unknown", RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE, 16),
+                '0x24': RegisterContent("unknown", RegisterType.WORK_GROUP_ID_Y_LOCAL_SIZE, 16),
+                '0x26': RegisterContent("unknown", RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE, 16),
+                '0x38': RegisterContent("get_global_offset(0)", RegisterType.GLOBAL_OFFSET_X, 64),
+                '0x40': RegisterContent("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, 64),
+                '0x48': RegisterContent("get_global_offset(2)", RegisterType.GLOBAL_OFFSET_Z, 64),
+                '0x50': RegisterContent("get_work_dim()", RegisterType.WORK_DIM, 16),
             }
         else:
             return {
-                '0x0': Register("get_global_offset(0)", RegisterType.GLOBAL_OFFSET_X, Integrity.ENTIRE),
-                '0x8': Register("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, Integrity.ENTIRE),
-                '0x10': Register("get_global_offset(2)", RegisterType.GLOBAL_OFFSET_Z, Integrity.ENTIRE)
+                '0x0': RegisterContent("get_global_offset(0)", RegisterType.GLOBAL_OFFSET_X, 64),
+                '0x8': RegisterContent("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, 64),
+                '0x10': RegisterContent("get_global_offset(2)", RegisterType.GLOBAL_OFFSET_Z, 64)
             }
 
     def reset(self, name_of_program):

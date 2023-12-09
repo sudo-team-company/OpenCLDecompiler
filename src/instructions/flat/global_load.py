@@ -1,7 +1,9 @@
 from src.decompiler_data import set_reg_value
 from src.instructions.flat.flat_load import FlatLoad
 from src.register import check_and_split_regs, is_reg
+from src.register_content import RegisterContent
 from src.register_type import RegisterType
+from src.upload import upload
 
 
 class GlobalLoad(FlatLoad):
@@ -61,15 +63,13 @@ class GlobalLoad(FlatLoad):
                         offset = "0x1e"
                     if "16 : 22" in self.node.state.registers[self.extra_registers].val:
                         offset = "0x20"
-
-                reg = self.decompiler_data.setup_argument_dict[offset]
-
-                return set_reg_value(
-                    node=self.node,
-                    new_value=reg.val,
-                    to_reg=self.vdst,
-                    from_regs=[self.from_registers],
-                    data_type=self.suffix,
-                    reg_type=reg.type,
+                upload(
+                    self.node.state,
+                    self.vdst,
+                    self.from_registers,
+                    offset,
+                    self.decompiler_data.kernel_params,
+                    bits=int(self.suffix[1:])
                 )
+                return self.node
         return super().to_fill_node()

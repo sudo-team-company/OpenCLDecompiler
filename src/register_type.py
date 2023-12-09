@@ -4,6 +4,8 @@ from enum import Enum, auto
 class RegisterType(Enum):
     UNKNOWN = auto()
 
+    COMBINE = auto()
+
     GLOBAL_ID_X = auto()
     GLOBAL_ID_Y = auto()
     GLOBAL_ID_Z = auto()
@@ -15,9 +17,6 @@ class RegisterType(Enum):
     WORK_ITEM_ID_X = auto()
     WORK_ITEM_ID_Y = auto()
     WORK_ITEM_ID_Z = auto()
-    WORK_ITEM_ID_YX = auto()
-    WORK_ITEM_ID_ZYX = auto()
-    WORK_ITEM_ID_UNKNOWN = auto()
 
     GLOBAL_OFFSET_X = auto()
     GLOBAL_OFFSET_Y = auto()

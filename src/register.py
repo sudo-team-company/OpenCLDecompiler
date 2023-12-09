@@ -1,14 +1,16 @@
 import re
+from typing import Union, Optional
 
 from src.integrity import Integrity
-from src.register_type import RegisterType
 from src.opencl_types import vector_type_dict
-from src.register_value import RegisterValue
+from src.register_content import RegisterContent
+from src.register_content_combiner import RegisterContentCombiner
+from src.register_type import RegisterType
 
 
 class Register:
     def __init__(self, val, type_of_elem, integrity, size: int = 32):
-        self.val = val
+        self.val: Union[RegisterContentCombiner, any] = val
         self.type: RegisterType = type_of_elem
         self.integrity: Integrity = integrity
         self.version = None
@@ -17,20 +19,64 @@ class Register:
         self.exec_condition = None
         self.size = size
 
-    def get_value(self) -> any:
-        if self.type == RegisterType.WORK_ITEM_ID_UNKNOWN:
-            self.type = RegisterType.WORK_ITEM_ID_X
-            self.val = "get_local_id(0)"
-            self.inc_version()
+    def append_content(self, content: RegisterContent):
+        if not isinstance(self.val, RegisterContentCombiner):
+            raise Exception(f"Register value must be type of {type(RegisterContentCombiner)}")
 
-        if isinstance(self.val, RegisterValue):
-            if len(self.val.segments) > 1:
-                raise NotImplementedError
+        if self.val.get_size() + content.size > self.size:
+            raise Exception(f"Combined content size mustn't be grater than {self.size} although size "
+                            f"after content append is {self.val.get_size() + content.size}")
 
-            val = self.val.segments[0].val
-            return val
-        else:
-            return self.val
+        self.val.append_content(content)
+
+    def maybe_acquire_content(self, begin: int, end: int) -> Optional[RegisterContent]:
+        if not isinstance(self.val, RegisterContentCombiner):
+            raise Exception(f"Register value must be type of {type(RegisterContentCombiner)}")
+
+        return self.val.maybe_acquire_content(begin, end)
+
+    def try_unwrap_value(self) -> bool:
+        if not isinstance(self.val, RegisterContentCombiner):
+            return False
+
+        if self.val.get_count() > 1:
+            return False
+
+        if self.val.get_count() == 0:
+            self.val = None
+            self.type = RegisterType.UNKNOWN
+
+        if self.val.get_count() == 1:
+            content = self.val.maybe_acquire_content(0, self.val.get_size() - 1)
+            self.val = content.content
+            self.type = content.type
+
+    def __and__(self, other):
+        if not isinstance(self.val, RegisterContentCombiner):
+            raise NotImplementedError()
+
+        return self.val & other
+
+    def __rshift__(self, other):
+        if not isinstance(self.val, RegisterContentCombiner):
+            raise NotImplementedError()
+
+        return self.val >> other
+
+    # def get_value(self) -> any:
+    #     if self.type == RegisterType.WORK_ITEM_ID_UNKNOWN:
+    #         self.type = RegisterType.WORK_ITEM_ID_X
+    #         self.val = "get_local_id(0)"
+    #         self.inc_version()
+    #
+    #     if isinstance(self.val, RegisterValue):
+    #         if len(self.val.segments) > 1:
+    #             raise NotImplementedError
+    #
+    #         val = self.val.segments[0].val
+    #         return val
+    #     else:
+    #         return self.val
 
     def add_version(self, name_version, num_version):
         self.version = name_version + "_" + str(num_version + 1)

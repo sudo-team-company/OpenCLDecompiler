@@ -1,8 +1,10 @@
+from typing import Optional
+
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
 from src.register import is_reg
+from src.register_content import RegisterContent
 from src.register_type import RegisterType
-from src.register_value import RegisterValue
 
 
 class VAnd(BaseInstruction):
@@ -21,6 +23,12 @@ class VAnd(BaseInstruction):
     def to_fill_node(self):
         if self.suffix == 'b32':
             if is_reg(self.src1):
+                def default_behaviour() -> tuple[any, RegisterType]:
+                    new_value = self.node.state.registers[self.src1].val
+                    reg_type = RegisterType.UNKNOWN
+
+                    return new_value, reg_type
+
                 size_of_work_groups = self.decompiler_data.config_data.size_of_work_groups
                 if self.node.state.registers[self.src1].type == RegisterType.WORK_DIM and \
                         self.src0 == "0xffff":
@@ -38,37 +46,45 @@ class VAnd(BaseInstruction):
                         size_of_work_groups[2] == -int(self.src0):
                     new_value = make_op(self.node, "get_num_groups(2)", str(size_of_work_groups[2]), " * ")
                     reg_type = RegisterType.UNKNOWN
-                elif self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_YX or \
-                        self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_ZYX or \
-                        self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_UNKNOWN:
-
-                    if self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_UNKNOWN:
-                        self.node.state.registers[self.src1].type = RegisterType.WORK_ITEM_ID_ZYX
-                        register_value = RegisterValue(32, [
-                            ("get_local_id(0)", RegisterType.WORK_ITEM_ID_X, 9, 0),
-                            ("get_local_id(1)", RegisterType.WORK_ITEM_ID_Y, 19, 10),
-                            ("get_local_id(2)", RegisterType.WORK_ITEM_ID_Z, 29, 20),
-                            (None, RegisterType.UNKNOWN, 31, 30),
-                        ])
-                        self.node.state.registers[self.src1].val = register_value
-                        self.node.state.registers[self.src1].inc_version()
-
-                    if self.src0 == "0x3ff":
-                        new_value = "get_local_id(0)"
-                        reg_type = RegisterType.WORK_ITEM_ID_X
-                    elif self.src0 == "0xffc00":
-                        new_value = "get_local_id(1)"
-                        reg_type = RegisterType.WORK_ITEM_ID_Y
-                    elif self.src0 == "0x3ff00000" and \
-                            self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_ZYX:
-                        new_value = "get_local_id(2)"
-                        reg_type = RegisterType.WORK_ITEM_ID_Z
+                elif self.node.state.registers[self.src1].type == RegisterType.COMBINE and \
+                        isinstance(self.src0, str) and self.src0.startswith("0x"):
+                    maybe_register_content: Optional[RegisterContent] = self.node.state.registers[self.src1] & self.src0
+                    if maybe_register_content is None:
+                        new_value, reg_type = default_behaviour()
                     else:
-                        new_value = self.node.state.registers[self.src1].val
-                        reg_type = RegisterType.UNKNOWN
+                        new_value = maybe_register_content.content
+                        reg_type = maybe_register_content.type
+
+                # elif self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_YX or \
+                #         self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_ZYX or \
+                #         self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_UNKNOWN:
+                #
+                #     if self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_UNKNOWN:
+                #         self.node.state.registers[self.src1].type = RegisterType.WORK_ITEM_ID_ZYX
+                #         register_value = RegisterValue(32, [
+                #             ("get_local_id(0)", RegisterType.WORK_ITEM_ID_X, 9, 0),
+                #             ("get_local_id(1)", RegisterType.WORK_ITEM_ID_Y, 19, 10),
+                #             ("get_local_id(2)", RegisterType.WORK_ITEM_ID_Z, 29, 20),
+                #             (None, RegisterType.UNKNOWN, 31, 30),
+                #         ])
+                #         self.node.state.registers[self.src1].val = register_value
+                #         self.node.state.registers[self.src1].inc_version()
+                #
+                #     if self.src0 == "0x3ff":
+                #         new_value = "get_local_id(0)"
+                #         reg_type = RegisterType.WORK_ITEM_ID_X
+                #     elif self.src0 == "0xffc00":
+                #         new_value = "get_local_id(1)"
+                #         reg_type = RegisterType.WORK_ITEM_ID_Y
+                #     elif self.src0 == "0x3ff00000" and \
+                #             self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_ZYX:
+                #         new_value = "get_local_id(2)"
+                #         reg_type = RegisterType.WORK_ITEM_ID_Z
+                #     else:
+                #         new_value = self.node.state.registers[self.src1].val
+                #         reg_type = RegisterType.UNKNOWN
                 else:
-                    new_value = self.node.state.registers[self.src1].val
-                    reg_type = RegisterType.UNKNOWN
+                    new_value, reg_type = default_behaviour()
                 return set_reg_value(
                     node=self.node,
                     new_value=new_value,
