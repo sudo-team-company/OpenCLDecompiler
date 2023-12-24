@@ -42,6 +42,8 @@ class RegisterContentCombiner:
             if curr_pos == begin and curr_pos + content.size - 1 == end:
                 return content
 
+            curr_pos += content.size
+
         return None
 
     def maybe_get_by_idx(self, idx: int) -> Optional[RegisterContent]:
@@ -106,29 +108,24 @@ class RegisterContentCombiner:
 
         bits = other
 
-        cur_pos = -1
-        for content in self._content_list:
-            cur_pos += content.size
-
-            if bits == cur_pos + 1:
-                break
-
-            if bits < cur_pos + 1:
-                return None
-
-        if bits != cur_pos + 1:
-            return None
-
         new_register_content_combiner = RegisterContentCombiner()
 
-        cur_pos = -1
+        add_to_new_combiner_flag = False
+        cur_pos = 0
         for content in self._content_list:
-            cur_pos += content.size
+            if bits == cur_pos:
+                add_to_new_combiner_flag = True
 
-            if bits >= cur_pos + 1:
+            if add_to_new_combiner_flag:
+                new_register_content_combiner.append_content(content)
                 continue
 
-            if bits < cur_pos + 1:
+            if bits < cur_pos:
+                new_register_content_combiner.append_content(EmptyRegisterContent(cur_pos - bits))
                 new_register_content_combiner.append_content(content)
+                add_to_new_combiner_flag = True
+                continue
+
+            cur_pos += content.size
 
         return new_register_content_combiner

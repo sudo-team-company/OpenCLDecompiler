@@ -21,7 +21,7 @@ class GlobalLoad(FlatLoad):
         else:
             begin_registers, end_registers = check_and_split_regs(self.saddr)
 
-            if self.suffix == "u16":
+            if self.suffix in ["u16", "u8"]:
                 self.from_registers = end_registers
                 self.extra_registers = begin_registers
             else:
@@ -52,16 +52,15 @@ class GlobalLoad(FlatLoad):
                 reg_type=RegisterType.WORK_DIM,
             )
 
-        if self.suffix in ["b32", "u16"]:
+        if self.suffix in ["b32", "u16", 'u8']:
             if self.node.state.registers[self.from_registers].type == RegisterType.ARGUMENTS_POINTER:
                 offset = hex(int(self.inst_offset.split(":")[-1]))
-                if self.suffix == "u16":
-                    # Dirty hack
-                    if "12 : 18" in self.node.state.registers[self.extra_registers].val:
+                if self.suffix in ["u16", "u8"]:
+                    if "12 : 18" in self.node.state.registers[self.extra_registers].get_value():
                         offset = "0x1c"
-                    if "14 : 20" in self.node.state.registers[self.extra_registers].val:
+                    if "14 : 20" in self.node.state.registers[self.extra_registers].get_value():
                         offset = "0x1e"
-                    if "16 : 22" in self.node.state.registers[self.extra_registers].val:
+                    if "16 : 22" in self.node.state.registers[self.extra_registers].get_value():
                         offset = "0x20"
                 upload(
                     self.node.state,

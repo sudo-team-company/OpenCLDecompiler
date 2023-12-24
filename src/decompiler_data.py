@@ -1,24 +1,48 @@
 import binascii
 import struct
-from typing import Optional
+from typing import Optional, Union
 
 import sympy
 
 from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
-from src.register import Register, is_reg, is_range, check_and_split_regs
+from src.register import Register, is_reg, is_range, check_and_split_regs, RegisterSignType
 from src.register_content import RegisterContent
 from src.register_content_combiner import RegisterContentCombiner
 from src.register_type import RegisterType
 from src.state import State
+from src.sum_register import SumRegister
 from src.utils import ConfigData, DriverFormat
 
 
-def set_reg_value(node, new_value, to_reg, from_regs, data_type,
-                  exec_condition=None, reg_type=RegisterType.UNKNOWN, reg_entire=Integrity.ENTIRE):
+def set_reg_value(
+        node,
+        new_value,
+        to_reg,
+        from_regs,
+        data_type,
+        exec_condition=None,
+        reg_type=RegisterType.UNKNOWN,
+        reg_entire=Integrity.ENTIRE,
+        reg_class=Register,
+        sign: Union[RegisterSignType, list[RegisterSignType]] = RegisterSignType.POSITIVE,
+):
     decompiler_data = DecompilerData()
-    node.state.registers[to_reg] = Register(new_value, reg_type, reg_entire)
+    if reg_class == Register:
+        node.state.registers[to_reg] = Register(new_value, reg_type, reg_entire, sign=sign)
+        node.state.registers[to_reg].try_unwrap_value()
+    if reg_class == SumRegister:
+        if not isinstance(sign, list):
+            node.state.registers[to_reg] = SumRegister([
+                Register(val, type_, Integrity.ENTIRE)
+                for val, type_ in zip(new_value, reg_type)
+            ])
+        else:
+            node.state.registers[to_reg] = SumRegister([
+                Register(val, type_, Integrity.ENTIRE, sign=sign_elem)
+                for val, type_, sign_elem in zip(new_value, reg_type, sign)
+            ])
     node.state.registers[to_reg].try_unwrap_value()
     decompiler_data.make_version(node.state, to_reg)
     if to_reg in from_regs:
@@ -126,22 +150,25 @@ def check_big_values(node, start_register, end_register):
 
 def check_reg_for_val(node, register):
     if is_reg(register) or is_range(register):  # TODO: Выяснить зачем нужен range
-        if node.state.registers.get(register):
-            if isinstance(node.state.registers[register].val, RegisterContentCombiner):
-                combiner: RegisterContentCombiner = node.state.registers[register].val
-                new_val = combiner.maybe_get_by_idx(0).content
-            else:
-                new_val = node.state.registers[register].val
+        if isinstance(node.state.registers[register], SumRegister):
+            new_val = node.state.registers[register].get_value()
         else:
-            if is_range(register):
-                start_register, end_register = check_and_split_regs(register)
-                flag_big_value, value = check_big_values(node, start_register, end_register)
-                if flag_big_value:
-                    new_val = value
+            if node.state.registers.get(register):
+                if isinstance(node.state.registers[register].val, RegisterContentCombiner):
+                    combiner: RegisterContentCombiner = node.state.registers[register].val
+                    new_val = combiner.maybe_get_by_idx(0).content
                 else:
-                    new_val = node.state.registers[start_register].val
+                    new_val = node.state.registers[register].val
             else:
-                raise NotImplementedError
+                if is_range(register):
+                    start_register, end_register = check_and_split_regs(register)
+                    flag_big_value, value = check_big_values(node, start_register, end_register)
+                    if flag_big_value:
+                        new_val = value
+                    else:
+                        new_val = node.state.registers[start_register].val
+                else:
+                    raise NotImplementedError
     else:
         new_val = register
     return new_val
@@ -301,15 +328,11 @@ class DecompilerData(metaclass=Singleton):
         self.bfe_offsets = {}
         self.exec_registers = {"exec": ExecCondition.default()}
         self.is_rdna3: bool = False
+        self.initial_offsets: dict[str, RegisterContent] = {}
 
-    @property
-    def setup_argument_dict(self) -> dict[str, RegisterContent]:
-        """
-        Returns dict of offset to register content based on gpu version
-        """
-
+    def init(self):
         if self.is_rdna3:
-            return {
+            self.initial_offsets = {
                 '0x10': RegisterContent("get_num_groups(0)", RegisterType.NUM_GROUPS_X, 32),
                 '0x14': RegisterContent("get_num_groups(1)", RegisterType.NUM_GROUPS_Y, 32),
                 '0x18': RegisterContent("get_num_groups(2)", RegisterType.NUM_GROUPS_Z, 32),
@@ -325,11 +348,24 @@ class DecompilerData(metaclass=Singleton):
                 '0x50': RegisterContent("get_work_dim()", RegisterType.WORK_DIM, 16),
             }
         else:
-            return {
+            self.initial_offsets = {
                 '0x0': RegisterContent("get_global_offset(0)", RegisterType.GLOBAL_OFFSET_X, 64),
                 '0x8': RegisterContent("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, 64),
                 '0x10': RegisterContent("get_global_offset(2)", RegisterType.GLOBAL_OFFSET_Z, 64)
             }
+
+    def set_offset_content(self, offset: str, content: RegisterContent):
+        self.initial_offsets[offset] = content
+
+    @property
+    def setup_argument_dict(self) -> dict[str, RegisterContent]:
+        """
+        Returns dict of offset to register content based on gpu version
+        """
+
+        return self.initial_offsets
+
+
 
     def reset(self, name_of_program):
         self.name_of_program = name_of_program
@@ -440,6 +476,7 @@ class DecompilerData(metaclass=Singleton):
         self.bfe_offsets = {}
         self.exec_registers = {"exec": ExecCondition.default()}
         self.is_rdna3 = False
+        self.initial_offsets: dict[str, RegisterContent] = {}
 
     def write(self, output):
         # noinspection PyUnresolvedReferences

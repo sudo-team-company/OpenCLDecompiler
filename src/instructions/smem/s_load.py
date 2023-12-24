@@ -36,12 +36,16 @@ class SLoad(BaseInstruction):
             if self.node.state.registers[self.from_registers] is not None \
                     and self.node.state.registers[self.from_registers].type \
                     in (RegisterType.GLOBAL_DATA_POINTER, RegisterType.ARGUMENTS_POINTER):
+                bits = -1
+                if self.suffix.startswith("b"):
+                    bits = int(self.suffix[1:])
                 upload(
                     self.node.state,
                     self.sdata,
                     self.sbase,
                     self.offset,
                     self.decompiler_data.kernel_params,
+                    bits=bits,
                 )
             else:
                 upload_usesetup(self.node.state, self.sdata, self.offset)

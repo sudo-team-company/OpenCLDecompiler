@@ -13,7 +13,7 @@ class VCmpNe(BaseInstruction):
         self.new_as_type = '(' + make_opencl_type(suffix) + ')'
 
     def to_fill_node(self):
-        if self.suffix in ['u16']:
+        if self.suffix in ['u16', 'u32']:
             return compare_values(self.node, self.sdst, self.src0, self.src1, self.new_as_type,
                                   self.new_as_type, " != ", self.suffix)
         return super().to_fill_node()

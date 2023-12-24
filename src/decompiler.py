@@ -45,6 +45,7 @@ def process_src(
 ):
     decompiler_data = DecompilerData()
     decompiler_data.reset(name_of_program)
+    decompiler_data.init()
     if is_rdna3:
         decompiler_data.is_rdna3 = True
     set_of_instructions = [instr.replace("null", "0x0") for instr in set_of_instructions]

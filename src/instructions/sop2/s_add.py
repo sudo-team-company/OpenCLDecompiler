@@ -32,6 +32,21 @@ class SAdd(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in {'u32', 'i32'}:
+            if self.decompiler_data.is_rdna3:
+                try:
+                    new_reg = self.node.state.registers[self.ssrc0] + self.node.state.registers[self.ssrc1]
+                    return set_reg_value(
+                        self.node,
+                        new_reg.val,
+                        self.sdst,
+                        [self.ssrc0, self.ssrc1],
+                        self.suffix,
+                        reg_type=new_reg.type,
+                        reg_class=type(new_reg),
+                    )
+                except Exception:
+                    pass
+
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, " + ", '(ulong)', '(ulong)')
             ssrc0_reg = is_sgpr(self.ssrc0)
             ssrc1_reg = is_sgpr(self.ssrc1)

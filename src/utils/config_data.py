@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
+
+from src.register_content import RegisterContent
 
 
 @dataclass
@@ -10,3 +12,4 @@ class ConfigData:
     local_size: Optional[int]
     params: List[Tuple[str, str]]
     setup_params_offsets: List[str]
+    offset_to_content: Optional[Dict[str, RegisterContent]]=None

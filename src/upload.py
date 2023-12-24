@@ -62,158 +62,154 @@ def upload_global_data_pointer(state, to_registers, from_registers):
     decompiler_data.make_version(state, start_to_register)
 
 
-def upload_setup_argument(state, to_registers, offset, bits: int = -1):
+def upload_setup_argument(state, to_registers, offset):
     decompiler_data = DecompilerData()
-    if not decompiler_data.is_rdna3:
-        offset = hex(decompiler_data.config_data.setup_params_offsets.index(offset) * 8)
+    offset = hex(decompiler_data.config_data.setup_params_offsets.index(offset) * 8)
+    start_to_register, end_to_register = check_and_split_regs(to_registers)
+    curr_to_register = start_to_register
+    while True:
+        register_content = decompiler_data.setup_argument_dict[offset]
+        state.registers[curr_to_register] = Register(
+            val=register_content.content,
+            type_of_elem=register_content.type,
+            integrity=Integrity.ENTIRE,
+        )
+        decompiler_data.make_version(state, curr_to_register)
+        if curr_to_register == end_to_register:
+            break
+        curr_to_register = get_next_reg(curr_to_register)
+        register_content = decompiler_data.setup_argument_dict[offset]
+        state.registers[curr_to_register] = Register(
+            val=register_content.content,
+            type_of_elem=register_content.type,
+            integrity=Integrity.ENTIRE,
+        )
+        decompiler_data.make_version(state, curr_to_register)
+        offset = hex(int(offset, 16) + 8)
+        if curr_to_register == end_to_register:
+            break
+        curr_to_register = get_next_reg(curr_to_register)
+
+
+def upload_by_offset(
+        state,
+        to_registers: str,
+        offset: str,
+        bits: int = -1,
+):
+    decompiler_data = DecompilerData()
     start_to_register, end_to_register = check_and_split_regs(to_registers)
     curr_to_register = start_to_register
     written_bits = 0
 
-    if not decompiler_data.is_rdna3:
-        while True:
-            register_content = decompiler_data.setup_argument_dict[offset]
-            state.registers[curr_to_register] = Register(
-                val=register_content.content,
-                type_of_elem=register_content.type,
-                integrity=Integrity.ENTIRE,
-            )
+    state.registers[curr_to_register] = Register(
+        val=RegisterContentCombiner(),
+        type_of_elem=RegisterType.COMBINE,
+        integrity=Integrity.ENTIRE,
+    )
+
+    while True:
+        if bits != -1:
+            if written_bits > bits:
+                break
+
+            if written_bits == bits:
+                break
+
+        if offset not in decompiler_data.config_data.offset_to_content:
+            break
+
+        register_content = decompiler_data.config_data.offset_to_content[offset]
+        if (
+                state.registers[curr_to_register].val.get_size() + register_content.size <
+                state.registers[curr_to_register].size
+        ) or (
+                state.registers[curr_to_register].val.get_size() + register_content.size ==
+                state.registers[curr_to_register].size and
+                state.registers[curr_to_register].val.get_count() != 0
+        ):
+            state.registers[curr_to_register].append_content(register_content)
             decompiler_data.make_version(state, curr_to_register)
-            if curr_to_register == end_to_register:
-                break
-            curr_to_register = get_next_reg(curr_to_register)
-            register_content = decompiler_data.setup_argument_dict[offset]
-            state.registers[curr_to_register] = Register(
-                val=register_content.content,
-                type_of_elem=register_content.type,
-                integrity=Integrity.ENTIRE,
-            )
-            decompiler_data.make_version(state, curr_to_register)
-            offset = hex(int(offset, 16) + 8)
-            if curr_to_register == end_to_register:
-                break
-            curr_to_register = get_next_reg(curr_to_register)
-    else:
-        state.registers[curr_to_register] = Register(
-            val=RegisterContentCombiner(),
-            type_of_elem=RegisterType.COMBINE,
-            integrity=Integrity.ENTIRE,
-        )
 
-        while True:
-            if bits != -1:
-                if written_bits > bits:
-                    raise Exception(f"Wrote {written_bits} bits, although {bits} was provided")
+            offset = hex(int(offset, 16) + register_content.size // 8)
+            written_bits += register_content.size
+        elif state.registers[curr_to_register].val.get_size() + register_content.size == \
+                state.registers[curr_to_register].size:
 
-                if written_bits == bits:
-                    break
-
-            if offset not in decompiler_data.setup_argument_dict:
-                break
-
-            register_content = decompiler_data.setup_argument_dict[offset]
-            if state.registers[curr_to_register].val.get_size() + register_content.size < \
-                    state.registers[curr_to_register].size:
-                state.registers[curr_to_register].append_content(register_content)
-                decompiler_data.make_version(state, curr_to_register)
-
-                offset = hex(int(offset, 16) + register_content.size // 8)
-                written_bits += register_content.size
-            elif state.registers[curr_to_register].val.get_size() + register_content.size == \
-                    state.registers[curr_to_register].size:
-
-                if state.registers[curr_to_register].val.get_count() == 0:
-                    state.registers[curr_to_register] = Register(
-                        val=register_content.content,
-                        type_of_elem=register_content.type,
-                        integrity=Integrity.ENTIRE,
-                    )
-                else:
-                    state.registers[curr_to_register].append_content(register_content)
-                decompiler_data.make_version(state, curr_to_register)
-
-                if curr_to_register == end_to_register:
-                    break
-
-                state.registers[curr_to_register].try_unwrap_value()
-                curr_to_register = get_next_reg(curr_to_register)
+            if state.registers[curr_to_register].val.get_count() == 0:
                 state.registers[curr_to_register] = Register(
-                    val=RegisterContentCombiner(),
-                    type_of_elem=RegisterType.COMBINE,
+                    val=register_content.content,
+                    type_of_elem=register_content.type,
                     integrity=Integrity.ENTIRE,
+                    data_type=register_content.data_type,
                 )
-
-                offset = hex(int(offset, 16) + register_content.size // 8)
-                written_bits += register_content.size
             else:
-                if state.registers[curr_to_register].val.get_size() == 0 and \
-                        register_content.size == state.registers[curr_to_register].size * 2:
-                    state.registers[curr_to_register] = Register(
-                        val=register_content.content,
-                        type_of_elem=register_content.type,
-                        integrity=Integrity.LOW_PART,
-                    )
-                    decompiler_data.make_version(state, curr_to_register)
-                    written_bits += register_content.size // 2
-                    if curr_to_register == end_to_register:
-                        break
-                    state.registers[curr_to_register].try_unwrap_value()
-                    curr_to_register = get_next_reg(curr_to_register)
-                    state.registers[curr_to_register] = Register(
-                        val=register_content.content,
-                        type_of_elem=register_content.type,
-                        integrity=Integrity.HIGH_PART,
-                    )
-                    decompiler_data.make_version(state, curr_to_register)
+                state.registers[curr_to_register].append_content(register_content)
+            decompiler_data.make_version(state, curr_to_register)
 
-                    offset = hex(int(offset, 16) + register_content.size // 8)
-                    written_bits += register_content.size // 2
+            if curr_to_register == end_to_register:
+                break
 
+            state.registers[curr_to_register].try_unwrap_value()
+            curr_to_register = get_next_reg(curr_to_register)
+            state.registers[curr_to_register] = Register(
+                val=RegisterContentCombiner(),
+                type_of_elem=RegisterType.COMBINE,
+                integrity=Integrity.ENTIRE,
+            )
+
+            offset = hex(int(offset, 16) + register_content.size // 8)
+            written_bits += register_content.size
+        else:
+            if state.registers[curr_to_register].val.get_size() == 0 and \
+                    register_content.size == state.registers[curr_to_register].size * 2:
+                state.registers[curr_to_register] = Register(
+                    val=register_content.content,
+                    type_of_elem=register_content.type,
+                    integrity=Integrity.LOW_PART,
+                    data_type=register_content.data_type,
+                )
+                decompiler_data.make_version(state, curr_to_register)
+                written_bits += register_content.size // 2
                 if curr_to_register == end_to_register:
                     break
-
                 state.registers[curr_to_register].try_unwrap_value()
                 curr_to_register = get_next_reg(curr_to_register)
                 state.registers[curr_to_register] = Register(
-                    val=RegisterContentCombiner(),
-                    type_of_elem=RegisterType.COMBINE,
-                    integrity=Integrity.ENTIRE,
+                    val=register_content.content,
+                    type_of_elem=register_content.type,
+                    integrity=Integrity.HIGH_PART,
+                    data_type=register_content.data_type,
                 )
+                decompiler_data.make_version(state, curr_to_register)
 
-        state.registers[curr_to_register].try_unwrap_value()
+                offset = hex(int(offset, 16) + register_content.size // 8)
+                written_bits += register_content.size // 2
 
-    # if decompiler_data.setup_argument_dict[offset].size <= 32 and decompiler_data.is_rdna3:
-    #     loading_bits = 32
-    # else:
-    #     loading_bits = 64
-    # while True:
-    #     # TODO: Учитывать размер - 64 или 32
-    #     if loading_bits == 32:
-    #         state.registers[curr_to_register] = decompiler_data.setup_argument_dict[offset]
-    #         decompiler_data.make_version(state, curr_to_register)
-    #         if curr_to_register == end_to_register:
-    #             break
-    #         offset = hex(int(offset, 16) + state.registers[curr_to_register].size // 8)
-    #         curr_to_register = get_next_reg(curr_to_register)
-    #     if loading_bits == 64:
-    #         state.registers[curr_to_register] = decompiler_data.setup_argument_dict[offset]
-    #         decompiler_data.make_version(state, curr_to_register)
-    #         if curr_to_register == end_to_register:
-    #             break
-    #         curr_to_register = get_next_reg(curr_to_register)
-    #         state.registers[curr_to_register] = decompiler_data.setup_argument_dict[offset]
-    #         decompiler_data.make_version(state, curr_to_register)
-    #         offset = hex(int(offset, 16) + 8)
-    #         if curr_to_register == end_to_register:
-    #             break
-    #         curr_to_register = get_next_reg(curr_to_register)
+            if curr_to_register == end_to_register:
+                break
+
+            state.registers[curr_to_register].try_unwrap_value()
+            curr_to_register = get_next_reg(curr_to_register)
+            state.registers[curr_to_register] = Register(
+                val=RegisterContentCombiner(),
+                type_of_elem=RegisterType.COMBINE,
+                integrity=Integrity.ENTIRE,
+            )
+
+    state.registers[curr_to_register].try_unwrap_value()
 
 
 def upload(state, to_registers, from_registers, offset, kernel_params, bits: int = -1):
+    decompiler_data = DecompilerData()
+    if decompiler_data.is_rdna3:
+        upload_by_offset(state, to_registers, offset, bits)
+        return
+
     start_from_register, _ = check_and_split_regs(from_registers)
     if state.registers[start_from_register].type == RegisterType.ARGUMENTS_POINTER:
         if offset in DecompilerData().config_data.setup_params_offsets:
-            upload_setup_argument(state, to_registers, offset, bits)
+            upload_setup_argument(state, to_registers, offset)
         else:
             upload_kernel_param(state, offset, kernel_params, to_registers)
     elif state.registers[start_from_register].type == RegisterType.GLOBAL_DATA_POINTER:

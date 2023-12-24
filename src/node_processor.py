@@ -21,9 +21,9 @@ def decode_instruction(node, flag_of_status):
     root = parts_of_operation[1]
     if len(parts_of_operation) >= 3:
         for part in parts_of_operation[2:]:
-            if part in ["b16", "b32", 'b64', 'b128',
+            if part in ["b8", "b16", "b32", 'b64', 'b128',
                         "u8", "u16", "u24", "u32", "u64",
-                        "i4", "i16", "i24", "i32", "i64",
+                        "i4", "i8", "i16", "i24", "i32", "i64",
                         "f16", "f32", "f64",
                         "byte", "ubyte", "ubyte0", "ubyte1", "ubyte2", "ubyte3", "sbyte",
                         "ushort", "sshort", "short",

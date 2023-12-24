@@ -1,23 +1,45 @@
+import enum
 import re
 from typing import Union, Optional
 
 from src.integrity import Integrity
 from src.opencl_types import vector_type_dict
-from src.register_content import RegisterContent
+from src.register_content import RegisterContent, EmptyRegisterContent
 from src.register_content_combiner import RegisterContentCombiner
 from src.register_type import RegisterType
 
 
+class RegisterSignType(enum.Enum):
+    POSITIVE = 0
+    NEGATIVE = 1
+
+
 class Register:
-    def __init__(self, val, type_of_elem, integrity, size: int = 32):
+    def __init__(
+            self,
+            val,
+            type_of_elem,
+            integrity,
+            *,
+            size: int = 32,
+            sign=RegisterSignType.POSITIVE,
+            data_type: Optional[str] = None,
+    ):
         self.val: Union[RegisterContentCombiner, any] = val
-        self.type: RegisterType = type_of_elem
+        self.type: Union[RegisterType, list[RegisterType]] = type_of_elem
         self.integrity: Integrity = integrity
         self.version = None
         self.prev_version = []
-        self.data_type = None
+        self.data_type = data_type
         self.exec_condition = None
         self.size = size
+        self.sign: Union[RegisterSignType, list[RegisterSignType]] = sign
+
+    def get_value(self) -> any:
+        if isinstance(self.val, RegisterContentCombiner):
+            return self.val.maybe_get_by_idx(0).content
+
+        return self.val
 
     def append_content(self, content: RegisterContent):
         if not isinstance(self.val, RegisterContentCombiner):
@@ -36,20 +58,25 @@ class Register:
         return self.val.maybe_acquire_content(begin, end)
 
     def try_unwrap_value(self) -> bool:
-        if not isinstance(self.val, RegisterContentCombiner):
-            return False
+        from src.decompiler_data import make_op
 
-        if self.val.get_count() > 1:
+        if not isinstance(self.val, RegisterContentCombiner):
             return False
 
         if self.val.get_count() == 0:
             self.val = None
             self.type = RegisterType.UNKNOWN
+            self.sign = RegisterSignType.POSITIVE
+
+            return True
 
         if self.val.get_count() == 1:
-            content = self.val.maybe_acquire_content(0, self.val.get_size() - 1)
-            self.val = content.content
-            self.type = content.type
+            self.type = self.val.maybe_get_by_idx(0).type
+            self.val = self.val.maybe_get_by_idx(0).content
+
+            return True
+
+        return False
 
     def __and__(self, other):
         if not isinstance(self.val, RegisterContentCombiner):
@@ -63,20 +90,24 @@ class Register:
 
         return self.val >> other
 
-    # def get_value(self) -> any:
-    #     if self.type == RegisterType.WORK_ITEM_ID_UNKNOWN:
-    #         self.type = RegisterType.WORK_ITEM_ID_X
-    #         self.val = "get_local_id(0)"
-    #         self.inc_version()
-    #
-    #     if isinstance(self.val, RegisterValue):
-    #         if len(self.val.segments) > 1:
-    #             raise NotImplementedError
-    #
-    #         val = self.val.segments[0].val
-    #         return val
-    #     else:
-    #         return self.val
+    def __add__(self, other) -> "SumRegister":
+        from src.sum_register import SumRegister
+        if not isinstance(other, Register) and not isinstance(other, SumRegister):
+            raise NotImplementedError()
+
+        reg = other
+        reg.try_unwrap_value()
+        self.try_unwrap_value()
+
+        if isinstance(reg, SumRegister):
+            return reg + self
+        if isinstance(reg, Register):
+            return SumRegister([Register(
+                val=self.val,
+                type_of_elem=self.type,
+                integrity=self.integrity,
+                sign=self.sign,
+            )]) + reg
 
     def add_version(self, name_version, num_version):
         self.version = name_version + "_" + str(num_version + 1)

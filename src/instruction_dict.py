@@ -9,6 +9,7 @@ from src.instructions.flat.flat_load import FlatLoad
 from src.instructions.flat.flat_store import FlatStore
 from src.instructions.flat.global_load import GlobalLoad
 from src.instructions.flat.global_store import GlobalStore
+from src.instructions.sop1.s_sext import SSext
 from src.instructions.sopp.s_delay_alu import SDelayAlu
 from src.instructions.smem.s_load import SLoad
 from src.instructions.sop1.s_and_saveexec import SAndSaveexec
@@ -65,6 +66,7 @@ from src.instructions.vop2.v_addc import VAddc
 from src.instructions.vop2.v_and import VAnd
 from src.instructions.vop2.v_ashrrev import VAshrrev
 from src.instructions.vop2.v_cndmask import VCndmask
+from src.instructions.vop2.v_dual_lshlrev import VDualLshlrev
 from src.instructions.vop2.v_lshlrev import VLshlrev
 from src.instructions.vop2.v_lshrrev import VLshrrev
 from src.instructions.vop2.v_mac import VMac
@@ -180,6 +182,7 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_fma': VFma,
                     'v_ldexp': VLdexp,
                     'v_lshlrev': VLshlrev,
+                    "v_dual_lshlrev": VDualLshlrev,
                     'v_lshrrev': VLshrrev,
                     'v_mac': VMac,
                     'v_min': VMin,
@@ -204,6 +207,7 @@ instruction_dict = {'ds_add': DsAdd,
                     's_mul_hi': VMulLo,
                     's_or_saveexec': SOrSaveexec,
                     's_sendmsg': SSendmsg,
+                    's_sext': SSext,
                     's_waitcnt_decptr': SWaitcnt,
                     's_xor': SXor,
                     'v_add3': VAdd3,

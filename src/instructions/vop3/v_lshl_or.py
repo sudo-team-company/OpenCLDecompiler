@@ -1,8 +1,10 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
 from src.integrity import Integrity
-from src.register import is_reg
+from src.register import is_reg, RegisterSignType, Register
+from src.register_content_combiner import RegisterContentCombiner
 from src.register_type import RegisterType
+from src.sum_register import SumRegister
 
 
 class VLshlOr(BaseInstruction):
@@ -16,8 +18,17 @@ class VLshlOr(BaseInstruction):
                 size_of_work_groups[i],
                 RegisterType.__getattr__(f"WORK_ITEM_ID_{dim}"),
             ): (
-                f"get_global_id({i}) - get_global_offset({i})",
-                RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_WORK_ITEM_ID"),
+                f"get_global_id({i}) - get_global_offset({i})"
+                if not self.decompiler_data.is_rdna3
+                else [f"get_global_id({i})", f"get_global_offset({i})"],
+
+                RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_WORK_ITEM_ID")
+                if not self.decompiler_data.is_rdna3
+                else [RegisterType.__getattr__(f"GLOBAL_ID_{dim}"), RegisterType.__getattr__(f"GLOBAL_OFFSET_{dim}")],
+
+                RegisterSignType.POSITIVE
+                if not self.decompiler_data.is_rdna3
+                else [RegisterSignType.POSITIVE, RegisterSignType.NEGATIVE],
             ) for i, dim in enumerate("XYZ") if i < len(size_of_work_groups)
         }
 
@@ -31,20 +42,39 @@ class VLshlOr(BaseInstruction):
     def to_fill_node(self):
         if self.suffix == 'b32':
             if is_reg(self.src0) and self.src1.isdigit() and is_reg(self.src2):
+                src0_type = self.node.state.registers[self.src0].type
+                src1_type = self.node.state.registers[self.src2].type
+                if isinstance(src0_type, list):
+                    src0_type = src0_type[0]
+                if isinstance(self.node.state.registers[self.src2].val, RegisterContentCombiner):
+                    src1_type = self.node.state.registers[self.src2].val.maybe_get_by_idx(0).type
                 src_types = (
-                    self.node.state.registers[self.src0].type,
+                    src0_type,
                     pow(2, int(self.src1)),
-                    self.node.state.registers[self.src2].type,
+                    src1_type,
                 )
                 if src_types in self._instruction_internal_mapping_by_types:
-                    new_value, reg_type = self._instruction_internal_mapping_by_types[src_types]
-                    return set_reg_value(
-                        node=self.node,
-                        new_value=new_value,
-                        to_reg=self.vdst,
-                        from_regs=[self.src0, self.src1, self.src2],
-                        data_type=self.suffix,
-                        reg_type=reg_type,
-                        reg_entire=Integrity.ENTIRE,
-                    )
+                    new_value, reg_type, reg_sign = self._instruction_internal_mapping_by_types[src_types]
+
+                    if self.decompiler_data.is_rdna3:
+                        return set_reg_value(
+                            self.node,
+                            new_value,
+                            self.vdst,
+                            [self.src0, self.src1, self.src2],
+                            self.suffix,
+                            reg_type=reg_type,
+                            reg_class=SumRegister,
+                            sign=reg_sign,
+                        )
+                    else:
+                        return set_reg_value(
+                            node=self.node,
+                            new_value=new_value,
+                            to_reg=self.vdst,
+                            from_regs=[self.src0, self.src1, self.src2],
+                            data_type=self.suffix,
+                            reg_type=reg_type,
+                            reg_entire=Integrity.ENTIRE,
+                        )
         return super().to_fill_node()

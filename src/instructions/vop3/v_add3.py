@@ -56,6 +56,22 @@ class VAdd3(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'u32':
+            if self.decompiler_data.is_rdna3:
+                try:
+                    new_reg = self.node.state.registers[self.src0] + self.node.state.registers[self.src1]
+                    new_reg = new_reg + self.node.state.registers[self.src2]
+                    return set_reg_value(
+                        node=self.node,
+                        new_value=new_reg.val,
+                        to_reg=self.vdst,
+                        from_regs=[self.src0, self.src1, self.src2],
+                        data_type=self.suffix,
+                        reg_type=new_reg.type,
+                        reg_class=type(new_reg),
+                    )
+                except Exception:
+                    pass
+
             new_value = make_op(self.node, self.src0, self.src1, " + ", '(ulong)', '(ulong)')
             new_value = make_op(self.node, new_value, self.src2, " + ", '(ulong)', '(ulong)')
             reg_type = RegisterType.UNKNOWN

@@ -1,5 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
+from src.register_content_combiner import RegisterContentCombiner
 from src.register_type import RegisterType
 
 

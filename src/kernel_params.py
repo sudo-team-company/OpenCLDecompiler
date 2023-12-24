@@ -1,6 +1,7 @@
 from src.decompiler_data import DecompilerData
 from src.opencl_types import evaluate_size, make_asm_type
 from src.register import is_vector_type
+from src.register_content import RegisterContent
 
 
 def get_param_type(num_of_param):
@@ -121,6 +122,10 @@ def get_kernel_params(offsets_of_kernel_params, offset_num):
 
 def process_kernel_params(set_of_instructions):
     decompiler_data = DecompilerData()
+
+    if decompiler_data.is_rdna3:
+        return
+
     param_ptr = "s[6:7]" if decompiler_data.config_data.usesetup else "s[4:5]"
     if decompiler_data.is_rdna3:
         param_ptr = "s[0:1]"

@@ -27,6 +27,21 @@ class VAddNc(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in ['u16', 'u32']:
+            if self.decompiler_data.is_rdna3:
+                try:
+                    new_reg = self.node.state.registers[self.src0] + self.node.state.registers[self.src1]
+                    return set_reg_value(
+                        self.node,
+                        new_reg.val,
+                        self.vdst,
+                        [self.src0, self.src1],
+                        self.suffix,
+                        reg_type=new_reg.type,
+                        reg_class=type(new_reg),
+                    )
+                except Exception:
+                    pass
+
             if self.src1 in self.node.state.registers and \
                     self.node.state.registers[self.src1].type == RegisterType.DIVISION_PT5:
                 new_value = self.node.state.registers[self.src1].val
