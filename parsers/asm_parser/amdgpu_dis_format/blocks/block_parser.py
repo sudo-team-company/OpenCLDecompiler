@@ -29,14 +29,11 @@ class AmdGpuDisBlockParser(BaseParser):
 
         function_name, rest = parse_result
 
-        parse_result = OneOrMoreParser(
-            IgnoreParser(ParserElementParser(White(" \t"))) +
-            AmdGpuDisLineParser()
-        ).parse(rest)
+        commands = []
+        for line in rest.splitlines():
+            if line == line.strip():
+                break
 
-        if parse_result is None:
-            return None
+            commands.append(line)
 
-        commands, rest = parse_result
-
-        return ListParseObject([Block(function_name.obj, *commands.obj)]), rest
+        return ListParseObject([Block(function_name.obj, *commands)]), ""

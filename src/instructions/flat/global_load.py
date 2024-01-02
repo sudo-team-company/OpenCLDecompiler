@@ -16,7 +16,7 @@ class GlobalLoad(FlatLoad):
             self.saddr = "0"
         self.inst_offset = "0" if len(self.instruction) == 4 else self.instruction[4]
 
-        if self.saddr == "off":
+        if self.instruction[3] == "off":
             self.from_registers, _ = check_and_split_regs(self.vaddr)
         else:
             begin_registers, end_registers = check_and_split_regs(self.saddr)

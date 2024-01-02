@@ -93,6 +93,8 @@ class FlatStore(BaseInstruction):
             suffix_size = 1
             if self.decompiler_data.is_rdna3:
                 suffix_size = int(self.suffix[1:]) // 32
+                if suffix_size == 0:
+                    suffix_size = 1
             else:
                 if self.suffix[-1].isdigit():
                     suffix_size = int(self.suffix[-1])

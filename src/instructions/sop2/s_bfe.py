@@ -1,5 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
+from src.integrity import Integrity
+from src.register import is_reg
 from src.register_content_combiner import RegisterContentCombiner
 from src.register_type import RegisterType
 
@@ -47,6 +49,36 @@ class SBfe(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
+        if self.decompiler_data.is_rdna3:
+            if self.suffix.endswith("32"):
+                if is_reg(self.ssrc0) and self.node.state.registers[self.ssrc0].type == RegisterType.COMBINE:
+                    shift_by = int(self.ssrc1, 16) & ((1 << 4) - 1)
+                    and_by = hex((1 << ((int(self.ssrc1, 16) >> 16) & ((1 << 6) - 1))) - 1)
+
+                    rshift_content_combiner = self.node.state.registers[self.ssrc0] >> shift_by
+                    tmp = rshift_content_combiner & and_by
+
+                    set_reg_value(
+                        node=self.node,
+                        new_value=tmp.content,
+                        to_reg=self.sdst,
+                        from_regs=[self.ssrc0],
+                        data_type=self.suffix,
+                        reg_type=tmp.type,
+                    )
+
+                    is_zero = (str(tmp.content) == "0")
+
+                    set_reg_value(
+                        node=self.node,
+                        new_value=str(int(not is_zero)),
+                        to_reg="scc",
+                        from_regs=[self.sdst],
+                        data_type=self.suffix,
+                    )
+
+                    return self.node
+
         if self.suffix == 'u32':
             if self.ssrc1 == "0x20010":
                 new_value = "get_work_dim()"

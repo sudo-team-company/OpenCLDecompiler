@@ -44,9 +44,9 @@ ARG_KIND_TO_VALUE = {
     "hidden_group_size_y": "get_local_size(1)",
     "hidden_group_size_z": "get_local_size(2)",
 
-    "hidden_remainder_x": "unknown",
-    "hidden_remainder_y": "unknown",
-    "hidden_remainder_z": "unknown",
+    "hidden_remainder_x": "get_group_id(0) * get_local_size(0)",
+    "hidden_remainder_y": "get_group_id(1) * get_local_size(1)",
+    "hidden_remainder_z": "get_group_id(2) * get_local_size(2)",
 
     "hidden_global_offset_x": "get_global_offset(0)",
     "hidden_global_offset_y": "get_global_offset(1)",
@@ -93,19 +93,31 @@ class AmdGpuDisParser:
 
         return offset_to_content
 
+    @staticmethod
+    def _remove_redundant_lines(text: str) -> str:
+        new_text = ""
+
+        for line in text.splitlines(keepends=True):
+            if line.strip().startswith(".long") \
+                    or line.strip().startswith(".short") \
+                    or line.strip().startswith(".byte") \
+                    or line.strip().startswith(".ascii"):
+                continue
+            else:
+                new_text += line
+
+        return new_text
+
     def parse(self, text: str) -> Optional[tuple[ParseObject, str]]:
-        # print("Text size: " + str(len(text)), flush=True)
-        # print("0", flush=True)
+        text = self._remove_redundant_lines(text)
+
         config_text = text[text.find("amdhsa.kernels:"):]
-        # print("cfg size: " + str(len(config_text)), flush=True)
         config_parser = OneOrMoreParser(
             AmdGpuDisConfigsParser() |
             IgnoreParser(LineParser(AnyParser()))
         )
 
-        # print("parsing cfg", flush=True)
         parse_result = config_parser.parse(config_text)
-        # print("done parsing cfg", flush=True)
         if parse_result is None:
             return None
         result, _ = parse_result
@@ -116,20 +128,15 @@ class AmdGpuDisParser:
         block_parser = AmdGpuDisBlockParser()
         self._function_names = list(self._config.keys())
         pos = 0
-        # print("1", flush=True)
         for line in text.splitlines():
             if line.endswith(":"):
-                # print(f"Trying '{line[:-1]}'", flush=True)
                 if line[:-1] in self._function_names:
-                    # print("Processing...", flush=True)
                     parse_result = block_parser.parse(text[pos:])
                     if parse_result is None:
                         raise Exception(f"Unable to parse block '{line[:-1]}'")
 
                     result, _ = parse_result
                     for obj in result.obj:
-                        # self._function_commands[obj.name] = obj.args
-
                         yield (
                             obj.name,
                             ConfigData(
@@ -169,32 +176,9 @@ class AmdGpuDisParser:
                                     self._config[obj.name][".args"],
                                 ),
                             ),
-                            [instr.obj.split("//")[0].strip() for instr in obj.args],
+                            [instr.split("//")[0].strip() for instr in obj.args],
                             [],
                             [],
                         )
 
             pos += 1 + len(line)
-        # print("Done!", flush=True)
-
-        # parse_result = blocks_parser.parse(text)
-        #
-        # if parse_result is None:
-        #     return None
-        #
-        # result, _ = parse_result
-        # for obj in result.obj:
-        #     if obj.name in self._function_names:
-        #         self._function_commands[obj.name] = obj.args
-        #         continue
-        #
-        #     if len(obj.args) >= 2 and ".type" in obj.args[-2].obj and obj.args[-2].obj.endswith("@function"):
-        #         self._function_names.append(obj.args[-2].obj.replace(".type", "").replace(",@function", "").strip())
-        #         continue
-
-        # result = []
-        #
-        # for name in self._function_names:
-        #     result.append((name, self._function_commands[name], self._config[name]))
-        #
-        # return ListParseObject(result), ""

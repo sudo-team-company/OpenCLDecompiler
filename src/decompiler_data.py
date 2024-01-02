@@ -52,6 +52,25 @@ def set_reg_value(
     return node
 
 
+def set_reg(
+        node,
+        to_reg: str,
+        from_regs: list[str],
+        reg: Register,
+):
+    return set_reg_value(
+        node=node,
+        new_value=reg.val,
+        to_reg=to_reg,
+        from_regs=from_regs,
+        data_type=reg.data_type,
+        reg_type=reg.type,
+        reg_entire=reg.integrity,
+        sign=reg.sign,
+        reg_class=SumRegister if isinstance(reg, SumRegister) else Register,
+    )
+
+
 def make_elem_from_addr(var):
     separator_pos = var.find(" + ")
     param_name = var[:separator_pos]
@@ -339,9 +358,9 @@ class DecompilerData(metaclass=Singleton):
                 '0x1c': RegisterContent("get_local_size(0)", RegisterType.LOCAL_SIZE_X, 16),
                 '0x1e': RegisterContent("get_local_size(1)", RegisterType.LOCAL_SIZE_Y, 16),
                 '0x20': RegisterContent("get_local_size(2)", RegisterType.LOCAL_SIZE_Z, 16),
-                '0x22': RegisterContent("unknown", RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE, 16),
-                '0x24': RegisterContent("unknown", RegisterType.WORK_GROUP_ID_Y_LOCAL_SIZE, 16),
-                '0x26': RegisterContent("unknown", RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE, 16),
+                '0x22': RegisterContent("get_group_id(0) * get_local_size(0)", RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE, 16),
+                '0x24': RegisterContent("get_group_id(1) * get_local_size(1)", RegisterType.WORK_GROUP_ID_Y_LOCAL_SIZE, 16),
+                '0x26': RegisterContent("get_group_id(2) * get_local_size(2)", RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE, 16),
                 '0x38': RegisterContent("get_global_offset(0)", RegisterType.GLOBAL_OFFSET_X, 64),
                 '0x40': RegisterContent("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, 64),
                 '0x48': RegisterContent("get_global_offset(2)", RegisterType.GLOBAL_OFFSET_Z, 64),
@@ -364,8 +383,6 @@ class DecompilerData(metaclass=Singleton):
         """
 
         return self.initial_offsets
-
-
 
     def reset(self, name_of_program):
         self.name_of_program = name_of_program

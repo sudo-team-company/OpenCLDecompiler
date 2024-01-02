@@ -1,4 +1,4 @@
-/* Disassembling 'linear_kernels\multiplication\multiplication-gfx1010.bin' */
+/* Disassembling 'linear_kernels/multiplication/multiplication-gfx1010.bin' */
 .rocm
 .gpu GFX1010
 .arch_minor 1
