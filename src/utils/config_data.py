@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List, Tuple, Dict
+from typing import Optional
 
 from src.register_content import RegisterContent
 

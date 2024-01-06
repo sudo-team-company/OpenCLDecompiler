@@ -68,16 +68,16 @@ class VLshlOr(BaseInstruction):
                             sign=reg_sign,
                             operation=OperationType.PLUS,
                         )
-                    else:
-                        return set_reg_value(
-                            node=self.node,
-                            new_value=new_value,
-                            to_reg=self.vdst,
-                            from_regs=[self.src0, self.src1, self.src2],
-                            data_type=self.suffix,
-                            reg_type=reg_type,
-                            integrity=Integrity.ENTIRE,
-                        )
+
+                    return set_reg_value(
+                        node=self.node,
+                        new_value=new_value,
+                        to_reg=self.vdst,
+                        from_regs=[self.src0, self.src1, self.src2],
+                        data_type=self.suffix,
+                        reg_type=reg_type,
+                        integrity=Integrity.ENTIRE,
+                    )
 
         new_reg = self.node.state.registers[self.src0] << int(self.src1)
         new_reg = new_reg | self.node.state.registers[self.src2]

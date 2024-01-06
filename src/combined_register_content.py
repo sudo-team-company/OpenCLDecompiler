@@ -2,7 +2,6 @@ from typing import Iterable, Optional
 
 from src.register_content import RegisterContent, EmptyRegisterContent, RegisterSignType
 from src.register_type import RegisterType
-from src.utils.operation_register_content import OperationRegisterContent, OperationType
 
 
 class CombinedRegisterContent(RegisterContent):
@@ -57,6 +56,8 @@ class CombinedRegisterContent(RegisterContent):
                             sign=self._sign[1],
                         ) * (2 ** int(self._size[0]))
 
+        return None
+
     def _maybe_acquire_content(self, begin: int, end: int) -> Optional[RegisterContent]:
         curr_pos = 0
         for value, type_, size, data_type, sign, in zip(
@@ -95,14 +96,14 @@ class CombinedRegisterContent(RegisterContent):
         return self._sign[0]
 
     def __and__(self, other) -> Optional[RegisterContent]:
-        if isinstance(other, str) or isinstance(other, int):
+        if isinstance(other, (int, str)):
             if isinstance(other, str):
                 hex_str = other
                 hex_int = int(hex_str, 16)
             if isinstance(other, int):
                 hex_int = int(other, 16)
 
-            bit_str = "{:b}".format(hex_int)
+            bit_str = "{:b}".format(hex_int)   # pylint: disable=C0209
 
             if hex_int == 0:
                 return RegisterContent(

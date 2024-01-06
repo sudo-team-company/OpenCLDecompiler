@@ -1,7 +1,6 @@
 from src.decompiler_data import DecompilerData
 from src.opencl_types import evaluate_size, make_asm_type
 from src.register import is_vector_type
-from src.register_content import RegisterContent
 
 
 def get_param_type(num_of_param):

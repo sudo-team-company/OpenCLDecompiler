@@ -59,34 +59,6 @@ class VAnd(BaseInstruction):
                             reg=maybe_new_reg,
                         )
 
-                # elif self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_YX or \
-                #         self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_ZYX or \
-                #         self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_UNKNOWN:
-                #
-                #     if self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_UNKNOWN:
-                #         self.node.state.registers[self.src1].type = RegisterType.WORK_ITEM_ID_ZYX
-                #         register_value = RegisterValue(32, [
-                #             ("get_local_id(0)", RegisterType.WORK_ITEM_ID_X, 9, 0),
-                #             ("get_local_id(1)", RegisterType.WORK_ITEM_ID_Y, 19, 10),
-                #             ("get_local_id(2)", RegisterType.WORK_ITEM_ID_Z, 29, 20),
-                #             (None, RegisterType.UNKNOWN, 31, 30),
-                #         ])
-                #         self.node.state.registers[self.src1].val = register_value
-                #         self.node.state.registers[self.src1].inc_version()
-                #
-                #     if self.src0 == "0x3ff":
-                #         new_value = "get_local_id(0)"
-                #         reg_type = RegisterType.WORK_ITEM_ID_X
-                #     elif self.src0 == "0xffc00":
-                #         new_value = "get_local_id(1)"
-                #         reg_type = RegisterType.WORK_ITEM_ID_Y
-                #     elif self.src0 == "0x3ff00000" and \
-                #             self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_ZYX:
-                #         new_value = "get_local_id(2)"
-                #         reg_type = RegisterType.WORK_ITEM_ID_Z
-                #     else:
-                #         new_value = self.node.state.registers[self.src1].val
-                #         reg_type = RegisterType.UNKNOWN
                 else:
                     new_value, reg_type = default_behaviour()
                 return set_reg_value(

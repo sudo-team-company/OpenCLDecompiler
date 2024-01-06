@@ -1,7 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
 from src.integrity import Integrity
-from src.register import check_and_split_regs, is_reg, Register
+from src.register import check_and_split_regs, is_reg
 from src.register_type import RegisterType
 
 

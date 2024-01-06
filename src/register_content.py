@@ -1,3 +1,5 @@
+# pylint: disable=R1705
+
 import copy
 import enum
 from typing import Optional, Union
@@ -13,8 +15,11 @@ class RegisterSignType(enum.Enum):
     def __invert__(self):
         if self.value == 0:
             return RegisterSignType.NEGATIVE
-        if self.value == 1:
+        elif self.value == 1:
             return RegisterSignType.POSITIVE
+        else:
+            raise Exception()
+
 
 
 class RegisterContent:
@@ -55,7 +60,7 @@ class RegisterContent:
 
     def __and__(self, other):
         if isinstance(other, RegisterContent):
-            from src.utils.operation_register_content import OperationRegisterContent, OperationType
+            from src.utils.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
 
             return OperationRegisterContent(
                 operation=OperationType.BITWISE_AND,
@@ -67,7 +72,7 @@ class RegisterContent:
 
         if isinstance(other, str):
             if other.startswith("0x"):
-                bit_str = "{:b}".format(int(other, 16))
+                bit_str = "{:b}".format(int(other, 16))  # pylint: disable=C0209
                 if bit_str.count("0") == 0 and len(bit_str) == self.get_size():
                     return copy.deepcopy(self)
 
@@ -75,7 +80,7 @@ class RegisterContent:
 
     def __or__(self, other):
         if isinstance(other, RegisterContent):
-            from src.utils.operation_register_content import OperationRegisterContent, OperationType
+            from src.utils.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
 
             return OperationRegisterContent(
                 operation=OperationType.BITWISE_OR,
@@ -89,7 +94,7 @@ class RegisterContent:
 
     def __rshift__(self, other):
         if isinstance(other, RegisterContent):
-            from src.utils.operation_register_content import OperationRegisterContent, OperationType
+            from src.utils.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
 
             return OperationRegisterContent(
                 operation=OperationType.R_SHIFT,
@@ -103,7 +108,7 @@ class RegisterContent:
 
     def __lshift__(self, other):
         if isinstance(other, int):
-            from src.utils.operation_register_content import OperationRegisterContent, OperationType
+            from src.utils.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
 
             return OperationRegisterContent(
                 operation=OperationType.L_SHIFT,
@@ -122,7 +127,7 @@ class RegisterContent:
 
     def __add__(self, other):
         if isinstance(other, RegisterContent):
-            from src.utils.operation_register_content import OperationRegisterContent, OperationType
+            from src.utils.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
 
             return OperationRegisterContent(
                 operation=OperationType.PLUS,
@@ -136,7 +141,7 @@ class RegisterContent:
 
     def __sub__(self, other):
         if isinstance(other, RegisterContent):
-            from src.utils.operation_register_content import OperationRegisterContent, OperationType
+            from src.utils.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
 
             return OperationRegisterContent(
                 operation=OperationType.MINUS,
@@ -149,7 +154,7 @@ class RegisterContent:
         raise NotImplementedError()
 
     def __mul__(self, other):
-        from src.utils.operation_register_content import OperationRegisterContent, OperationType
+        from src.utils.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
 
         if isinstance(other, RegisterContent):
             return OperationRegisterContent(
@@ -172,8 +177,8 @@ class RegisterContent:
                     ),
                 ]
             )
-
-        raise NotImplementedError()
+        else:
+            raise NotImplementedError()
 
 
 class EmptyRegisterContent(RegisterContent):

@@ -1,6 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value, make_op, set_reg
-from src.register import is_reg, Register
+from src.register import is_reg
 from src.register_type import RegisterType
 
 _instruction_internal_mapping_by_types = {

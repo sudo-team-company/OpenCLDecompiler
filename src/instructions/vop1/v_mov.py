@@ -2,7 +2,7 @@ import copy
 
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value, set_reg
-from src.register import Register, is_reg
+from src.register import is_reg
 from src.register_content import RegisterContent
 from src.register_type import RegisterType
 
@@ -30,21 +30,22 @@ class VMov(BaseInstruction):
                     from_regs=[self.src0],
                     reg=new_reg,
                 )
-            else:
-                data_type = self.suffix
-                new_value = self.src0
-                reg_type = RegisterType.INT32
-                return set_reg_value(
-                    self.node,
-                    new_value,
-                    self.vdst,
-                    [self.src0],
-                    data_type,
-                    reg_type=reg_type,
-                    register_content_type=(
-                        type(self.node.state.registers[self.src0].register_content)
-                        if is_reg(self.src0)
-                        else RegisterContent
-                    ),
-                )
+
+            data_type = self.suffix
+            new_value = self.src0
+            reg_type = RegisterType.INT32
+
+            return set_reg_value(
+                self.node,
+                new_value,
+                self.vdst,
+                [self.src0],
+                data_type,
+                reg_type=reg_type,
+                register_content_type=(
+                    type(self.node.state.registers[self.src0].register_content)
+                    if is_reg(self.src0)
+                    else RegisterContent
+                ),
+            )
         return super().to_fill_node()

@@ -31,7 +31,10 @@ class VAddLshl(BaseInstruction):
         if self.suffix == 'u32':
             if is_reg(self.src0) and is_reg(self.src1) and self.src2.isdigit():
                 if not isinstance(self.node.state.registers[self.src0].register_content, OperationRegisterContent) \
-                        and not isinstance(self.node.state.registers[self.src1].register_content, OperationRegisterContent):
+                        and not isinstance(
+                    self.node.state.registers[self.src1].register_content,
+                    OperationRegisterContent,
+                ):
                     src_types = frozenset({
                         self.node.state.registers[self.src0].type,
                         self.node.state.registers[self.src1].type,

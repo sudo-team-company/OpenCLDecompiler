@@ -1,7 +1,6 @@
 from src.decompiler_data import set_reg_value
 from src.instructions.flat.flat_load import FlatLoad
-from src.register import check_and_split_regs, is_reg
-from src.register_content import RegisterContent
+from src.register import check_and_split_regs
 from src.register_type import RegisterType
 from src.upload import upload
 

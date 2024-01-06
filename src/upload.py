@@ -95,7 +95,7 @@ def upload_kernel_param(state, offset, kernel_params, to_registers):
                 type_=type_param,
             ),
         )
-        state.registers[reg].register_content._data_type = data_type
+        state.registers[reg].register_content._data_type = data_type  # pylint: disable=W0212
         decompiler_data.make_version(state, reg)
 
 
@@ -112,7 +112,7 @@ def upload_global_data_pointer(state, to_registers, from_registers):
             type_=RegisterType.GLOBAL_DATA_POINTER,
         ),
     )
-    state.registers[start_to_register].register_content._data_type = data_type
+    state.registers[start_to_register].register_content._data_type = data_type  # pylint: disable=W0212
     decompiler_data.make_version(state, start_to_register)
 
 

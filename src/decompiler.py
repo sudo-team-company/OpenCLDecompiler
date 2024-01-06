@@ -34,7 +34,7 @@ def process_src_with_unresolved_instruction(set_of_instructions):
             decompiler_data.write(row + "\n")
 
 
-def process_src(
+def process_src(   # pylint: disable=R0914
         name_of_program,
         config_data,
         set_of_instructions,

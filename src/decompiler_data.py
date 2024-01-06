@@ -16,7 +16,7 @@ from src.utils import ConfigData, DriverFormat
 from src.utils.operation_register_content import OperationType, OperationRegisterContent
 
 
-def set_reg_value(
+def set_reg_value(  # pylint: disable=R0913
         node,
         new_value,
         to_reg,
@@ -126,17 +126,17 @@ def set_reg(
 ):
     return set_reg_value(
         node=node,
-        new_value=reg.register_content._value,
+        new_value=reg.register_content._value,  # pylint: disable=W0212
         to_reg=to_reg,
         from_regs=from_regs,
-        data_type=reg.register_content._data_type,
-        reg_type=reg.register_content._type,
+        data_type=reg.register_content._data_type,  # pylint: disable=W0212
+        reg_type=reg.register_content._type,  # pylint: disable=W0212
         integrity=reg.integrity,
-        sign=reg.register_content._sign,
+        sign=reg.register_content._sign,  # pylint: disable=W0212
         register_content_type=type(reg.register_content),
-        operation=reg.register_content._operation if isinstance(reg.register_content,
+        operation=reg.register_content._operation if isinstance(reg.register_content,  # pylint: disable=W0212
                                                                 OperationRegisterContent) else None,
-        size=reg.register_content._size,
+        size=reg.register_content._size,  # pylint: disable=W0212
     )
 
 
@@ -296,7 +296,7 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-class DecompilerData(metaclass=Singleton):
+class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
     def __init__(self):
         self.name_of_program = None
         self.config_data: Optional[ConfigData] = None

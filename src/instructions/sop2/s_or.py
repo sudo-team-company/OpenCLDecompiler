@@ -1,6 +1,5 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
-from src.register import is_reg
 
 
 class SOr(BaseInstruction):

@@ -6,7 +6,6 @@ from src.decompiler import process_src
 from src.decompiler_data import DecompilerData
 from src.flag_type import FlagType
 from src.kernel_parser import parse_kernel
-from src.utils import ConfigData
 
 
 def main(input_par, output_par, flag_for_decompilation, is_new_parser: bool):

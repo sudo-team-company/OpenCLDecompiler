@@ -53,7 +53,7 @@ class Register:
         )
 
     def cast_to(self, data_type: str):
-        self.register_content._data_type = data_type
+        self.register_content._data_type = data_type   # pylint: disable=W0212
 
     def get_value(self) -> any:
         return self.register_content.get_value()
@@ -73,8 +73,8 @@ class Register:
         if new_content is not None:
             self.register_content = new_content
             return True
-        else:
-            return False
+
+        return False
 
     def __and__(self, other):
         if not isinstance(other, str):
@@ -170,7 +170,7 @@ class Register:
                 size=self.get_size(),
             )
         elif isinstance(other, int):
-            from src.decompiler_data import DecompilerData
+            from src.decompiler_data import DecompilerData   # pylint: disable=C0415
             _MUL_SIMPLIFY_COMBINATIONS = [
                 *[
                     (

@@ -2,7 +2,7 @@ import copy
 
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg
-from src.register import is_reg, Register
+from src.register import is_reg
 
 
 class SSext(BaseInstruction):

@@ -66,7 +66,7 @@ class SBfe(BaseInstruction):
                         reg=new_reg,
                     )
 
-                    is_zero = (str(new_reg.get_value()) == "0")
+                    is_zero = str(new_reg.get_value()) == "0"
 
                     set_reg_value(
                         node=self.node,
@@ -90,6 +90,7 @@ class SBfe(BaseInstruction):
                 reg_type = RegisterType.KERNEL_ARGUMENT_VALUE
             else:
                 print("Unknown pattern in s_bfe")
+
                 raise NotImplementedError()
             return set_reg_value(self.node, new_value, self.sdst, [], self.suffix, reg_type=reg_type)
         if self.suffix == 'i32':

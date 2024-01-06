@@ -1,12 +1,9 @@
-from packaging._parser import Op
-
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier
 from src.opencl_types import make_opencl_type
 from src.register import check_and_split_regs, is_vgpr, is_vector_type, check_and_split_regs_range_to_full_list, \
-    Register, is_sgpr_range
+    is_sgpr_range
 from src.register_type import RegisterType
-from src.utils.operation_register_content import OperationRegisterContent
 
 
 def get_vector_name(vector_element):
