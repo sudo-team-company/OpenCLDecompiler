@@ -224,8 +224,8 @@ class TestLinearKernels:
         ["mcpu", "disasm", "is_new_parser"],
         [
             ("", "clrxdisasm", False),
-            # ("gfx1010", "clrxdisasm", False),
-            # ("gfx1030", "clrxdisasm", False),
+            ("gfx1010", "clrxdisasm", False),
+            ("gfx1030", "clrxdisasm", False),
             ("gfx1103", "amdgpu-dis", True),
         ]
     )
