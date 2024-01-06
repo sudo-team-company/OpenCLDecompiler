@@ -312,7 +312,7 @@ def process_control_structures_in_loop(region_start, region_end):
                 return
             if curr_region.type == RegionType.BASIC and len(curr_region.children) == 2 \
                     and (after_region_end in [curr_region.children[0], curr_region.children[1]]):
-                curr_region.register_content._type = RegionType.BREAK_REGION  # надо отдельно написать на return и обрезание на break
+                curr_region.type = RegionType.BREAK_REGION  # надо отдельно написать на return и обрезание на break
                 next_region = curr_region.children[0] if curr_region.children[1] == after_region_end else \
                     curr_region.children[1]
                 curr_region, after_region_end = remove_region_connect(curr_region, after_region_end)
@@ -333,7 +333,7 @@ def get_one_loop_region(q_loops, curr_region, start_region, region_start, region
     while q_loops:
         loop_region = q_loops.pop()
         if loop_region.type == RegionType.BACK_EDGE:
-            loop_region.register_content._type = RegionType.CONTINUE_REGION
+            loop_region.type = RegionType.CONTINUE_REGION
             join_regions(loop_region.parent[0], loop_region, loop_region.children[0])  # not good enough
         elif curr_region.start.instruction[1] == loop_region.start.instruction[0][:-1]:
             region_start = loop_region
