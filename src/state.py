@@ -1,10 +1,10 @@
 from typing import Optional
 
+from src.combined_register_content import CombinedRegisterContent
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
 from src.register import Register
 from src.register_content import RegisterContent
-from src.register_content_combiner import RegisterContentCombiner
 from src.register_type import RegisterType
 
 
@@ -66,7 +66,6 @@ class State:
         v_dim = "v" + str(dim)
         if is_rdna3:
             v_dim = "v0"
-            type_v = RegisterType.COMBINE
         if dim == 0:
             type_g = RegisterType.WORK_GROUP_ID_X
             if not is_rdna3:
@@ -79,31 +78,55 @@ class State:
             type_g = RegisterType.WORK_GROUP_ID_Z
             if not is_rdna3:
                 type_v = RegisterType.WORK_ITEM_ID_Z
-        self.registers[g_id_dim] = Register("get_group_id(" + str(dim) + ")", type_g, Integrity.ENTIRE)
+        self.registers[g_id_dim] = Register(
+            integrity=Integrity.ENTIRE,
+            register_content=RegisterContent(
+                value=f"get_group_id({dim})",
+                type_=type_g,
+            )
+        )
         self.registers[g_id_dim].add_version(g_id_dim, version_g_id)
 
-        val = "get_local_id(" + str(dim) + ")"
-        if type_v == RegisterType.COMBINE:
-            val = RegisterContentCombiner()
-            val.append_content(RegisterContent(
-                content="get_local_id(0)",
-                type_=RegisterType.WORK_ITEM_ID_X,
-                size=10,
-            ))
-            val.append_content(RegisterContent(
-                content="get_local_id(1)",
-                type_=RegisterType.WORK_ITEM_ID_Y,
-                size=10,
-            ))
-            val.append_content(RegisterContent(
-                content="get_local_id(2)",
-                type_=RegisterType.WORK_ITEM_ID_Z,
-                size=10,
-            ))
-        self.registers[v_dim] = Register(val, type_v, Integrity.ENTIRE)
+        if is_rdna3:
+            register_content = CombinedRegisterContent(
+                register_contents=[
+                    RegisterContent(
+                        value="get_local_id(0)",
+                        type_=RegisterType.WORK_ITEM_ID_X,
+                        size=10,
+                    ),
+                    RegisterContent(
+                        value="get_local_id(1)",
+                        type_=RegisterType.WORK_ITEM_ID_Y,
+                        size=10,
+                    ),
+                    RegisterContent(
+                        value="get_local_id(2)",
+                        type_=RegisterType.WORK_ITEM_ID_Z,
+                        size=10,
+                    ),
+                ]
+            )
+        else:
+            register_content = RegisterContent(
+                value=f"get_local_id({dim})",
+                type_=type_v,
+            )
+
+        self.registers[v_dim] = Register(
+            integrity=Integrity.ENTIRE,
+            register_content=register_content
+        )
         self.registers[v_dim].add_version(v_dim, version_v)
 
     def init_exec(self, version):
-        self.registers["exec"] = Register(ExecCondition.DEFAULT, RegisterType.UNKNOWN, Integrity.ENTIRE)
+        self.registers["exec"] = Register(
+            integrity=Integrity.ENTIRE,
+            exec_condition=ExecCondition.DEFAULT,
+            register_content=RegisterContent(
+                value=None,
+                type_=RegisterType.UNKNOWN,
+            ),
+        )
         self.registers["exec"].add_version("exec", version)
         self.registers["exec"].exec_condition = ExecCondition.default()

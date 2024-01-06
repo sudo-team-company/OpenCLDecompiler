@@ -37,9 +37,9 @@ class SSub(BaseInstruction):
         if self.suffix == 'u32':
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, " - ", '(ulong)', '(ulong)')
             return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix,
-                                 reg_entire=reg_entire)
+                                 integrity=reg_entire)
         if self.suffix == 'i32':
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, " - ", '(long)', '(long)')
             return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix,
-                                 reg_entire=reg_entire)
+                                 integrity=reg_entire)
         return super().to_fill_node()

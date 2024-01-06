@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, set_reg_value
+from src.decompiler_data import make_op, set_reg_value, set_reg
 from src.register import check_and_split_regs
 from src.register_type import RegisterType
 
@@ -52,4 +52,18 @@ class SLshl(BaseInstruction):
             node = set_reg_value(node, new_value1, end_to_register, [end_from_register, self.ssrc1], data_type,
                                  reg_type=reg_type1)
             return node
+
+        if self.decompiler_data.is_rdna3:
+            try:
+                new_reg = self.node.state.registers[self.ssrc0] * pow(2, int(self.ssrc1))
+                new_reg.cast_to(self.suffix)
+                return set_reg(
+                    node=self.node,
+                    to_reg=self.sdst,
+                    from_regs=[self.ssrc0],
+                    reg=new_reg,
+                )
+            except Exception:
+                pass
+
         return super().to_fill_node()

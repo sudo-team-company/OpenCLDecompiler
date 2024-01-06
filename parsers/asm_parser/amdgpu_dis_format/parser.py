@@ -70,20 +70,20 @@ class AmdGpuDisParser:
             size = int(arg[".size"], 16) * 8
             value_kind = arg[".value_kind"]
             type_name = arg.get(".type_name")
-            content = ARG_KIND_TO_VALUE.get(value_kind)
+            value = ARG_KIND_TO_VALUE.get(value_kind)
 
             data_type = None
 
             if type_name is not None:
                 type_name = type_name.strip("'")
-                content = f"arg{idx}"
+                value = f"arg{idx}"
                 data_type = make_asm_type(type_name)
 
                 if type_name.endswith("*"):
                     data_type = make_asm_type(type_name[:-1])
 
             register_content = RegisterContent(
-                content=content,
+                value=value,
                 type_=ARG_KIND_TO_REGISTER_TYPE[value_kind],
                 size=size,
                 data_type=data_type,

@@ -73,5 +73,5 @@ class VAddc(BaseInstruction):
                 if src1_reg:
                     reg_type = self.node.state.registers[self.src1].type
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
-                                 reg_type=reg_type, reg_entire=reg_entire)
+                                 reg_type=reg_type, integrity=reg_entire)
         return super().to_fill_node()

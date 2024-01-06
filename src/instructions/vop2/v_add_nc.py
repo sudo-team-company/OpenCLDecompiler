@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import set_reg_value, make_op
+from src.decompiler_data import set_reg_value, make_op, set_reg
 from src.register import is_reg
 from src.register_type import RegisterType
 
@@ -30,14 +30,11 @@ class VAddNc(BaseInstruction):
             if self.decompiler_data.is_rdna3:
                 try:
                     new_reg = self.node.state.registers[self.src0] + self.node.state.registers[self.src1]
-                    return set_reg_value(
-                        self.node,
-                        new_reg.val,
-                        self.vdst,
-                        [self.src0, self.src1],
-                        self.suffix,
-                        reg_type=new_reg.type,
-                        reg_class=type(new_reg),
+                    return set_reg(
+                        node=self.node,
+                        to_reg=self.vdst,
+                        from_regs=[self.src0, self.src1],
+                        reg=new_reg,
                     )
                 except Exception:
                     pass

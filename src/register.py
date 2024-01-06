@@ -1,113 +1,226 @@
-import enum
+import copy
+import itertools
 import re
-from typing import Union, Optional
 
+from src.constants import DEFAULT_REGISTER_SIZE
 from src.integrity import Integrity
 from src.opencl_types import vector_type_dict
-from src.register_content import RegisterContent, EmptyRegisterContent
-from src.register_content_combiner import RegisterContentCombiner
+from src.register_content import RegisterContent, RegisterSignType
 from src.register_type import RegisterType
-
-
-class RegisterSignType(enum.Enum):
-    POSITIVE = 0
-    NEGATIVE = 1
 
 
 class Register:
     def __init__(
             self,
-            val,
-            type_of_elem,
-            integrity,
             *,
-            size: int = 32,
-            sign=RegisterSignType.POSITIVE,
-            data_type: Optional[str] = None,
+            integrity,
+            register_content: RegisterContent,
+            size: int = DEFAULT_REGISTER_SIZE,
+            exec_condition=None,
     ):
-        self.val: Union[RegisterContentCombiner, any] = val
-        self.type: Union[RegisterType, list[RegisterType]] = type_of_elem
         self.integrity: Integrity = integrity
         self.version = None
         self.prev_version = []
-        self.data_type = data_type
-        self.exec_condition = None
-        self.size = size
-        self.sign: Union[RegisterSignType, list[RegisterSignType]] = sign
+        self.exec_condition = exec_condition
+        self.register_content: RegisterContent = register_content
+        self._size = size
+
+    @property
+    def val(self) -> any:
+        return self.register_content.get_value()
+
+    @property
+    def type(self) -> RegisterType:
+        return self.register_content.get_type()
+
+    @property
+    def data_type(self) -> str:
+        return self.register_content.get_data_type()
+
+    @property
+    def size(self) -> int:
+        return self.register_content.get_size()
+
+    @property
+    def sign(self) -> RegisterSignType:
+        return self.register_content.get_sign()
+
+    def __copy__(self):
+        return Register(
+            integrity=copy.copy(self.integrity),
+            register_content=copy.copy(self.register_content),
+            size=copy.copy(self.size),
+        )
+
+    def cast_to(self, data_type: str):
+        self.register_content._data_type = data_type
 
     def get_value(self) -> any:
-        if isinstance(self.val, RegisterContentCombiner):
-            return self.val.maybe_get_by_idx(0).content
+        return self.register_content.get_value()
 
-        return self.val
+    def get_type(self) -> RegisterType:
+        return self.register_content.get_type()
 
-    def append_content(self, content: RegisterContent):
-        if not isinstance(self.val, RegisterContentCombiner):
-            raise Exception(f"Register value must be type of {type(RegisterContentCombiner)}")
+    def get_data_type(self) -> str:
+        return self.register_content.get_data_type()
 
-        if self.val.get_size() + content.size > self.size:
-            raise Exception(f"Combined content size mustn't be grater than {self.size} although size "
-                            f"after content append is {self.val.get_size() + content.size}")
+    def get_size(self) -> int:
+        return self._size
 
-        self.val.append_content(content)
+    def try_simplify(self) -> bool:
+        new_content = self.register_content.maybe_simplify()
 
-    def maybe_acquire_content(self, begin: int, end: int) -> Optional[RegisterContent]:
-        if not isinstance(self.val, RegisterContentCombiner):
-            raise Exception(f"Register value must be type of {type(RegisterContentCombiner)}")
-
-        return self.val.maybe_acquire_content(begin, end)
-
-    def try_unwrap_value(self) -> bool:
-        from src.decompiler_data import make_op
-
-        if not isinstance(self.val, RegisterContentCombiner):
+        if new_content is not None:
+            self.register_content = new_content
+            return True
+        else:
             return False
 
-        if self.val.get_count() == 0:
-            self.val = None
-            self.type = RegisterType.UNKNOWN
-            self.sign = RegisterSignType.POSITIVE
-
-            return True
-
-        if self.val.get_count() == 1:
-            self.type = self.val.maybe_get_by_idx(0).type
-            self.val = self.val.maybe_get_by_idx(0).content
-
-            return True
-
-        return False
-
     def __and__(self, other):
-        if not isinstance(self.val, RegisterContentCombiner):
+        if not isinstance(other, str):
             raise NotImplementedError()
 
-        return self.val & other
+        result_register = Register(
+            integrity=self.integrity,
+            register_content=self.register_content & other,
+            size=self.get_size(),
+        )
+        result_register.try_simplify()
+
+        return result_register
+
+    def __or__(self, other):
+        if isinstance(other, int):
+            result_register = Register(
+                integrity=self.integrity,
+                register_content=self.register_content | other,
+                size=self.get_size(),
+            )
+            result_register.try_simplify()
+            return result_register
+
+        if isinstance(other, Register):
+            result_register = Register(
+                integrity=self.integrity,
+                register_content=self.register_content | other.register_content,
+                size=self.get_size(),
+            )
+            result_register.try_simplify()
+            return result_register
+
+        raise NotImplementedError()
 
     def __rshift__(self, other):
-        if not isinstance(self.val, RegisterContentCombiner):
+        if not isinstance(other, int):
             raise NotImplementedError()
 
-        return self.val >> other
+        result_register = Register(
+            integrity=self.integrity,
+            register_content=self.register_content >> other,
+            size=self.get_size(),
+        )
+        result_register.try_simplify()
 
-    def __add__(self, other) -> "SumRegister":
-        from src.sum_register import SumRegister
-        if not isinstance(other, Register) and not isinstance(other, SumRegister):
+        return result_register
+
+    def __lshift__(self, other):
+        if not isinstance(other, int):
             raise NotImplementedError()
 
-        reg = other
-        reg.try_unwrap_value()
-        self.try_unwrap_value()
+        result_register = Register(
+            integrity=self.integrity,
+            register_content=self.register_content << other,
+            size=self.get_size(),
+        )
+        result_register.try_simplify()
 
-        if isinstance(reg, SumRegister):
-            return reg + self
-        if isinstance(reg, Register):
-            return SumRegister([Register(
-                val=self.val,
-                type_of_elem=self.type,
+        return result_register
+
+    def __add__(self, other):
+        if not isinstance(other, Register):
+            raise NotImplementedError()
+
+        result_register = Register(
+            integrity=self.integrity,
+            register_content=self.register_content + other.register_content,
+            size=self.get_size(),
+        )
+        result_register.try_simplify()
+
+        return result_register
+
+    def __sub__(self, other):
+        if not isinstance(other, Register):
+            raise NotImplementedError()
+
+        result_register = Register(
+            integrity=self.integrity,
+            register_content=self.register_content - other.register_content,
+            size=self.get_size(),
+        )
+        result_register.try_simplify()
+
+        return result_register
+
+    def __mul__(self, other):
+        if isinstance(other, Register):
+            result_register = Register(
                 integrity=self.integrity,
-                sign=self.sign,
-            )]) + reg
+                register_content=self.register_content * other.register_content,
+                size=self.get_size(),
+            )
+        elif isinstance(other, int):
+            from src.decompiler_data import DecompilerData
+            _MUL_SIMPLIFY_COMBINATIONS = [
+                *[
+                    (
+                        frozenset({
+                            RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}"),
+                            DecompilerData().config_data.size_of_work_groups[i],
+                        }),
+                        (
+                            f"get_group_id({i}) * get_local_size({i})",
+                            RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"),
+                            RegisterSignType.POSITIVE,
+                        )
+                    )
+                    for i, dim in enumerate("XYZ")
+                ]
+            ]
+
+            for simplify_combination in _MUL_SIMPLIFY_COMBINATIONS:
+                types_to_find, simplification = simplify_combination
+                types_to_find_permutations = list(itertools.permutations(types_to_find))
+
+                for permutation in types_to_find_permutations:
+                    if permutation == (self.get_type(), other):
+                        simplified_value, simplified_type, simplified_sign = simplification
+
+                        result_register = Register(
+                            integrity=self.integrity,
+                            register_content=RegisterContent(
+                                value=simplified_value,
+                                type_=simplified_type,
+                                size=self.get_size(),
+                                sign=simplified_sign,
+                                data_type=self.get_data_type()
+                            ),
+                            size=self.get_size(),
+                        )
+                        result_register.try_simplify()
+                        return result_register
+
+            result_register = Register(
+                integrity=self.integrity,
+                register_content=self.register_content * other,
+                size=self.get_size(),
+            )
+        else:
+            raise NotImplementedError()
+
+        result_register.try_simplify()
+
+        return result_register
 
     def add_version(self, name_version, num_version):
         self.version = name_version + "_" + str(num_version + 1)

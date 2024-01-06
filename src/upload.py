@@ -1,20 +1,62 @@
+from src.combined_register_content import CombinedRegisterContent
 from src.decompiler_data import DecompilerData, make_elem_from_addr
 from src.integrity import Integrity
 from src.opencl_types import make_asm_type
 from src.register import Register, check_and_split_regs, get_next_reg, check_and_split_regs_range_to_full_list
 from src.register_content import RegisterContent
-from src.register_content_combiner import RegisterContentCombiner
 from src.register_type import RegisterType
 
 usesetup_dict = {
-    '0x0': Register("", RegisterType.GENERAL_SETUP, Integrity.ENTIRE),
+    '0x0': Register(
+        integrity=Integrity.ENTIRE,
+        register_content=RegisterContent(
+            value="",
+            type_=RegisterType.GENERAL_SETUP,
+        )
+    ),
     #  TODO: Подумать, как лучше вписать, что здесь и LOCAL_SIZE_X, и LOCAL_SIZE_Y
-    '0x4': Register("get_local_size(0)", RegisterType.LOCAL_SIZE_X, Integrity.ENTIRE),
-    '0x8': Register("get_local_size(2)", RegisterType.LOCAL_SIZE_Z, Integrity.ENTIRE),
-    '0xc': Register("get_global_size(0)", RegisterType.GLOBAL_SIZE_X, Integrity.ENTIRE),
-    '0x10': Register("get_global_size(1)", RegisterType.GLOBAL_SIZE_Y, Integrity.ENTIRE),
-    '0x14': Register("get_global_size(2)", RegisterType.GLOBAL_SIZE_Z, Integrity.ENTIRE),
-    '0x18': Register("", RegisterType.UNKNOWN, Integrity.ENTIRE),
+    '0x4': Register(
+        integrity=Integrity.ENTIRE,
+        register_content=RegisterContent(
+            value="get_local_size(0)",
+            type_=RegisterType.LOCAL_SIZE_X,
+        )
+    ),
+    '0x8': Register(
+        integrity=Integrity.ENTIRE,
+        register_content=RegisterContent(
+            value="get_local_size(2)",
+            type_=RegisterType.LOCAL_SIZE_Z,
+        )
+    ),
+    '0xc': Register(
+        integrity=Integrity.ENTIRE,
+        register_content=RegisterContent(
+            value="get_global_size(0)",
+            type_=RegisterType.GLOBAL_SIZE_X,
+        )
+    ),
+    '0x10': Register(
+        integrity=Integrity.ENTIRE,
+        register_content=RegisterContent(
+            value="get_global_size(1)",
+            type_=RegisterType.GLOBAL_SIZE_Y,
+        )
+    ),
+    '0x14': Register(
+        integrity=Integrity.ENTIRE,
+        register_content=RegisterContent(
+            value="get_global_size(2)",
+            type_=RegisterType.GLOBAL_SIZE_Z,
+        )
+    ),
+    '0x18': Register(
+        integrity=Integrity.ENTIRE,
+        register_content=RegisterContent(
+            value="",
+            type_=RegisterType.UNKNOWN,
+        )
+    ),
 }
 
 
@@ -46,8 +88,14 @@ def upload_kernel_param(state, offset, kernel_params, to_registers):
             val = val[1:]
         else:
             type_param = RegisterType.KERNEL_ARGUMENT_VALUE
-        state.registers[reg] = Register(val, type_param, Integrity.ENTIRE)
-        state.registers[reg].data_type = data_type
+        state.registers[reg] = Register(
+            integrity=Integrity.ENTIRE,
+            register_content=RegisterContent(
+                value=val,
+                type_=type_param,
+            ),
+        )
+        state.registers[reg].register_content._data_type = data_type
         decompiler_data.make_version(state, reg)
 
 
@@ -57,7 +105,13 @@ def upload_global_data_pointer(state, to_registers, from_registers):
     start_from_register, _ = check_and_split_regs(from_registers)
     data_type = state.registers[start_from_register].data_type
     new_val = make_elem_from_addr(state.registers[start_from_register].val)
-    state.registers[start_to_register] = Register(new_val, RegisterType.GLOBAL_DATA_POINTER, Integrity.ENTIRE)
+    state.registers[start_to_register] = Register(
+        integrity=Integrity.ENTIRE,
+        register_content=RegisterContent(
+            value=new_val,
+            type_=RegisterType.GLOBAL_DATA_POINTER,
+        ),
+    )
     state.registers[start_to_register].data_type = data_type
     decompiler_data.make_version(state, start_to_register)
 
@@ -70,9 +124,8 @@ def upload_setup_argument(state, to_registers, offset):
     while True:
         register_content = decompiler_data.setup_argument_dict[offset]
         state.registers[curr_to_register] = Register(
-            val=register_content.content,
-            type_of_elem=register_content.type,
             integrity=Integrity.ENTIRE,
+            register_content=register_content,
         )
         decompiler_data.make_version(state, curr_to_register)
         if curr_to_register == end_to_register:
@@ -80,9 +133,8 @@ def upload_setup_argument(state, to_registers, offset):
         curr_to_register = get_next_reg(curr_to_register)
         register_content = decompiler_data.setup_argument_dict[offset]
         state.registers[curr_to_register] = Register(
-            val=register_content.content,
-            type_of_elem=register_content.type,
             integrity=Integrity.ENTIRE,
+            register_content=register_content,
         )
         decompiler_data.make_version(state, curr_to_register)
         offset = hex(int(offset, 16) + 8)
@@ -103,9 +155,10 @@ def upload_by_offset(
     written_bits = 0
 
     state.registers[curr_to_register] = Register(
-        val=RegisterContentCombiner(),
-        type_of_elem=RegisterType.COMBINE,
         integrity=Integrity.ENTIRE,
+        register_content=CombinedRegisterContent(
+            register_contents=[]
+        ),
     )
 
     while True:
@@ -121,83 +174,91 @@ def upload_by_offset(
 
         register_content = decompiler_data.config_data.offset_to_content[offset]
         if (
-                state.registers[curr_to_register].val.get_size() + register_content.size <
-                state.registers[curr_to_register].size
+                state.registers[curr_to_register].register_content.get_size() + register_content.get_size() <
+                state.registers[curr_to_register].get_size()
         ) or (
-                state.registers[curr_to_register].val.get_size() + register_content.size ==
-                state.registers[curr_to_register].size and
-                state.registers[curr_to_register].val.get_count() != 0
+                state.registers[curr_to_register].register_content.get_size() + register_content.get_size() ==
+                state.registers[curr_to_register].get_size() and
+                state.registers[curr_to_register].register_content.get_count() != 0
         ):
-            state.registers[curr_to_register].append_content(register_content)
+            state.registers[curr_to_register].register_content.append_content(register_content)
             decompiler_data.make_version(state, curr_to_register)
 
-            offset = hex(int(offset, 16) + register_content.size // 8)
-            written_bits += register_content.size
-        elif state.registers[curr_to_register].val.get_size() + register_content.size == \
-                state.registers[curr_to_register].size:
+            offset = hex(int(offset, 16) + register_content.get_size() // 8)
+            written_bits += register_content.get_size()
+        elif state.registers[curr_to_register].register_content.get_size() + register_content.get_size() == \
+                state.registers[curr_to_register].get_size():
 
-            if state.registers[curr_to_register].val.get_count() == 0:
+            if state.registers[curr_to_register].register_content.get_count() == 0:
                 state.registers[curr_to_register] = Register(
-                    val=register_content.content,
-                    type_of_elem=register_content.type,
                     integrity=Integrity.ENTIRE,
-                    data_type=register_content.data_type,
+                    register_content=RegisterContent(
+                        value=register_content.get_value(),
+                        type_=register_content.get_type(),
+                        data_type=register_content.get_data_type(),
+                    ),
                 )
             else:
-                state.registers[curr_to_register].append_content(register_content)
+                state.registers[curr_to_register].register_content.append_content(register_content)
             decompiler_data.make_version(state, curr_to_register)
 
             if curr_to_register == end_to_register:
                 break
 
-            state.registers[curr_to_register].try_unwrap_value()
+            state.registers[curr_to_register].try_simplify()
             curr_to_register = get_next_reg(curr_to_register)
             state.registers[curr_to_register] = Register(
-                val=RegisterContentCombiner(),
-                type_of_elem=RegisterType.COMBINE,
                 integrity=Integrity.ENTIRE,
+                register_content=CombinedRegisterContent(
+                    register_contents=[],
+                ),
             )
 
-            offset = hex(int(offset, 16) + register_content.size // 8)
-            written_bits += register_content.size
+            offset = hex(int(offset, 16) + register_content.get_size() // 8)
+            written_bits += register_content.get_size()
         else:
-            if state.registers[curr_to_register].val.get_size() == 0 and \
-                    register_content.size == state.registers[curr_to_register].size * 2:
+            if state.registers[curr_to_register].register_content.get_size() == 0 and \
+                    register_content.get_size() == state.registers[curr_to_register].get_size() * 2:
                 state.registers[curr_to_register] = Register(
-                    val=register_content.content,
-                    type_of_elem=register_content.type,
                     integrity=Integrity.LOW_PART,
-                    data_type=register_content.data_type,
+                    register_content=RegisterContent(
+                        value=register_content.get_value(),
+                        type_=register_content.get_type(),
+                        data_type=register_content.get_data_type(),
+                    )
                 )
                 decompiler_data.make_version(state, curr_to_register)
-                written_bits += register_content.size // 2
+                written_bits += register_content.get_size() // 2
                 if curr_to_register == end_to_register:
                     break
-                state.registers[curr_to_register].try_unwrap_value()
+                state.registers[curr_to_register].try_simplify()
                 curr_to_register = get_next_reg(curr_to_register)
                 state.registers[curr_to_register] = Register(
-                    val=register_content.content,
-                    type_of_elem=register_content.type,
                     integrity=Integrity.HIGH_PART,
-                    data_type=register_content.data_type,
+                    register_content=RegisterContent(
+                        value=register_content.get_value(),
+                        type_=register_content.get_type(),
+                        data_type=register_content.get_data_type(),
+                    )
                 )
                 decompiler_data.make_version(state, curr_to_register)
 
-                offset = hex(int(offset, 16) + register_content.size // 8)
-                written_bits += register_content.size // 2
+                offset = hex(int(offset, 16) + register_content.get_size() // 8)
+                written_bits += register_content.get_size() // 2
 
             if curr_to_register == end_to_register:
                 break
 
-            state.registers[curr_to_register].try_unwrap_value()
+            state.registers[curr_to_register].try_simplify()
             curr_to_register = get_next_reg(curr_to_register)
             state.registers[curr_to_register] = Register(
-                val=RegisterContentCombiner(),
-                type_of_elem=RegisterType.COMBINE,
                 integrity=Integrity.ENTIRE,
+                register_content=CombinedRegisterContent(
+                    register_contents=[]
+                ),
             )
 
-    state.registers[curr_to_register].try_unwrap_value()
+    state.registers[curr_to_register].try_simplify()
 
 
 def upload(state, to_registers, from_registers, offset, kernel_params, bits: int = -1):

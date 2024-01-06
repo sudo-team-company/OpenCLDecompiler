@@ -1,10 +1,10 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, set_reg_value
+from src.decompiler_data import make_op, set_reg_value, set_reg
 from src.integrity import Integrity
 from src.opencl_types import most_common_type, make_asm_type, evaluate_size
 from src.register import check_and_split_regs, is_reg
 from src.register_type import RegisterType
-from src.sum_register import SumRegister
+from src.utils.operation_register_content import OperationRegisterContent, OperationType
 
 
 class VAdd(BaseInstruction):
@@ -58,21 +58,19 @@ class VAdd(BaseInstruction):
                             self.node.state.registers[self.src0].type,
                             self.node.state.registers[self.src1].type,
                         ],
-                        reg_entire=Integrity.ENTIRE,
-                        reg_class=SumRegister,
+                        integrity=Integrity.ENTIRE,
+                        register_content_type=OperationRegisterContent,
+                        operation=OperationType.PLUS,
                     )
 
                 try:
                     new_reg = self.node.state.registers[self.src0] + self.node.state.registers[self.src1]
-                    return set_reg_value(
-                        self.node,
-                        new_reg.val,
-                        self.vdst,
-                        [self.src0, self.src1],
-                        self.suffix,
-                        reg_type=new_reg.type,
-                        reg_entire=Integrity.ENTIRE,
-                        reg_class=type(new_reg),
+                    new_reg.cast_to(self.suffix)
+                    return set_reg(
+                        node=self.node,
+                        to_reg=self.vdst,
+                        from_regs=[self.src0, self.src1],
+                        reg=new_reg,
                     )
                 except Exception:
                     pass
@@ -157,7 +155,7 @@ class VAdd(BaseInstruction):
                 if src1_reg:
                     reg_type = self.node.state.registers[self.src1].type
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], data_type, reg_type=reg_type,
-                                 reg_entire=reg_entire)
+                                 integrity=reg_entire)
         if self.suffix == 'f64':
             # TODO: Сделать честное присвоение в пару
             start_from_src0, _ = check_and_split_regs(self.src0)

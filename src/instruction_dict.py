@@ -89,6 +89,7 @@ from src.instructions.vop3.v_fma import VFma
 from src.instructions.vop3.v_ldexp import VLdexp
 from src.instructions.vop3.v_lshl_add import VLshlAdd
 from src.instructions.vop3.v_lshl_or import VLshlOr
+from src.instructions.vop3.v_mad import VMad
 from src.instructions.vop3.v_mul_f64 import VMulF64
 from src.instructions.vop3.v_mul_lo import VMulLo
 from src.instructions.vop3.v_perm import VPerm
@@ -225,6 +226,7 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_lshl_or': VLshlOr,
                     'v_lshl_add': VLshlAdd,
                     'v_or': VOr,
+                    'v_mad': VMad,
                     'v_mul_u32_u24': VMulF32,
                     'v_subrev_nc': VSubNc,
                     'v_sub_nc': VSubNc,

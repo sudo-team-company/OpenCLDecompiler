@@ -1,8 +1,8 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, set_reg_value
-from src.register import is_reg
+from src.combined_register_content import CombinedRegisterContent
+from src.decompiler_data import make_op, set_reg_value, set_reg
+from src.register import is_reg, Register
 from src.register_content import EmptyRegisterContent
-from src.register_content_combiner import RegisterContentCombiner
 from src.register_type import RegisterType
 
 
@@ -36,37 +36,47 @@ class VLshrrev(BaseInstruction):
                         reg_type=reg_type,
                     )
 
-                if self.node.state.registers[self.src1].type == RegisterType.COMBINE:
-                    maybe_new_combiner: RegisterContentCombiner = self.node.state.registers[self.src1] >> int(self.src0)
+                if isinstance(self.node.state.registers[self.src1].register_content, CombinedRegisterContent):
+                    maybe_new_register: Register = self.node.state.registers[self.src1] >> int(self.src0)
 
-                    if maybe_new_combiner.get_count() == 2 and \
-                            isinstance(maybe_new_combiner.maybe_get_by_idx(0), EmptyRegisterContent):
-                        new_value = make_op(
+                    if maybe_new_register is not None:
+                        return set_reg(
                             node=self.node,
-                            register0=maybe_new_combiner.maybe_get_by_idx(1).content,
-                            register1=str(2 ** int(maybe_new_combiner.maybe_get_by_idx(0).size)),
-                            operation="*",
-                            type0="",
-                            type1="",
-                        )
-                        return set_reg_value(
-                            self.node,
-                            new_value,
-                            self.vdst,
-                            [self.src0, self.src1],
-                            self.suffix,
-                            reg_type=maybe_new_combiner.maybe_get_by_idx(1).type,
+                            to_reg=self.vdst,
+                            from_regs=[self.src0, self.src1],
+                            reg=maybe_new_register,
                         )
 
-                    if maybe_new_combiner is not None:
-                        return set_reg_value(
-                            self.node,
-                            maybe_new_combiner,
-                            self.vdst,
-                            [self.src0, self.src1],
-                            self.suffix,
-                            reg_type=RegisterType.COMBINE,
-                        )
+                    # if maybe_new_register is not None \
+                    #         and isinstance(maybe_new_register.register_content, CombinedRegisterContent):
+                    #     if maybe_new_register.register_content.get_count() == 2 and \
+                    #             isinstance(maybe_new_register.register_content.maybe_get_by_idx(0), EmptyRegisterContent):
+                    #         new_value = make_op(
+                    #             node=self.node,
+                    #             register0=maybe_new_combiner.maybe_get_by_idx(1).content,
+                    #             register1=str(2 ** int(maybe_new_combiner.maybe_get_by_idx(0).size)),
+                    #             operation="*",
+                    #             type0="",
+                    #             type1="",
+                    #         )
+                    #         return set_reg_value(
+                    #             self.node,
+                    #             new_value,
+                    #             self.vdst,
+                    #             [self.src0, self.src1],
+                    #             self.suffix,
+                    #             reg_type=maybe_new_combiner.maybe_get_by_idx(1).type,
+                    #         )
+                    #
+                    #     if maybe_new_combiner is not None:
+                    #         return set_reg_value(
+                    #             self.node,
+                    #             maybe_new_combiner,
+                    #             self.vdst,
+                    #             [self.src0, self.src1],
+                    #             self.suffix,
+                    #             reg_type=RegisterType.COMBINE,
+                    #         )
 
                 if self.node.state.registers[self.src1].val == '0':
                     new_value = '0'

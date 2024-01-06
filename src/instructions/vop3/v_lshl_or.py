@@ -1,10 +1,10 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import set_reg_value
+from src.combined_register_content import CombinedRegisterContent
+from src.decompiler_data import set_reg_value, set_reg
 from src.integrity import Integrity
-from src.register import is_reg, RegisterSignType, Register
-from src.register_content_combiner import RegisterContentCombiner
+from src.register import is_reg, RegisterSignType
 from src.register_type import RegisterType
-from src.sum_register import SumRegister
+from src.utils.operation_register_content import OperationRegisterContent, OperationType
 
 
 class VLshlOr(BaseInstruction):
@@ -46,8 +46,8 @@ class VLshlOr(BaseInstruction):
                 src1_type = self.node.state.registers[self.src2].type
                 if isinstance(src0_type, list):
                     src0_type = src0_type[0]
-                if isinstance(self.node.state.registers[self.src2].val, RegisterContentCombiner):
-                    src1_type = self.node.state.registers[self.src2].val.maybe_get_by_idx(0).type
+                if isinstance(self.node.state.registers[self.src2].register_content, CombinedRegisterContent):
+                    src1_type = self.node.state.registers[self.src2].get_type()
                 src_types = (
                     src0_type,
                     pow(2, int(self.src1)),
@@ -64,8 +64,9 @@ class VLshlOr(BaseInstruction):
                             [self.src0, self.src1, self.src2],
                             self.suffix,
                             reg_type=reg_type,
-                            reg_class=SumRegister,
+                            register_content_type=OperationRegisterContent,
                             sign=reg_sign,
+                            operation=OperationType.PLUS,
                         )
                     else:
                         return set_reg_value(
@@ -75,6 +76,14 @@ class VLshlOr(BaseInstruction):
                             from_regs=[self.src0, self.src1, self.src2],
                             data_type=self.suffix,
                             reg_type=reg_type,
-                            reg_entire=Integrity.ENTIRE,
+                            integrity=Integrity.ENTIRE,
                         )
-        return super().to_fill_node()
+
+        new_reg = self.node.state.registers[self.src0] << int(self.src1)
+        new_reg = new_reg | self.node.state.registers[self.src2]
+        return set_reg(
+            node=self.node,
+            to_reg=self.vdst,
+            from_regs=[self.src0, self.src1, self.src2],
+            reg=new_reg,
+        )

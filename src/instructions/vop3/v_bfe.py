@@ -1,7 +1,7 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, set_reg_value
-from src.register import is_reg
-from src.register_content_combiner import RegisterContentCombiner
+from src.combined_register_content import CombinedRegisterContent
+from src.decompiler_data import make_op, set_reg_value, set_reg
+from src.register import Register
 from src.register_type import RegisterType
 
 
@@ -32,16 +32,24 @@ class VBfe(BaseInstruction):
                     reg_type=reg_type,
                 )
 
-            if self.node.state.registers[self.src0].type == RegisterType.COMBINE:
-                maybe_shift_register_content_combiner: RegisterContentCombiner = self.node.state.registers[self.src0] \
-                                                                                 >> int(self.src1)
+            if isinstance(self.node.state.registers[self.src0].register_content, CombinedRegisterContent):
+                maybe_shift_register: Register = self.node.state.registers[self.src0] >> int(self.src1)
 
-                if maybe_shift_register_content_combiner is not None:
-                    maybe_and_register_content = maybe_shift_register_content_combiner & hex((1 << int(self.src2)) - 1)
+                if maybe_shift_register is not None:
+                    if isinstance(maybe_shift_register.register_content, CombinedRegisterContent):
+                        new_reg = maybe_shift_register & hex((1 << int(self.src2)) - 1)
+                    elif maybe_shift_register.register_content.get_size() == int(self.src2):
+                        new_reg = maybe_shift_register
+                    else:
+                        return default_behaviour()
 
-                    if maybe_and_register_content is not None:
-                        new_value = maybe_and_register_content.content
-                        reg_type = maybe_and_register_content.type
+                    if new_reg is not None:
+                        return set_reg(
+                            node=self.node,
+                            to_reg=self.vdst,
+                            from_regs=[self.src0],
+                            reg=new_reg,
+                        )
                     else:
                         return default_behaviour()
                 else:

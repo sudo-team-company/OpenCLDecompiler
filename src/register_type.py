@@ -3,8 +3,7 @@ from enum import Enum, auto
 
 class RegisterType(Enum):
     UNKNOWN = auto()
-
-    COMBINE = auto()
+    EMPTY = auto()
 
     GLOBAL_ID_X = auto()
     GLOBAL_ID_Y = auto()

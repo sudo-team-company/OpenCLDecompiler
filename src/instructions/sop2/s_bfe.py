@@ -1,8 +1,7 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import set_reg_value
-from src.integrity import Integrity
+from src.combined_register_content import CombinedRegisterContent
+from src.decompiler_data import set_reg_value, set_reg
 from src.register import is_reg
-from src.register_content_combiner import RegisterContentCombiner
 from src.register_type import RegisterType
 
 
@@ -51,23 +50,23 @@ class SBfe(BaseInstruction):
     def to_fill_node(self):
         if self.decompiler_data.is_rdna3:
             if self.suffix.endswith("32"):
-                if is_reg(self.ssrc0) and self.node.state.registers[self.ssrc0].type == RegisterType.COMBINE:
+                if is_reg(self.ssrc0) \
+                        and isinstance(self.node.state.registers[self.ssrc0].register_content, CombinedRegisterContent):
                     shift_by = int(self.ssrc1, 16) & ((1 << 4) - 1)
                     and_by = hex((1 << ((int(self.ssrc1, 16) >> 16) & ((1 << 6) - 1))) - 1)
 
-                    rshift_content_combiner = self.node.state.registers[self.ssrc0] >> shift_by
-                    tmp = rshift_content_combiner & and_by
+                    new_reg = self.node.state.registers[self.ssrc0] >> shift_by
+                    new_reg = new_reg & and_by
+                    new_reg.cast_to(self.suffix)
 
-                    set_reg_value(
+                    set_reg(
                         node=self.node,
-                        new_value=tmp.content,
                         to_reg=self.sdst,
-                        from_regs=[self.ssrc0],
-                        data_type=self.suffix,
-                        reg_type=tmp.type,
+                        from_regs=[self.ssrc0, self.ssrc1],
+                        reg=new_reg,
                     )
 
-                    is_zero = (str(tmp.content) == "0")
+                    is_zero = (str(new_reg.get_value()) == "0")
 
                     set_reg_value(
                         node=self.node,

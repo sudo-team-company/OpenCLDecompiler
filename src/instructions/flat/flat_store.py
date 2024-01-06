@@ -1,9 +1,12 @@
+from packaging._parser import Op
+
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier
 from src.opencl_types import make_opencl_type
 from src.register import check_and_split_regs, is_vgpr, is_vector_type, check_and_split_regs_range_to_full_list, \
-    Register
-from src.sum_register import SumRegister
+    Register, is_sgpr_range
+from src.register_type import RegisterType
+from src.utils.operation_register_content import OperationRegisterContent
 
 
 def get_vector_name(vector_element):
@@ -102,13 +105,14 @@ class FlatStore(BaseInstruction):
                 if is_vgpr(self.vaddr):
                     self.node.state.registers[self.to_registers].version = \
                         self.node.parent[0].state.registers[self.to_registers].version
-                    self.node.state.registers[self.to_registers].data_type = self.suffix
+                    self.node.state.registers[self.to_registers].cast_to(self.suffix)
                 # TODO: Сделать присвоение в пары
                 else:
                     if self.node.state.registers[self.from_registers].data_type is not None \
                             and 'bytes' in self.node.state.registers[self.from_registers].data_type:
-                        self.node.state.registers[self.from_registers].data_type = \
-                            self.node.state.registers[self.to_registers].data_type
+                        self.node.state.registers[self.from_registers].cast_to(
+                            self.node.state.registers[self.to_registers].data_type,
+                        )
                         self.decompiler_data.names_of_vars[self.node.state.registers[self.from_registers].val] = \
                             self.node.state.registers[self.to_registers].data_type
                     else:
@@ -116,20 +120,15 @@ class FlatStore(BaseInstruction):
                                 self.node.state.registers[self.to_registers].data_type \
                                 and not is_vector_type(self.node.state.registers[self.from_registers].data_type) \
                                 and not is_vector_type(self.node.state.registers[self.to_registers].data_type):
-                            if isinstance(self.node.state.registers[self.from_registers], SumRegister):
-                                val = self.node.state.registers[self.from_registers].get_value()
-                            elif isinstance(self.node.state.registers[self.from_registers], Register):
-                                val = self.node.state.registers[self.from_registers].get_value()
-                            else:
-                                raise Exception(f"Unexpected type "
-                                                f"{type(self.node.state.registers[self.from_registers])}")
+                            val = self.node.state.registers[self.from_registers].get_value()
                             if val[0] == '(':
                                 val = val[val.find(")") + 1:]
                             if val not in self.decompiler_data.names_of_vars:
-                                self.node.state.registers[self.from_registers].data_type = \
-                                    make_new_type_without_modifier(self.node, self.to_registers)
-                                self.decompiler_data.names_of_vars[val]\
-                                    = self.node.state.registers[self.from_registers].data_type
+                                self.node.state.registers[self.from_registers].cast_to(
+                                    make_new_type_without_modifier(self.node, self.to_registers),
+                                )
+                                self.decompiler_data.names_of_vars[val] = \
+                                    self.node.state.registers[self.from_registers].data_type
                             else:
                                 # init var - i32, gdata - i64. var = gdata -> var - i64
                                 self.decompiler_data.names_of_vars[val] = \
@@ -140,6 +139,12 @@ class FlatStore(BaseInstruction):
     def to_print(self):
         if self.suffix in ["dword", "dwordx2", "dwordx4", "byte", "short", "b32", "b64", "b8"]:
             var = self.node.state.registers[self.to_registers].get_value()
+
+            if is_sgpr_range(self.inst_offset):
+                offset_reg, _ = check_and_split_regs(self.inst_offset)
+                if self.node.state.registers[offset_reg].get_type() == RegisterType.ADDRESS_KERNEL_ARGUMENT:
+                    var = f"{self.node.state.registers[offset_reg].get_value()} + {var}"
+
             if self.inst_offset == "inst_offset:4":
                 var = var + "[get_global_id(0)]"
             elif " + " in var:
@@ -158,10 +163,7 @@ class FlatStore(BaseInstruction):
                         self.output_string = prepare_vector_type_output(self.from_registers, self.vdata,
                                                                         self.to_registers, self.node)
                     else:
-                        if isinstance(self.node.state.registers[self.from_registers], Register):
-                            self.output_string = self.node.state.registers[self.from_registers].val
-                        if isinstance(self.node.state.registers[self.from_registers], SumRegister):
-                            self.output_string = self.node.state.registers[self.from_registers].get_value()
+                        self.output_string = self.node.state.registers[self.from_registers].get_value()
             else:
                 self.output_string = self.decompiler_data.initial_state.registers[self.from_registers].val
             return var + " = " + self.output_string

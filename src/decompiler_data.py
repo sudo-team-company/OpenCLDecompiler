@@ -4,16 +4,16 @@ from typing import Optional, Union
 
 import sympy
 
+from src.combined_register_content import CombinedRegisterContent
 from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
-from src.register import Register, is_reg, is_range, check_and_split_regs, RegisterSignType
-from src.register_content import RegisterContent
-from src.register_content_combiner import RegisterContentCombiner
+from src.register import Register, is_reg, is_range, check_and_split_regs
+from src.register_content import RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 from src.state import State
-from src.sum_register import SumRegister
 from src.utils import ConfigData, DriverFormat
+from src.utils.operation_register_content import OperationType, OperationRegisterContent
 
 
 def set_reg_value(
@@ -24,30 +24,96 @@ def set_reg_value(
         data_type,
         exec_condition=None,
         reg_type=RegisterType.UNKNOWN,
-        reg_entire=Integrity.ENTIRE,
-        reg_class=Register,
+        integrity=Integrity.ENTIRE,
+        register_content_type=RegisterContent,
         sign: Union[RegisterSignType, list[RegisterSignType]] = RegisterSignType.POSITIVE,
+        operation: Optional[OperationType] = None,
+        size: Optional[list[int]] = None,
 ):
     decompiler_data = DecompilerData()
-    if reg_class == Register:
-        node.state.registers[to_reg] = Register(new_value, reg_type, reg_entire, sign=sign)
-        node.state.registers[to_reg].try_unwrap_value()
-    if reg_class == SumRegister:
+    if register_content_type == RegisterContent:
+        node.state.registers[to_reg] = Register(
+            integrity=integrity,
+            register_content=RegisterContent(
+                value=new_value,
+                type_=reg_type,
+                sign=sign,
+                data_type=data_type,
+            ),
+        )
+        node.state.registers[to_reg].try_simplify()
+    elif register_content_type == CombinedRegisterContent:
+        node.state.registers[to_reg] = Register(
+            integrity=integrity,
+            register_content=CombinedRegisterContent(
+                register_contents=[
+                    RegisterContent(
+                        value=value,
+                        type_=type_,
+                        sign=sign_,
+                        data_type=data_type_,
+                        size=size_,
+                    )
+                    for value, type_, sign_, data_type_, size_ in zip(new_value, reg_type, sign, data_type, size)
+                ]
+            )
+        )
+    elif register_content_type == OperationRegisterContent:
         if not isinstance(sign, list):
-            node.state.registers[to_reg] = SumRegister([
-                Register(val, type_, Integrity.ENTIRE)
-                for val, type_ in zip(new_value, reg_type)
-            ])
+            node.state.registers[to_reg] = Register(
+                integrity=integrity,
+                register_content=OperationRegisterContent(
+                    operation=operation,
+                    register_contents=[
+                        RegisterContent(
+                            value=value,
+                            type_=type_,
+                            data_type=data_type,
+                        )
+                        for value, type_ in zip(new_value, reg_type)
+                    ]
+                ),
+            )
         else:
-            node.state.registers[to_reg] = SumRegister([
-                Register(val, type_, Integrity.ENTIRE, sign=sign_elem)
-                for val, type_, sign_elem in zip(new_value, reg_type, sign)
-            ])
-    node.state.registers[to_reg].try_unwrap_value()
+            if isinstance(data_type, list):
+                node.state.registers[to_reg] = Register(
+                    integrity=integrity,
+                    register_content=OperationRegisterContent(
+                        operation=operation,
+                        register_contents=[
+                            RegisterContent(
+                                value=value,
+                                type_=type_,
+                                sign=sign_,
+                                data_type=data_type_,
+                            )
+                            for value, type_, sign_, data_type_ in zip(new_value, reg_type, sign, data_type)
+                        ]
+                    ),
+                )
+            else:
+                node.state.registers[to_reg] = Register(
+                    integrity=integrity,
+                    register_content=OperationRegisterContent(
+                        operation=operation,
+                        register_contents=[
+                            RegisterContent(
+                                value=value,
+                                type_=type_,
+                                sign=sign_,
+                                data_type=data_type,
+                            )
+                            for value, type_, sign_ in zip(new_value, reg_type, sign)
+                        ]
+                    ),
+                )
+    else:
+        raise NotImplementedError()
+
+    node.state.registers[to_reg].try_simplify()
     decompiler_data.make_version(node.state, to_reg)
     if to_reg in from_regs:
         node.state.registers[to_reg].make_prev()
-    node.state.registers[to_reg].data_type = data_type
     node.state.registers[to_reg].exec_condition = exec_condition
     return node
 
@@ -60,14 +126,17 @@ def set_reg(
 ):
     return set_reg_value(
         node=node,
-        new_value=reg.val,
+        new_value=reg.register_content._value,
         to_reg=to_reg,
         from_regs=from_regs,
-        data_type=reg.data_type,
-        reg_type=reg.type,
-        reg_entire=reg.integrity,
-        sign=reg.sign,
-        reg_class=SumRegister if isinstance(reg, SumRegister) else Register,
+        data_type=reg.register_content._data_type,
+        reg_type=reg.register_content._type,
+        integrity=reg.integrity,
+        sign=reg.register_content._sign,
+        register_content_type=type(reg.register_content),
+        operation=reg.register_content._operation if isinstance(reg.register_content,
+                                                                OperationRegisterContent) else None,
+        size=reg.register_content._size,
     )
 
 
@@ -169,25 +238,18 @@ def check_big_values(node, start_register, end_register):
 
 def check_reg_for_val(node, register):
     if is_reg(register) or is_range(register):  # TODO: Выяснить зачем нужен range
-        if isinstance(node.state.registers[register], SumRegister):
+        if node.state.registers.get(register):
             new_val = node.state.registers[register].get_value()
         else:
-            if node.state.registers.get(register):
-                if isinstance(node.state.registers[register].val, RegisterContentCombiner):
-                    combiner: RegisterContentCombiner = node.state.registers[register].val
-                    new_val = combiner.maybe_get_by_idx(0).content
+            if is_range(register):
+                start_register, end_register = check_and_split_regs(register)
+                flag_big_value, value = check_big_values(node, start_register, end_register)
+                if flag_big_value:
+                    new_val = value
                 else:
-                    new_val = node.state.registers[register].val
+                    new_val = node.state.registers[start_register].get_value()
             else:
-                if is_range(register):
-                    start_register, end_register = check_and_split_regs(register)
-                    flag_big_value, value = check_big_values(node, start_register, end_register)
-                    if flag_big_value:
-                        new_val = value
-                    else:
-                        new_val = node.state.registers[start_register].val
-                else:
-                    raise NotImplementedError
+                raise NotImplementedError
     else:
         new_val = register
     return new_val
@@ -358,9 +420,12 @@ class DecompilerData(metaclass=Singleton):
                 '0x1c': RegisterContent("get_local_size(0)", RegisterType.LOCAL_SIZE_X, 16),
                 '0x1e': RegisterContent("get_local_size(1)", RegisterType.LOCAL_SIZE_Y, 16),
                 '0x20': RegisterContent("get_local_size(2)", RegisterType.LOCAL_SIZE_Z, 16),
-                '0x22': RegisterContent("get_group_id(0) * get_local_size(0)", RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE, 16),
-                '0x24': RegisterContent("get_group_id(1) * get_local_size(1)", RegisterType.WORK_GROUP_ID_Y_LOCAL_SIZE, 16),
-                '0x26': RegisterContent("get_group_id(2) * get_local_size(2)", RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE, 16),
+                '0x22': RegisterContent("get_group_id(0) * get_local_size(0)", RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE,
+                                        16),
+                '0x24': RegisterContent("get_group_id(1) * get_local_size(1)", RegisterType.WORK_GROUP_ID_Y_LOCAL_SIZE,
+                                        16),
+                '0x26': RegisterContent("get_group_id(2) * get_local_size(2)", RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE,
+                                        16),
                 '0x38': RegisterContent("get_global_offset(0)", RegisterType.GLOBAL_OFFSET_X, 64),
                 '0x40': RegisterContent("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, 64),
                 '0x48': RegisterContent("get_global_offset(2)", RegisterType.GLOBAL_OFFSET_Z, 64),
@@ -540,14 +605,38 @@ class DecompilerData(metaclass=Singleton):
         lp, hp = ("s6", "s7") if self.config_data.usesetup else ("s4", "s5")
         if self.is_rdna3:
             lp, hp = ("s0", "s1")
-        self.initial_state.registers[lp] = Register("0", RegisterType.ARGUMENTS_POINTER, Integrity.LOW_PART)
+        self.initial_state.registers[lp] = Register(
+            integrity=Integrity.LOW_PART,
+            register_content=RegisterContent(
+                value="0",
+                type_=RegisterType.ARGUMENTS_POINTER,
+            ),
+        )
         self.make_version(self.initial_state, lp)
-        self.initial_state.registers[hp] = Register("0", RegisterType.ARGUMENTS_POINTER, Integrity.HIGH_PART)
+        self.initial_state.registers[hp] = Register(
+            integrity=Integrity.HIGH_PART,
+            register_content=RegisterContent(
+                value="0",
+                type_=RegisterType.ARGUMENTS_POINTER,
+            ),
+        )
         self.make_version(self.initial_state, hp)
         if self.config_data.usesetup:
-            self.initial_state.registers["s4"] = Register("0", RegisterType.DISPATCH_POINTER, Integrity.LOW_PART)
+            self.initial_state.registers["s4"] = Register(
+                integrity=Integrity.LOW_PART,
+                register_content=RegisterContent(
+                    value="0",
+                    type_=RegisterType.DISPATCH_POINTER,
+                ),
+            )
             self.make_version(self.initial_state, "s4")
-            self.initial_state.registers["s5"] = Register("0", RegisterType.DISPATCH_POINTER, Integrity.HIGH_PART)
+            self.initial_state.registers["s5"] = Register(
+                integrity=Integrity.HIGH_PART,
+                register_content=RegisterContent(
+                    value="0",
+                    type_=RegisterType.DISPATCH_POINTER,
+                ),
+            )
             self.make_version(self.initial_state, "s5")
 
     def make_params(self, num_of_param, name_param, type_param):

@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import set_reg_value, make_op
+from src.decompiler_data import set_reg_value, make_op, set_reg
 from src.register import is_reg, Register
 from src.register_type import RegisterType
 
@@ -60,14 +60,12 @@ class VAdd3(BaseInstruction):
                 try:
                     new_reg = self.node.state.registers[self.src0] + self.node.state.registers[self.src1]
                     new_reg = new_reg + self.node.state.registers[self.src2]
-                    return set_reg_value(
+                    new_reg.cast_to(self.suffix)
+                    return set_reg(
                         node=self.node,
-                        new_value=new_reg.val,
                         to_reg=self.vdst,
                         from_regs=[self.src0, self.src1, self.src2],
-                        data_type=self.suffix,
-                        reg_type=new_reg.type,
-                        reg_class=type(new_reg),
+                        reg=new_reg,
                     )
                 except Exception:
                     pass
@@ -90,16 +88,10 @@ class VAdd3(BaseInstruction):
                         new_value, _ = _instruction_internal_mapping_by_types[src_types]
                         new_value = make_op(self.node, new_value, src2, " + ", '(ulong)', '(ulong)')
             if is_reg(self.src0) and is_reg(self.src1) and is_reg(self.src2):
-                def unwrap_type(register: Register):
-                    if register.type == RegisterType.COMBINE and register.val.get_count() > 0:
-                        return register.val.maybe_get_by_idx(0).type
-                    else:
-                        return register.type
-
                 src_types = frozenset({
-                    unwrap_type(self.node.state.registers[self.src0]),
-                    unwrap_type(self.node.state.registers[self.src1]),
-                    unwrap_type(self.node.state.registers[self.src2]),
+                    self.node.state.registers[self.src0].get_type(),
+                    self.node.state.registers[self.src1].get_type(),
+                    self.node.state.registers[self.src2].get_type(),
                 })
                 if src_types in _instruction_internal_mapping_by_types:
                     new_value, reg_type = _instruction_internal_mapping_by_types[src_types]

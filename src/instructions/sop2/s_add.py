@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, set_reg_value
+from src.decompiler_data import make_op, set_reg_value, set_reg
 from src.register import is_sgpr
 from src.register_type import RegisterType
 
@@ -35,14 +35,12 @@ class SAdd(BaseInstruction):
             if self.decompiler_data.is_rdna3:
                 try:
                     new_reg = self.node.state.registers[self.ssrc0] + self.node.state.registers[self.ssrc1]
-                    return set_reg_value(
-                        self.node,
-                        new_reg.val,
-                        self.sdst,
-                        [self.ssrc0, self.ssrc1],
-                        self.suffix,
-                        reg_type=new_reg.type,
-                        reg_class=type(new_reg),
+                    new_reg.cast_to(self.suffix)
+                    return set_reg(
+                        node=self.node,
+                        to_reg=self.sdst,
+                        from_regs=[self.ssrc0, self.ssrc1],
+                        reg=new_reg,
                     )
                 except Exception:
                     pass

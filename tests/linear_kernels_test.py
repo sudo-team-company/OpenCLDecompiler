@@ -4,59 +4,59 @@ from .conftest import template
 
 
 class TestLinearKernels:
-    # @pytest.mark.parametrize(
-    #     ["mcpu", "disasm", "is_new_parser"],
-    #     [
-    #         ("", "clrxdisasm", False),
-    #         ("gfx1010", "clrxdisasm", False),
-    #         ("gfx1030", "clrxdisasm", False),
-    #         ("gfx1103", "amdgpu-dis", True),
-    #     ]
-    # )
-    # def test_addition(self, mcpu, disasm, is_new_parser):
-    #     template(
-    #         path_to_dir='linear_kernels',
-    #         dir_name='addition',
-    #         mcpu=mcpu,
-    #         disasm=disasm,
-    #         is_new_parser=is_new_parser,
-    #     )
+    @pytest.mark.parametrize(
+        ["mcpu", "disasm", "is_new_parser"],
+        [
+            ("", "clrxdisasm", False),
+            ("gfx1010", "clrxdisasm", False),
+            ("gfx1030", "clrxdisasm", False),
+            ("gfx1103", "amdgpu-dis", True),
+        ]
+    )
+    def test_addition(self, mcpu, disasm, is_new_parser):
+        template(
+            path_to_dir='linear_kernels',
+            dir_name='addition',
+            mcpu=mcpu,
+            disasm=disasm,
+            is_new_parser=is_new_parser,
+        )
 
-    # @pytest.mark.parametrize(
-    #     ["mcpu", "disasm", "is_new_parser"],
-    #     [
-    #         ("", "clrxdisasm", False),
-    #         ("gfx1010", "clrxdisasm", False),
-    #         ("gfx1030", "clrxdisasm", False),
-    #         ("gfx1103", "amdgpu-dis", True),
-    #     ]
-    # )
-    # def test_subtraction(self, mcpu, disasm, is_new_parser):
-    #     template(
-    #         path_to_dir='linear_kernels',
-    #         dir_name='subtraction',
-    #         mcpu=mcpu,
-    #         disasm=disasm,
-    #         is_new_parser=is_new_parser,
-    #     )
+    @pytest.mark.parametrize(
+        ["mcpu", "disasm", "is_new_parser"],
+        [
+            ("", "clrxdisasm", False),
+            ("gfx1010", "clrxdisasm", False),
+            ("gfx1030", "clrxdisasm", False),
+            ("gfx1103", "amdgpu-dis", True),
+        ]
+    )
+    def test_subtraction(self, mcpu, disasm, is_new_parser):
+        template(
+            path_to_dir='linear_kernels',
+            dir_name='subtraction',
+            mcpu=mcpu,
+            disasm=disasm,
+            is_new_parser=is_new_parser,
+        )
 
-    # @pytest.mark.parametrize(
-    #     ["mcpu", "disasm", "is_new_parser"],
-    #     [
-    #         ("", "clrxdisasm", False),
-    #         ("gfx1010", "clrxdisasm", False),
-    #         ("gfx1030", "clrxdisasm", False),
-    #         ("gfx1103", "amdgpu-dis", True),
-    #     ]
-    # )
-    # def test_multiplication(self, mcpu, disasm, is_new_parser):
-    #     template(
-    #         path_to_dir='linear_kernels',
-    #         dir_name='multiplication',
-    #         mcpu=mcpu,
-    #         disasm=disasm,
-    #         is_new_parser=is_new_parser,
-    #     )
+    @pytest.mark.parametrize(
+        ["mcpu", "disasm", "is_new_parser"],
+        [
+            ("", "clrxdisasm", False),
+            ("gfx1010", "clrxdisasm", False),
+            ("gfx1030", "clrxdisasm", False),
+            ("gfx1103", "amdgpu-dis", True),
+        ]
+    )
+    def test_multiplication(self, mcpu, disasm, is_new_parser):
+        template(
+            path_to_dir='linear_kernels',
+            dir_name='multiplication',
+            mcpu=mcpu,
+            disasm=disasm,
+            is_new_parser=is_new_parser,
+        )
 
     @pytest.mark.parametrize(
         ["mcpu", "disasm", "is_new_parser"],
