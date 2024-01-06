@@ -36,7 +36,7 @@ def update_reg_version(reg, curr_node, max_version, prev_versions_of_reg):
             old_var = decompiler_data.checked_variables[prev]
             decompiler_data.checked_variables[prev] = variable
             decompiler_data.variables = {k: v.replace(old_var, variable) for k, v in decompiler_data.variables.items()}
-    curr_node.state.registers[reg].val = variable
+    curr_node.state.registers[reg].register_content._value = variable
     if curr_node.state.registers[reg].type in [RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT,
                                                RegisterType.ADDRESS_KERNEL_ARGUMENT]:
         decompiler_data.address_params.add(variable)
@@ -103,11 +103,11 @@ def update_val_from_changes(curr_node, register, changes, check_version, num_of_
         else:
             node_registers = curr_node.state.registers
             if first_reg != register:
-                node_registers[register].val = node_registers[register].val.replace(
+                node_registers[register].register_content._value = node_registers[register].val.replace(
                     changes[check_version][1],
                     changes[check_version][0])
         copy_val_prev = node_registers[first_reg].val
-        node_registers[first_reg].val = node_registers[first_reg].val.replace(
+        node_registers[first_reg].register_content._value = node_registers[first_reg].val.replace(
             changes[check_version][1],
             changes[check_version][0])
         copy_val_last = node_registers[first_reg].val
@@ -135,23 +135,23 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
         copy_val_prev = curr_node.state.registers[first_reg].val
         if decompiler_data.checked_variables.get(check_version) is not None:
             if curr_node.state.registers[first_reg].val.find(val_reg) != -1:
-                curr_node.state.registers[first_reg].val = \
-                    curr_node.state.registers[first_reg].val.replace(val_reg,
+                curr_node.state.registers[first_reg].register_content._value = \
+                    curr_node.state.registers[first_reg].register_content._value.replace(val_reg,
                                                                      decompiler_data.checked_variables[check_version])
             elif re.match(r"(flat|global)_store", instruction[0]):
-                curr_node.state.registers[register].val = \
+                curr_node.state.registers[register].register_content._value = \
                     curr_node.state.registers[register].val.replace(val_reg,
                                                                     decompiler_data.checked_variables[check_version])
             elif re.match(r"(flat|global)_load", instruction[0]):
-                curr_node.state.registers[register].val = \
+                curr_node.state.registers[register].register_content._value = \
                     curr_node.state.registers[register].val.replace(val_reg,
                                                                     decompiler_data.checked_variables[check_version])
                 # а тут наоборот, наверное, надо сделать присвоение для первого регистра
         elif curr_node.state.registers[first_reg].val.find(val_reg) != -1 and first_reg in ["vcc", "scc", "exec"]:
-            curr_node.state.registers[first_reg].val = \
+            curr_node.state.registers[first_reg].register_content._value = \
                 curr_node.state.registers[first_reg].val.replace(val_reg, decompiler_data.variables[check_version])
         elif re.match(r"(flat|global)_store", instruction[0]):
-            curr_node.state.registers[register].val = \
+            curr_node.state.registers[register].register_content._value = \
                 curr_node.state.registers[register].val.replace(val_reg, decompiler_data.variables[check_version])
         copy_val_last = curr_node.state.registers[first_reg].val
         if copy_val_prev != copy_val_last:

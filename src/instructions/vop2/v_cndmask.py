@@ -58,7 +58,7 @@ class VCndmask(BaseInstruction):
             if self.node.state.registers[self.vdst].val == "0":
                 return ""
             if "?" in self.node.state.registers[self.ssrc2].val:
-                self.node.state.registers[self.ssrc2].val = "(" + self.node.state.registers[self.ssrc2].val + ")"
+                self.node.state.registers[self.ssrc2].register_content._value = "(" + self.node.state.registers[self.ssrc2].val + ")"
             if 's' in self.src1 or 'v' in self.src1:
                 src1_parent_val = self.node.parent[0].state.registers[self.src1].val
             else:

@@ -112,7 +112,7 @@ def upload_global_data_pointer(state, to_registers, from_registers):
             type_=RegisterType.GLOBAL_DATA_POINTER,
         ),
     )
-    state.registers[start_to_register].data_type = data_type
+    state.registers[start_to_register].register_content._data_type = data_type
     decompiler_data.make_version(state, start_to_register)
 
 
