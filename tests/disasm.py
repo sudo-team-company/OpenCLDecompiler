@@ -58,9 +58,6 @@ class ClrxDisasm(Disasm):
 class AmdGpuDisasm(Disasm):
     NAME = "amdgpu-dis"
 
-    def _get_windown_disasm_path(self) -> str:
-        raise NotImplementedError
-
     def invoke(self):
         subprocess.run(
             [
