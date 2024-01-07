@@ -4,7 +4,7 @@ from src.decompiler_data import set_reg_value, set_reg
 from src.integrity import Integrity
 from src.register import is_reg, RegisterSignType
 from src.register_type import RegisterType
-from src.utils.operation_register_content import OperationRegisterContent, OperationType
+from src.operation_register_content import OperationRegisterContent, OperationType
 
 
 class VLshlOr(BaseInstruction):

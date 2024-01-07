@@ -6,8 +6,7 @@ import itertools
 from typing import Optional
 
 from src.constants import DEFAULT_REGISTER_SIZE
-from src.register import RegisterSignType
-from src.register_content import RegisterContent
+from src.register_content import RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 
 

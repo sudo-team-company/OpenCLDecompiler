@@ -2,7 +2,7 @@ from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value, make_op
 from src.register import is_reg
 from src.register_type import RegisterType
-from src.utils.operation_register_content import OperationRegisterContent
+from src.operation_register_content import OperationRegisterContent
 
 _instruction_internal_mapping_by_types = {
     frozenset({

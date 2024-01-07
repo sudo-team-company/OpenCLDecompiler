@@ -1,3 +1,5 @@
+# pylint: disable=R0401
+
 import binascii
 import struct
 from typing import Optional, Union
@@ -13,7 +15,7 @@ from src.register_content import RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 from src.state import State
 from src.utils import ConfigData, DriverFormat
-from src.utils.operation_register_content import OperationType, OperationRegisterContent
+from src.operation_register_content import OperationType, OperationRegisterContent
 
 
 def set_reg_value(  # pylint: disable=R0913

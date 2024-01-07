@@ -21,7 +21,6 @@ class RegisterSignType(enum.Enum):
             raise Exception()
 
 
-
 class RegisterContent:
     def __init__(
             self,
@@ -60,7 +59,7 @@ class RegisterContent:
 
     def __and__(self, other):
         if isinstance(other, RegisterContent):
-            from src.utils.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
+            from src.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
 
             return OperationRegisterContent(
                 operation=OperationType.BITWISE_AND,
@@ -80,7 +79,7 @@ class RegisterContent:
 
     def __or__(self, other):
         if isinstance(other, RegisterContent):
-            from src.utils.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
+            from src.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
 
             return OperationRegisterContent(
                 operation=OperationType.BITWISE_OR,
@@ -94,7 +93,7 @@ class RegisterContent:
 
     def __rshift__(self, other):
         if isinstance(other, RegisterContent):
-            from src.utils.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
+            from src.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
 
             return OperationRegisterContent(
                 operation=OperationType.R_SHIFT,
@@ -108,7 +107,7 @@ class RegisterContent:
 
     def __lshift__(self, other):
         if isinstance(other, int):
-            from src.utils.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
+            from src.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
 
             return OperationRegisterContent(
                 operation=OperationType.L_SHIFT,
@@ -127,7 +126,7 @@ class RegisterContent:
 
     def __add__(self, other):
         if isinstance(other, RegisterContent):
-            from src.utils.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
+            from src.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
 
             return OperationRegisterContent(
                 operation=OperationType.PLUS,
@@ -141,7 +140,7 @@ class RegisterContent:
 
     def __sub__(self, other):
         if isinstance(other, RegisterContent):
-            from src.utils.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
+            from src.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
 
             return OperationRegisterContent(
                 operation=OperationType.MINUS,
@@ -154,7 +153,7 @@ class RegisterContent:
         raise NotImplementedError()
 
     def __mul__(self, other):
-        from src.utils.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
+        from src.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
 
         if isinstance(other, RegisterContent):
             return OperationRegisterContent(

@@ -4,7 +4,7 @@ from src.integrity import Integrity
 from src.opencl_types import most_common_type, make_asm_type, evaluate_size
 from src.register import check_and_split_regs, is_reg
 from src.register_type import RegisterType
-from src.utils.operation_register_content import OperationRegisterContent, OperationType
+from src.operation_register_content import OperationRegisterContent, OperationType
 
 
 class VAdd(BaseInstruction):
