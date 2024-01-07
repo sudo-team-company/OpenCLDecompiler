@@ -31,14 +31,14 @@ vector_type_dict = {
     'half8': 'half8'}
 
 asm_to_opencl_scalar_dict = {
-    "u8": "uchar",
-    "gu8": "__global uchar",
-    "i8": "char",
-    "gi8": "__global char",
-    "u16": "ushort",
-    "gu16": "__global ushort",
-    "i16": "short",
-    "gi16": "__global short",
+    # "u8": "uchar",
+    # "gu8": "__global uchar",
+    # "i8": "char",
+    # "gi8": "__global char",
+    # "u16": "ushort",
+    # "gu16": "__global ushort",
+    # "i16": "short",
+    # "gi16": "__global short",
     "u32": "uint",
     "gu32": "__global uint",
     "i32": "int",
@@ -54,7 +54,9 @@ asm_to_opencl_scalar_dict = {
     "b32": "uint",
     "b64": "ulong",
     "dword": "int",
-    "dwordx2": "long"
+    "dwordx2": "long",
+    "char": "char",
+    "short": "short",
 }
 
 
@@ -82,16 +84,18 @@ opencl_to_asm_dict = {
     "__global int8": "int8",
     "__global uint8": "uint8",
     "__global float4": "float4",
-    "uchar": "u8",
-    "__global uchar": "gu8",
-    "char": "i8",
-    "__global char": "gi8",
+    # "uchar": "u8",
+    # "__global uchar": "gu8",
+    "char": "char",
+    "__global char": "char",
     "__global char2": "char2",
     "__global char4": "char4",
-    "ushort": "u16",
-    "__global ushort": "gu16",
-    "short": "i16",
-    "__global short": "gi16",
+    # "ushort": "u16",
+    # "__global ushort": "gu16",
+    # "short": "i16",
+    # "__global short": "gi16",
+    "short": "short",
+    "__global short": "short",
 }
 
 
