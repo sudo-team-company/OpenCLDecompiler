@@ -9,17 +9,17 @@ class _Context:
         self._data.update(**kwargs)
 
     def remove(self, key: str):
-        self._data.__delattr__(key)
+        del self._data[key]
 
     def contains(self, key: str) -> bool:
-        return self._data.__contains__(key)
+        return key in self._data
 
     def get(self, key: str) -> any:
         return self._data[key]
 
 
 def get_context() -> _Context:
-    global _CONTEXT
+    global _CONTEXT  # pylint: disable=W0603
 
     if not _CONTEXT:
         _CONTEXT = _Context()

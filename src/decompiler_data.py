@@ -172,7 +172,7 @@ def evaluate_from_hex(global_data, size, flag):
     return typed_global_data
 
 
-class DecompilerData(metaclass=Singleton):
+class DecompilerData(metaclass=Singleton):  # pylint: disable=R0902
     def __init__(self):
         self.pragram_id = utils.generate_uuid()
         self.name_of_program = None
