@@ -126,17 +126,10 @@ def process_kernel_params(set_of_instructions):
         return
 
     param_ptr = "s[6:7]" if decompiler_data.config_data.usesetup else "s[4:5]"
-    if decompiler_data.is_rdna3:
-        param_ptr = "s[0:1]"
     offsets_of_kernel_params = {}
     for instruction in set_of_instructions:
         list_instruction = instruction.strip().replace(',', ' ').split()
-        if (
-                "s_load_dword" in list_instruction[0]
-                or "s_load_b32" in list_instruction[0]
-                or "s_load_b64" in list_instruction[0]
-                or "s_load_b128" in list_instruction[0]
-        ) and \
+        if "s_load_dword" in list_instruction[0] and \
                 list_instruction[2] == param_ptr and \
                 list_instruction[3] not in decompiler_data.config_data.setup_params_offsets:
             if offsets_of_kernel_params.get(list_instruction[3]) is None:
