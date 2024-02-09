@@ -1,4 +1,4 @@
-/* Disassembling 'linear_kernels/addition/addition.bin' */
+/* Disassembling 'linear_kernels\addition\addition.bin' */
 .amdcl2
 .gpu Iceland
 .64bit
