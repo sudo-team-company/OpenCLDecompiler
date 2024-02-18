@@ -48,7 +48,7 @@ class Graph(metaclass=Singleton):
     # +===================+
     # |    GRAPH_ATTRS    |
     # +===================+
-    def update_graph_attrs(self, *args, **kwargs):
+    def update_graph_attrs(self, *_, **kwargs):
         self._update_attrs(self._dot.graph_attr, **kwargs)
 
     def delete_graph_attrs(self, keys: list[str]):
@@ -57,7 +57,7 @@ class Graph(metaclass=Singleton):
     # +==================+
     # |    NODE_ATTRS    |
     # +==================+
-    def update_node_attrs(self, *args, **kwargs):
+    def update_node_attrs(self, *_, **kwargs):
         self._update_attrs(self._dot.node_attr, **kwargs)
 
     def delete_node_attrs(self, keys: list[str]):
@@ -66,7 +66,7 @@ class Graph(metaclass=Singleton):
     # +==================+
     # |    EDGE_ATTRS    |
     # +==================+
-    def update_edge_attrs(self, *args, **kwargs):
+    def update_edge_attrs(self, *_, **kwargs):
         self._update_attrs(self._dot.edge_attr, **kwargs)
 
     def delete_edge_attrs(self, keys: list[str]):
@@ -81,4 +81,4 @@ class Graph(metaclass=Singleton):
 
     def _delete_attrs(self, attr_dict: dict, keys: list[str]):
         for key in keys:
-            attr_dict.__delattr__(key)
+            del attr_dict[key]
