@@ -7,6 +7,7 @@ from typing import Optional, Union
 import sympy
 
 from src.combined_register_content import CombinedRegisterContent
+from src import utils
 from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
@@ -14,7 +15,7 @@ from src.register import Register, is_reg, is_range, check_and_split_regs
 from src.register_content import RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 from src.state import State
-from src.utils import ConfigData, DriverFormat
+from src.utils import ConfigData, DriverFormat, Singleton
 from src.operation_register_content import OperationType, OperationRegisterContent
 
 
@@ -288,18 +289,10 @@ def evaluate_from_hex(global_data, size, flag):
     return typed_global_data
 
 
-class Singleton(type):
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            instance = super().__call__(*args, **kwargs)
-            cls._instances[cls] = instance
-        return cls._instances[cls]
-
 
 class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
     def __init__(self):
+        self.pragram_id = utils.generate_uuid()
         self.name_of_program = None
         self.config_data: Optional[ConfigData] = None
         self.driver_format: DriverFormat = DriverFormat.UNKNOWN

@@ -5,10 +5,28 @@ from parsers.asm_parser.amdgpu_dis_format import AmdGpuDisParser
 from src.decompiler import process_src
 from src.decompiler_data import DecompilerData
 from src.flag_type import FlagType
+from src.graph import GraphType
+from src.graph.control_flow_graph import ControlFlowGraph, CONTROL_FLOW_GRAPH_ENABLED_CONTEXT_KEY
 from src.kernel_parser import parse_kernel
+from src.utils import get_context
+
+CONTEXT = get_context()
 
 
-def main(input_par, output_par, flag_for_decompilation, is_new_parser: bool):
+def main(input_par, output_par, flag_for_decompilation, cfg_path, is_new_parser: bool):
+    CONTEXT.update(**{
+        f"{CONTROL_FLOW_GRAPH_ENABLED_CONTEXT_KEY}": cfg_path is not None,
+    })
+
+    if CONTEXT.get(CONTROL_FLOW_GRAPH_ENABLED_CONTEXT_KEY):
+        ControlFlowGraph(
+            graph_type=GraphType.DIRECTED,
+            render_path=cfg_path,
+            kwargs={
+                "strict": True,
+            },
+        )
+
     with open(output_par, 'w', encoding="utf-8") as output_file:
 
         with open(input_par, 'r', encoding="utf-8") as file:
@@ -40,7 +58,8 @@ def create_parser():
                         choices=['AUTO_DECOMPILATION', 'ONLY_OPENCL', 'ONLY_CLRX'],
                         default='AUTO_DECOMPILATION')
     parser.add_argument('--new-parser', action="store_true")
-
+    parser.add_argument('--cfg', help='path to output control flow graph')
+    
     return parser
 
 
@@ -54,7 +73,7 @@ def start_point():
               'python parser_for_instructions.py -i <input_file.asm> -o <output_file.cl>'
             """)
     else:
-        main(namespace.input, namespace.output, namespace.flag, namespace.new_parser)
+        main(namespace.input, namespace.output, namespace.flag, namespace.cfg, namespace.new_parser)
 
 
 if __name__ == "__main__":

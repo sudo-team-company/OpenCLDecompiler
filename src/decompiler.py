@@ -5,12 +5,16 @@ from src.code_printer import create_opencl_body
 from src.decompiler_data import DecompilerData, optimize_names_of_vars
 from src.flag_type import FlagType
 from src.global_data import process_global_data, gdata_type_processing
+from src.graph.control_flow_graph import ControlFlowGraph, CONTROL_FLOW_GRAPH_ENABLED_CONTEXT_KEY
 from src.kernel_params import process_kernel_params
 from src.logical_variable import ExecCondition
 from src.node import Node
 from src.node_processor import check_realisation_for_node
 from src.regions.functions_for_regions import make_region_graph_from_cfg, process_region_graph
+from src.utils import get_context
 from src.versions import find_max_and_prev_versions, change_values, check_for_use_new_version
+
+CONTEXT = get_context()
 
 
 def process_single_instruction(row, state, parents):
@@ -137,6 +141,15 @@ def process_src(   # pylint: disable=R0914
 
     make_region_graph_from_cfg()
     process_region_graph()
+    if CONTEXT.get(CONTROL_FLOW_GRAPH_ENABLED_CONTEXT_KEY):
+        control_flow_graph = ControlFlowGraph.instance()
+        for node in decompiler_data.starts_regions:
+            control_flow_graph.build_from_node(
+                node=node,
+                program_name=decompiler_data.name_of_program,
+                program_id=decompiler_data.pragram_id,
+            )
+        control_flow_graph.render()
     if decompiler_data.checked_variables != {} or decompiler_data.variables != {}:
         change_values()
     create_opencl_body()

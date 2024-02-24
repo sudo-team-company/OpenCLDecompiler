@@ -1,3 +1,4 @@
 sympy~=1.9
 pytest~=6.2.5
 pyparsing~=3.1.1
+graphviz~=0.20.1
