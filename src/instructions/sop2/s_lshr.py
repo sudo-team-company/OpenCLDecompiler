@@ -1,5 +1,6 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, set_reg_value
+from src.decompiler_data import make_op, set_reg_value, set_reg
+from src.register import is_reg
 from src.register_type import RegisterType
 
 
@@ -18,6 +19,20 @@ class SLshr(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
+        if self.decompiler_data.is_rdna3:
+            try:
+                if is_reg(self.ssrc0) and self.ssrc1.isdigit():
+                    new_reg = self.node.state.registers[self.ssrc0] >> int(self.ssrc1)
+                    new_reg.cast_to(self.suffix)
+                    return set_reg(
+                        node=self.node,
+                        to_reg=self.sdst,
+                        from_regs=[self.ssrc0, self.ssrc1],
+                        reg=new_reg,
+                    )
+            except Exception:
+                pass
+
         if self.suffix == 'b32':
             reg_type = self.node.state.registers[self.ssrc0].type
             if self.node.state.registers[self.ssrc0].type == RegisterType.GLOBAL_SIZE_X \

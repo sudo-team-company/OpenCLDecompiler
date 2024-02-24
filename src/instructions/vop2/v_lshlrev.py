@@ -57,8 +57,8 @@ class VLshlrev(BaseInstruction):
             elif src1_flag:
                 data_type = str(pow(2, int(self.src0))) + ' bytes'
             node = set_reg_value(self.node, new_value0, start_to_register, [start_from_register], data_type,
-                                 reg_type=reg_type, reg_entire=reg_entire0)
+                                 reg_type=reg_type, integrity=reg_entire0)
             node = set_reg_value(node, new_value1, end_to_register, [end_from_register], data_type, reg_type=reg_type,
-                                 reg_entire=reg_entire1)
+                                 integrity=reg_entire1)
             return node
         return super().to_fill_node()

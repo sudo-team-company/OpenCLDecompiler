@@ -41,7 +41,7 @@ class SAnd(BaseInstruction):
                 from_regs=[self.ssrc0, self.ssrc1],
                 data_type=self.suffix,
                 reg_type=reg.type,
-                reg_entire=reg.integrity
+                integrity=reg.integrity
             )
         return super().to_fill_node()
 

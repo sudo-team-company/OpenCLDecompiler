@@ -1,6 +1,9 @@
+from typing import Optional
+
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, set_reg_value
-from src.register import is_reg
+from src.combined_register_content import CombinedRegisterContent
+from src.decompiler_data import make_op, set_reg_value, set_reg
+from src.register import is_reg, Register
 from src.register_type import RegisterType
 
 
@@ -20,6 +23,12 @@ class VAnd(BaseInstruction):
     def to_fill_node(self):
         if self.suffix == 'b32':
             if is_reg(self.src1):
+                def default_behaviour() -> tuple[any, RegisterType]:
+                    new_value = self.node.state.registers[self.src1].val
+                    reg_type = RegisterType.UNKNOWN
+
+                    return new_value, reg_type
+
                 size_of_work_groups = self.decompiler_data.config_data.size_of_work_groups
                 if self.node.state.registers[self.src1].type == RegisterType.WORK_DIM and \
                         self.src0 == "0xffff":
@@ -37,9 +46,21 @@ class VAnd(BaseInstruction):
                         size_of_work_groups[2] == -int(self.src0):
                     new_value = make_op(self.node, "get_num_groups(2)", str(size_of_work_groups[2]), " * ")
                     reg_type = RegisterType.UNKNOWN
+                elif isinstance(self.node.state.registers[self.src1].register_content, CombinedRegisterContent) and \
+                        isinstance(self.src0, str) and self.src0.startswith("0x"):
+                    maybe_new_reg: Optional[Register] = self.node.state.registers[self.src1] & self.src0
+                    if maybe_new_reg is None:
+                        new_value, reg_type = default_behaviour()
+                    else:
+                        return set_reg(
+                            node=self.node,
+                            to_reg=self.vdst,
+                            from_regs=[self.src0, self.src1],
+                            reg=maybe_new_reg,
+                        )
+
                 else:
-                    new_value = self.node.state.registers[self.src1].val
-                    reg_type = RegisterType.UNKNOWN
+                    new_value, reg_type = default_behaviour()
                 return set_reg_value(
                     node=self.node,
                     new_value=new_value,
@@ -47,6 +68,6 @@ class VAnd(BaseInstruction):
                     from_regs=[self.src0, self.src1],
                     data_type=self.suffix,
                     reg_type=reg_type,
-                    reg_entire=self.node.state.registers[self.src1].integrity
+                    integrity=self.node.state.registers[self.src1].integrity
                 )
         return super().to_fill_node()

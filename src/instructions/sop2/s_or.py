@@ -17,6 +17,18 @@ class SOr(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
+        if self.decompiler_data.is_rdna3:
+            if self.suffix.endswith("32"):
+                new_val = make_op(self.node, self.ssrc0, self.ssrc1, " | ")
+                return set_reg_value(
+                    node=self.node,
+                    new_value=new_val,
+                    to_reg=self.sdst,
+                    from_regs=[self.ssrc0, self.ssrc1],
+                    data_type=self.suffix,
+                )
+
+
         if self.suffix in ["b32", "b64"]:
             if self.sdst == "exec" and self.ssrc0 == "exec":
                 new_exec_condition = self.decompiler_data.exec_registers[self.ssrc0] | \
@@ -27,5 +39,5 @@ class SOr(BaseInstruction):
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, " || ")
             reg_entire = self.node.state.registers[self.ssrc1].integrity
             return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix,
-                                 reg_entire=reg_entire)
+                                 integrity=reg_entire)
         return super().to_fill_node()

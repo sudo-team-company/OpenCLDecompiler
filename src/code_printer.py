@@ -93,6 +93,7 @@ def make_output_for_linear_region(region, indent):
             if len(curr_node.instruction) > 1 and is_reg(curr_node.instruction[1]) and \
                     not decompiler_data.loops_nodes_for_variables.get(curr_node):
                 reg = curr_node.instruction[1]
+
                 version = curr_node.state.registers[reg].version
                 var = decompiler_data.variables.get(version)
                 if var is not None and var != curr_node.state.registers[reg].val and \

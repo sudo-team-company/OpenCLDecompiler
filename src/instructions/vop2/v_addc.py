@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, set_reg_value
+from src.decompiler_data import make_op, set_reg_value, set_reg
 from src.integrity import Integrity
 from src.register import is_reg
 from src.register_type import RegisterType
@@ -34,6 +34,17 @@ class VAddc(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
+        if self.decompiler_data.is_rdna3:
+            if is_reg(self.src0) and is_reg(self.src1):
+                new_reg = self.node.state.registers[self.src0] + self.node.state.registers[self.src1]
+
+                return set_reg(
+                    node=self.node,
+                    to_reg=self.vdst,
+                    from_regs=[self.src0, self.src1],
+                    reg=new_reg,
+                )
+
         if self.suffix == 'u32':
             new_value = make_op(self.node, self.src0, self.src1, " + ", '(ulong)', '(ulong)')
             src0_reg = is_reg(self.src0)
@@ -62,5 +73,5 @@ class VAddc(BaseInstruction):
                 if src1_reg:
                     reg_type = self.node.state.registers[self.src1].type
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
-                                 reg_type=reg_type, reg_entire=reg_entire)
+                                 reg_type=reg_type, integrity=reg_entire)
         return super().to_fill_node()

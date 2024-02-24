@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, set_reg_value
+from src.decompiler_data import make_op, set_reg_value, set_reg
 from src.register import is_sgpr
 from src.register_type import RegisterType
 
@@ -32,6 +32,19 @@ class SAdd(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in {'u32', 'i32'}:
+            if self.decompiler_data.is_rdna3:
+                try:
+                    new_reg = self.node.state.registers[self.ssrc0] + self.node.state.registers[self.ssrc1]
+                    new_reg.cast_to(self.suffix)
+                    return set_reg(
+                        node=self.node,
+                        to_reg=self.sdst,
+                        from_regs=[self.ssrc0, self.ssrc1],
+                        reg=new_reg,
+                    )
+                except Exception:
+                    pass
+
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, " + ", '(ulong)', '(ulong)')
             ssrc0_reg = is_sgpr(self.ssrc0)
             ssrc1_reg = is_sgpr(self.ssrc1)

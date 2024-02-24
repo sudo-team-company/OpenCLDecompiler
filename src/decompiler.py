@@ -38,11 +38,29 @@ def process_src_with_unresolved_instruction(set_of_instructions):
             decompiler_data.write(row + "\n")
 
 
-# pylint: disable=R0914
-def process_src(name_of_program, config_data, set_of_instructions, set_of_global_data_bytes,
-                set_of_global_data_instruction):
+def process_src(   # pylint: disable=R0914
+        name_of_program,
+        config_data,
+        set_of_instructions,
+        set_of_global_data_bytes,
+        set_of_global_data_instruction,
+        *,
+        is_rdna3: bool = False,
+):
     decompiler_data = DecompilerData()
     decompiler_data.reset(name_of_program)
+    decompiler_data.init()
+    if is_rdna3:
+        decompiler_data.is_rdna3 = True
+    set_of_instructions = [instr.replace("null", "0x0") for instr in set_of_instructions]
+    new_set_of_instructions = []
+    for instr in set_of_instructions:
+        new_set_of_instructions.extend([
+            new_instr.strip()
+            for new_instr
+            in instr.split("::")
+        ])
+    set_of_instructions = new_set_of_instructions
     initial_set_of_instructions = copy.deepcopy(set_of_instructions)
     process_global_data(set_of_global_data_instruction, set_of_global_data_bytes)
     decompiler_data.set_config_data(config_data)
@@ -59,6 +77,8 @@ def process_src(name_of_program, config_data, set_of_instructions, set_of_global
         return
     while num < len(set_of_instructions):
         row = set_of_instructions[num]
+        row = row.replace("_e32", "")
+        row = row.replace("_e64", "")
         instruction = row.strip().replace(',', ' ').split()
         state = last_node.state
         parents = [last_node]

@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import set_reg_value, make_op
+from src.decompiler_data import set_reg_value, make_op, set_reg
 from src.register import is_reg
 from src.register_type import RegisterType
 
@@ -56,6 +56,20 @@ class VAdd3(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'u32':
+            if self.decompiler_data.is_rdna3:
+                try:
+                    new_reg = self.node.state.registers[self.src0] + self.node.state.registers[self.src1]
+                    new_reg = new_reg + self.node.state.registers[self.src2]
+                    new_reg.cast_to(self.suffix)
+                    return set_reg(
+                        node=self.node,
+                        to_reg=self.vdst,
+                        from_regs=[self.src0, self.src1, self.src2],
+                        reg=new_reg,
+                    )
+                except Exception:
+                    pass
+
             new_value = make_op(self.node, self.src0, self.src1, " + ", '(ulong)', '(ulong)')
             new_value = make_op(self.node, new_value, self.src2, " + ", '(ulong)', '(ulong)')
             reg_type = RegisterType.UNKNOWN
@@ -75,9 +89,9 @@ class VAdd3(BaseInstruction):
                         new_value = make_op(self.node, new_value, src2, " + ", '(ulong)', '(ulong)')
             if is_reg(self.src0) and is_reg(self.src1) and is_reg(self.src2):
                 src_types = frozenset({
-                    self.node.state.registers[self.src0].type,
-                    self.node.state.registers[self.src1].type,
-                    self.node.state.registers[self.src2].type,
+                    self.node.state.registers[self.src0].get_type(),
+                    self.node.state.registers[self.src1].get_type(),
+                    self.node.state.registers[self.src2].get_type(),
                 })
                 if src_types in _instruction_internal_mapping_by_types:
                     new_value, reg_type = _instruction_internal_mapping_by_types[src_types]

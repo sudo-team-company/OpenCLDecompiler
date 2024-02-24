@@ -53,6 +53,6 @@ class VOr(BaseInstruction):
                     to_reg=self.vdst,
                     from_regs=[self.src0, self.src1],
                     data_type=self.suffix,
-                    reg_entire=self.node.state.registers[self.src1].integrity,
+                    integrity=self.node.state.registers[self.src1].integrity,
                 )
         return super().to_fill_node()

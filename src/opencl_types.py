@@ -46,7 +46,9 @@ asm_to_opencl_scalar_dict = {
     "b32": "uint",
     "b64": "ulong",
     "dword": "int",
-    "dwordx2": "long"
+    "dwordx2": "long",
+    "char": "char",
+    "short": "short",
 }
 
 
@@ -75,9 +77,11 @@ opencl_to_asm_dict = {
     "__global uint8": "uint8",
     "__global float4": "float4",
     "char": "char",
+    "__global char": "char",
     "__global char2": "char2",
     "__global char4": "char4",
-    "short": "short"
+    "short": "short",
+    "__global short": "short",
 }
 
 
