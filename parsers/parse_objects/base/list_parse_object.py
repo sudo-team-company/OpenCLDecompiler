@@ -2,7 +2,6 @@ from typing import Optional
 
 from parsers.parse_objects.base import ParseObject
 from parsers.parse_objects.base.parse_object import EmptyParseObject
-from parsers.parse_objects.base.string_parse_object import StringParseObject
 
 
 class ListParseObject(ParseObject):

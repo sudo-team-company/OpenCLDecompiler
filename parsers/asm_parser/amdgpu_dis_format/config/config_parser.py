@@ -31,7 +31,7 @@ class ListElementValuesParser(BaseParser):
         else:
             rest = text
 
-        parser = ParserElementParser(Regex("[^:\s-]+"))
+        parser = ParserElementParser(Regex(r"[^:\s-]+"))
         parse_result = parser.parse(rest)
         if parse_result is None:
             return None

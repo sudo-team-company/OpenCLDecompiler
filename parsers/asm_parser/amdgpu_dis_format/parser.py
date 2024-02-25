@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Generator
 
 from parsers.asm_parser.amdgpu_dis_format.blocks.block_parser import AmdGpuDisBlockParser
 from parsers.asm_parser.amdgpu_dis_format.config.config_parser import AmdGpuDisConfigsParser
@@ -103,12 +103,13 @@ class AmdGpuDisParser:
                     or line.strip().startswith(".byte") \
                     or line.strip().startswith(".ascii"):
                 continue
-            else:
-                new_text += line
+
+            new_text += line
 
         return new_text
 
-    def parse(self, text: str) -> Optional[tuple[ParseObject, str]]:
+    # pylint: disable=R1710
+    def parse(self, text: str) -> Optional[Generator[tuple[ParseObject, str]]]:
         text = self._remove_redundant_lines(text)
 
         config_text = text[text.find("amdhsa.kernels:"):]

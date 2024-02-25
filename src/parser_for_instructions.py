@@ -59,7 +59,7 @@ def create_parser():
                         default='AUTO_DECOMPILATION')
     parser.add_argument('--new-parser', action="store_true")
     parser.add_argument('--cfg', help='path to output control flow graph')
-    
+
     return parser
 
 
