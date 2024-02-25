@@ -16,5 +16,5 @@ class IgnoreParser(BaseParser):
             _, rest = parse_result
 
             return EmptyParseObject(), rest
-        else:
-            return None
+
+        return None

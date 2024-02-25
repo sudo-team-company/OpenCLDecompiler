@@ -2,8 +2,8 @@ from typing import Optional
 
 from pyparsing import Literal, line_start, White, Regex
 
-from base.models.functions.config import Config
 from parsers.base import BaseParser, IgnoreParser, ParserElementParser, OneOrMoreParser
+from parsers.models import Config
 from parsers.parse_objects.base import ParseObject
 from parsers.parse_objects.base.dict_parse_object import DictParseObject
 from parsers.parse_objects.base.list_parse_object import ListParseObject
@@ -31,7 +31,7 @@ class ListElementValuesParser(BaseParser):
         else:
             rest = text
 
-        parser = ParserElementParser(Regex("[^:\s-]+"))
+        parser = ParserElementParser(Regex(r"[^:\s-]+"))
         parse_result = parser.parse(rest)
         if parse_result is None:
             return None

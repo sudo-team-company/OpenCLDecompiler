@@ -1,3 +1,5 @@
+# pylint: disable=C0415, R0401
+
 import abc
 from typing import Optional
 

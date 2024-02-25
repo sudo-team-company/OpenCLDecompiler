@@ -71,6 +71,8 @@ def get_offsets_to_regs():
         curr_offset, probably_offset = get_current_offset(name_of_param, num_of_param, probably_offset)
         if int(curr_offset, 16) % 4 == 0:
             offset_num[curr_offset] = name_of_param
+
+
         if "short" in type_of_param or "char" in type_of_param:
             get_bfe_offset(name_of_param, num_of_param, curr_offset, offset_num)
     return offset_num

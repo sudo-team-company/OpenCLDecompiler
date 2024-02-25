@@ -103,11 +103,12 @@ class AmdGpuDisParser:
                     or line.strip().startswith(".byte") \
                     or line.strip().startswith(".ascii"):
                 continue
-            else:
-                new_text += line
+
+            new_text += line
 
         return new_text
 
+    # pylint: disable=R1710
     def parse(self, text: str) -> Optional[tuple[ParseObject, str]]:
         text = self._remove_redundant_lines(text)
 
