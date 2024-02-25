@@ -1,4 +1,4 @@
-from base.models.model import Model
+from ..model import Model
 
 
 class Block(Model):

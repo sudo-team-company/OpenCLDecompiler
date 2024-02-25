@@ -2,11 +2,11 @@ from typing import Optional
 
 from pyparsing import line_start, Regex, Literal
 
-from base.models.functions.block import Block
 from parsers.base.base_parser import BaseParser
 from parsers.base.ignore_parser import IgnoreParser
 from parsers.base.line_parser import LineParser
 from parsers.base.parser_element_parser import ParserElementParser
+from parsers.models import Block
 from parsers.parse_objects.base import ParseObject
 from parsers.parse_objects.base.list_parse_object import ListParseObject
 
