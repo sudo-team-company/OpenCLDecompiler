@@ -77,6 +77,24 @@ def upload_kernel_param(state, offset, kernel_params, to_registers):
     decompiler_data = DecompilerData()
     to_registers = check_and_split_regs_range_to_full_list(to_registers)
     for (reg, val) in kernel_params[offset]:
+        if val.startswith("get_global_offset("):
+            if val == "get_global_offset(0)":
+                state.registers[reg] = Register(
+                    integrity=Integrity.ENTIRE,
+                    register_content=RegisterContent("get_global_offset(0)", RegisterType.GLOBAL_OFFSET_X, 64),
+                )
+            if val == "get_global_offset(1)":
+                state.registers[reg] = Register(
+                    integrity=Integrity.ENTIRE,
+                    register_content=RegisterContent("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, 64),
+                )
+            if val == "get_global_offset(2)":
+                state.registers[reg] = Register(
+                    integrity=Integrity.ENTIRE,
+                    register_content=RegisterContent("get_global_offset(2)", RegisterType.GLOBAL_OFFSET_Z, 64),
+                )
+            decompiler_data.make_version(state, reg)
+            continue
         if reg not in to_registers:
             continue
         value_for_type = val

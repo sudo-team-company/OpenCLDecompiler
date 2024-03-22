@@ -2,6 +2,7 @@
 
 import binascii
 import struct
+import re
 from typing import Optional, Union
 
 import sympy
@@ -11,7 +12,7 @@ from src import utils
 from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
-from src.register import Register, is_reg, is_range, check_and_split_regs
+from src.register import Register, is_reg, is_range, check_and_split_regs, split_range
 from src.register_content import RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 from src.state import State
@@ -162,7 +163,13 @@ def make_new_type_without_modifier(node, register):
 
 def compare_values(node, to_reg, from_reg0, from_reg1, type0, type1, operation, suffix):
     new_value = make_op(node, from_reg0, from_reg1, operation, type0, type1)
-    set_reg_value(node, new_value, to_reg, [from_reg0, from_reg1], suffix)
+    from_regs = [from_reg0, from_reg1]
+    if re.fullmatch(r"[sv]\[\d+:\d+]", to_reg):
+        low, high = split_range(to_reg)
+        set_reg_value(node, new_value, low, from_regs, suffix, integrity=Integrity.LOW_PART)
+        set_reg_value(node, new_value, high, from_regs, suffix, integrity=Integrity.HIGH_PART)
+    else:
+        set_reg_value(node, new_value, to_reg, [from_reg0, from_reg1], suffix)
     return node
 
 
@@ -256,6 +263,18 @@ def check_reg_for_val(node, register):
     else:
         new_val = register
     return new_val
+
+
+def try_get_reg(node, register):
+    if register in node.state.registers:
+        return node.state.registers[register]
+    if is_range(register):
+        start_register, end_register = check_and_split_regs(register)
+        if start_register in node.state.registers:
+            return node.state.registers[start_register]
+        if end_register in node.state.registers:
+            return node.state.registers[end_register]
+    raise NotImplementedError
 
 
 def change_vals_for_make_op(node, register, reg_type, operation):

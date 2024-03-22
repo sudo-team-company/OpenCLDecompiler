@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import set_reg_value
+from src.decompiler_data import set_reg_value, try_get_reg
 from src.register_type import RegisterType
 
 
@@ -49,17 +49,19 @@ class VCndmask(BaseInstruction):
 
     def to_print(self):
         if self.suffix == 'b32':
-            if self.node.state.registers[self.vdst].type == RegisterType.DIVISION_PT9:
+            vdst = try_get_reg(self.node, self.vdst)
+            ssrc2 = try_get_reg(self.node, self.ssrc2)
+            if vdst and vdst.type == RegisterType.DIVISION_PT9:
                 return ""
-            if self.node.state.registers[self.vdst].type == RegisterType.DIVISION_PASS:
+            if vdst and vdst.type == RegisterType.DIVISION_PASS:
                 return ""
-            if self.node.state.registers[self.ssrc2].type == RegisterType.DIVISION_PASS:
+            if ssrc2 and ssrc2.type == RegisterType.DIVISION_PASS:
                 return ""
-            if self.node.state.registers[self.vdst].val == "0":
+            if vdst and vdst.val == "0":
                 return ""
-            if "?" in self.node.state.registers[self.ssrc2].val:
-                self.node.state.registers[self.ssrc2].register_content._value = \
-                    "(" + self.node.state.registers[self.ssrc2].val + ")"  # pylint: disable=W0212
+            if "?" in ssrc2.val:
+                ssrc2.register_content._value = \
+                    "(" + ssrc2.val + ")"  # pylint: disable=W0212
             if 's' in self.src1 or 'v' in self.src1:
                 src1_parent_val = self.node.parent[0].state.registers[self.src1].val
             else:
@@ -68,8 +70,8 @@ class VCndmask(BaseInstruction):
                 src0_parent_val = self.node.parent[0].state.registers[self.src0].val
             else:
                 src0_parent_val = self.src0
-            self.output_string = self.node.state.registers[self.vdst].val + " = " \
-                                 + self.node.state.registers[self.ssrc2].val + " ? " \
+            self.output_string = vdst.val + " = " \
+                                 + ssrc2.val + " ? " \
                                  + src1_parent_val + " : " + src0_parent_val
             return self.output_string
         return super().to_print()
