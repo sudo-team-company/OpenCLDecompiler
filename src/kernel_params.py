@@ -75,6 +75,10 @@ def get_offsets_to_regs():
 
         if "short" in type_of_param or "char" in type_of_param:
             get_bfe_offset(name_of_param, num_of_param, curr_offset, offset_num)
+    probably_offset = ((int(probably_offset, 16) // 8) + 1) * 8
+    offset_num[hex(probably_offset)] = "get_global_offset(0)"
+    offset_num[hex(probably_offset + 8)] = "get_global_offset(1)"
+    offset_num[hex(probably_offset + 16)] = "get_global_offset(2)"
     return offset_num
 
 
@@ -97,11 +101,17 @@ def get_kernel_params(offsets_of_kernel_params, offset_num):
                     first_num_of_reg = int(registers[2:registers.find(':')])
             curr_reg = 0
             name_of_reg = registers[0]
-            offset_num_keys = sorted(offset_num.keys())
+            offset_num_keys = sorted(offset_num.keys(), key=lambda n: int(n, 16))
             if key in decompiler_data.config_data.setup_params_offsets:
+                continue
+            if key not in offset_num_keys:
                 continue
             curr_num_offset = offset_num_keys.index(key)
             while curr_reg < num_output_regs:
+                if len(offset_num_keys) <= curr_num_offset:
+                    # There is an issue with "hidden" params like result values for get_global_offset calls.
+                    # TODO: Process hidden params like others.
+                    break
                 curr_offset = offset_num_keys[curr_num_offset]
                 name_of_param = offset_num[curr_offset]
                 decompiler_data.add_to_kernel_params(
