@@ -43,24 +43,16 @@ class ClrxDisasm(Disasm):
     NAME = "clrxdisasm"
 
     def invoke(self):
-        output = subprocess.run(
-            [
-                self.get_disasm_path(),
-                self.path_to_bin,
-                "-dCfs"
-            ],
-            capture_output=True,
-            check=True
-        ).stdout.decode().splitlines(keepends=True)
-
-        # Fix path separator in first line (comment) to avoid unnecessary diff across different OS
-        if len(output) > 0 and output[0].startswith("/*"):
-            first_line = output[0].split("'")
-            first_line[1] = first_line[1].replace("/", "\\")
-            output[0] = "'".join(first_line)
-
         with open(self.path_to_asm, "w", encoding="utf-8") as file:
-            file.writelines(output)
+            subprocess.run(
+                [
+                    self.get_disasm_path(),
+                    self.path_to_bin,
+                    "-dCfs"
+                ],
+                stdout=file,
+                check=True
+            )
 
 
 class AmdGpuDisasm(Disasm):
