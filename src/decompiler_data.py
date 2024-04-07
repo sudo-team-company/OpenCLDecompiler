@@ -643,8 +643,8 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         self.config_data = config_data
         self.init_work_group()
         self.process_initial_state()
-        for num_of_param, (type_param, name_param) in enumerate(self.config_data.params):
-            self.make_params(num_of_param, name_param, type_param)
+        for num_of_param, arg in enumerate(self.config_data.arguments):
+            self.make_params(num_of_param, arg.name, arg.type_name)
 
     def get_function_definition(self) -> str:
         definition: str = "__kernel "
@@ -653,7 +653,7 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
             size_of_work_groups = ", ".join(map(str, self.config_data.size_of_work_groups))
             definition += f"__attribute__((reqd_work_group_size({size_of_work_groups})))\n"
 
-        params = ", ".join([f"{ptype} {pname}" for ptype, pname in self.config_data.params])
+        params = ", ".join([f"{arg.type_name} {arg.name}" for arg in self.config_data.arguments])
         definition += f"void {self.name_of_program}({params})\n"
 
         return definition

@@ -1,7 +1,7 @@
 import re
-from typing import List, Tuple, Optional
+from typing import List, Optional
 
-from ..utils import ConfigData
+from ..utils import ConfigData, KernelArgument
 
 
 def process_size_of_work_groups(set_of_config: List[str]) -> Optional[List[int]]:
@@ -14,16 +14,21 @@ def process_local_size(set_of_config: List[str]) -> Optional[int]:
     return int(set_of_config[4][11:]) if localsize else None
 
 
-def process_arg_row(row: str) -> Tuple[str, str]:
+def process_arg_row(row: str) -> KernelArgument:
     _, arg_name, _, arg_type, *other = row.strip().replace(',', ' ').split()
     if len(other) > 0:
         arg_type = "__" + other[0] + " " + arg_type
     if arg_type[-1] == "*":
-        return arg_type[:-1], "*" + arg_name
-    return arg_type, arg_name
+        arg_type = arg_type[:-1]
+        arg_name = "*" + arg_name
+    return KernelArgument(
+        type_name=arg_type,
+        name=arg_name,
+        offset=None,
+    )
 
 
-def process_params(set_of_config: List[str]) -> List[Tuple[str, str]]:
+def process_params(set_of_config: List[str]) -> List[KernelArgument]:
     return [process_arg_row(row) for row in set_of_config if ".arg" in row and "_." not in row]
 
 
@@ -41,7 +46,7 @@ def process_config(set_of_config: List[str]) -> ConfigData:
         usesetup=".usesetup" in set_of_config,
         size_of_work_groups=process_size_of_work_groups(set_of_config),
         local_size=process_local_size(set_of_config),
-        params=process_params(set_of_config),
+        arguments=process_params(set_of_config),
         setup_params_offsets=get_setup_params_offsets(set_of_config),
     )
 

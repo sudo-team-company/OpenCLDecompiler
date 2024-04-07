@@ -1,7 +1,7 @@
 import re
 from typing import Dict, Set, List, Optional, Tuple
 
-from ..utils import ConfigData
+from ..utils import ConfigData, KernelArgument
 
 
 def get_dimensions(set_of_config: List[str]) -> str:
@@ -23,17 +23,22 @@ def get_local_size(*_) -> Optional[int]:
     return None
 
 
-def process_arg_row(row: str) -> Tuple[str, str]:
+def process_arg_row(row: str) -> KernelArgument:
     _, arg_name, arg_type, *other = row.strip().replace(',', ' ').split()
     arg_type = arg_type[1:-1]
     if "global" in other:
         arg_type = "__global " + arg_type
     if arg_type[-1] == "*":
-        return arg_type[:-1], "*" + arg_name
-    return arg_type, arg_name
+        arg_type = arg_type[:-1]
+        arg_name = "*" + arg_name
+    return KernelArgument(
+        type_name=arg_type,
+        name=arg_name,
+        offset=None,
+    )
 
 
-def get_params(set_of_config: List[str]) -> List[Tuple[str, str]]:
+def get_params(set_of_config: List[str]) -> List[KernelArgument]:
     return [process_arg_row(row) for row in set_of_config if ".arg" in row and not row.startswith('.arg , "",')]
 
 
@@ -51,7 +56,7 @@ def process_config(set_of_config: List[str]) -> ConfigData:
         usesetup=".use_dispatch_ptr" in set_of_config,
         size_of_work_groups=get_size_of_work_groups(set_of_config),
         local_size=get_local_size(set_of_config),
-        params=get_params(set_of_config),
+        arguments=get_params(set_of_config),
         setup_params_offsets=get_setup_params_offsets(set_of_config),
     )
 
@@ -122,4 +127,4 @@ def parse_kernel(text: List[str]):
     for name_of_program, set_of_instructions in kernels_texts.items():
         config_data = process_config(kernels_configurations[name_of_program])
         yield name_of_program, config_data, set_of_instructions, \
-              set_of_global_data_bytes, set_of_global_data_instruction
+            set_of_global_data_bytes, set_of_global_data_instruction

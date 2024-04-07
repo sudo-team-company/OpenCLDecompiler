@@ -10,7 +10,7 @@ from parsers.parse_objects.base import ParseObject
 from src.opencl_types import make_asm_type
 from src.register_content import RegisterContent
 from src.register_type import RegisterType
-from src.utils import ConfigData
+from src.utils import ConfigData, KernelArgument
 
 ARG_KIND_TO_REGISTER_TYPE = {
     "by_value": RegisterType.KERNEL_ARGUMENT_VALUE,
@@ -154,14 +154,15 @@ class AmdGpuDisParser:
                                     in self._config[obj.name][".reqd_workgroup_size"]
                                 ],
                                 local_size=None,
-                                params=[
-                                    (
-                                        (
-                                            f"__{arg['.address_space']} "
-                                            if ".address_space" in arg
-                                            else ""
-                                        ) + arg['.type_name'].strip("\'").strip("*"),
-                                        ('*' if arg['.type_name'].strip("\'").endswith('*') else '') + f"arg{idx}"
+                                arguments=[
+                                    KernelArgument(
+                                        type_name=(
+                                                      f"__{arg['.address_space']} "
+                                                      if ".address_space" in arg
+                                                      else ""
+                                                  ) + arg['.type_name'].strip("\'").strip("*"),
+                                        name=('*' if arg['.type_name'].strip("\'").endswith('*') else '') + f"arg{idx}",
+                                        offset=None,
                                     )
                                     for idx, arg
                                     in enumerate(
