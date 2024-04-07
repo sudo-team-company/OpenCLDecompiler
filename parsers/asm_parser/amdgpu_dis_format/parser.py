@@ -162,7 +162,7 @@ class AmdGpuDisParser:
                                                       else ""
                                                   ) + arg['.type_name'].strip("\'").strip("*"),
                                         name=('*' if arg['.type_name'].strip("\'").endswith('*') else '') + f"arg{idx}",
-                                        offset=None,
+                                        offset=arg['.offset'] if arg['.offset'] != '0' else '0x0',
                                     )
                                     for idx, arg
                                     in enumerate(

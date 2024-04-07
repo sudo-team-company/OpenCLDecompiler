@@ -321,7 +321,6 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         self.initial_state = State()  # start state of registers (начальное состояние регистров)
         self.sgprsnum = 0  # number of s registers used by system (количество s регистров, используемых системой)
         self.vgprsnum = 0  # number of v registers used by system (количество v регистров, используемых системой)
-        self.params = {}
         self.to_node = {}  # the label at which the block starts -> node (метка, с которой начинается блок -> вершина)
         self.from_node = {}
         # the label the vertex is expecting -> node (метка, которую ожидает вершина -> вершина ("лист ожидания"))
@@ -472,7 +471,6 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         self.initial_state = State()  # start state of registers (начальное состояние регистров)
         self.sgprsnum = 0  # number of s registers used by system (количество s регистров, используемых системой)
         self.vgprsnum = 0  # number of v registers used by system (количество v регистров, используемых системой)
-        self.params = {}
         self.to_node = {}  # the label at which the block starts -> node (метка, с которой начинается блок -> вершина)
         self.from_node = {}
         # the label the vertex is expecting -> node (метка, которую ожидает вершина -> вершина ("лист ожидания"))
@@ -635,16 +633,12 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
             )
             self.make_version(self.initial_state, "s5")
 
-    def make_params(self, num_of_param, name_param, type_param):
-        self.params["param" + str(num_of_param)] = name_param
-        self.type_params[name_param] = type_param
-
     def set_config_data(self, config_data: ConfigData):
         self.config_data = config_data
         self.init_work_group()
         self.process_initial_state()
-        for num_of_param, arg in enumerate(self.config_data.arguments):
-            self.make_params(num_of_param, arg.name, arg.type_name)
+        for arg in self.config_data.arguments:
+            self.type_params[arg.name] = arg.type_name
 
     def get_function_definition(self) -> str:
         definition: str = "__kernel "

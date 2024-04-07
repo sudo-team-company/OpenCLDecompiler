@@ -23,23 +23,32 @@ def get_local_size(*_) -> Optional[int]:
     return None
 
 
-def process_arg_row(row: str) -> KernelArgument:
-    _, arg_name, arg_type, *other = row.strip().replace(',', ' ').split()
-    arg_type = arg_type[1:-1]
-    if "global" in other:
-        arg_type = "__global " + arg_type
-    if arg_type[-1] == "*":
-        arg_type = arg_type[:-1]
-        arg_name = "*" + arg_name
-    return KernelArgument(
-        type_name=arg_type,
-        name=arg_name,
-        offset=None,
-    )
-
-
 def get_params(set_of_config: List[str]) -> List[KernelArgument]:
-    return [process_arg_row(row) for row in set_of_config if ".arg" in row and not row.startswith('.arg , "",')]
+    args = []
+    offset = 0
+    for row in set_of_config:
+        if not row.startswith('.arg '):
+            continue
+        row = row.removeprefix('.arg ')
+        name, type_name, size, align, valuekind, *other = row.split(", ")
+        if name == '':
+            continue
+        type_name = type_name[1:-1]
+        if "global" in other:
+            type_name = "__global " + type_name
+        if type_name[-1] == "*":
+            type_name = type_name[:-1]
+            name = "*" + name
+        align = int(align)
+        if offset % align != 0:
+            offset += align - offset % align
+        args.append(KernelArgument(
+            type_name=type_name,
+            name=name,
+            offset=hex(offset),
+        ))
+        offset += int(size)
+    return args
 
 
 def get_setup_params_offsets(set_of_config: List[str]) -> List[str]:

@@ -3,17 +3,11 @@ from src.opencl_types import evaluate_size, make_asm_type
 from src.register import is_vector_type
 
 
-def get_param_type(num_of_param):
-    decompiler_data = DecompilerData()
-    param_type = decompiler_data.type_params.get(decompiler_data.params["param" + num_of_param])
-    return param_type
-
-
 def get_basic_param_type(num_of_param):
-    param_type = get_param_type(num_of_param)
-    if is_vector_type(param_type):
-        param_type = param_type[:-1]
-    return param_type
+    type_name = DecompilerData().config_data.arguments[num_of_param].type_name
+    if is_vector_type(type_name):
+        type_name = type_name[:-1]
+    return type_name
 
 
 def get_param_size(name_of_param, param_type):
@@ -50,18 +44,25 @@ def get_current_offset(name_of_param, num_of_param, probably_offset):
 
 def get_offsets_to_regs():
     decompiler_data = DecompilerData()
-    offset_num = {}
-    data_of_param = []
-    for num_of_param in range(len(decompiler_data.params)):
-        num_of_param = str(num_of_param)
-        name_of_param = decompiler_data.params["param" + num_of_param]
-        type_of_param = decompiler_data.type_params.get(name_of_param)
-        if type_of_param[-1].isdigit() and name_of_param[0] != '*':
-            for i in range(int(type_of_param[-1])):
-                data_of_param.append([num_of_param, name_of_param + '___s' + str(i), type_of_param])
-        else:
-            data_of_param.append([num_of_param, name_of_param, type_of_param])
 
+    offset_num = {}
+    for arg in decompiler_data.config_data.arguments:
+        offset_num[arg.offset] = arg.name
+        if arg.offset is None:
+            offset_num = None
+            break
+    if offset_num:
+        return offset_num
+
+    data_of_param = []
+    for num_of_param, arg in enumerate(decompiler_data.config_data.arguments):
+        if arg.type_name[-1].isdigit() and arg.name[0] != '*':
+            for i in range(int(arg.type_name[-1])):
+                data_of_param.append([num_of_param, arg.name + '___s' + str(i), arg.type_name])
+        else:
+            data_of_param.append([num_of_param, arg.name, arg.type_name])
+
+    offset_num = {}
     probably_offset = "0x0"
     for num_of_param, name_of_param, type_of_param in data_of_param:
         while probably_offset in decompiler_data.config_data.setup_params_offsets:
@@ -71,7 +72,6 @@ def get_offsets_to_regs():
         curr_offset, probably_offset = get_current_offset(name_of_param, num_of_param, probably_offset)
         if int(curr_offset, 16) % 4 == 0:
             offset_num[curr_offset] = name_of_param
-
 
         if "short" in type_of_param or "char" in type_of_param:
             get_bfe_offset(name_of_param, num_of_param, curr_offset, offset_num)
