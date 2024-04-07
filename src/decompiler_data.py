@@ -405,6 +405,7 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         self.exec_registers = {"exec": ExecCondition.default()}
         self.is_rdna3: bool = False
         self.initial_offsets: dict[str, RegisterContent] = {}
+        self.gpu: str | None = None
 
     def init(self):
         if self.is_rdna3:

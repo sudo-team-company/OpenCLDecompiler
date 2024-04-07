@@ -8,6 +8,14 @@ parsers = {
 }
 
 
+def parse_gpu(text: list[str]) -> str | None:
+    for row in text:
+        if row.startswith(".gpu "):
+            return row.removeprefix(".gpu ").strip().lower()
+    return None
+
+
 def parse_kernel(text):
     driver_format = DriverFormat(text)
-    return driver_format, parsers[driver_format].parse_kernel(text)
+    gpu = parse_gpu(text)
+    return driver_format, parsers[driver_format].parse_kernel(text), gpu
