@@ -647,7 +647,7 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
             size_of_work_groups = ", ".join(map(str, self.config_data.size_of_work_groups))
             definition += f"__attribute__((reqd_work_group_size({size_of_work_groups})))\n"
 
-        params = ", ".join([f"{arg.type_name} {arg.name}" for arg in self.config_data.arguments])
+        params = ", ".join([f"{arg}" for arg in self.config_data.arguments])
         definition += f"void {self.name_of_program}({params})\n"
 
         return definition
