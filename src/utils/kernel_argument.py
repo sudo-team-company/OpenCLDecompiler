@@ -6,6 +6,7 @@ class KernelArgument:
     type_name: str
     name: str
     offset: str | None
+    hidden: bool = False
 
     def __str__(self):
         return f"{self.type_name} {self.name}"
