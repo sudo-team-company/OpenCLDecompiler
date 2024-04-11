@@ -14,22 +14,27 @@ def process_local_size(set_of_config: List[str]) -> Optional[int]:
     return int(set_of_config[4][11:]) if localsize else None
 
 
-def process_arg_row(row: str) -> KernelArgument:
-    _, arg_name, _, arg_type, *other = row.strip().replace(',', ' ').split()
-    if len(other) > 0:
-        arg_type = "__" + other[0] + " " + arg_type
-    if arg_type[-1] == "*":
-        arg_type = arg_type[:-1]
-        arg_name = "*" + arg_name
-    return KernelArgument(
-        type_name=arg_type,
-        name=arg_name,
-        offset=None,
-    )
-
-
 def process_params(set_of_config: List[str]) -> List[KernelArgument]:
-    return [process_arg_row(row) for row in set_of_config if ".arg" in row and "_." not in row]
+    args = []
+    for row in set_of_config:
+        if not row.startswith('.arg '):
+            continue
+        row = row.removeprefix('.arg ').removesuffix(',')
+        name, _, type_name, *other = row.split(', ')
+        if len(other) > 0:
+            type_name = "__" + other[0] + " " + type_name
+        hidden = name.startswith('_.')
+        if type_name[-1] == "*":
+            type_name = type_name[:-1]
+            name = "*" + name
+        if not hidden:
+            args.append(KernelArgument(
+                type_name=type_name,
+                name=name,
+                offset=None,
+                hidden=hidden,
+            ))
+    return args
 
 
 def get_setup_params_offsets(set_of_config: List[str]) -> List[str]:
