@@ -37,6 +37,7 @@ def get_params(set_of_config: List[str]) -> List[KernelArgument]:
         if type_name.endswith('*'):
             type_name = type_name[:-1]
             name = "*" + name
+        size = int(size)
         align = int(align)
         if offset % align != 0:
             offset += align - offset % align
@@ -44,10 +45,10 @@ def get_params(set_of_config: List[str]) -> List[KernelArgument]:
             type_name=type_name,
             name=name,
             offset=offset,
-            size=int(size),
+            size=size,
             hidden=name == '',
         ))
-        offset += int(size)
+        offset += size
     return args
 
 
