@@ -56,6 +56,8 @@ def get_offsets_to_regs():
 
     data_of_param = []
     for num_of_param, arg in enumerate(decompiler_data.config_data.arguments):
+        if arg.hidden:
+            continue
         if arg.type_name[-1].isdigit() and arg.name[0] != '*':
             for i in range(int(arg.type_name[-1])):
                 data_of_param.append([num_of_param, arg.name + '___s' + str(i), arg.type_name])

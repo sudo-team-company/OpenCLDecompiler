@@ -31,12 +31,10 @@ def get_params(set_of_config: List[str]) -> List[KernelArgument]:
             continue
         row = row.removeprefix('.arg ')
         name, type_name, size, align, valuekind, *other = row.split(", ")
-        if name == '':
-            continue
         type_name = type_name[1:-1]
         if "global" in other:
             type_name = "__global " + type_name
-        if type_name[-1] == "*":
+        if type_name.endswith('*'):
             type_name = type_name[:-1]
             name = "*" + name
         align = int(align)
@@ -47,6 +45,7 @@ def get_params(set_of_config: List[str]) -> List[KernelArgument]:
             name=name,
             offset=hex(offset),
             size=int(size),
+            hidden=name == '',
         ))
         offset += int(size)
     return args

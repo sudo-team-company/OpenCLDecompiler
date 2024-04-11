@@ -29,14 +29,13 @@ def process_params(set_of_config: List[str]) -> List[KernelArgument]:
             type_name = type_name[:-1]
             name = "*" + name
         size = 8 if name.startswith('*') else evaluate_size(make_asm_type(type_name))[0]
-        if not hidden:
-            args.append(KernelArgument(
-                type_name=type_name,
-                name=name,
-                offset=None,
-                size=size,
-                hidden=hidden,
-            ))
+        args.append(KernelArgument(
+            type_name=type_name,
+            name=name,
+            offset=None,
+            size=size,
+            hidden=hidden,
+        ))
     return args
 
 
