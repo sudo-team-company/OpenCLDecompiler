@@ -5,7 +5,7 @@ from dataclasses import dataclass
 class KernelArgument:
     type_name: str
     name: str
-    offset: str | None
+    offset: int
     size: int
     hidden: bool = False
 

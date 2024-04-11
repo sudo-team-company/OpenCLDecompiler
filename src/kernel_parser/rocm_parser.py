@@ -43,7 +43,7 @@ def get_params(set_of_config: List[str]) -> List[KernelArgument]:
         args.append(KernelArgument(
             type_name=type_name,
             name=name,
-            offset=hex(offset),
+            offset=offset,
             size=int(size),
             hidden=name == '',
         ))
