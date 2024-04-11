@@ -44,16 +44,6 @@ def get_current_offset(name_of_param, num_of_param, probably_offset):
 
 def get_offsets_to_regs():
     decompiler_data = DecompilerData()
-
-    offset_num = {}
-    for arg in decompiler_data.config_data.arguments:
-        offset_num[arg.offset] = arg.name
-        if arg.offset is None:
-            offset_num = None
-            break
-    if offset_num:
-        return offset_num
-
     data_of_param = []
     for num_of_param, arg in enumerate(decompiler_data.config_data.arguments):
         if arg.hidden:

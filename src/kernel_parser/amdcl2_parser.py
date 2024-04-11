@@ -17,6 +17,7 @@ def process_local_size(set_of_config: List[str]) -> Optional[int]:
 
 def process_params(set_of_config: List[str]) -> List[KernelArgument]:
     args = []
+    offset = 0
     for row in set_of_config:
         if not row.startswith('.arg '):
             continue
@@ -29,13 +30,16 @@ def process_params(set_of_config: List[str]) -> List[KernelArgument]:
             type_name = type_name[:-1]
             name = "*" + name
         size = 8 if name.startswith('*') else evaluate_size(make_asm_type(type_name))[0]
+        if offset % size != 0 and size <= 8:
+            offset += size - offset % size
         args.append(KernelArgument(
             type_name=type_name,
             name=name,
-            offset=None,
+            offset=hex(offset),
             size=size,
             hidden=hidden,
         ))
+        offset += size
     return args
 
 
