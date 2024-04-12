@@ -30,7 +30,7 @@ def get_params(set_of_config: List[str]) -> List[KernelArgument]:
         if not row.startswith('.arg '):
             continue
         row = row.removeprefix('.arg ')
-        name, type_name, size, align, valuekind, *other = row.split(", ")
+        name, type_name, size, align, *other = row.split(", ")
         type_name = type_name[1:-1]
         if "global" in other:
             type_name = "__global " + type_name

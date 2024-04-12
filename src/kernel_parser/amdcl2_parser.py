@@ -2,7 +2,7 @@ import re
 from typing import List, Optional
 
 from ..utils import ConfigData, KernelArgument
-from src.opencl_types import evaluate_size, make_asm_type
+from ..opencl_types import evaluate_size, make_asm_type
 
 
 def process_size_of_work_groups(set_of_config: List[str]) -> Optional[List[int]]:
