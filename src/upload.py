@@ -1,8 +1,7 @@
 from src.combined_register_content import CombinedRegisterContent
 from src.decompiler_data import DecompilerData, make_elem_from_addr
 from src.integrity import Integrity
-from src.opencl_types import make_asm_type
-from src.register import Register, check_and_split_regs, get_next_reg, check_and_split_regs_range_to_full_list
+from src.register import Register, check_and_split_regs, get_next_reg
 from src.register_content import RegisterContent
 from src.register_type import RegisterType
 
@@ -75,28 +74,28 @@ def upload_usesetup(state, to_registers, offset):
 
 def upload_kernel_param(state, offset, to_registers):
     decompiler_data = DecompilerData()
-    to_registers = check_and_split_regs_range_to_full_list(to_registers)
-    for (reg, val) in decompiler_data.kernel_params[offset]:
-        if reg not in to_registers:
-            continue
-        value_for_type = val
-        if value_for_type.find("___") != -1:
-            value_for_type = value_for_type[:value_for_type.find("___")]
-        data_type = make_asm_type(decompiler_data.type_params[value_for_type])
-        if val[0] == "*":
-            type_param = RegisterType.ADDRESS_KERNEL_ARGUMENT
-            val = val[1:]
+    start, end = check_and_split_regs(to_registers)
+    start, end = int(start[1:]), int(end[1:])
+    while start <= end:
+        content = decompiler_data.config_data.offset_to_content[hex(offset)]
+        if content.get_size() <= 4:
+            state.registers[f's{start}'] = Register(integrity=Integrity.ENTIRE, register_content=content)
+            decompiler_data.make_version(state, f's{start}')
+            start += 1
+            offset += 4
+        elif content.get_size() == 8:
+            if start + 1 > end:
+                state.registers[f's{start}'] = Register(integrity=Integrity.ENTIRE, register_content=content)
+                decompiler_data.make_version(state, f's{start}')
+                break
+            state.registers[f's{start}'] = Register(integrity=Integrity.LOW_PART, register_content=content)
+            decompiler_data.make_version(state, f's{start}')
+            state.registers[f's{start + 1}'] = Register(integrity=Integrity.HIGH_PART, register_content=content)
+            decompiler_data.make_version(state, f's{start + 1}')
+            start += 2
+            offset += 8
         else:
-            type_param = RegisterType.KERNEL_ARGUMENT_VALUE
-        state.registers[reg] = Register(
-            integrity=Integrity.ENTIRE,
-            register_content=RegisterContent(
-                value=val,
-                type_=type_param,
-            ),
-        )
-        state.registers[reg].register_content._data_type = data_type  # pylint: disable=W0212
-        decompiler_data.make_version(state, reg)
+            break
 
 
 def upload_global_data_pointer(state, to_registers, from_registers):
@@ -110,37 +109,10 @@ def upload_global_data_pointer(state, to_registers, from_registers):
         register_content=RegisterContent(
             value=new_val,
             type_=RegisterType.GLOBAL_DATA_POINTER,
+            data_type=data_type,
         ),
     )
-    state.registers[start_to_register].register_content._data_type = data_type  # pylint: disable=W0212
     decompiler_data.make_version(state, start_to_register)
-
-
-def upload_setup_argument(state, to_registers, offset):
-    decompiler_data = DecompilerData()
-    offset = hex(decompiler_data.config_data.setup_params_offsets.index(offset) * 8)
-    start_to_register, end_to_register = check_and_split_regs(to_registers)
-    curr_to_register = start_to_register
-    while True:
-        register_content = decompiler_data.setup_argument_dict[offset]
-        state.registers[curr_to_register] = Register(
-            integrity=Integrity.ENTIRE,
-            register_content=register_content,
-        )
-        decompiler_data.make_version(state, curr_to_register)
-        if curr_to_register == end_to_register:
-            break
-        curr_to_register = get_next_reg(curr_to_register)
-        register_content = decompiler_data.setup_argument_dict[offset]
-        state.registers[curr_to_register] = Register(
-            integrity=Integrity.ENTIRE,
-            register_content=register_content,
-        )
-        decompiler_data.make_version(state, curr_to_register)
-        offset = hex(int(offset, 16) + 8)
-        if curr_to_register == end_to_register:
-            break
-        curr_to_register = get_next_reg(curr_to_register)
 
 
 def upload_by_offset(
@@ -259,19 +231,3 @@ def upload_by_offset(
             )
 
     state.registers[curr_to_register].try_simplify()
-
-
-def upload(state, to_registers, from_registers, offset, bits: int = -1):
-    decompiler_data = DecompilerData()
-    if decompiler_data.is_rdna3:
-        upload_by_offset(state, to_registers, offset, bits)
-        return
-
-    start_from_register, _ = check_and_split_regs(from_registers)
-    if state.registers[start_from_register].type == RegisterType.ARGUMENTS_POINTER:
-        if offset in DecompilerData().config_data.setup_params_offsets:
-            upload_setup_argument(state, to_registers, offset)
-        else:
-            upload_kernel_param(state, offset, to_registers)
-    elif state.registers[start_from_register].type == RegisterType.GLOBAL_DATA_POINTER:
-        upload_global_data_pointer(state, to_registers, from_registers)

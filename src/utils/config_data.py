@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from src.register_content import RegisterContent
@@ -12,5 +12,4 @@ class ConfigData:
     size_of_work_groups: Optional[list[int]]
     local_size: Optional[int]
     arguments: list[KernelArgument]
-    setup_params_offsets: list[str]
-    offset_to_content: Optional[dict[str, RegisterContent]] = None
+    offset_to_content: dict[str, RegisterContent] = field(default_factory=dict)

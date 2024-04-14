@@ -32,6 +32,9 @@ def process_params(set_of_config: List[str]) -> List[KernelArgument]:
         size = 8 if name.startswith('*') else evaluate_size(make_asm_type(type_name))[0]
         if offset % size != 0 and size <= 8:
             offset += size - offset % size
+        for i in range(3):
+            if name == f'_.global_offset_{i}':
+                name = f'get_global_offset({i})'
         args.append(KernelArgument(
             type_name=type_name,
             name=name,
@@ -43,14 +46,6 @@ def process_params(set_of_config: List[str]) -> List[KernelArgument]:
     return args
 
 
-def get_setup_params_offsets(set_of_config: List[str]) -> List[str]:
-    return [
-        hex(i * 8) for i, row in
-        enumerate(row for row in set_of_config if ".arg" in row)
-        if row.startswith('.arg _.')
-    ]
-
-
 def process_config(set_of_config: List[str]) -> ConfigData:
     return ConfigData(
         dimensions=set_of_config[0][6:],
@@ -58,7 +53,6 @@ def process_config(set_of_config: List[str]) -> ConfigData:
         size_of_work_groups=process_size_of_work_groups(set_of_config),
         local_size=process_local_size(set_of_config),
         arguments=process_params(set_of_config),
-        setup_params_offsets=get_setup_params_offsets(set_of_config),
     )
 
 

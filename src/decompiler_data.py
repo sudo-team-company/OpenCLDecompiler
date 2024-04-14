@@ -289,7 +289,6 @@ def evaluate_from_hex(global_data, size, flag):
     return typed_global_data
 
 
-
 class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
     def __init__(self):
         self.pragram_id = utils.generate_uuid()
@@ -334,7 +333,6 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         self.type_gdata = {}
         self.variables = {}
         self.checked_variables = {}
-        self.kernel_params = {}
         self.global_data = {}
         self.var_value = {}  # var -> value
         self.type_conversion = {}  # expression -> type_conversion (get_global_id(0) -> (ulong))
@@ -403,46 +401,7 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         self.bfe_offsets = {}
         self.exec_registers = {"exec": ExecCondition.default()}
         self.is_rdna3: bool = False
-        self.initial_offsets: dict[str, RegisterContent] = {}
         self.gpu: str | None = None
-
-    def init(self):
-        if self.is_rdna3:
-            self.initial_offsets = {
-                '0x10': RegisterContent("get_num_groups(0)", RegisterType.NUM_GROUPS_X, 32),
-                '0x14': RegisterContent("get_num_groups(1)", RegisterType.NUM_GROUPS_Y, 32),
-                '0x18': RegisterContent("get_num_groups(2)", RegisterType.NUM_GROUPS_Z, 32),
-                '0x1c': RegisterContent("get_local_size(0)", RegisterType.LOCAL_SIZE_X, 16),
-                '0x1e': RegisterContent("get_local_size(1)", RegisterType.LOCAL_SIZE_Y, 16),
-                '0x20': RegisterContent("get_local_size(2)", RegisterType.LOCAL_SIZE_Z, 16),
-                '0x22': RegisterContent("get_group_id(0) * get_local_size(0)", RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE,
-                                        16),
-                '0x24': RegisterContent("get_group_id(1) * get_local_size(1)", RegisterType.WORK_GROUP_ID_Y_LOCAL_SIZE,
-                                        16),
-                '0x26': RegisterContent("get_group_id(2) * get_local_size(2)", RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE,
-                                        16),
-                '0x38': RegisterContent("get_global_offset(0)", RegisterType.GLOBAL_OFFSET_X, 64),
-                '0x40': RegisterContent("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, 64),
-                '0x48': RegisterContent("get_global_offset(2)", RegisterType.GLOBAL_OFFSET_Z, 64),
-                '0x50': RegisterContent("get_work_dim()", RegisterType.WORK_DIM, 16),
-            }
-        else:
-            self.initial_offsets = {
-                '0x0': RegisterContent("get_global_offset(0)", RegisterType.GLOBAL_OFFSET_X, 64),
-                '0x8': RegisterContent("get_global_offset(1)", RegisterType.GLOBAL_OFFSET_Y, 64),
-                '0x10': RegisterContent("get_global_offset(2)", RegisterType.GLOBAL_OFFSET_Z, 64)
-            }
-
-    def set_offset_content(self, offset: str, content: RegisterContent):
-        self.initial_offsets[offset] = content
-
-    @property
-    def setup_argument_dict(self) -> dict[str, RegisterContent]:
-        """
-        Returns dict of offset to register content based on gpu version
-        """
-
-        return self.initial_offsets
 
     def reset(self, name_of_program):
         self.name_of_program = name_of_program
@@ -484,7 +443,6 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         self.type_gdata = {}
         self.variables = {}
         self.checked_variables = {}
-        self.kernel_params = {}
         self.global_data = {}
         self.var_value = {}
         self.type_conversion = {}
@@ -552,7 +510,6 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         self.bfe_offsets = {}
         self.exec_registers = {"exec": ExecCondition.default()}
         self.is_rdna3 = False
-        self.initial_offsets: dict[str, RegisterContent] = {}
 
     def write(self, output):
         # noinspection PyUnresolvedReferences
@@ -667,9 +624,6 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         self.checked_variables[curr_node.state.registers[reg].version] = variable
         self.versions[reg] = max_version + 1
 
-    def set_name_of_vars(self, var_name, data_type):
-        self.names_of_vars[var_name] = data_type
-
     def check_lds_vars(self, offset, suffix):
         if self.lds_vars.get(offset) is None:
             self.lds_vars[offset] = ["lds" + str(self.lds_var_number), "u" + suffix[1:]]
@@ -689,26 +643,11 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
     def set_parent_for_starts_regions(self, child, region):
         self.starts_regions[child].add_parent(region)
 
-    def set_flag_of_else(self, flag):
-        self.flag_of_else = flag
-
     def set_cfg(self, node):
         self.cfg = node
 
     def set_to_node(self, label, node):
         self.to_node[label] = node
-
-    def add_to_kernel_params(self, key, val):
-        if self.kernel_params.get(key) is None:
-            self.kernel_params[key] = []
-        self.kernel_params[key].append(val)
-
-    def increase_num_of_label(self):
-        self.num_of_label += 1
-
-    def make_label(self, node):
-        self.label = node
-        self.parents_of_label = node.parent
 
     def to_fill_branch_node(self, node, instruction):
         label = instruction[1]

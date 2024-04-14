@@ -41,23 +41,21 @@ def get_params(set_of_config: List[str]) -> List[KernelArgument]:
         align = int(align)
         if offset % align != 0:
             offset += align - offset % align
+        hidden = name == ''
+        value_kind = other[0]
+        for i, global_offset_kind in enumerate(['gox', 'goy', 'goz']):
+            if value_kind == global_offset_kind:
+                name = f'get_global_offset({i})'
+                type_name = 'long'
         args.append(KernelArgument(
             type_name=type_name,
             name=name,
             offset=offset,
             size=size,
-            hidden=name == '',
+            hidden=hidden,
         ))
         offset += size
     return args
-
-
-def get_setup_params_offsets(set_of_config: List[str]) -> List[str]:
-    return [
-        hex(i * 8) for i, row in
-        enumerate(row for row in set_of_config if ".arg" in row)
-        if row.startswith('.arg , "",')
-    ]
 
 
 def process_config(set_of_config: List[str]) -> ConfigData:
@@ -67,7 +65,6 @@ def process_config(set_of_config: List[str]) -> ConfigData:
         size_of_work_groups=get_size_of_work_groups(set_of_config),
         local_size=get_local_size(set_of_config),
         arguments=get_params(set_of_config),
-        setup_params_offsets=get_setup_params_offsets(set_of_config),
     )
 
 
