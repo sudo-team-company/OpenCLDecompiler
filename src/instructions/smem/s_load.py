@@ -44,7 +44,6 @@ class SLoad(BaseInstruction):
                     self.sdata,
                     self.sbase,
                     self.offset,
-                    self.decompiler_data.kernel_params,
                     bits=bits,
                 )
             else:

@@ -73,10 +73,10 @@ def upload_usesetup(state, to_registers, offset):
         curr_to_register = get_next_reg(curr_to_register)
 
 
-def upload_kernel_param(state, offset, kernel_params, to_registers):
+def upload_kernel_param(state, offset, to_registers):
     decompiler_data = DecompilerData()
     to_registers = check_and_split_regs_range_to_full_list(to_registers)
-    for (reg, val) in kernel_params[offset]:
+    for (reg, val) in decompiler_data.kernel_params[offset]:
         if reg not in to_registers:
             continue
         value_for_type = val
@@ -261,7 +261,7 @@ def upload_by_offset(
     state.registers[curr_to_register].try_simplify()
 
 
-def upload(state, to_registers, from_registers, offset, kernel_params, bits: int = -1):
+def upload(state, to_registers, from_registers, offset, bits: int = -1):
     decompiler_data = DecompilerData()
     if decompiler_data.is_rdna3:
         upload_by_offset(state, to_registers, offset, bits)
@@ -272,6 +272,6 @@ def upload(state, to_registers, from_registers, offset, kernel_params, bits: int
         if offset in DecompilerData().config_data.setup_params_offsets:
             upload_setup_argument(state, to_registers, offset)
         else:
-            upload_kernel_param(state, offset, kernel_params, to_registers)
+            upload_kernel_param(state, offset, to_registers)
     elif state.registers[start_from_register].type == RegisterType.GLOBAL_DATA_POINTER:
         upload_global_data_pointer(state, to_registers, from_registers)

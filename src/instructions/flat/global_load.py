@@ -66,7 +66,6 @@ class GlobalLoad(FlatLoad):
                     self.vdst,
                     self.from_registers,
                     offset,
-                    self.decompiler_data.kernel_params,
                     bits=int(self.suffix[1:])
                 )
                 return self.node
