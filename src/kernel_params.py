@@ -84,12 +84,13 @@ def process_kernel_params(set_of_instructions):
     param_ptr = "s[6:7]" if decompiler_data.config_data.usesetup else "s[4:5]"
     offsets_of_kernel_params = {}
     for instruction in set_of_instructions:
-        list_instruction = instruction.strip().replace(',', ' ').split()
-        if "s_load_dword" in list_instruction[0] and \
-                list_instruction[2] == param_ptr and \
-                list_instruction[3] not in decompiler_data.config_data.setup_params_offsets:
-            if offsets_of_kernel_params.get(list_instruction[3]) is None:
-                offsets_of_kernel_params[list_instruction[3]] = []
-            offsets_of_kernel_params[list_instruction[3]] += [list_instruction]
+        if not instruction.startswith('s_load_dword'):
+            continue
+        instruction_name, args = instruction.split(maxsplit=1)
+        args = args.split(', ')
+        if args[1] == param_ptr and args[2] not in decompiler_data.config_data.setup_params_offsets:
+            if offsets_of_kernel_params.get(args[2]) is None:
+                offsets_of_kernel_params[args[2]] = []
+            offsets_of_kernel_params[args[2]] += [[instruction_name] + args]
     offset_num = get_offsets_to_regs()
     get_kernel_params(offsets_of_kernel_params, offset_num)
