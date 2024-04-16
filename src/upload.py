@@ -77,7 +77,13 @@ def upload_kernel_param(state, offset, to_registers):
     start, end = check_and_split_regs(to_registers)
     start, end = int(start[1:]), int(end[1:])
     while start <= end:
-        content = decompiler_data.config_data.offset_to_content[hex(offset)]
+        content = decompiler_data.config_data.offset_to_content.get(hex(offset))
+        if not content:
+            # Motivation example:
+            #   1. We have three args of size and align 4 and then arg with size and align 8
+            #   2. If we want to load four DWORDs we will load three args and some trash into last DWORD
+            # This last argument isn't there since it's aligned.
+            break
         if content.get_size() <= 4:
             state.registers[f's{start}'] = Register(integrity=Integrity.ENTIRE, register_content=content)
             decompiler_data.make_version(state, f's{start}')
