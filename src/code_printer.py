@@ -97,7 +97,10 @@ def make_output_for_linear_region(region, indent):
                 version = curr_node.state.registers[reg].version
                 var = decompiler_data.variables.get(version)
                 if var is not None and var != curr_node.state.registers[reg].val and \
-                        'cmp' not in curr_node.instruction[0]: # версия поменялась по сравнению с предком
+                        curr_node.state.registers[reg].val.strip() != '' and (
+                        'cmp' not in curr_node.instruction[0] or
+                        decompiler_data.gpu and decompiler_data.gpu.startswith('gfx')
+                ):  # версия поменялась по сравнению с предком
                     decompiler_data.write(indent + var + " = " + curr_node.state.registers[reg].val + ";\n")
             if curr_node == region.end:
                 break
