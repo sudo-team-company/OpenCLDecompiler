@@ -4,6 +4,7 @@ from src.node_processor import to_opencl
 from src.opencl_types import make_opencl_type
 from src.operation_status import OperationStatus
 from src.region_type import RegionType
+from src.regions.region import Region
 from src.register import is_reg
 
 
@@ -104,7 +105,17 @@ def make_output_for_linear_region(region, indent):
                     decompiler_data.write(indent + var + " = " + curr_node.state.registers[reg].val + ";\n")
             if curr_node == region.end:
                 break
-            curr_node = curr_node.children[0]
+            child = curr_node.children[0]
+            if isinstance(child, Region) and child.type == RegionType.UNROLLED_LOOP:
+                before, first, last, diff, inside = child.start
+                decompiler_data.write(f'    int acc = {before};\n')
+                sign = '<=' if first < last else '>='
+                decompiler_data.write(f'    for (int i = {first}; i {sign} {last}; {diff}) {{\n')
+                decompiler_data.write(f'        acc = {inside};\n')
+                decompiler_data.write('    }\n')
+                curr_node = curr_node.children[1]
+                continue
+            curr_node = child
     else:
         curr_region = region.start
         make_output_from_region(curr_region, indent)

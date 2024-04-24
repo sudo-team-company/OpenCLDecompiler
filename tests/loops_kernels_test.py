@@ -19,3 +19,11 @@ class TestLoopsKernels:
     @pytest.mark.parametrize("mcpu", ["gfx1010", "gfx1030"])
     def test_loop_with_unrolling_breaker(self, mcpu):
         template('loops_kernels', 'loop_with_unrolling_breaker', mcpu=mcpu)
+
+    @pytest.mark.parametrize("mcpu", ["gfx1010", "gfx1030"])
+    def test_loop_unrolled(self, mcpu):
+        template('loops_kernels', 'loop_unrolled', mcpu=mcpu)
+
+    @pytest.mark.parametrize("mcpu", ["gfx1010", "gfx1030"])
+    def test_loop_unrolled_2(self, mcpu):
+        template('loops_kernels', 'loop_unrolled_2', mcpu=mcpu)

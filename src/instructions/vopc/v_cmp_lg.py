@@ -18,7 +18,8 @@ class VCmpLg(BaseInstruction):
                 f"{self.sdst} = (uint){self.src0} != (uint){self.src1} // {self.instruction[0]}\n")
             return self.node
         if self.suffix == 'u64':
-            self.decompiler_data.write(f"{self.sdst} = (ulong){self.src0} != (ulong){self.src1} // {self.instruction[0]}\n")
+            self.decompiler_data.write(
+                f"{self.sdst} = (ulong){self.src0} != (ulong){self.src1} // {self.instruction[0]}\n")
             return self.node
         return super().to_print_unresolved()
 

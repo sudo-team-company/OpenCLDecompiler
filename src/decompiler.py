@@ -11,6 +11,7 @@ from src.logical_variable import ExecCondition
 from src.node import Node
 from src.node_processor import check_realisation_for_node
 from src.regions.functions_for_regions import make_region_graph_from_cfg, process_region_graph
+from src.unrolled_loops_processing import process_unrolled_loops
 from src.utils import get_context
 from src.versions import find_max_and_prev_versions, change_values, check_for_use_new_version
 
@@ -152,4 +153,5 @@ def process_src(  # pylint: disable=R0914
         control_flow_graph.render()
     if decompiler_data.checked_variables != {} or decompiler_data.variables != {}:
         change_values()
+    process_unrolled_loops()
     create_opencl_body()

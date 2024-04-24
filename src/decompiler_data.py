@@ -420,6 +420,7 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         self.exec_registers = {"exec": ExecCondition.default()}
         self.is_rdna3: bool = False
         self.gpu: str | None = None
+        self.unrolling_limit = 16
 
     def reset(self, name_of_program):
         self.name_of_program = name_of_program
