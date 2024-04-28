@@ -12,3 +12,4 @@ class RegionType(Enum):
     BREAK_REGION = auto()
     CONTINUE_REGION = auto()
     RETURN_REGION = auto()
+    UNROLLED_LOOP = auto()

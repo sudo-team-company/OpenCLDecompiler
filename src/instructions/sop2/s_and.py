@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import set_reg_value
+from src.decompiler_data import set_reg_value, make_op
 from src.register import check_and_split_regs
 
 
@@ -29,6 +29,17 @@ class SAnd(BaseInstruction):
                 self.decompiler_data.exec_registers[self.ssrc0] = new_exec_condition
                 return set_reg_value(self.node, new_exec_condition.top(), self.sdst, [self.ssrc0, self.ssrc1], None,
                                      exec_condition=new_exec_condition)
+            if self.ssrc0 in self.node.state.registers and self.ssrc1 in self.node.state.registers:
+                ssrc0 = self.node.state.registers[self.ssrc0]
+                return set_reg_value(
+                    node=self.node,
+                    new_value=make_op(self.node, self.ssrc0, self.ssrc1, " && "),
+                    to_reg=self.sdst,
+                    from_regs=[self.ssrc0, self.ssrc1],
+                    data_type=self.suffix,
+                    reg_type=ssrc0.type,
+                    integrity=ssrc0.integrity
+                )
             if self.ssrc0 in self.node.state.registers:
                 reg = self.node.state.registers[self.ssrc0]
             else:

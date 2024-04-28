@@ -10,7 +10,7 @@ from parsers.parse_objects.base import ParseObject
 from src.opencl_types import make_asm_type
 from src.register_content import RegisterContent
 from src.register_type import RegisterType
-from src.utils import ConfigData
+from src.utils import ConfigData, KernelArgument
 
 ARG_KIND_TO_REGISTER_TYPE = {
     "by_value": RegisterType.KERNEL_ARGUMENT_VALUE,
@@ -108,6 +108,19 @@ class AmdGpuDisParser:
 
         return new_text
 
+    @staticmethod
+    def _make_argument(idx, arg):
+        address_space = arg.get('.address_space')
+        address_space = f"__{address_space} " if address_space else ""
+        type_name = arg.get('.type_name', 'ulong').strip("\'")
+        return KernelArgument(
+            type_name=address_space + type_name.strip("*"),
+            name=('*' if type_name.endswith('*') else '') + f"arg{idx}",
+            offset=int(arg['.offset'], 16),
+            size=int(arg['.size'], 16),
+            hidden=arg['.value_kind'].startswith('hidden_'),
+        )
+
     # pylint: disable=R1710
     def parse(self, text: str) -> Optional[tuple[ParseObject, str]]:
         text = self._remove_redundant_lines(text)
@@ -154,24 +167,10 @@ class AmdGpuDisParser:
                                     in self._config[obj.name][".reqd_workgroup_size"]
                                 ],
                                 local_size=None,
-                                params=[
-                                    (
-                                        (
-                                            f"__{arg['.address_space']} "
-                                            if ".address_space" in arg
-                                            else ""
-                                        ) + arg['.type_name'].strip("\'").strip("*"),
-                                        ('*' if arg['.type_name'].strip("\'").endswith('*') else '') + f"arg{idx}"
-                                    )
+                                arguments=[
+                                    self._make_argument(idx, arg)
                                     for idx, arg
-                                    in enumerate(
-                                        list(filter(lambda arg: ".type_name" in arg, self._config[obj.name][".args"])))
-                                ],
-                                setup_params_offsets=[
-                                    str(hex(int(arg[".offset"], 16)))
-                                    for arg
-                                    in
-                                    list(filter(lambda arg: ".type_name" not in arg, self._config[obj.name][".args"]))
+                                    in enumerate(list(self._config[obj.name][".args"]))
                                 ],
                                 offset_to_content=self._convert_args_to_offset_to_content(
                                     self._config[obj.name][".args"],

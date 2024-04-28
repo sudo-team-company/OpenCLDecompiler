@@ -11,6 +11,7 @@ from src.logical_variable import ExecCondition
 from src.node import Node
 from src.node_processor import check_realisation_for_node
 from src.regions.functions_for_regions import make_region_graph_from_cfg, process_region_graph
+from src.unrolled_loops_processing import process_unrolled_loops
 from src.utils import get_context
 from src.versions import find_max_and_prev_versions, change_values, check_for_use_new_version
 
@@ -38,7 +39,7 @@ def process_src_with_unresolved_instruction(set_of_instructions):
             decompiler_data.write(row + "\n")
 
 
-def process_src(   # pylint: disable=R0914
+def process_src(  # pylint: disable=R0914
         name_of_program,
         config_data,
         set_of_instructions,
@@ -49,7 +50,6 @@ def process_src(   # pylint: disable=R0914
 ):
     decompiler_data = DecompilerData()
     decompiler_data.reset(name_of_program)
-    decompiler_data.init()
     if is_rdna3:
         decompiler_data.is_rdna3 = True
     set_of_instructions = [instr.replace("null", "0x0") for instr in set_of_instructions]
@@ -64,7 +64,8 @@ def process_src(   # pylint: disable=R0914
     initial_set_of_instructions = copy.deepcopy(set_of_instructions)
     process_global_data(set_of_global_data_instruction, set_of_global_data_bytes)
     decompiler_data.set_config_data(config_data)
-    process_kernel_params(set_of_instructions)
+    if not decompiler_data.is_rdna3:
+        process_kernel_params()
     last_node = Node([""], decompiler_data.initial_state)
     decompiler_data.set_cfg(last_node)
 
@@ -152,4 +153,5 @@ def process_src(   # pylint: disable=R0914
         control_flow_graph.render()
     if decompiler_data.checked_variables != {} or decompiler_data.variables != {}:
         change_values()
+    process_unrolled_loops()
     create_opencl_body()

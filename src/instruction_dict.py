@@ -10,6 +10,7 @@ from src.instructions.flat.flat_store import FlatStore
 from src.instructions.flat.global_load import GlobalLoad
 from src.instructions.flat.global_store import GlobalStore
 from src.instructions.sop1.s_sext import SSext
+from src.instructions.sopc.s_cmp_le import SCmpLe
 from src.instructions.sopp.s_delay_alu import SDelayAlu
 from src.instructions.smem.s_load import SLoad
 from src.instructions.sop1.s_and_saveexec import SAndSaveexec
@@ -138,6 +139,7 @@ instruction_dict = {'ds_add': DsAdd,
                     's_cmp_ge': SCmpGe,
                     's_cmp_gt': SCmpGt,
                     's_cmp_lt': SCmpLt,
+                    's_cmp_le': SCmpLe,
                     's_cselect': SCselect,
                     's_endpgm': SEndpgm,
                     's_getpc': SGetpc,

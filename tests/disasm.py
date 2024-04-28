@@ -53,6 +53,13 @@ class ClrxDisasm(Disasm):
                 stdout=file,
                 check=True
             )
+        with open(self.path_to_asm, "r", encoding="utf-8") as file:
+            text: list[str] = file.readlines()
+        parts = text[0].split("'")
+        parts[1] = parts[1].replace("/", "\\")
+        text[0] = "'".join(parts)
+        with open(self.path_to_asm, "w", encoding="utf-8") as file:
+            file.writelines(text)
 
 
 class AmdGpuDisasm(Disasm):
