@@ -13,7 +13,7 @@ void if_in_if_in_if(uint nEdges, __global uint *edges_x, __global uint *edges_y,
             var2 = edges_y[get_global_id(0)];
             var3 = weights[get_global_id(0)];
             var4 = d[var2];
-            if ((uint)var4 > (uint)((double)var1 + (double)var3)) {
+            if ((double)var4 > (double)((double)var1 + (double)var3)) {
                 d[var2] = (double)var1 + (double)var3;
                 *changed = 1;
             }

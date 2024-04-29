@@ -6,17 +6,18 @@ from typing import Optional, Union
 
 import sympy
 
-from src.combined_register_content import CombinedRegisterContent
 from src import utils
+from src.combined_register_content import CombinedRegisterContent
 from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
+from src.opencl_types import make_opencl_type
+from src.operation_register_content import OperationType, OperationRegisterContent
 from src.register import Register, is_reg, is_range, check_and_split_regs, split_range
 from src.register_content import RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 from src.state import State
 from src.utils import ConfigData, DriverFormat, Singleton
-from src.operation_register_content import OperationType, OperationRegisterContent
 
 
 def set_reg_value(  # pylint: disable=R0913
@@ -160,8 +161,10 @@ def make_new_type_without_modifier(node, register):
     return new_from_reg_type
 
 
-def compare_values(node, to_reg, from_reg0, from_reg1, type0, type1, operation, suffix):
-    new_value = make_op(node, from_reg0, from_reg1, operation, type0, type1)
+def compare_values(node, to_reg, from_reg0, from_reg1, operation, suffix):
+    datatype = make_opencl_type(suffix)
+    datatype = f'({datatype})' if datatype != 'unknown type' else ''
+    new_value = make_op(node, from_reg0, from_reg1, f' {operation} ', datatype, datatype)
     from_regs = [from_reg0, from_reg1]
     if is_range(to_reg):
         low, high = split_range(to_reg)

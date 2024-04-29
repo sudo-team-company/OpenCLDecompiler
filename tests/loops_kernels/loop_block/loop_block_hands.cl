@@ -19,6 +19,6 @@ void loop_general(__global int *data, int block, int x)
             *(__global int*)(var5) = var3;
             var5 = var5 + 4 / 4;
             var6 = (ulong)0 + (ulong)(var6);
-        } while (!(block == ((ulong)var4 + (ulong)1)));
+        } while (!((uint)block == (uint)((ulong)var4 + (ulong)1)));
     }
 }

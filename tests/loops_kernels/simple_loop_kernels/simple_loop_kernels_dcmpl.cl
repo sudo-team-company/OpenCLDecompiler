@@ -7,7 +7,7 @@ void loop_kernel_0(__global uint *data, uint x, uint y, uint unrollingBreaker)
     __global uint *var12;
     uint var8;
     __global uint *var9;
-    if (unrollingBreaker == 0) {
+    if ((int)unrollingBreaker == (int)0) {
         var8 = 0x1;
         var11 = y;
         var9 = data;
@@ -21,7 +21,7 @@ void loop_kernel_0(__global uint *data, uint x, uint y, uint unrollingBreaker)
             var11 = (ulong)var0 + (ulong)var11;
             *(__global uint*)(var12) = var11;
             var11 = (var11) * x;
-        } while ((((ulong)0 - (ulong)unrollingBreaker) == var8 ? 1 : 0) || var8 > 63 ? 1 : 0);
+        } while (((int)((ulong)0 - (ulong)unrollingBreaker) == (int)var8 ? 1 : 0) || (uint)var8 > (uint)63 ? 1 : 0);
     }
 }
 
@@ -35,7 +35,7 @@ void loop_kernel_1(__global uint *data, uint x, uint y, uint unrollingBreaker)
     __global uint *var8;
     __global uint *var9;
     var10 = unrollingBreaker;
-    if (var10 == 0) {
+    if ((int)var10 == (int)0) {
         var8 = data;
         var9 = data;
         var11 = y;
@@ -48,7 +48,7 @@ void loop_kernel_1(__global uint *data, uint x, uint y, uint unrollingBreaker)
             var11 = (ulong)var0 + (ulong)var11;
             *(__global uint*)(var12) = var11;
             var11 = (var11) * x;
-        } while (!(((ulong)var10 + (ulong)(-1)) == 0));
+        } while (!((int)((ulong)var10 + (ulong)(-1)) == (int)0));
     }
 }
 
@@ -62,7 +62,7 @@ void loop_kernel_2(__global uint *data, uint x, uint y, uint unrollingBreaker)
     __global uint *var8;
     __global uint *var9;
     var10 = unrollingBreaker;
-    if (var10 == 0) {
+    if ((int)var10 == (int)0) {
         var8 = data + (var10 * 4) / 4;
         var9 = data + (0x0 * 4) / 4;
         var11 = y;
@@ -75,6 +75,6 @@ void loop_kernel_2(__global uint *data, uint x, uint y, uint unrollingBreaker)
             var11 = (ulong)var0 + (ulong)var11;
             *(__global uint*)(var12) = var11;
             var11 = (var11) * x;
-        } while (!(((ulong)var10 + (ulong)(-1)) == 0));
+        } while (!((int)((ulong)var10 + (ulong)(-1)) == (int)0));
     }
 }

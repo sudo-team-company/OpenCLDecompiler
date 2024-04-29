@@ -7,7 +7,7 @@ void loop_break_kernel(__global uint *data, uint x, uint y, uint unrollingBreake
     __global uint *var7;
     __global uint *var8;
     uint var9;
-    if (unrollingBreaker == 0) {
+    if ((int)unrollingBreaker == (int)0) {
         var7 = data;
         var8 = data;
         var6 = y;
@@ -23,7 +23,7 @@ void loop_break_kernel(__global uint *data, uint x, uint y, uint unrollingBreake
             var7 = var7 + 4 / 4;
             var8 = var8 + 0 / 4;
             var9 = (ulong)var9 + (ulong)1;
-        } while (!(((ulong)var9 + (ulong)1) >= unrollingBreaker));
+        } while (!((uint)((ulong)var9 + (ulong)1) >= (uint)unrollingBreaker));
     }
     var5 = data[get_global_id(0)];
     data[get_global_id(0)] = (ulong)x + (ulong)var5;

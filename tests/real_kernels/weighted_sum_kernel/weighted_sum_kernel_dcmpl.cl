@@ -4,7 +4,7 @@ __kernel void weighted_sum_kernel(int n, __global float *a, __global float *b, _
     float var3;
     float var4;
     float var5;
-    if (b == 0) {
+    if ((ulong)b == (ulong)0) {
         var3 = 0;
     }
     else {
