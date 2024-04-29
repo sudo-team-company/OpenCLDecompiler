@@ -5,9 +5,9 @@ from src.register_type import RegisterType
 
 _instruction_special_cases = {
     frozenset({
-        RegisterType.__getattr__(f"GLOBAL_OFFSET_{dim}"),
-        RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"),
-    }): RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_LOCAL_SIZE_OFFSET")
+        RegisterType[f"GLOBAL_OFFSET_{dim}"],
+        RegisterType[f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"],
+    }): RegisterType[f"WORK_GROUP_ID_{dim}_LOCAL_SIZE_OFFSET"]
     for i, dim in enumerate("XYZ")
 }
 

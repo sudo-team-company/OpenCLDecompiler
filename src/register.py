@@ -175,12 +175,12 @@ class Register:
                 *[
                     (
                         frozenset({
-                            RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}"),
+                            RegisterType[f"WORK_GROUP_ID_{dim}"],
                             DecompilerData().config_data.size_of_work_groups[i],
                         }),
                         (
                             f"get_group_id({i}) * get_local_size({i})",
-                            RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"),
+                            RegisterType[f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"],
                             RegisterSignType.POSITIVE,
                         )
                     )

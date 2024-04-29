@@ -6,11 +6,11 @@ from src.operation_register_content import OperationRegisterContent
 
 _instruction_internal_mapping_by_types = {
     frozenset({
-        RegisterType.__getattr__(f"GLOBAL_OFFSET_{dim}"),
-        RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_WORK_ITEM_ID"),
+        RegisterType[f"GLOBAL_OFFSET_{dim}"],
+        RegisterType[f"WORK_GROUP_ID_{dim}_WORK_ITEM_ID"],
     }): (
         f"get_global_id({i})",
-        RegisterType.__getattr__(f"GLOBAL_ID_{dim}"),
+        RegisterType[f"GLOBAL_ID_{dim}"],
     ) for i, dim in enumerate(["X", "Y", "Z"])
 }
 

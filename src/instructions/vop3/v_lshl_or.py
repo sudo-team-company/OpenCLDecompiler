@@ -14,17 +14,17 @@ class VLshlOr(BaseInstruction):
         size_of_work_groups = self.decompiler_data.config_data.size_of_work_groups
         self._instruction_internal_mapping_by_types = {
             (
-                RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}"),
+                RegisterType[f"WORK_GROUP_ID_{dim}"],
                 size_of_work_groups[i],
-                RegisterType.__getattr__(f"WORK_ITEM_ID_{dim}"),
+                RegisterType[f"WORK_ITEM_ID_{dim}"],
             ): (
                 f"get_global_id({i}) - get_global_offset({i})"
                 if not self.decompiler_data.is_rdna3
                 else [f"get_global_id({i})", f"get_global_offset({i})"],
 
-                RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_WORK_ITEM_ID")
+                RegisterType[f"WORK_GROUP_ID_{dim}_WORK_ITEM_ID"]
                 if not self.decompiler_data.is_rdna3
-                else [RegisterType.__getattr__(f"GLOBAL_ID_{dim}"), RegisterType.__getattr__(f"GLOBAL_OFFSET_{dim}")],
+                else [RegisterType[f"GLOBAL_ID_{dim}"], RegisterType[f"GLOBAL_OFFSET_{dim}"]],
 
                 RegisterSignType.POSITIVE
                 if not self.decompiler_data.is_rdna3

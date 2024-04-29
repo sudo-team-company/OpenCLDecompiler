@@ -36,13 +36,13 @@ _SUM_SIMPLIFY_COMBINATIONS = [
     *[
         (
             frozenset({
-                RegisterType.__getattr__(f"GLOBAL_OFFSET_{dim}"),
-                RegisterType.__getattr__(f"WORK_ITEM_ID_{dim}"),
-                RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"),
+                RegisterType[f"GLOBAL_OFFSET_{dim}"],
+                RegisterType[f"WORK_ITEM_ID_{dim}"],
+                RegisterType[f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"],
             }),
             (
                 f"get_global_id({i})",
-                RegisterType.__getattr__(f"GLOBAL_ID_{dim}"),
+                RegisterType[f"GLOBAL_ID_{dim}"],
                 RegisterSignType.POSITIVE,
             )
         )
@@ -51,12 +51,12 @@ _SUM_SIMPLIFY_COMBINATIONS = [
     *[
         (
             frozenset({
-                RegisterType.__getattr__(f"GLOBAL_OFFSET_{dim}"),
-                RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_WORK_ITEM_ID"),
+                RegisterType[f"GLOBAL_OFFSET_{dim}"],
+                RegisterType[f"WORK_GROUP_ID_{dim}_WORK_ITEM_ID"],
             }),
             (
                 f"get_global_id({i})",
-                RegisterType.__getattr__(f"GLOBAL_ID_{dim}"),
+                RegisterType[f"GLOBAL_ID_{dim}"],
                 RegisterSignType.POSITIVE,
             )
         )
@@ -65,12 +65,12 @@ _SUM_SIMPLIFY_COMBINATIONS = [
     *[
         (
             frozenset({
-                RegisterType.__getattr__(f"WORK_ITEM_ID_{dim}"),
-                RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_LOCAL_SIZE_OFFSET"),
+                RegisterType[f"WORK_ITEM_ID_{dim}"],
+                RegisterType[f"WORK_GROUP_ID_{dim}_LOCAL_SIZE_OFFSET"],
             }),
             (
                 f"get_global_id({i})",
-                RegisterType.__getattr__(f"GLOBAL_ID_{dim}"),
+                RegisterType[f"GLOBAL_ID_{dim}"],
                 RegisterSignType.POSITIVE,
             )
         )
@@ -79,12 +79,12 @@ _SUM_SIMPLIFY_COMBINATIONS = [
     *[
         (
             frozenset({
-                RegisterType.__getattr__(f"NUM_GROUPS_{dim}"),
-                RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"),
+                RegisterType[f"NUM_GROUPS_{dim}"],
+                RegisterType[f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"],
             }),
             (
                 f"get_global_size({i})",
-                RegisterType.__getattr__(f"GLOBAL_SIZE_{dim}"),
+                RegisterType[f"GLOBAL_SIZE_{dim}"],
                 RegisterSignType.POSITIVE,
             )
         )

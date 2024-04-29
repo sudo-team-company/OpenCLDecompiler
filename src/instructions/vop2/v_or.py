@@ -12,11 +12,11 @@ class VOr(BaseInstruction):
         self._instruction_special_cases = frozenset({
             *(frozenset({
                 size_of_work_groups[i],
-                RegisterType.__getattr__(f"WORK_ITEM_ID_{dim}"),
+                RegisterType[f"WORK_ITEM_ID_{dim}"],
             }) for i, dim in enumerate("XYZ") if i < len(size_of_work_groups)),
             *(frozenset({
-                RegisterType.__getattr__(f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"),
-                RegisterType.__getattr__(f"WORK_ITEM_ID_{dim}"),
+                RegisterType[f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"],
+                RegisterType[f"WORK_ITEM_ID_{dim}"],
             }) for i, dim in enumerate("XYZ") if i < len(size_of_work_groups)),
         })
 
@@ -30,7 +30,7 @@ class VOr(BaseInstruction):
         if self.suffix == 'b32':
             new_value = None
             if is_reg(self.src1) and self.node.state.registers[self.src1].type in \
-                    [RegisterType.__getattr__(f"WORK_ITEM_ID_{dim}") for dim in "XYZ"]:
+                    [RegisterType[f"WORK_ITEM_ID_{dim}"] for dim in "XYZ"]:
                 new_value = make_op(self.node, self.src0, self.src1, " + ", '(ulong)', '(ulong)')
             if self.src0.isdigit() and is_reg(self.src1):
                 src_types = frozenset({
