@@ -12,8 +12,7 @@ class SCmpkLg(BaseInstruction):
     def to_print_unresolved(self):
         if self.suffix == ['u32', 'i32']:
             datatype = f'({make_opencl_type(self.suffix)})'
-            self.decompiler_data.write(
-                f"scc = {datatype}{self.src0} != {datatype}{self.simm16} // {self.instruction[0]}\n")
+            self.decompiler_data.write(f'scc = {datatype}{self.src0} != {datatype}{self.simm16} // {self.name}\n')
             return self.node
         return super().to_print_unresolved()
 

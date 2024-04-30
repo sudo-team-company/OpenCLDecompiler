@@ -10,6 +10,10 @@ class BaseInstruction:
         self.output_string = ""
         self.decompiler_data = DecompilerData()
 
+    @property
+    def name(self) -> str:
+        return self.instruction[0]
+
     def execute(self, flag_of_status):
         if flag_of_status == OperationStatus.TO_PRINT_UNRESOLVED:
             return self.to_print_unresolved()

@@ -21,7 +21,7 @@ class SCmp(BaseInstruction):
         if self.suffix in ['i32', 'u32', 'u64']:
             datatype = f'({make_opencl_type(self.suffix)})'
             self.decompiler_data.write(
-                f'scc = {datatype}{self.ssrc0} {self.sign} {datatype}{self.ssrc1} // {self.instruction[0]}\n')
+                f'scc = {datatype}{self.ssrc0} {self.sign} {datatype}{self.ssrc1} // {self.name}\n')
             return self.node
         return super().to_print_unresolved()
 
