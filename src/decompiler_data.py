@@ -11,6 +11,7 @@ from src.combined_register_content import CombinedRegisterContent
 from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
+from src.node import Node
 from src.opencl_types import make_opencl_type
 from src.operation_register_content import OperationType, OperationRegisterContent
 from src.register import Register, is_reg, is_range, check_and_split_regs, split_range
@@ -161,7 +162,7 @@ def make_new_type_without_modifier(node, register):
     return new_from_reg_type
 
 
-def compare_values(node, to_reg, from_reg0, from_reg1, operation, suffix):
+def compare_values(node: Node, to_reg: str, from_reg0: str, from_reg1: str, operation: str, suffix: str) -> Node:
     datatype = make_opencl_type(suffix)
     datatype = f'({datatype})' if datatype != 'unknown type' else ''
     new_value = make_op(node, from_reg0, from_reg1, f' {operation} ', datatype, datatype)
@@ -171,7 +172,7 @@ def compare_values(node, to_reg, from_reg0, from_reg1, operation, suffix):
         set_reg_value(node, new_value, low, from_regs, suffix, integrity=Integrity.LOW_PART)
         set_reg_value(node, new_value, high, from_regs, suffix, integrity=Integrity.HIGH_PART)
     else:
-        set_reg_value(node, new_value, to_reg, [from_reg0, from_reg1], suffix)
+        set_reg_value(node, new_value, to_reg, from_regs, suffix)
     return node
 
 
