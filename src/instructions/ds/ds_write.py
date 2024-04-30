@@ -29,7 +29,7 @@ class DsWrite(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == "b32":
-            new_value = make_op(self.node, self.addr, "4", " / ", '', '')
+            new_value = make_op(self.node, self.addr, '4', '/')
             name = self.decompiler_data.lds_vars[self.offset][0] + "[" + new_value + "]"
             new_value = self.node.state.registers[self.vdata0].val
             reg_type = self.node.state.registers[self.vdata0].type
@@ -38,7 +38,7 @@ class DsWrite(BaseInstruction):
 
     def to_print(self):
         if self.suffix == "b32":
-            new_value = make_op(self.node, self.addr, "4", " / ", '', '')
+            new_value = make_op(self.node, self.addr, '4', '/')
             name = self.decompiler_data.lds_vars[self.offset][0] + "[" + new_value + "]"
             self.output_string = name + " = " + self.node.state.registers[name].val
             return self.output_string

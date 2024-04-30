@@ -165,7 +165,7 @@ def make_new_type_without_modifier(node, register):
 def compare_values(node: Node, to_reg: str, from_reg0: str, from_reg1: str, operation: str, suffix: str) -> Node:
     datatype = make_opencl_type(suffix)
     datatype = f'({datatype})' if datatype != 'unknown type' else ''
-    new_value = make_op(node, from_reg0, from_reg1, f' {operation} ', datatype, datatype)
+    new_value = make_op(node, from_reg0, from_reg1, operation, datatype, datatype)
     from_regs = [from_reg0, from_reg1]
     if is_range(to_reg):
         low, high = split_range(to_reg)
@@ -283,8 +283,8 @@ def try_get_reg(node, register):
 def change_vals_for_make_op(node, register, reg_type, operation):
     decompiler_data = DecompilerData()
     new_val = check_reg_for_val(node, register)
-    if (operation != " + " or reg_type) and ("-" in new_val or "+" in new_val or "*" in new_val or "/" in new_val):
-        new_val = "(" + new_val + ")"
+    if (operation != "+" or reg_type) and ("-" in new_val or "+" in new_val or "*" in new_val or "/" in new_val):
+        new_val = f'({new_val})'
     if reg_type != '':
         decompiler_data.type_conversion[new_val] = reg_type
     new_val = reg_type + new_val
@@ -296,8 +296,7 @@ def change_vals_for_make_op(node, register, reg_type, operation):
 def make_op(node, register0, register1, operation, type0='', type1=''):
     new_val0 = change_vals_for_make_op(node, register0, type0, operation)
     new_val1 = change_vals_for_make_op(node, register1, type1, operation)
-    new_val = new_val0 + operation + new_val1
-    return new_val
+    return f'{new_val0} {operation} {new_val1}'
 
 
 def evaluate_from_hex(global_data, size, flag):

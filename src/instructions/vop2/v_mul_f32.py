@@ -15,8 +15,7 @@ class VMulF32(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix == 'f32':
-            self.decompiler_data.write(self.vdst + " = as_float(" + self.src0 +
-                                       ") * as_float(" + self.src1 + ") // v_mul_f32\n")
+            self.decompiler_data.write(f"{self.vdst} = (float){self.src0} * (float){self.src1} // {self.name}\n")
             return self.node
         if self.suffix in ['i32_i24', 'u32_u24']:
             v0 = "V0" + str(self.decompiler_data.number_of_v0)
@@ -39,17 +38,17 @@ class VMulF32(BaseInstruction):
                 return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                      reg_type=RegisterType.DIVISION_PT2)
             reg_entire = self.node.state.registers[self.src1].integrity
-            new_value = make_op(self.node, self.src0, self.src1, " * ", 'as_float(', 'as_float(')
+            new_value = make_op(self.node, self.src0, self.src1, '*', '(float)', '(float)')
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                  integrity=reg_entire)
         if self.suffix == 'i32_i24':
             reg_entire = self.node.state.registers[self.src1].integrity
-            new_value = make_op(self.node, self.src0, self.src1, " * ", '(int)', '(int)')
+            new_value = make_op(self.node, self.src0, self.src1, '*', '(int)', '(int)')
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                  integrity=reg_entire)
         if self.suffix == 'u32_u24':
             reg_entire = self.node.state.registers[self.src1].integrity
-            new_value = make_op(self.node, self.src0, self.src1, " * ")
+            new_value = make_op(self.node, self.src0, self.src1, '*')
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                  integrity=reg_entire)
         return super().to_fill_node()

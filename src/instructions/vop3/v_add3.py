@@ -70,8 +70,8 @@ class VAdd3(BaseInstruction):
                 except Exception:
                     pass
 
-            new_value = make_op(self.node, self.src0, self.src1, " + ", '(ulong)', '(ulong)')
-            new_value = make_op(self.node, new_value, self.src2, " + ", '(ulong)', '(ulong)')
+            new_value = make_op(self.node, self.src0, self.src1, '+', '(ulong)', '(ulong)')
+            new_value = make_op(self.node, new_value, self.src2, '+', '(ulong)', '(ulong)')
             reg_type = RegisterType.UNKNOWN
             reg_permutations_for_sum_mapping = [
                 (self.src0, self.src1, self.src2),
@@ -86,7 +86,7 @@ class VAdd3(BaseInstruction):
                     })
                     if src_types in _instruction_internal_mapping_by_types:
                         new_value, _ = _instruction_internal_mapping_by_types[src_types]
-                        new_value = make_op(self.node, new_value, src2, " + ", '(ulong)', '(ulong)')
+                        new_value = make_op(self.node, new_value, src2, '+', '(ulong)', '(ulong)')
             if is_reg(self.src0) and is_reg(self.src1) and is_reg(self.src2):
                 src_types = frozenset({
                     self.node.state.registers[self.src0].get_type(),

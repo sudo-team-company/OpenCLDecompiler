@@ -6,7 +6,7 @@ __kernel void mask_kernel(int n, __global float *x, float mask_num, __global flo
         var0 = mask[(get_global_id(1) + get_global_id(2)*get_global_size(1))*get_global_size(0) + (ulong)get_global_id(0)];
         if ((float)mask_num == (float)var0) {
             var1 = x[(get_global_id(1) + get_global_id(2)*get_global_size(1))*get_global_size(0) + (ulong)get_global_id(0)];
-            x[(get_global_id(1) + get_global_id(2)*get_global_size(1))*get_global_size(0) + (ulong)get_global_id(0)] = as_float(scale) * as_float(var1);
+            x[(get_global_id(1) + get_global_id(2)*get_global_size(1))*get_global_size(0) + (ulong)get_global_id(0)] = (float)scale * (float)var1;
         }
     }
 }

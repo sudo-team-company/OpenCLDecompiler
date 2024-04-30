@@ -45,7 +45,7 @@ class SLshr(BaseInstruction):
                     and pow(2, int(self.ssrc1)) == self.decompiler_data.config_data.size_of_work_groups[2]:
                 new_value = "get_num_groups(2)"
             else:
-                new_value = make_op(self.node, self.ssrc0, str(pow(2, int(self.ssrc1))), " / ")
+                new_value = make_op(self.node, self.ssrc0, str(pow(2, int(self.ssrc1))), '/')
             return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix,
                                  reg_type=reg_type)
         return super().to_fill_node()

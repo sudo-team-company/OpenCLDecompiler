@@ -43,7 +43,7 @@ class VAdd(BaseInstruction):
                     reg_type = self.node.state.registers[self.src1].type
                     data_type = self.node.state.registers[self.src0].data_type
                     data_size, _ = evaluate_size(data_type, True)
-                    new_value = make_op(self.node, self.src1, str(data_size), " / ")
+                    new_value = make_op(self.node, self.src1, str(data_size), '/')
 
                     return set_reg_value(
                         self.node,
@@ -75,7 +75,7 @@ class VAdd(BaseInstruction):
                 except Exception:
                     pass
 
-            new_value = make_op(self.node, self.src0, self.src1, " + ", '(ulong)', '(ulong)')
+            new_value = make_op(self.node, self.src0, self.src1, '+', '(ulong)', '(ulong)')
             src0_reg = is_reg(self.src0)
             src1_reg = is_reg(self.src1)
             data_type = self.suffix
@@ -111,8 +111,8 @@ class VAdd(BaseInstruction):
                     else:
                         data_type = self.node.state.registers[self.src0].data_type
                     data_size, _ = evaluate_size(data_type, True)
-                    new_value = make_op(self.node, self.src1, str(data_size), " / ")
-                    new_value = make_op(self.node, argument, new_value, " + ")
+                    new_value = make_op(self.node, self.src1, str(data_size), '/')
+                    new_value = make_op(self.node, argument, new_value, '+')
                 elif self.node.state.registers[self.src0].type == RegisterType.GLOBAL_DATA_POINTER:
                     data_type = self.node.state.registers[self.src1].data_type
                     name = self.node.state.registers[self.src0].val
@@ -120,8 +120,8 @@ class VAdd(BaseInstruction):
                     if 'bytes' in data_type:
                         position = data_type.find(' ')
                         value = data_type[:position]
-                        new_value = make_op(self.node, self.src1, value, " / ")
-                        new_value = make_op(self.node, name, new_value, " + ")
+                        new_value = make_op(self.node, self.src1, value, '/')
+                        new_value = make_op(self.node, name, new_value, '+')
                         reg_type = RegisterType.GLOBAL_DATA_POINTER
                 elif self.node.state.registers[self.src0].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE and \
                         self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_X:
@@ -150,8 +150,8 @@ class VAdd(BaseInstruction):
                         reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT
                         data_type = self.node.state.registers[self.src0].data_type
                         data_size, _ = evaluate_size(data_type, True)
-                        new_value = make_op(self.node, self.src1, str(data_size), " / ")
-                        new_value = make_op(self.node, self.src0, new_value, " + ")
+                        new_value = make_op(self.node, self.src1, str(data_size), '/')
+                        new_value = make_op(self.node, self.src0, new_value, '+')
                 if src1_reg:
                     reg_type = self.node.state.registers[self.src1].type
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], data_type, reg_type=reg_type,
@@ -167,7 +167,7 @@ class VAdd(BaseInstruction):
             if self.node.state.registers[start_from_src1].val == self.node.state.registers[start_from_src0].val:
                 new_value = self.node.state.registers[start_from_src1].val
             else:
-                new_value = make_op(self.node, start_from_src0, start_from_src1, " + ", '(double)', '(double)')
+                new_value = make_op(self.node, start_from_src0, start_from_src1, '+', '(double)', '(double)')
             return set_reg_value(self.node, new_value, start_to_register,
                                  [start_from_src0, start_from_src1], data_type, reg_type=reg_type)
         return super().to_fill_node()
