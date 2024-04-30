@@ -71,7 +71,7 @@ class VAdd3(BaseInstruction):
                     pass
 
             new_value = make_op(self.node, self.src0, self.src1, '+', '(ulong)', '(ulong)')
-            new_value = make_op(self.node, new_value, self.src2, '+', '(ulong)', '(ulong)')
+            new_value = make_op(self.node, new_value, self.src2, '+', '', '(ulong)')
             reg_type = RegisterType.UNKNOWN
             reg_permutations_for_sum_mapping = [
                 (self.src0, self.src1, self.src2),
