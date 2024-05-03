@@ -91,7 +91,7 @@ class VAddNc(BaseInstruction):
                     reg_type=reg_type,
                 )
 
-            new_value = make_op(self.node, self.src0, self.src1, '+', '(ulong)', '(ulong)')
+            new_value = make_op(self.node, self.src0, self.src1, '+', '(ulong)', '(ulong)', suffix=self.suffix)
             reg_type = RegisterType.UNKNOWN
             if is_reg(self.src0) and is_reg(self.src1):
                 src_types = frozenset({

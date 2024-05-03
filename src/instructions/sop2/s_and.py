@@ -33,7 +33,7 @@ class SAnd(BaseInstruction):
                 ssrc0 = self.node.state.registers[self.ssrc0]
                 return set_reg_value(
                     node=self.node,
-                    new_value=make_op(self.node, self.ssrc0, self.ssrc1, '&&'),
+                    new_value=make_op(self.node, self.ssrc0, self.ssrc1, '&&', suffix=self.suffix),
                     to_reg=self.sdst,
                     from_regs=[self.ssrc0, self.ssrc1],
                     data_type=self.suffix,

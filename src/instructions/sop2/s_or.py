@@ -19,7 +19,7 @@ class SOr(BaseInstruction):
     def to_fill_node(self):
         if self.decompiler_data.is_rdna3:
             if self.suffix.endswith("32"):
-                new_val = make_op(self.node, self.ssrc0, self.ssrc1, '|')
+                new_val = make_op(self.node, self.ssrc0, self.ssrc1, '|', suffix=self.suffix)
                 return set_reg_value(
                     node=self.node,
                     new_value=new_val,
@@ -36,7 +36,7 @@ class SOr(BaseInstruction):
                 self.decompiler_data.exec_registers[self.sdst] = new_exec_condition
                 return set_reg_value(self.node, new_exec_condition.top(), self.sdst, [self.ssrc0, self.ssrc1], None,
                                      exec_condition=new_exec_condition)
-            new_value = make_op(self.node, self.ssrc0, self.ssrc1, '||')
+            new_value = make_op(self.node, self.ssrc0, self.ssrc1, '||', suffix=self.suffix)
             if self.ssrc1 not in self.node.state.registers:
                 return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix)
             reg_entire = self.node.state.registers[self.ssrc1].integrity

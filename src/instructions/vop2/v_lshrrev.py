@@ -23,7 +23,7 @@ class VLshrrev(BaseInstruction):
         if self.suffix in ['b32']:
             if is_reg(self.src1):
                 def default_behaviour():
-                    new_value = make_op(self.node, self.src1, str(pow(2, int(self.src0))), '//')
+                    new_value = make_op(self.node, self.src1, str(pow(2, int(self.src0))), '//', suffix=self.suffix)
                     reg_type = self.node.state.registers[self.src1].type
 
                     return set_reg_value(

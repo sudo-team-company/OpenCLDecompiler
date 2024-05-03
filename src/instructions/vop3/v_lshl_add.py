@@ -30,8 +30,8 @@ class VLshlAdd(BaseInstruction):
 
         if self.suffix == 'u32':
             if self.src1.isdigit():
-                new_value = make_op(self.node, self.src0, str(int(pow(2, int(self.src1)))), '*')
-                new_value = make_op(self.node, new_value, self.src2, '+', '(ulong)', '(ulong)')
+                new_value = make_op(self.node, self.src0, str(int(pow(2, int(self.src1)))), '*', suffix=self.suffix)
+                new_value = make_op(self.node, new_value, self.src2, '+', '(ulong)', '(ulong)', suffix=self.suffix)
                 return set_reg_value(
                     node=self.node,
                     new_value=new_value,

@@ -31,21 +31,21 @@ class VOr(BaseInstruction):
             new_value = None
             if is_reg(self.src1) and self.node.state.registers[self.src1].type in \
                     [RegisterType[f"WORK_ITEM_ID_{dim}"] for dim in "XYZ"]:
-                new_value = make_op(self.node, self.src0, self.src1, '+', '(ulong)', '(ulong)')
+                new_value = make_op(self.node, self.src0, self.src1, '+', '(ulong)', '(ulong)', suffix=self.suffix)
             if self.src0.isdigit() and is_reg(self.src1):
                 src_types = frozenset({
                     int(self.src0),
                     self.node.state.registers[self.src1].type,
                 })
                 if src_types in self._instruction_special_cases:
-                    new_value = make_op(self.node, self.src0, self.src1, '+', '(ulong)', '(ulong)')
+                    new_value = make_op(self.node, self.src0, self.src1, '+', '(ulong)', '(ulong)', suffix=self.suffix)
             if is_reg(self.src0) and is_reg(self.src1):
                 src_types = frozenset({
                     self.node.state.registers[self.src0].type,
                     self.node.state.registers[self.src1].type,
                 })
                 if src_types in self._instruction_special_cases:
-                    new_value = make_op(self.node, self.src0, self.src1, '+', '(ulong)', '(ulong)')
+                    new_value = make_op(self.node, self.src0, self.src1, '+', '(ulong)', '(ulong)', suffix=self.suffix)
             if new_value is not None:
                 return set_reg_value(
                     node=self.node,

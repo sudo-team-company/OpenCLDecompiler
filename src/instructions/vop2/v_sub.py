@@ -45,9 +45,9 @@ class VSub(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'u32':
-            new_val = make_op(self.node, self.src0, self.src1, '-', '(ulong)')
+            new_val = make_op(self.node, self.src0, self.src1, '-', '(ulong)', suffix=self.suffix)
             return v_sub_fill_node(self.node, self.src0, self.src1, self.vdst, new_val, self.suffix)
         if self.suffix == 'f32':
-            new_val = make_op(self.node, self.src0, self.src1, '-', '(float)', '(float)')
+            new_val = make_op(self.node, self.src0, self.src1, '-', '(float)', '(float)', suffix=self.suffix)
             return v_sub_fill_node(self.node, self.src0, self.src1, self.vdst, new_val, self.suffix)
         return super().to_fill_node()

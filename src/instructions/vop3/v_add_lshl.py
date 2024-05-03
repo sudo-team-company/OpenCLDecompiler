@@ -41,7 +41,7 @@ class VAddLshl(BaseInstruction):
                     })
                     if src_types in _instruction_internal_mapping_by_types:
                         new_value, _ = _instruction_internal_mapping_by_types[src_types]
-                        new_value = make_op(self.node, new_value, str(pow(2, int(self.src2))), '*')
+                        new_value = make_op(self.node, new_value, str(pow(2, int(self.src2))), '*', suffix=self.suffix)
                         return set_reg_value(
                             node=self.node,
                             new_value=new_value,
@@ -53,7 +53,8 @@ class VAddLshl(BaseInstruction):
                     new_reg = self.node.state.registers[self.src0] + self.node.state.registers[self.src1]
 
                     if not isinstance(new_reg.register_content, OperationRegisterContent):
-                        new_value = make_op(self.node, new_reg.val, str(pow(2, int(self.src2))), '*')
+                        new_value = make_op(self.node, new_reg.val, str(pow(2, int(self.src2))), '*',
+                                            suffix=self.suffix)
                         return set_reg_value(
                             node=self.node,
                             new_value=new_value,

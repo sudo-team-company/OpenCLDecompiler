@@ -36,15 +36,18 @@ class VAnd(BaseInstruction):
                     reg_type = self.node.state.registers[self.src1].type
                 elif self.node.state.registers[self.src1].type == RegisterType.GLOBAL_SIZE_X and \
                         size_of_work_groups[0] == -int(self.src0):
-                    new_value = make_op(self.node, "get_num_groups(0)", str(size_of_work_groups[0]), '*')
+                    new_value = make_op(self.node, "get_num_groups(0)", str(size_of_work_groups[0]), '*',
+                                        suffix=self.suffix)
                     reg_type = RegisterType.UNKNOWN
                 elif self.node.state.registers[self.src1].type == RegisterType.GLOBAL_SIZE_Y and \
                         size_of_work_groups[1] == -int(self.src0):
-                    new_value = make_op(self.node, "get_num_groups(1)", str(size_of_work_groups[1]), '*')
+                    new_value = make_op(self.node, "get_num_groups(1)", str(size_of_work_groups[1]), '*',
+                                        suffix=self.suffix)
                     reg_type = RegisterType.UNKNOWN
                 elif self.node.state.registers[self.src1].type == RegisterType.GLOBAL_SIZE_Z and \
                         size_of_work_groups[2] == -int(self.src0):
-                    new_value = make_op(self.node, "get_num_groups(2)", str(size_of_work_groups[2]), '*')
+                    new_value = make_op(self.node, "get_num_groups(2)", str(size_of_work_groups[2]), '*',
+                                        suffix=self.suffix)
                     reg_type = RegisterType.UNKNOWN
                 elif isinstance(self.node.state.registers[self.src1].register_content, CombinedRegisterContent) and \
                         isinstance(self.src0, str) and self.src0.startswith("0x"):

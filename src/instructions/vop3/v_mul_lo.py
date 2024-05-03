@@ -30,7 +30,7 @@ class VMulLo(BaseInstruction):
                                      reg_type=RegisterType.DIVISION_PT5)
             if self.src1 in self.node.state.registers and \
                     self.node.state.registers[self.src1].type == RegisterType.DIVISION_PT6:
-                new_value = make_op(self.node, self.src0, self.src1, '/')
+                new_value = make_op(self.node, self.src0, self.src1, '/', suffix=self.suffix)
                 return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                      reg_type=RegisterType.DIVISION_PT7)
             if self.src0 in self.node.state.registers and \
@@ -39,7 +39,7 @@ class VMulLo(BaseInstruction):
                 return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                      reg_type=RegisterType.DIVISION_PASS)
             reg_entire = self.node.state.registers[self.src0].integrity
-            new_value = make_op(self.node, self.src0, self.src1, '*')
+            new_value = make_op(self.node, self.src0, self.src1, '*', suffix=self.suffix)
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                  integrity=reg_entire)
         return super().to_fill_node()
