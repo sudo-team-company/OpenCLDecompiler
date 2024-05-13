@@ -145,7 +145,7 @@ def process_unrolled_loops():  # pylint: disable=R0914
                         return
 
             if len(progressions) == 0:
-                first, last, diff = 0, len(chosen), f'i++'
+                first, last, diff = 0, len(chosen), 'i++'
             else:
                 constants = progressions[0]
                 first = constants[0]
