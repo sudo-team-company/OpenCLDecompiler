@@ -2,7 +2,6 @@ from src.decompiler_data import DecompilerData
 from src.node import Node
 from src.region_type import RegionType
 from src.regions.region import Region
-from src.register import is_reg, is_pair
 
 
 class Vertex:
