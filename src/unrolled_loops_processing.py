@@ -133,8 +133,6 @@ def process_unrolled_loops():  # pylint: disable=R0914
                         progressions[idx].append(arg)
                         idx += 1
 
-            progressions = filter(lambda es: not all(map(is_reg, es)), progressions)
-            progressions = filter(lambda es: not all(map(is_pair, es)), progressions)
             progressions = filter(lambda es: not all(e == es[0] for e in es), progressions)
             progressions = map(lambda es: list(map(to_int, es)), progressions)
             progressions = list(progressions)
