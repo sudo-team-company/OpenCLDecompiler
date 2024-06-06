@@ -6,17 +6,19 @@ from typing import Optional, Union
 
 import sympy
 
-from src.combined_register_content import CombinedRegisterContent
 from src import utils
+from src.combined_register_content import CombinedRegisterContent
 from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
+from src.node import Node
+from src.opencl_types import make_opencl_type
+from src.operation_register_content import OperationType, OperationRegisterContent
 from src.register import Register, is_reg, is_range, check_and_split_regs, split_range
 from src.register_content import RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 from src.state import State
 from src.utils import ConfigData, DriverFormat, Singleton
-from src.operation_register_content import OperationType, OperationRegisterContent
 
 
 def set_reg_value(  # pylint: disable=R0913
@@ -160,15 +162,17 @@ def make_new_type_without_modifier(node, register):
     return new_from_reg_type
 
 
-def compare_values(node, to_reg, from_reg0, from_reg1, type0, type1, operation, suffix):
-    new_value = make_op(node, from_reg0, from_reg1, operation, type0, type1)
+def compare_values(node: Node, to_reg: str, from_reg0: str, from_reg1: str, operation: str, suffix: str) -> Node:
+    datatype = make_opencl_type(suffix)
+    datatype = f'({datatype})' if datatype != 'unknown type' else ''
+    new_value = make_op(node, from_reg0, from_reg1, operation, datatype, datatype, suffix=suffix)
     from_regs = [from_reg0, from_reg1]
     if is_range(to_reg):
         low, high = split_range(to_reg)
         set_reg_value(node, new_value, low, from_regs, suffix, integrity=Integrity.LOW_PART)
         set_reg_value(node, new_value, high, from_regs, suffix, integrity=Integrity.HIGH_PART)
     else:
-        set_reg_value(node, new_value, to_reg, [from_reg0, from_reg1], suffix)
+        set_reg_value(node, new_value, to_reg, from_regs, suffix)
     return node
 
 
@@ -276,11 +280,11 @@ def try_get_reg(node, register):
     raise NotImplementedError
 
 
-def change_vals_for_make_op(node, register, reg_type, operation):
+def change_vals_for_make_op(node, register, reg_type, operation, _suffix):
     decompiler_data = DecompilerData()
     new_val = check_reg_for_val(node, register)
-    if (operation != " + " or reg_type) and ("-" in new_val or "+" in new_val or "*" in new_val or "/" in new_val):
-        new_val = "(" + new_val + ")"
+    if (operation != "+" or reg_type) and ("-" in new_val or "+" in new_val or "*" in new_val or "/" in new_val):
+        new_val = f'({new_val})'
     if reg_type != '':
         decompiler_data.type_conversion[new_val] = reg_type
     new_val = reg_type + new_val
@@ -289,11 +293,10 @@ def change_vals_for_make_op(node, register, reg_type, operation):
     return new_val
 
 
-def make_op(node, register0, register1, operation, type0='', type1=''):
-    new_val0 = change_vals_for_make_op(node, register0, type0, operation)
-    new_val1 = change_vals_for_make_op(node, register1, type1, operation)
-    new_val = new_val0 + operation + new_val1
-    return new_val
+def make_op(node, register0, register1, operation, type0='', type1='', suffix=''):
+    new_val0 = change_vals_for_make_op(node, register0, type0, operation, suffix)
+    new_val1 = change_vals_for_make_op(node, register1, type1, operation, suffix)
+    return f'{new_val0} {operation} {new_val1}'
 
 
 def evaluate_from_hex(global_data, size, flag):

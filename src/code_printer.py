@@ -46,6 +46,8 @@ def write_global_data():
             list_of_gdata_values = evaluate_from_hex(decompiler_data.global_data[key], 8, '<d')
         elif var in ('int2', 'int4', 'int8'):
             list_of_gdata_values = evaluate_from_hex(decompiler_data.global_data[key], 4, '<i')
+        else:
+            raise NotImplementedError
         decompiler_data.write("__constant " + var + " " + key + "[] = {")
         if var in ('int2', 'int4', 'int8'):
             num = int(var[-1])

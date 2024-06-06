@@ -35,7 +35,7 @@ class SAddc(BaseInstruction):
                 )
 
         if self.suffix == 'u32':
-            new_value = make_op(self.node, self.ssrc0, self.ssrc1, " + ", '(ulong)', '(ulong)')
+            new_value = make_op(self.node, self.ssrc0, self.ssrc1, '+', '(ulong)', '(ulong)', suffix=self.suffix)
             ssrc0_reg = is_sgpr(self.ssrc0)
             ssrc1_reg = is_sgpr(self.ssrc1)
             reg_type = RegisterType.INT32
@@ -49,8 +49,8 @@ class SAddc(BaseInstruction):
             if ssrc0_reg:
                 if self.node.state.registers[self.ssrc0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
                     if self.node.state.registers[self.ssrc0].data_type in ['u32', 'i32', 'gu32', 'gi32']:
-                        new_value = make_op(self.node, self.ssrc1, "4", " / ", '', '')
-                        new_value = make_op(self.node, self.ssrc0, new_value, " + ", '', '')
+                        new_value = make_op(self.node, self.ssrc1, '4', '/', suffix=self.suffix)
+                        new_value = make_op(self.node, self.ssrc0, new_value, '+', suffix=self.suffix)
                     if self.ssrc0 == self.sdst:
                         data_type = self.node.parent[0].state.registers[self.ssrc0].data_type
                     else:

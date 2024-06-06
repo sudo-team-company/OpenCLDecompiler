@@ -23,7 +23,7 @@ class DsRead(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == "b32":
-            new_value = make_op(self.node, self.addr, "4", " / ")
+            new_value = make_op(self.node, self.addr, '4', '/', suffix=self.suffix)
             name = self.decompiler_data.lds_vars[self.offset][0] + "[" + new_value + "]"
             if self.node.state.registers.get(name):
                 reg_type = self.node.state.registers[name].type

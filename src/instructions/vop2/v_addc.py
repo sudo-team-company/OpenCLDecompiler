@@ -46,7 +46,7 @@ class VAddc(BaseInstruction):
                 )
 
         if self.suffix == 'u32':
-            new_value = make_op(self.node, self.src0, self.src1, " + ", '(ulong)', '(ulong)')
+            new_value = make_op(self.node, self.src0, self.src1, '+', '(ulong)', '(ulong)', suffix=self.suffix)
             src0_reg = is_reg(self.src0)
             src1_reg = is_reg(self.src1)
             reg_type = RegisterType.UNKNOWN

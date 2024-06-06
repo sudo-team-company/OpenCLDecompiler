@@ -9,9 +9,6 @@ from src.instructions.flat.flat_load import FlatLoad
 from src.instructions.flat.flat_store import FlatStore
 from src.instructions.flat.global_load import GlobalLoad
 from src.instructions.flat.global_store import GlobalStore
-from src.instructions.sop1.s_sext import SSext
-from src.instructions.sopc.s_cmp_le import SCmpLe
-from src.instructions.sopp.s_delay_alu import SDelayAlu
 from src.instructions.smem.s_load import SLoad
 from src.instructions.sop1.s_and_saveexec import SAndSaveexec
 from src.instructions.sop1.s_getpc import SGetpc
@@ -19,6 +16,7 @@ from src.instructions.sop1.s_mov import SMov
 from src.instructions.sop1.s_not import SNot
 from src.instructions.sop1.s_or_saveexec import SOrSaveexec
 from src.instructions.sop1.s_setpc import SSetpc
+from src.instructions.sop1.s_sext import SSext
 from src.instructions.sop1.s_swappc import SSwappc
 from src.instructions.sop2.s_add import SAdd
 from src.instructions.sop2.s_addc import SAddc
@@ -34,12 +32,7 @@ from src.instructions.sop2.s_mul import SMul
 from src.instructions.sop2.s_or import SOr
 from src.instructions.sop2.s_sub import SSub
 from src.instructions.sop2.s_xor import SXor
-from src.instructions.sopc.s_cmp_eq import SCmpEq
-from src.instructions.sopc.s_cmp_ge import SCmpGe
-from src.instructions.sopc.s_cmp_gt import SCmpGt
-from src.instructions.sopc.s_cmp_lg import SCmpLg
-from src.instructions.sopc.s_cmp_lt import SCmpLt
-from src.instructions.sopc.s_set_gpr_idx_on import SSetGprIdxOn
+from src.instructions.sopc import SCmpEq, SCmpGe, SCmpGt, SCmpLe, SCmpLg, SCmpLt
 from src.instructions.sopk.s_addk import SAddK
 from src.instructions.sopk.s_cmpk_lg import SCmpkLg
 from src.instructions.sopk.s_movk import SMovk
@@ -53,10 +46,10 @@ from src.instructions.sopp.s_cbranch_scc1 import SCbranchScc1
 from src.instructions.sopp.s_cbranch_vccnz import SCbranchVccnz
 from src.instructions.sopp.s_cbranch_vccz import SCbranchVccz
 from src.instructions.sopp.s_clause import SClause
+from src.instructions.sopp.s_delay_alu import SDelayAlu
 from src.instructions.sopp.s_endpgm import SEndpgm
 from src.instructions.sopp.s_nop import SNop
 from src.instructions.sopp.s_sendmsg import SSendmsg
-from src.instructions.sopp.s_set_gpr_idx_off import SSetGprIdxOff
 from src.instructions.sopp.s_waitcnt import SWaitcnt
 from src.instructions.vop1.v_cvt import VCvt
 from src.instructions.vop1.v_mov import VMov
@@ -154,8 +147,6 @@ instruction_dict = {'ds_add': DsAdd,
                     's_not': SNot,
                     's_nop': SNop,
                     's_or': SOr,
-                    's_set_gpr_idx_on': SSetGprIdxOn,
-                    's_set_gpr_idx_off': SSetGprIdxOff,
                     's_setpc': SSetpc,
                     's_setreg': SSetreg,
                     's_sub': SSub,

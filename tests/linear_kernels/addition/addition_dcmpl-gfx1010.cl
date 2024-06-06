@@ -699,7 +699,7 @@ void add_get_work_dim(int x, __global uint *data)
 __kernel __attribute__((reqd_work_group_size(8, 8, 1)))
 void add_x_8_8(int x, __global uint *data)
 {
-    data[get_global_id(0)] = (ulong)((ulong)((ulong)get_global_offset(1) + (ulong)x) + (ulong)(get_group_id(1) * 8)) + (ulong)get_local_id(1);
+    data[get_global_id(0)] = (ulong)((ulong)get_global_offset(1) + (ulong)x) + (ulong)(get_group_id(1) * 8) + (ulong)get_local_id(1);
 }
 
 __kernel __attribute__((reqd_work_group_size(8, 8, 1)))
@@ -747,7 +747,7 @@ void add_get_num_groups_8_8(int x, __global uint *data)
 __kernel __attribute__((reqd_work_group_size(8, 8, 1)))
 void add_get_work_dim_8_8(int x, __global uint *data)
 {
-    data[get_global_id(0)] = (ulong)((ulong)((ulong)get_global_offset(1) + (ulong)get_work_dim()) + (ulong)(get_group_id(1) * 8)) + (ulong)get_local_id(1);
+    data[get_global_id(0)] = (ulong)((ulong)get_global_offset(1) + (ulong)get_work_dim()) + (ulong)(get_group_id(1) * 8) + (ulong)get_local_id(1);
 }
 
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
@@ -1451,7 +1451,7 @@ void add_long_get_work_dim(int x, __global ulong *data)
 __kernel __attribute__((reqd_work_group_size(8, 8, 1)))
 void add_long_x_8_8(int x, __global ulong *data)
 {
-    data[get_global_id(0)] = (ulong)((ulong)((ulong)get_global_offset(1) + (ulong)x) + (ulong)(get_group_id(1) * 8)) + (ulong)get_local_id(1);
+    data[get_global_id(0)] = (ulong)((ulong)get_global_offset(1) + (ulong)x) + (ulong)(get_group_id(1) * 8) + (ulong)get_local_id(1);
 }
 
 __kernel __attribute__((reqd_work_group_size(8, 8, 1)))
@@ -1499,7 +1499,7 @@ void add_long_get_num_groups_8_8(int x, __global ulong *data)
 __kernel __attribute__((reqd_work_group_size(8, 8, 1)))
 void add_long_get_work_dim_8_8(int x, __global ulong *data)
 {
-    data[get_global_id(0)] = (ulong)((ulong)((ulong)get_global_offset(1) + (ulong)get_work_dim()) + (ulong)(get_group_id(1) * 8)) + (ulong)get_local_id(1);
+    data[get_global_id(0)] = (ulong)((ulong)get_global_offset(1) + (ulong)get_work_dim()) + (ulong)(get_group_id(1) * 8) + (ulong)get_local_id(1);
 }
 
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
@@ -2203,7 +2203,7 @@ void add_char_get_work_dim(int x, __global uchar *data)
 __kernel __attribute__((reqd_work_group_size(8, 8, 1)))
 void add_char_x_8_8(int x, __global uchar *data)
 {
-    data[get_global_id(0)] = (ulong)((ulong)((ulong)get_global_offset(1) + (ulong)x) + (ulong)(get_group_id(1) * 8)) + (ulong)get_local_id(1);
+    data[get_global_id(0)] = (ulong)((ulong)get_global_offset(1) + (ulong)x) + (ulong)(get_group_id(1) * 8) + (ulong)get_local_id(1);
 }
 
 __kernel __attribute__((reqd_work_group_size(8, 8, 1)))
@@ -2251,5 +2251,5 @@ void add_char_get_num_groups_8_8(int x, __global uchar *data)
 __kernel __attribute__((reqd_work_group_size(8, 8, 1)))
 void add_char_get_work_dim_8_8(int x, __global uchar *data)
 {
-    data[get_global_id(0)] = (ulong)((ulong)((ulong)get_global_offset(1) + (ulong)get_work_dim()) + (ulong)(get_group_id(1) * 8)) + (ulong)get_local_id(1);
+    data[get_global_id(0)] = (ulong)((ulong)get_global_offset(1) + (ulong)get_work_dim()) + (ulong)(get_group_id(1) * 8) + (ulong)get_local_id(1);
 }

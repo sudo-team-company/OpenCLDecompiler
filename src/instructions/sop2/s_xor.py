@@ -29,7 +29,7 @@ class SXor(BaseInstruction):
                 reg_entire = self.node.state.registers[self.ssrc1].integrity
             if self.node.state.registers.get(self.ssrc0) is not None:
                 reg_entire = self.node.state.registers[self.ssrc0].integrity
-            new_value = make_op(self.node, self.ssrc0, self.ssrc1, " ^ ")
+            new_value = make_op(self.node, self.ssrc0, self.ssrc1, '^', suffix=self.suffix)
             return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix,
                                  integrity=reg_entire)
         return super().to_fill_node()

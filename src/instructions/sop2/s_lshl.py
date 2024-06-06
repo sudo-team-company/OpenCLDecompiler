@@ -24,7 +24,7 @@ class SLshl(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'b32':
-            new_value = make_op(self.node, self.ssrc0, str(pow(2, int(self.ssrc1))), " * ")
+            new_value = make_op(self.node, self.ssrc0, str(pow(2, int(self.ssrc1))), '*', suffix=self.suffix)
             if self.node.state.registers[self.ssrc0].type == RegisterType.WORK_GROUP_ID_X:
                 reg_type = RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE
             elif self.node.state.registers[self.ssrc0].type == RegisterType.WORK_GROUP_ID_Y:
@@ -38,8 +38,8 @@ class SLshl(BaseInstruction):
         if self.suffix == 'b64':
             start_to_register, end_to_register = check_and_split_regs(self.sdst)
             start_from_register, end_from_register = check_and_split_regs(self.ssrc0)
-            new_value0 = make_op(self.node, start_from_register, str(pow(2, int(self.ssrc1))), " * ")
-            new_value1 = make_op(self.node, end_from_register, str(pow(2, int(self.ssrc1))), " * ")
+            new_value0 = make_op(self.node, start_from_register, str(pow(2, int(self.ssrc1))), '*', suffix=self.suffix)
+            new_value1 = make_op(self.node, end_from_register, str(pow(2, int(self.ssrc1))), '*', suffix=self.suffix)
             reg_type0 = self.node.state.registers[start_from_register].type
             reg_type1 = self.node.state.registers[end_from_register].type
             data_type = self.suffix

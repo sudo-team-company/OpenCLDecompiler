@@ -25,15 +25,15 @@ class VLshlrev(BaseInstruction):
                 new_value = '0'
                 reg_type = RegisterType.INT32
             else:
-                new_value = make_op(self.node, self.src1, str(pow(2, int(self.src0))), " * ")
+                new_value = make_op(self.node, self.src1, str(pow(2, int(self.src0))), '*', suffix=self.suffix)
                 reg_type = self.node.state.registers[self.src1].type
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                  reg_type=reg_type)
         if self.suffix == 'b64':
             start_to_register, end_to_register = check_and_split_regs(self.vdst)
             start_from_register, end_from_register = check_and_split_regs(self.src1)
-            new_value0 = make_op(self.node, start_from_register, str(pow(2, int(self.src0))), " * ")
-            new_value1 = make_op(self.node, end_from_register, str(pow(2, int(self.src0))), " * ")
+            new_value0 = make_op(self.node, start_from_register, str(pow(2, int(self.src0))), '*', suffix=self.suffix)
+            new_value1 = make_op(self.node, end_from_register, str(pow(2, int(self.src0))), '*', suffix=self.suffix)
             src1_flag = is_reg(start_from_register)
             src0_flag = is_reg(self.src0)
             reg_entire0 = Integrity.LOW_PART

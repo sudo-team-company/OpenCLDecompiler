@@ -14,8 +14,13 @@ class Vertex:
         self.merged_vertices: list[int] = [num]
         self.merged_child: list[int] = []
 
+    @property
     def instruction(self) -> str:
         return self.node.instruction[0]
+
+    @property
+    def src_args(self) -> list[str]:
+        return self.node.instruction[2:]
 
     def reset(self):
         self.used = False
@@ -26,6 +31,16 @@ class Vertex:
 def reset_vertices(vertices: list[Vertex]):
     for vertex in vertices:
         vertex.reset()
+
+
+def to_int(x: str) -> int | None:
+    try:
+        return int(x)
+    except ValueError:
+        try:
+            return int(x, 16)
+        except ValueError:
+            return None
 
 
 def process_unrolled_loops():  # pylint: disable=R0914
@@ -59,7 +74,7 @@ def process_unrolled_loops():  # pylint: disable=R0914
 
         counters: dict[str, int] = {}
         for i, vertex in enumerate(vertices):
-            instruction: str = vertex.instruction()
+            instruction: str = vertex.instruction
             if instruction == 's_nop':
                 continue
             counters[instruction] = counters.get(instruction, 0) + 1
@@ -72,7 +87,7 @@ def process_unrolled_loops():  # pylint: disable=R0914
             reset_vertices(vertices)
             chosen = []
             for i, vertex in enumerate(vertices):
-                if vertex.instruction() == name:
+                if vertex.instruction == name:
                     chosen.append(i)
                     vertex.used = True
 
@@ -84,7 +99,7 @@ def process_unrolled_loops():  # pylint: disable=R0914
                         child: Vertex = vertices[c]
                         if child.used:
                             continue
-                        instruction: str = child.instruction()
+                        instruction: str = child.instruction
                         if instruction == 's_nop':
                             continue
                         counters2[(instruction, j)] = counters2.get((instruction, j), 0) + 1
@@ -96,7 +111,7 @@ def process_unrolled_loops():  # pylint: disable=R0914
                     break
 
                 name2, child_num2, _ = counters2[0]
-                chosen = [i for i in chosen if vertices[vertices[i].merged_child[child_num2]].instruction() == name2]
+                chosen = [i for i in chosen if vertices[vertices[i].merged_child[child_num2]].instruction == name2]
                 for i in chosen:
                     parent: Vertex = vertices[i]
                     child: Vertex = vertices[parent.merged_child[child_num2]]
@@ -106,36 +121,38 @@ def process_unrolled_loops():  # pylint: disable=R0914
             if len(chosen) > unrolling_limit:
                 break
         if len(chosen) > unrolling_limit:
-            constants = []
+            progressions = []
+            for v in map(vertices.__getitem__, [chosen[0], *vertices[chosen[0]].merged_vertices]):
+                progressions.extend([] for _ in v.src_args)
             for i in chosen:
-                merged: list[int] = [i] + vertices[i].merged_vertices
-                merged: list[Vertex] = [vertices[j] for j in merged]
-                for v in merged:
+                idx = 0
+                for v in map(vertices.__getitem__, [i, *vertices[i].merged_vertices]):
                     v.node.exclude_unrolled = True
-                    for a in range(2, len(v.node.instruction)):
-                        arg = v.node.instruction[a]
-                        try:
-                            arg = int(arg)
-                            constants.append(arg)
-                            continue
-                        except ValueError:
-                            pass
-                        try:
-                            arg = int(arg, 16)
-                            constants.append(arg)
-                            continue
-                        except ValueError:
-                            pass
+                    for arg in v.src_args:
+                        progressions[idx].append(arg)
+                        idx += 1
 
-            if len(constants) < 2:
-                return
-            diff = constants[1] - constants[0]
-            if diff < 0:
-                diff = f'i = i - {-diff}'
+            progressions = filter(lambda es: not all(e == es[0] for e in es), progressions)
+            progressions = map(lambda es: list(map(to_int, es)), progressions)
+            progressions = list(progressions)
+
+            for es in progressions:
+                for e in es:
+                    if e is None:
+                        return
+
+            if len(progressions) == 0:
+                first, last, diff = 0, len(chosen), 'i++'
             else:
-                diff = f'i = i + {diff}'
-            first = constants[0]
-            last = constants[-1]
+                constants = progressions[0]
+                first = constants[0]
+                last = constants[-1]
+                diff = constants[1] - constants[0]
+                if diff < 0:
+                    diff = f'i = i - {-diff}'
+                else:
+                    diff = f'i = i + {diff}'
+
             dst = vertices[vertices[chosen[-1]].merged_vertices[-1]].node.instruction[1]
 
             cur = decompiler_data.improve_cfg.start
@@ -145,7 +162,8 @@ def process_unrolled_loops():  # pylint: disable=R0914
             before = cur.state.registers[dst].val
             inside: str = vertices[vertices[chosen[0]].merged_vertices[-1]].node.state.registers[dst].val
             inside = inside.replace(f"({before})", 'acc').replace(f"{before}", 'acc')
-            inside = inside.replace(str(constants[0]), 'i')
+            if len(progressions) != 0:
+                inside = inside.replace(str(progressions[0][0]), 'i')
             while cur != end and cur.children[0].exclude_unrolled:
                 child: Node = cur.children[0]
                 cur.children = child.children

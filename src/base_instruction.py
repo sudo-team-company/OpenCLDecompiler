@@ -1,14 +1,22 @@
-from src.decompiler_data import DecompilerData
-from src.operation_status import OperationStatus
+from .decompiler_data import DecompilerData
+from .node import Node
+from .operation_status import OperationStatus
 
 
 class BaseInstruction:
-    def __init__(self, node, suffix):
-        self.node = node
-        self.instruction = node.instruction
-        self.suffix = suffix
-        self.output_string = ""
+    def __init__(self, node: Node, suffix: str):
+        self.node: Node = node
+        self.suffix: str = suffix
+        self.output_string: str = ''
         self.decompiler_data = DecompilerData()
+
+    @property
+    def instruction(self) -> list[str]:
+        return self.node.instruction
+
+    @property
+    def name(self) -> str:
+        return self.instruction[0]
 
     def execute(self, flag_of_status):
         if flag_of_status == OperationStatus.TO_PRINT_UNRESOLVED:

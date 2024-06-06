@@ -19,7 +19,7 @@ class SMul(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'i32':
-            new_value = make_op(self.node, self.ssrc0, self.ssrc1, " * ")
+            new_value = make_op(self.node, self.ssrc0, self.ssrc1, '*', suffix=self.suffix)
             ssrc0_reg = is_sgpr(self.ssrc0)
             ssrc1_reg = is_sgpr(self.ssrc1)
             reg_type = RegisterType.UNKNOWN
