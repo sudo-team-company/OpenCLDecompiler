@@ -1,10 +1,10 @@
 import os
-import subprocess
 from pathlib import Path
 from typing import Optional
 
 import pytest
 
+from src.parser_for_instructions import main
 from tests.disasm import DISASMS
 
 
@@ -27,31 +27,17 @@ def template(
 ):
     if mcpu:
         mcpu = f'-{mcpu}'
-    path_to_exec_file = str(Path("..") / "src" / "parser_for_instructions.py")
     test_root = Path(".") / path_to_dir / dir_name
     path_to_bin = str(test_root / f"{dir_name}{mcpu}.bin")
     path_to_asm = str(test_root / f"{dir_name}{mcpu}.asm")
     path_to_cl = str(test_root / f"{dir_name}_dcmpl{mcpu}.cl")
-
-    flag_option = ["-f", flag] if flag else []
-    new_parser_option = ["--new-parser"] if is_new_parser else []
 
     DISASMS.get(disasm)(**{
         "path_to_bin": path_to_bin,
         "path_to_asm": path_to_asm,
     }).invoke()
 
-    subprocess.run(
-        [
-            "python",
-            path_to_exec_file,
-            "-i",
-            path_to_asm,
-            "-o",
-            path_to_cl
-        ] + flag_option + new_parser_option,
-        check=True
-    )
+    main(path_to_asm, path_to_cl, flag if flag else 'AUTO_DECOMPILATION', None, is_new_parser)
 
     hands = test_root / f"{dir_name}_hands.cl"
     if "gfx" in mcpu and (test_root / f"{dir_name}_hands{mcpu}.cl").exists():

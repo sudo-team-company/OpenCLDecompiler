@@ -1,17 +1,17 @@
 # OpenCLDecompiler
 
-![CPU](https://img.shields.io/badge/GPU-AMD_GCN-red) 
-![CPU](https://img.shields.io/badge/GPU-AMD_RDNA-red) 
-![Python](https://img.shields.io/badge/python-v3.10-blue) 
-![GitHub repo size](https://img.shields.io/github/repo-size/sudo-team-company/OpenCLDecompiler) 
-![GitHub last commit](https://img.shields.io/github/last-commit/sudo-team-company/OpenCLDecompiler/develop) 
-![Test](https://github.com/sudo-team-company/OpenCLDecompiler/workflows/Test/badge.svg?branch=develop) 
+![CPU](https://img.shields.io/badge/GPU-AMD_GCN-red)
+![CPU](https://img.shields.io/badge/GPU-AMD_RDNA-red)
+![Python](https://img.shields.io/badge/python-v3.12-blue)
+![GitHub repo size](https://img.shields.io/github/repo-size/sudo-team-company/OpenCLDecompiler)
+![GitHub last commit](https://img.shields.io/github/last-commit/sudo-team-company/OpenCLDecompiler/develop)
+![Test](https://github.com/sudo-team-company/OpenCLDecompiler/workflows/Test/badge.svg?branch=develop)
 ![Lint](https://github.com/sudo-team-company/OpenCLDecompiler/workflows/Lint/badge.svg?branch=develop)
 
 ## Introduction
 *OpenCLDecompiler* is a decompiler OpenCL for GPU AMD with GCN architecture. For disassembly used the GCN disassembler - clrxdisasm from [CLRadeonExtender project](https://clrx.nativeboinc.org/).
  The experiments were conducted on an AMD Radeon RX 580 graphics card. The project is still in active development.
- 
+
 ## Features
 *OpenCLDecompiler* can decompile:
 - linear programs
@@ -23,7 +23,7 @@
 
 - Python 3+
 - CLRX Disassembler ([Github](https://github.com/CLRX/CLRX-mirror))
-- Compiled OpenCL file 
+- Compiled OpenCL file
 
 ## Instruction
 Firstly, you need to disassembler compiled OpenCL kernel in .asm file.
@@ -32,7 +32,7 @@ Firstly, you need to disassembler compiled OpenCL kernel in .asm file.
 ```
 clrxdisasm.exe input.bin -dCfs > output.asm
 ```
-Where _input.bin_ - compiled OpenCL binary file; _output.asm_ - is disassembled kernel file, would be _input_file.asm_ 
+Where _input.bin_ - compiled OpenCL binary file; _output.asm_ - is disassembled kernel file, would be _input_file.asm_
 in next operation.
 
 Next - decompiler work.
@@ -47,12 +47,12 @@ Where _input_file.asm_ - an AMD GCN assembler file; _output_file.cl_ - decompile
 To get _input_file.asm_ you need to use CLRX disassembler.  
 _flag_for_decompilation_ is an optional parameter. It can be _auto_decompilation_ or _only_clrx_ or _only_opencl_.
 The default is _auto_decompilation_. Other flag values are not allowed.  
-* _auto_decompilation_. If the decompilation was successful, the result of the program execution will be the OpenCL code. 
+* _auto_decompilation_. If the decompilation was successful, the result of the program execution will be the OpenCL code.
 Otherwise, the program returns the OpenCL code obtained by translating the assembler using the site (http://clrx.nativeboinc.org/wiki2/wiki/wiki/GcnIsa).
 Also it prints unresolved command before the body of the OpenCL program.  
 * _only_clrx_. The program always returns the OpenCL code obtained by translating the assembler using the site (http://clrx.nativeboinc.org/wiki2/wiki/wiki/GcnIsa).
 * _only_opencl_. The program always returns OpenCL code (without the "clrx translation").
-If the decompilation was not successful, the program prints unresolved command before the decompiled body of the OpenCL program. 
+If the decompilation was not successful, the program prints unresolved command before the decompiled body of the OpenCL program.
 
 ## Examples
 
@@ -86,7 +86,7 @@ If the decompilation was not successful, the program prints unresolved command b
         .arg _.vqueue_pointer, "size_t", long
         .arg _.aqlwrap_pointer, "size_t", long
         .arg x, "int", int
-        .arg data, "int*", int*, global, 
+        .arg data, "int*", int*, global,
         .arg y, "int", int
     .text
         s_load_dwordx4  s[0:3], s[4:5], 0x0
