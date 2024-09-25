@@ -31,9 +31,9 @@ class SSub(BaseInstruction):
     def to_fill_node(self):
         reg_entire = Integrity.ENTIRE
         if is_reg(self.ssrc1):
-            reg_entire = self.node.state.registers[self.ssrc1].integrity
+            reg_entire = self.node.state[self.ssrc1].integrity
         elif is_reg(self.ssrc0):
-            reg_entire = self.node.state.registers[self.ssrc0].integrity
+            reg_entire = self.node.state[self.ssrc0].integrity
         if self.suffix == 'u32':
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, '-', '(ulong)', '(ulong)', suffix=self.suffix)
             return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix,

@@ -17,8 +17,8 @@ class SNot(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in ['b32', 'b64']:
-            new_value = "!(" + self.node.state.registers[self.ssrc0].val + ")"
+            new_value = "!(" + self.node.state[self.ssrc0].val + ")"
             data_type = self.suffix
-            reg_type = self.node.state.registers[self.ssrc0].type
+            reg_type = self.node.state[self.ssrc0].type
             return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0], data_type, reg_type=reg_type)
         return super().to_fill_node()

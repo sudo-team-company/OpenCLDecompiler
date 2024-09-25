@@ -31,7 +31,7 @@ class SMulk(BaseInstruction):
                         simm16 += 1
                         simm16 *= -1
 
-                    new_reg = self.node.state.registers[self.sdst] * simm16
+                    new_reg = self.node.state[self.sdst] * simm16
                     new_reg.cast_to(self.suffix)
                     return set_reg(
                         node=self.node,

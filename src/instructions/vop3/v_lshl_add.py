@@ -18,8 +18,8 @@ class VLshlAdd(BaseInstruction):
     def to_fill_node(self):
         if self.decompiler_data.is_rdna3:
             if is_reg(self.src0) and self.src1.isdigit() and is_reg(self.src2):
-                new_reg = self.node.state.registers[self.src0] * int(pow(2, int(self.src1)))
-                new_reg = new_reg + self.node.state.registers[self.src2]
+                new_reg = self.node.state[self.src0] * int(pow(2, int(self.src1)))
+                new_reg = new_reg + self.node.state[self.src2]
 
                 return set_reg(
                     node=self.node,

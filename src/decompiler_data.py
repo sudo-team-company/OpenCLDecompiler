@@ -17,7 +17,7 @@ from src.operation_register_content import OperationType, OperationRegisterConte
 from src.register import Register, is_reg, is_range, check_and_split_regs, split_range
 from src.register_content import RegisterContent, RegisterSignType
 from src.register_type import RegisterType
-from src.state import State
+from src.state import KernelState
 from src.utils import ConfigData, DriverFormat, Singleton
 
 
@@ -37,7 +37,7 @@ def set_reg_value(  # pylint: disable=R0913
 ):
     decompiler_data = DecompilerData()
     if register_content_type == RegisterContent:
-        node.state.registers[to_reg] = Register(
+        node.state[to_reg] = Register(
             integrity=integrity,
             register_content=RegisterContent(
                 value=new_value,
@@ -46,9 +46,9 @@ def set_reg_value(  # pylint: disable=R0913
                 data_type=data_type,
             ),
         )
-        node.state.registers[to_reg].try_simplify()
+        node.state[to_reg].try_simplify()
     elif register_content_type == CombinedRegisterContent:
-        node.state.registers[to_reg] = Register(
+        node.state[to_reg] = Register(
             integrity=integrity,
             register_content=CombinedRegisterContent(
                 register_contents=[
@@ -65,7 +65,7 @@ def set_reg_value(  # pylint: disable=R0913
         )
     elif register_content_type == OperationRegisterContent:
         if not isinstance(sign, list):
-            node.state.registers[to_reg] = Register(
+            node.state[to_reg] = Register(
                 integrity=integrity,
                 register_content=OperationRegisterContent(
                     operation=operation,
@@ -81,7 +81,7 @@ def set_reg_value(  # pylint: disable=R0913
             )
         else:
             if isinstance(data_type, list):
-                node.state.registers[to_reg] = Register(
+                node.state[to_reg] = Register(
                     integrity=integrity,
                     register_content=OperationRegisterContent(
                         operation=operation,
@@ -97,7 +97,7 @@ def set_reg_value(  # pylint: disable=R0913
                     ),
                 )
             else:
-                node.state.registers[to_reg] = Register(
+                node.state[to_reg] = Register(
                     integrity=integrity,
                     register_content=OperationRegisterContent(
                         operation=operation,
@@ -115,11 +115,11 @@ def set_reg_value(  # pylint: disable=R0913
     else:
         raise NotImplementedError()
 
-    node.state.registers[to_reg].try_simplify()
+    node.state[to_reg].try_simplify()
     decompiler_data.make_version(node.state, to_reg)
     if to_reg in from_regs:
-        node.state.registers[to_reg].make_prev()
-    node.state.registers[to_reg].exec_condition = exec_condition
+        node.state[to_reg].make_prev()
+    node.state[to_reg].exec_condition = exec_condition
     return node
 
 
@@ -155,10 +155,10 @@ def make_elem_from_addr(var):
 
 # TODO: Проанализировать, может ли не быть "g" (или другого модификатора)
 def make_new_type_without_modifier(node, register):
-    if "g" in node.state.registers[register].data_type:
-        new_from_reg_type = node.state.registers[register].data_type[1:]
+    if "g" in node.state[register].data_type:
+        new_from_reg_type = node.state[register].data_type[1:]
     else:
-        new_from_reg_type = node.state.registers[register].data_type
+        new_from_reg_type = node.state[register].data_type
     return new_from_reg_type
 
 
@@ -243,16 +243,16 @@ def optimize_names_of_vars():
 
 # TODO: разобраться, как перейти к общему случаю
 def check_big_values(node, start_register, end_register):
-    if node.state.registers[start_register].val == '0xa2000000' \
-            and node.state.registers[end_register].val == '0x426d1a94':
+    if node.state[start_register].val == '0xa2000000' \
+            and node.state[end_register].val == '0x426d1a94':
         return True, "1e12"
     return False, 0
 
 
 def check_reg_for_val(node, register):
     if is_reg(register) or is_range(register):  # TODO: Выяснить зачем нужен range
-        if node.state.registers.get(register):
-            new_val = node.state.registers[register].get_value()
+        if register in node.state:
+            new_val = node.state[register].get_value()
         else:
             if is_range(register):
                 start_register, end_register = check_and_split_regs(register)
@@ -260,7 +260,7 @@ def check_reg_for_val(node, register):
                 if flag_big_value:
                     new_val = value
                 else:
-                    new_val = node.state.registers[start_register].get_value()
+                    new_val = node.state[start_register].get_value()
             else:
                 raise NotImplementedError
     else:
@@ -269,14 +269,14 @@ def check_reg_for_val(node, register):
 
 
 def try_get_reg(node, register):
-    if register in node.state.registers:
-        return node.state.registers[register]
+    if register in node.state:
+        return node.state[register]
     if is_range(register):
         start_register, end_register = check_and_split_regs(register)
-        if start_register in node.state.registers:
-            return node.state.registers[start_register]
-        if end_register in node.state.registers:
-            return node.state.registers[end_register]
+        if start_register in node.state:
+            return node.state[start_register]
+        if end_register in node.state:
+            return node.state[end_register]
     raise NotImplementedError
 
 
@@ -338,7 +338,7 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         self.number_of_qword = 0
         self.number_of_choice = 0
         self.number_of_result = 0
-        self.initial_state = State()  # start state of registers (начальное состояние регистров)
+        self.initial_state = KernelState()  # start state of registers (начальное состояние регистров)
         self.sgprsnum = 0  # number of s registers used by system (количество s регистров, используемых системой)
         self.vgprsnum = 0  # number of v registers used by system (количество v регистров, используемых системой)
         self.to_node = {}  # the label at which the block starts -> node (метка, с которой начинается блок -> вершина)
@@ -449,7 +449,7 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         self.number_of_qword = 0
         self.number_of_choice = 0
         self.number_of_result = 0
-        self.initial_state = State()  # start state of registers (начальное состояние регистров)
+        self.initial_state = KernelState()  # start state of registers (начальное состояние регистров)
         self.sgprsnum = 0  # number of s registers used by system (количество s регистров, используемых системой)
         self.vgprsnum = 0  # number of v registers used by system (количество v регистров, используемых системой)
         self.to_node = {}  # the label at which the block starts -> node (метка, с которой начинается блок -> вершина)
@@ -544,7 +544,7 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
     def make_version(self, state, reg):
         if reg not in self.versions:
             self.versions[reg] = 0
-        state.registers[reg].add_version(reg, self.versions[reg])
+        state[reg].add_version(reg, self.versions[reg])
         self.versions[reg] += 1
 
     def init_work_group(self):
@@ -578,7 +578,7 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         lp, hp = ("s6", "s7") if self.config_data.usesetup else ("s4", "s5")
         if self.is_rdna3:
             lp, hp = ("s0", "s1")
-        self.initial_state.registers[lp] = Register(
+        self.initial_state[lp] = Register(
             integrity=Integrity.LOW_PART,
             register_content=RegisterContent(
                 value="0",
@@ -586,7 +586,7 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
             ),
         )
         self.make_version(self.initial_state, lp)
-        self.initial_state.registers[hp] = Register(
+        self.initial_state[hp] = Register(
             integrity=Integrity.HIGH_PART,
             register_content=RegisterContent(
                 value="0",
@@ -595,7 +595,7 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         )
         self.make_version(self.initial_state, hp)
         if self.config_data.usesetup:
-            self.initial_state.registers["s4"] = Register(
+            self.initial_state["s4"] = Register(
                 integrity=Integrity.LOW_PART,
                 register_content=RegisterContent(
                     value="0",
@@ -603,7 +603,7 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
                 ),
             )
             self.make_version(self.initial_state, "s4")
-            self.initial_state.registers["s5"] = Register(
+            self.initial_state["s5"] = Register(
                 integrity=Integrity.HIGH_PART,
                 register_content=RegisterContent(
                     value="0",
@@ -643,7 +643,7 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         self.num_of_var += 1
         for prev_version in prev_versions_of_reg:
             self.variables[prev_version] = variable
-        self.checked_variables[curr_node.state.registers[reg].version] = variable
+        self.checked_variables[curr_node.state[reg].version] = variable
         self.versions[reg] = max_version + 1
 
     def check_lds_vars(self, offset, suffix):

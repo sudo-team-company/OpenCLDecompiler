@@ -42,12 +42,12 @@ class VLshlOr(BaseInstruction):
     def to_fill_node(self):
         if self.suffix == 'b32':
             if is_reg(self.src0) and self.src1.isdigit() and is_reg(self.src2):
-                src0_type = self.node.state.registers[self.src0].type
-                src1_type = self.node.state.registers[self.src2].type
+                src0_type = self.node.state[self.src0].type
+                src1_type = self.node.state[self.src2].type
                 if isinstance(src0_type, list):
                     src0_type = src0_type[0]
-                if isinstance(self.node.state.registers[self.src2].register_content, CombinedRegisterContent):
-                    src1_type = self.node.state.registers[self.src2].get_type()
+                if isinstance(self.node.state[self.src2].register_content, CombinedRegisterContent):
+                    src1_type = self.node.state[self.src2].get_type()
                 src_types = (
                     src0_type,
                     pow(2, int(self.src1)),
@@ -79,8 +79,8 @@ class VLshlOr(BaseInstruction):
                         integrity=Integrity.ENTIRE,
                     )
 
-        new_reg = self.node.state.registers[self.src0] << int(self.src1)
-        new_reg = new_reg | self.node.state.registers[self.src2]
+        new_reg = self.node.state[self.src0] << int(self.src1)
+        new_reg = new_reg | self.node.state[self.src2]
         return set_reg(
             node=self.node,
             to_reg=self.vdst,

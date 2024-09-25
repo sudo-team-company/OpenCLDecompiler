@@ -22,7 +22,7 @@ class SLshr(BaseInstruction):
         if self.decompiler_data.is_rdna3:
             try:
                 if is_reg(self.ssrc0) and self.ssrc1.isdigit():
-                    new_reg = self.node.state.registers[self.ssrc0] >> int(self.ssrc1)
+                    new_reg = self.node.state[self.ssrc0] >> int(self.ssrc1)
                     new_reg.cast_to(self.suffix)
                     return set_reg(
                         node=self.node,
@@ -34,14 +34,14 @@ class SLshr(BaseInstruction):
                 pass
 
         if self.suffix == 'b32':
-            reg_type = self.node.state.registers[self.ssrc0].type
-            if self.node.state.registers[self.ssrc0].type == RegisterType.GLOBAL_SIZE_X \
+            reg_type = self.node.state[self.ssrc0].type
+            if self.node.state[self.ssrc0].type == RegisterType.GLOBAL_SIZE_X \
                     and pow(2, int(self.ssrc1)) == self.decompiler_data.config_data.size_of_work_groups[0]:
                 new_value = "get_num_groups(0)"
-            elif self.node.state.registers[self.ssrc0].type == RegisterType.GLOBAL_SIZE_Y \
+            elif self.node.state[self.ssrc0].type == RegisterType.GLOBAL_SIZE_Y \
                     and pow(2, int(self.ssrc1)) == self.decompiler_data.config_data.size_of_work_groups[1]:
                 new_value = "get_num_groups(1)"
-            elif self.node.state.registers[self.ssrc0].type == RegisterType.GLOBAL_SIZE_Z \
+            elif self.node.state[self.ssrc0].type == RegisterType.GLOBAL_SIZE_Z \
                     and pow(2, int(self.ssrc1)) == self.decompiler_data.config_data.size_of_work_groups[2]:
                 new_value = "get_num_groups(2)"
             else:

@@ -115,13 +115,12 @@ def process_src(  # pylint: disable=R0914
             common_if_else_part_start_index.append(None)
         if ('s_or' in instruction[0] or 's_mov' in instruction[0]) and \
                 'exec' in instruction[1] or 's_endpgm' in instruction[0]:
-            end_exec_condition = last_node.state.registers["exec"] \
+            end_exec_condition = last_node.state["exec"] \
                 .exec_condition
             while if_and_last_in_if_body_nodes and \
                     ExecCondition.is_closing_for(
                         end_exec_condition,
-                        if_and_last_in_if_body_nodes[-1][0] \
-                                .state.registers["exec"].exec_condition):
+                        if_and_last_in_if_body_nodes[-1][0].state["exec"].exec_condition):
                 if_and_last_in_if_nodes = if_and_last_in_if_body_nodes[-1]
                 parent = if_and_last_in_if_nodes[0] \
                     if len(if_and_last_in_if_nodes) == 1 else \

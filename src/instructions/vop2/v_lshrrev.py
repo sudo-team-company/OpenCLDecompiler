@@ -24,7 +24,7 @@ class VLshrrev(BaseInstruction):
             if is_reg(self.src1):
                 def default_behaviour():
                     new_value = make_op(self.node, self.src1, str(pow(2, int(self.src0))), '//', suffix=self.suffix)
-                    reg_type = self.node.state.registers[self.src1].type
+                    reg_type = self.node.state[self.src1].type
 
                     return set_reg_value(
                         self.node,
@@ -35,8 +35,8 @@ class VLshrrev(BaseInstruction):
                         reg_type=reg_type,
                     )
 
-                if isinstance(self.node.state.registers[self.src1].register_content, CombinedRegisterContent):
-                    maybe_new_register: Register = self.node.state.registers[self.src1] >> int(self.src0)
+                if isinstance(self.node.state[self.src1].register_content, CombinedRegisterContent):
+                    maybe_new_register: Register = self.node.state[self.src1] >> int(self.src0)
 
                     if maybe_new_register is not None:
                         return set_reg(
@@ -46,7 +46,7 @@ class VLshrrev(BaseInstruction):
                             reg=maybe_new_register,
                         )
 
-                if self.node.state.registers[self.src1].val == '0':
+                if self.node.state[self.src1].val == '0':
                     new_value = '0'
                     reg_type = RegisterType.INT32
                 else:

@@ -203,30 +203,30 @@ def make_var_for_loop(curr_node, register, version, prev_version):
     else:
         variable = "var" + str(decompiler_data.num_of_var)
         decompiler_data.num_of_var += 1
-    data_type = curr_node.state.registers[register].data_type
+    data_type = curr_node.state[register].data_type
     decompiler_data.checked_variables[prev_version] = variable
     decompiler_data.loops_variables[version] = variable
     decompiler_data.loops_nodes_for_variables[curr_node] = version
     decompiler_data.names_of_vars[variable] = data_type
     decompiler_data.variables[prev_version] = variable
-    if curr_node.state.registers[register].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
+    if curr_node.state[register].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
         decompiler_data.address_params.add(variable)
 
 
 def check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_version_node):
-    register_version = curr_node.state.registers[register].version
+    register_version = curr_node.state[register].version
     instruction = curr_node.instruction[0]
     if reg_versions_in_instruction.get(register_version):
         change_node = reg_version_node[register_version]
         instruction_version_list = reg_versions_in_instruction[register_version]
         for version in instruction_version_list:
             instruction_register = version[:version.find("_")]
-            instruction_register_version = curr_node.state.registers[instruction_register].version
+            instruction_register_version = curr_node.state[instruction_register].version
             if version != instruction_register_version:
                 if re.match(r"(flat|global)_store", instruction) or "cmp" in instruction:
                     prev_register_version = register_version
                 else:
-                    prev_register_version = curr_node.parent[0].state.registers[register].version
+                    prev_register_version = curr_node.parent[0].state[register].version
                 make_var_for_loop(change_node, instruction_register, register_version, prev_register_version)
 
 
@@ -251,8 +251,8 @@ def process_loop(region_start, region_end):
                 first_reg = first_reg[0] + first_reg[2: first_reg.find(":")]
             if "cmp" not in curr_node.instruction[0] \
                     and not re.match(r"(flat|global)_store", curr_node.instruction[0]) \
-                    and curr_node.state.registers.get(first_reg):
-                first_reg_version = curr_node.state.registers[first_reg].version
+                    and first_reg in curr_node.state:
+                first_reg_version = curr_node.state[first_reg].version
                 reg_versions_in_instruction[first_reg_version] = []
                 reg_version_node[first_reg_version] = curr_node
         for num_of_register in list_of_reg_nums:
@@ -262,15 +262,15 @@ def process_loop(region_start, region_end):
             if ("cmp" in curr_node.instruction[0]
                 or re.match(r"(flat|global)_store", curr_node.instruction[0])
                 or num_of_register > 1) \
-                    and curr_node.state.registers.get(register):
+                    and register in curr_node.state:
                 if register == first_reg \
                         and "cmp" not in curr_node.instruction[0] \
                         and not re.match(r"(flat|global)_store", curr_node.instruction[0]):
-                    register_version = curr_node.parent[0].state.registers[register].version
+                    register_version = curr_node.parent[0].state[register].version
                 else:
-                    register_version = curr_node.state.registers[register].version
+                    register_version = curr_node.state[register].version
                 used_versions_of_registers.add(register_version)
-            if curr_node.state.registers.get(register):
+            if register in curr_node.state:
                 if "cmp" not in curr_node.instruction[0] \
                         and not re.match(r"(flat|global)_store", curr_node.instruction[0]):
                     if num_of_register > 1 \
@@ -282,7 +282,7 @@ def process_loop(region_start, region_end):
             if "cmp" not in curr_node.instruction[0] \
                     and not re.match(r"(flat|global)_store", curr_node.instruction[0]) \
                     and num_of_register == 1 \
-                    and curr_node.state.registers.get(register):
+                    and register in curr_node.state:
                 separation = first_reg_version.find("_")
                 first_reg_prev_version = first_reg_version[:separation + 1] \
                                          + str(int(first_reg_version[separation + 1:]) - 1)

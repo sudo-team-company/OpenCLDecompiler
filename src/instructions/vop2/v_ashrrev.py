@@ -24,19 +24,19 @@ class VAshrrev(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'i32':
-            new_value = self.node.state.registers[self.src1].val
-            reg_type = self.node.state.registers[self.src1].type
+            new_value = self.node.state[self.src1].val
+            reg_type = self.node.state[self.src1].type
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                  reg_type=reg_type)
         if self.suffix == 'i64':
             start_to_register, end_to_register = check_and_split_regs(self.vdst)
             start_from_register, end_from_register = check_and_split_regs(self.src1)
-            if self.node.state.registers[start_from_register].val == "0":
-                self.node.state.registers[start_from_register].register_content._value = \
-                    self.node.state.registers[end_from_register].val  # pylint: disable=W0212
+            if self.node.state[start_from_register].val == "0":
+                self.node.state[start_from_register].register_content._value = \
+                    self.node.state[end_from_register].val  # pylint: disable=W0212
             new_value = make_op(self.node, start_from_register, str(pow(2, 32 - int(self.src0))), '*', '', '(long)',
                                 suffix=self.suffix)
-            reg_type = self.node.state.registers[start_from_register].type
+            reg_type = self.node.state[start_from_register].type
             node = set_reg_value(self.node, new_value, start_to_register, [start_from_register], self.suffix,
                                  reg_type=reg_type, integrity=Integrity.LOW_PART)
             node = set_reg_value(node, new_value, end_to_register, [end_from_register], self.suffix, reg_type=reg_type,

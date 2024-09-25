@@ -77,7 +77,7 @@ def make_output_for_loop_vars(curr_node, indent):
     key = decompiler_data.loops_nodes_for_variables[curr_node]
     reg = key[:key.find("_")]
     loop_variable = decompiler_data.loops_variables[key]
-    decompiler_data.write(indent + loop_variable + " = " + curr_node.state.registers[reg].val + ";\n")
+    decompiler_data.write(indent + loop_variable + " = " + curr_node.state[reg].val + ";\n")
 
 
 def make_output_for_linear_region(region, indent):
@@ -97,14 +97,14 @@ def make_output_for_linear_region(region, indent):
                     not decompiler_data.loops_nodes_for_variables.get(curr_node):
                 reg = curr_node.instruction[1]
 
-                version = curr_node.state.registers[reg].version
+                version = curr_node.state[reg].version
                 var = decompiler_data.variables.get(version)
-                if var is not None and var != curr_node.state.registers[reg].val and \
-                        curr_node.state.registers[reg].val.strip() != '' and (
+                if var is not None and var != curr_node.state[reg].val and \
+                        curr_node.state[reg].val.strip() != '' and (
                         'cmp' not in curr_node.instruction[0] or
                         decompiler_data.gpu and decompiler_data.gpu.startswith('gfx')
                 ):  # версия поменялась по сравнению с предком
-                    decompiler_data.write(indent + var + " = " + curr_node.state.registers[reg].val + ";\n")
+                    decompiler_data.write(indent + var + " = " + curr_node.state[reg].val + ";\n")
             if curr_node == region.end:
                 break
             child = curr_node.children[0]
