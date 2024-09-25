@@ -26,7 +26,7 @@ class KernelState:
     def __contains__(self, key: str) -> bool:
         return key in self._registers
 
-    def init_work_group(self, dim, g_id_dim, version_g_id, version_v, is_rdna3: bool):
+    def init_work_group(self, dim, g_id_dim, is_rdna3: bool):
         v_dim = "v" + str(dim)
         if is_rdna3:
             v_dim = "v0"
@@ -49,7 +49,7 @@ class KernelState:
                 type_=type_g,
             )
         )
-        self[g_id_dim].add_version(g_id_dim, version_g_id)
+        self[g_id_dim].add_version(g_id_dim, 0)
 
         if is_rdna3:
             register_content = CombinedRegisterContent(
@@ -81,9 +81,9 @@ class KernelState:
             integrity=Integrity.ENTIRE,
             register_content=register_content
         )
-        self[v_dim].add_version(v_dim, version_v)
+        self[v_dim].add_version(v_dim, 0)
 
-    def init_exec(self, version):
+    def init_exec(self):
         self["exec"] = Register(
             integrity=Integrity.ENTIRE,
             exec_condition=ExecCondition.DEFAULT,
@@ -92,5 +92,5 @@ class KernelState:
                 type_=RegisterType.UNKNOWN,
             ),
         )
-        self["exec"].add_version("exec", version)
+        self["exec"].add_version("exec", 0)
         self["exec"].exec_condition = ExecCondition.default()

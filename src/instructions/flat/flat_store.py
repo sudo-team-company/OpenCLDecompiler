@@ -100,7 +100,7 @@ class FlatStore(BaseInstruction):
                     suffix_size = int(self.suffix[-1])
             for self.from_registers in check_and_split_regs_range_to_full_list(self.vdata)[:suffix_size]:
                 if is_vgpr(self.vaddr):
-                    self.node.state[self.to_registers].version = self.node.parent[0].state[self.to_registers].version
+                    self.node.state[self.to_registers].copy_version_from(self.node.parent[0].state[self.to_registers])
                     self.node.state[self.to_registers].cast_to(self.suffix)
                 # TODO: Сделать присвоение в пары
                 else:

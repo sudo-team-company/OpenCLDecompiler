@@ -357,56 +357,7 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         self.global_data = {}
         self.var_value = {}  # var -> value
         self.type_conversion = {}  # expression -> type_conversion (get_global_id(0) -> (ulong))
-        self.versions = {
-            "s0": 0,
-            "s1": 0,
-            "s2": 0,
-            "s3": 0,
-            "s4": 0,
-            "s5": 0,
-            "s6": 0,
-            "s7": 0,
-            "s8": 0,
-            "s9": 0,
-            "s10": 0,
-            "s11": 0,
-            "s12": 0,
-            "s13": 0,
-            "s14": 0,
-            "s15": 0,
-            "s16": 0,
-            "s17": 0,
-            "s18": 0,
-            "s19": 0,
-            "s20": 0,
-            "s21": 0,
-            "s22": 0,
-            "v0": 0,
-            "v1": 0,
-            "v2": 0,
-            "v3": 0,
-            "v4": 0,
-            "v5": 0,
-            "v6": 0,
-            "v7": 0,
-            "v8": 0,
-            "v9": 0,
-            "v10": 0,
-            "v11": 0,
-            "v12": 0,
-            "v13": 0,
-            "v14": 0,
-            "v15": 0,
-            "v16": 0,
-            "v17": 0,
-            "v18": 0,
-            "v19": 0,
-            "v20": 0,
-            "pc": 0,
-            "scc": 0,
-            "vcc": 0,
-            "exec": 0
-        }
+        self.versions: dict[str, int] = {}
         self.names_of_vars = {}
         self.lds_vars = {}
         self.lds_var_number = 0
@@ -468,56 +419,7 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         self.global_data = {}
         self.var_value = {}
         self.type_conversion = {}
-        self.versions = {
-            "s0": 0,
-            "s1": 0,
-            "s2": 0,
-            "s3": 0,
-            "s4": 0,
-            "s5": 0,
-            "s6": 0,
-            "s7": 0,
-            "s8": 0,
-            "s9": 0,
-            "s10": 0,
-            "s11": 0,
-            "s12": 0,
-            "s13": 0,
-            "s14": 0,
-            "s15": 0,
-            "s16": 0,
-            "s17": 0,
-            "s18": 0,
-            "s19": 0,
-            "s20": 0,
-            "s21": 0,
-            "s22": 0,
-            "v0": 0,
-            "v1": 0,
-            "v2": 0,
-            "v3": 0,
-            "v4": 0,
-            "v5": 0,
-            "v6": 0,
-            "v7": 0,
-            "v8": 0,
-            "v9": 0,
-            "v10": 0,
-            "v11": 0,
-            "v12": 0,
-            "v13": 0,
-            "v14": 0,
-            "v15": 0,
-            "v16": 0,
-            "v17": 0,
-            "v18": 0,
-            "v19": 0,
-            "v20": 0,
-            "pc": 0,
-            "scc": 0,
-            "vcc": 0,
-            "exec": 0
-        }
+        self.versions = {}
         self.names_of_vars = {}
         self.lds_vars = {}
         self.lds_var_number = 0
@@ -562,17 +464,11 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         for dim in range(len(dimensions)):
             g_id_dim = g_id[dim]
             v_dim = "v" + str(dim)
-            self.initial_state.init_work_group(
-                dim,
-                g_id_dim,
-                self.versions[g_id_dim],
-                self.versions[v_dim],
-                self.is_rdna3,
-            )
-            self.versions[g_id_dim] += 1
-            self.versions[v_dim] += 1
-        self.initial_state.init_exec(self.versions["exec"])
-        self.versions["exec"] += 1
+            self.initial_state.init_work_group(dim, g_id_dim, self.is_rdna3)
+            self.versions[g_id_dim] = 1
+            self.versions[v_dim] = 1
+        self.initial_state.init_exec()
+        self.versions["exec"] = 1
 
     def process_initial_state(self):
         lp, hp = ("s6", "s7") if self.config_data.usesetup else ("s4", "s5")

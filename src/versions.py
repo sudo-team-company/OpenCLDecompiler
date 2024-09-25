@@ -18,9 +18,7 @@ def find_max_and_prev_versions(curr_node):
             if reg in parent.state and parent.state[reg].version is not None:
                 parent_version = parent.state[reg].version
                 prev_versions_of_reg.add(parent_version)
-                if len(prev_versions_of_reg) == 0:
-                    max_version = int(parent_version[parent_version.find("_") + 1:])
-                elif int(parent_version[parent_version.find("_") + 1:]) > max_version:
+                if len(prev_versions_of_reg) == 0 or int(parent_version[parent_version.find("_") + 1:]) > max_version:
                     max_version = int(parent_version[parent_version.find("_") + 1:])
         if len(prev_versions_of_reg) > 1:
             curr_node = update_reg_version(reg, curr_node, max_version, prev_versions_of_reg)
@@ -29,7 +27,7 @@ def find_max_and_prev_versions(curr_node):
 
 def update_reg_version(reg, curr_node, max_version, prev_versions_of_reg):
     decompiler_data = DecompilerData()
-    curr_node.state[reg].version = reg + "_" + str(max_version + 1)
+    curr_node.state[reg].add_version(reg, max_version)
     curr_node.state[reg].prev_version = list(prev_versions_of_reg)
     variable = "var" + str(decompiler_data.num_of_var)
     for prev in prev_versions_of_reg:
@@ -94,28 +92,28 @@ def update_val_from_changes(curr_node, register, changes, check_version, num_of_
             and (register != "vcc" or "and_saveexec" in instruction[0]):
         if re.match(r"(flat|global)_store", instruction[0]):
             if num_of_reg == 1:
-                node_registers = curr_node.parent[0].state
+                node_state = curr_node.parent[0].state
             else:
-                node_registers = curr_node.state
+                node_state = curr_node.state
                 first_reg = register
         elif "and_saveexec" in instruction[0]:
-            node_registers = curr_node.state
+            node_state = curr_node.state
             first_reg = "exec"
         else:
-            node_registers = curr_node.state
+            node_state = curr_node.state
             if first_reg != register:
-                node_registers[register].register_content._value = node_registers[register].val.replace(  # pylint: disable=W0212
+                node_state[register].register_content._value = node_state[register].val.replace(  # pylint: disable=W0212
                     changes[check_version][1],
                     changes[check_version][0])
-        copy_val_prev = node_registers[first_reg].val
-        node_registers[first_reg].register_content._value = node_registers[first_reg].val.replace(  # pylint: disable=W0212
+        copy_val_prev = node_state[first_reg].val
+        node_state[first_reg].register_content._value = node_state[first_reg].val.replace(  # pylint: disable=W0212
             changes[check_version][1],
             changes[check_version][0])
-        copy_val_last = node_registers[first_reg].val
+        copy_val_last = node_state[first_reg].val
         if copy_val_prev != copy_val_last:
-            if changes.get(node_registers[first_reg].version) is not None:
-                copy_val_prev = changes[node_registers[first_reg].version][1]
-            changes[node_registers[first_reg].version] = [copy_val_last, copy_val_prev]
+            if changes.get(node_state[first_reg].version) is not None:
+                copy_val_prev = changes[node_state[first_reg].version][1]
+            changes[node_state[first_reg].version] = [copy_val_last, copy_val_prev]
             update_value_for_reg(first_reg, curr_node)
     return changes
 

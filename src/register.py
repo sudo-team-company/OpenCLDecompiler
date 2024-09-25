@@ -19,7 +19,8 @@ class Register:
             exec_condition=None,
     ):
         self.integrity: Integrity = integrity
-        self.version = None
+        self._version_name: str = ""
+        self._version_num: int = 0
         self.prev_version = []
         self.exec_condition = exec_condition
         self.register_content: RegisterContent = register_content
@@ -44,6 +45,10 @@ class Register:
     @property
     def sign(self) -> RegisterSignType:
         return self.register_content.get_sign()
+
+    @property
+    def version(self) -> str:
+        return f"{self._version_name}_{self._version_num}"
 
     def __copy__(self):
         return Register(
@@ -222,20 +227,16 @@ class Register:
 
         return result_register
 
+    def copy_version_from(self, other: 'Register'):
+        self._version_name = other._version_name  # pylint: disable=W0212
+        self._version_num = other._version_num  # pylint: disable=W0212
+
     def add_version(self, name_version, num_version):
-        self.version = name_version + "_" + str(num_version + 1)
+        self._version_name = name_version
+        self._version_num = num_version + 1
 
     def make_prev(self):
-        name_version = self.version[:self.version.find("_")]
-        num_version = self.version[self.version.find("_") + 1:]
-        self.prev_version = [name_version + "_" + str(int(num_version) - 1)]
-
-    def add_prev(self, prev_version):
-        self.prev_version.append(prev_version)
-
-    def inc_version(self):
-        name, version = self.version.split("_")
-        return name + "_" + str(int(version) + 1)
+        self.prev_version = [f"{self._version_name}_{self._version_num - 1}"]
 
 
 def is_vector_type(data_type: str) -> bool:
