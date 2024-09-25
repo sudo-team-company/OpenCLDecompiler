@@ -55,4 +55,3 @@ void cpFACE(__global int *data, int x)
 	uint id = get_global_id(0);
 	data[id] = 0xFACE;
 }
-

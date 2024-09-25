@@ -69,8 +69,8 @@ def start_point():
     namespace = create_parser().parse_args(sys.argv[1:])
     if not (namespace.input or namespace.output):
         print("""
-            Missing some parameters 
-            Usage: 
+            Missing some parameters
+            Usage:
               'python parser_for_instructions.py --input <input_file.asm> --output <output_file.cl>'
               'python parser_for_instructions.py -i <input_file.asm> -o <output_file.cl>'
             """)

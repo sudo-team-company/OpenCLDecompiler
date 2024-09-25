@@ -1,6 +1,6 @@
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
 void uint2_uint(
-    __global const uint2* restrict edges, 
+    __global const uint2* restrict edges,
     __global double* restrict d
 )
 {
