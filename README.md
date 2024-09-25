@@ -2,7 +2,7 @@
 
 ![CPU](https://img.shields.io/badge/GPU-AMD_GCN-red)
 ![CPU](https://img.shields.io/badge/GPU-AMD_RDNA-red)
-![Python](https://img.shields.io/badge/python-v3.10-blue)
+![Python](https://img.shields.io/badge/python-v3.12-blue)
 ![GitHub repo size](https://img.shields.io/github/repo-size/sudo-team-company/OpenCLDecompiler)
 ![GitHub last commit](https://img.shields.io/github/last-commit/sudo-team-company/OpenCLDecompiler/develop)
 ![Test](https://github.com/sudo-team-company/OpenCLDecompiler/workflows/Test/badge.svg?branch=develop)
