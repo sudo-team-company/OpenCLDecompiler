@@ -5,7 +5,7 @@ void loop_unrolled(__global int *data, int x)
     var0 = data[get_global_id(0)];
     int acc = var0;
     for (int i = 7; i <= 121; i = i + 3) {
-        acc = (ulong)i + (ulong)(acc * x);
+        acc = i + (acc * x);
     }
     data[get_global_id(0)] = acc;
 }

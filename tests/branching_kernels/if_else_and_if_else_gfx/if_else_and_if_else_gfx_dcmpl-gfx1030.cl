@@ -5,17 +5,17 @@ void if_else_and_if_else_1(int x, __global int *data, int y)
     uint var3;
     int var5;
     var3 = get_global_id(0);
-    if ((uint)1 != (uint)var3) {
+    if (1 != var3) {
         var5 = get_global_id(0) * y;
         var2 = get_global_id(1);
     }
     else {
         var2 = get_global_id(1);
         var3 = 1;
-        var5 = (uint)(get_global_id(1) * x) - (uint)y;
+        var5 = (get_global_id(1) * x) - (uint)y;
     }
     data[var3] = var5;
-    data[get_global_id(2)] = min((int)x, (int)y);
+    data[get_global_id(2)] = min(x, y);
     data[var2] = x;
 }
 
@@ -25,18 +25,18 @@ void if_else_and_if_else_2(int x, __global int *data, int y)
     int var8;
     uint var9;
     var9 = get_global_id(0);
-    if ((uint)0 != (uint)var9) {
+    if (0 != var9) {
         data[get_global_id(0)] = get_global_id(0) * y;
     }
     else {
-        *data = (long)0 - (long)y;
+        *data = 0 - y;
     }
-    if ((uint)1 != (uint)get_global_id(1)) {
+    if (1 != get_global_id(1)) {
         var8 = get_global_id(1) * y;
     }
     else {
         var9 = 1;
-        var8 = (long)x - (long)y;
+        var8 = x - y;
     }
     data[var9] = var8;
 }

@@ -3,11 +3,11 @@ void if_and_if(int x, __global int *data, int y)
 {
     uint var4;
     var4 = get_global_id(0);
-    if ((int)0 == (int)var4) {
+    if (0 == (int)var4) {
         var4 = get_global_id(1);
     }
     data[var4] = x;
-    if ((int)x < (int)y) {
+    if (x < y) {
         var4 = get_global_id(2);
     }
     data[var4] = y;
