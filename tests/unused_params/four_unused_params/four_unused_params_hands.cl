@@ -1,7 +1,7 @@
 __kernel void four_unused_params(int n, __global int *data2, int w, int z, __global int *data, int ww, __global int *data1, int x, int y)
 {
     int var0;
-    if ((int)n > (int)get_global_id(0)) {
+    if (n > (int)get_global_id(0)) {
         data[get_global_id(0)] = x;
     }
     else {

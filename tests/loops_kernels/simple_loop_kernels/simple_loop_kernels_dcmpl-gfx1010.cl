@@ -10,19 +10,19 @@ void loop_kernel_0(__global uint *data, uint x, uint y, uint unrollingBreaker)
     int var8;
     int var9;
     var8 = 0;
-    if ((uint)unrollingBreaker == (uint)0) {
+    if (unrollingBreaker == 0) {
         do {
-            var7 = (ulong)var8 + (ulong)1;
+            var7 = (ulong)var8 + 1;
             var14 = var10;
             var8 = var7;
             var9 = (ulong) + (ulong)var9;
             var10 = var10 + 4 / 4;
             var13 = var9;
             var11 = var11 + 0 / 4;
-            var12 = (uint)var8 < (uint)63 && (uint)!(unrollingBreaker) != (uint)var8;
+            var12 = (uint)var8 < 63 && (uint)!(unrollingBreaker) != (uint)var8;
             var9 = (var9) * x;
-            *(__global uint*)(var14) = var13;
-        } while ((uint)var8 < (uint)63 && (uint)!(unrollingBreaker) != (uint)var8);
+            var14 = var13;
+        } while ((uint)var8 < 63 && (uint)!(unrollingBreaker) != (uint)var8);
     }
 }
 
@@ -36,7 +36,7 @@ void loop_kernel_1(__global uint *data, uint x, uint y, uint unrollingBreaker)
     __global uint *var8;
     int var9;
     var5 = unrollingBreaker;
-    if ((uint)var5 == (uint)0) {
+    if (var5 == 0) {
         do {
             var10 = var7;
             var5 = (ulong)var5 + (ulong)(-1);
@@ -45,8 +45,8 @@ void loop_kernel_1(__global uint *data, uint x, uint y, uint unrollingBreaker)
             var9 = var6;
             var8 = var8 + 0 / 4;
             var6 = (var6) * x;
-            *(__global uint*)(var10) = var9;
-        } while (!((uint)((ulong)var5 + (ulong)(-1)) == (uint)0));
+            var10 = var9;
+        } while (!((uint)((ulong)var5 + (ulong)(-1)) == 0));
     }
 }
 
@@ -60,7 +60,7 @@ void loop_kernel_2(__global uint *data, uint x, uint y, uint unrollingBreaker)
     int var8;
     __global uint *var9;
     var7 = unrollingBreaker;
-    if ((uint)var7 == (uint)0) {
+    if (var7 == 0) {
         var9 = data + (var7 * 4) / 4;
         var10 = data + (0 * 4) / 4;
         do {
@@ -71,7 +71,7 @@ void loop_kernel_2(__global uint *data, uint x, uint y, uint unrollingBreaker)
             var11 = var8;
             var10 = var10 + (-1) / 4;
             var8 = (var8) * x;
-            *(__global uint*)(var12) = var11;
-        } while (!((uint)((ulong)var7 + (ulong)(-1)) == (uint)0));
+            var12 = var11;
+        } while (!((uint)((ulong)var7 + (ulong)(-1)) == 0));
     }
 }
