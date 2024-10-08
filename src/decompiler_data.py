@@ -249,10 +249,13 @@ def check_big_values(node, start_register, end_register):
     return False, 0
 
 
-def check_reg_for_val(node, register):
+def check_reg_for_val(node, register, suffix=''):
+    needs_casting = True
     if is_reg(register) or is_range(register):  # TODO: Выяснить зачем нужен range
         if node.state.registers.get(register):
             new_val = node.state.registers[register].get_value()
+            if suffix != '':
+                needs_casting = suffix != node.state.registers[register].data_type
         else:
             if is_range(register):
                 start_register, end_register = check_and_split_regs(register)
@@ -261,11 +264,25 @@ def check_reg_for_val(node, register):
                     new_val = value
                 else:
                     new_val = node.state.registers[start_register].get_value()
+                    if suffix != '':
+                        needs_casting = suffix != node.state.registers[start_register].data_type
             else:
                 raise NotImplementedError
     else:
         new_val = register
-    return new_val
+
+        if new_val.isnumeric():
+            needs_casting = False
+        elif new_val[0] == '-' and new_val[1:].isnumeric() and suffix != '' and suffix.count('u') != 0:
+            needs_casting = False
+        else:
+            try:
+                _ = float(new_val)
+                needs_casting = suffix.count('f') == 0
+            except ValueError:
+                needs_casting = True
+
+    return (new_val, needs_casting)
 
 
 def try_get_reg(node, register):
@@ -279,15 +296,15 @@ def try_get_reg(node, register):
             return node.state.registers[end_register]
     raise NotImplementedError
 
-
-def change_vals_for_make_op(node, register, reg_type, operation, _suffix):
+def change_vals_for_make_op(node, register, reg_type, operation, suffix):
     decompiler_data = DecompilerData()
-    new_val = check_reg_for_val(node, register)
+    new_val, needs_cast = check_reg_for_val(node, register, suffix)
     if (operation != "+" or reg_type) and ("-" in new_val or "+" in new_val or "*" in new_val or "/" in new_val):
         new_val = f'({new_val})'
     if reg_type != '':
         decompiler_data.type_conversion[new_val] = reg_type
-    new_val = reg_type + new_val
+    if needs_cast:
+        new_val = reg_type + new_val
     if len(reg_type) > 0 and ')' not in reg_type:
         new_val += ')'
     return new_val
