@@ -14,7 +14,7 @@ void loop_kernel_0(__global uint *data, uint x, uint y, uint unrollingBreaker)
         var10 = data;
         do {
             var12 = var9;
-            var0 = *(__global uint*)(var12);
+            var0 = *var12;
             var8 = (ulong)var8 + 1;
             var9 = var9 + 4 / 4;
             var10 = var10 + 0 / 4;
@@ -41,14 +41,14 @@ void loop_kernel_1(__global uint *data, uint x, uint y, uint unrollingBreaker)
         var11 = y;
         do {
             var12 = var8;
-            var0 = *(__global uint*)(var12);
+            var0 = *var12;
             var8 = var8 + 4 / 4;
             var9 = var9 + 0 / 4;
-            var10 = var10 + (-1);
+            var10 = var10 + (ulong)(-1);
             var11 = var0 + var11;
             var12 = var11;
             var11 = (var11) * x;
-        } while (!((int)(var10 + (-1)) == 0));
+        } while (!((int)(var10 + (ulong)(-1)) == 0));
     }
 }
 
@@ -68,13 +68,13 @@ void loop_kernel_2(__global uint *data, uint x, uint y, uint unrollingBreaker)
         var11 = y;
         do {
             var12 = var8;
-            var0 = *(__global uint*)(var12);
+            var0 = *var12;
             var8 = var8 + (-4) / 4;
             var9 = var9 + (-1) / 4;
-            var10 = var10 + (-1);
+            var10 = var10 + (ulong)(-1);
             var11 = var0 + var11;
             var12 = var11;
             var11 = (var11) * x;
-        } while (!((int)(var10 + (-1)) == 0));
+        } while (!((int)(var10 + (ulong)(-1)) == 0));
     }
 }

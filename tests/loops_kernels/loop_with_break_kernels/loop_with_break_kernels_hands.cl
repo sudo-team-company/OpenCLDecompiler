@@ -13,7 +13,7 @@ void loop_break_kernel(__global uint *data, uint x, uint y, uint unrollingBreake
         var6 = y;
         var9 = 0x0;
         do {
-            var0 = *(__global uint*)(var7);
+            var0 = *var7;
             var6 = var0 + var6;
             var7 = var6;
             if (!(0 != (int)(var6))) {

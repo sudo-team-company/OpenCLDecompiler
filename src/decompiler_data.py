@@ -270,10 +270,9 @@ def check_reg_for_val(node, register, suffix=''):
                 raise NotImplementedError
     else:
         new_val = register
-
         if new_val.isnumeric():
             needs_casting = False
-        elif new_val[0] == '-' and new_val[1:].isnumeric() and suffix != '' and suffix.count('u') != 0:
+        elif new_val[0] == '-' and new_val[1:].isnumeric() and suffix != '' and suffix.count('u') == 0:
             needs_casting = False
         else:
             try:

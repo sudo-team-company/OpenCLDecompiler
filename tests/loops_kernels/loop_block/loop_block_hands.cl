@@ -11,7 +11,7 @@ void loop_general(__global int *data, int block, int x)
         var4 = 0;
         var6 = (ulong)data + (ulong)(((get_global_id(0) * block) + (get_global_id(0) * (block / 2147483648)) + (((ulong)get_global_offset(0) + 0) * block)) * 4);
         do {
-            var0 = *(__global int*)(var5);
+            var0 = *var5;
             var3 = var0;
             var3 = x * var3;
             var3 = (ulong)var4 + (x * varvar4);
