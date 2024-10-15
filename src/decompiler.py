@@ -45,12 +45,10 @@ def process_src(  # pylint: disable=R0914
         set_of_instructions,
         set_of_global_data_bytes,
         set_of_global_data_instruction,
-        *,
-        is_rdna3: bool = False,
 ):
     decompiler_data = DecompilerData()
     decompiler_data.reset(name_of_program)
-    if is_rdna3:
+    if decompiler_data.gpu.startswith('gfx11'):
         decompiler_data.is_rdna3 = True
     set_of_instructions = [instr.replace("null", "0x0") for instr in set_of_instructions]
     new_set_of_instructions = []

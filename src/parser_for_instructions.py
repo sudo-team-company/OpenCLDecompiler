@@ -40,6 +40,7 @@ def main(input_par, output_par, flag_for_decompilation, cfg_path, is_new_parser:
         if is_new_parser:
             parser = AmdGpuDisParser()
             functions_data = parser.parse(body_of_file)
+            decompiler_data.gpu = 'gfx11'
         else:
             functions_data, decompiler_data.gpu = parse_kernel(body_of_file.splitlines())
 
@@ -48,7 +49,7 @@ def main(input_par, output_par, flag_for_decompilation, cfg_path, is_new_parser:
             if flag_newline:
                 output_file.write("\n")
             flag_newline = True
-            process_src(*function_data, is_rdna3=is_new_parser)
+            process_src(*function_data)
 
 
 def create_parser():
