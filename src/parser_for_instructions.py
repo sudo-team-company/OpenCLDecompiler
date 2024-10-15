@@ -41,7 +41,7 @@ def main(input_par, output_par, flag_for_decompilation, cfg_path, is_new_parser:
             parser = AmdGpuDisParser()
             functions_data = parser.parse(body_of_file)
         else:
-            decompiler_data.driver_format, functions_data, decompiler_data.gpu = parse_kernel(body_of_file.splitlines())
+            functions_data, decompiler_data.gpu = parse_kernel(body_of_file.splitlines())
 
         flag_newline = False
         for function_data in functions_data:

@@ -18,7 +18,7 @@ from src.register import Register, is_reg, is_range, check_and_split_regs, split
 from src.register_content import RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 from src.state import KernelState
-from src.utils import ConfigData, DriverFormat, Singleton
+from src.utils import ConfigData, Singleton
 
 
 def set_reg_value(  # pylint: disable=R0913
@@ -315,7 +315,6 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         self.pragram_id = utils.generate_uuid()
         self.name_of_program = None
         self.config_data: Optional[ConfigData] = None
-        self.driver_format: DriverFormat = DriverFormat.UNKNOWN
         self.output_file = None
         self.cfg = None
         self.improve_cfg = None

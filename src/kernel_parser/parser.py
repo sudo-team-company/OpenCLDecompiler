@@ -19,4 +19,4 @@ def parse_gpu(text: list[str]) -> str | None:
 def parse_kernel(text):
     driver_format = DriverFormat(text)
     gpu = parse_gpu(text)
-    return driver_format, parsers[driver_format].parse_kernel(text), gpu
+    return parsers[driver_format].parse_kernel(text), gpu
