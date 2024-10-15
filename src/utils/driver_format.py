@@ -4,6 +4,7 @@ from enum import Enum
 class DriverFormat(Enum):
     AMDCL2 = '.amdcl2'
     ROCM = '.rocm'
+    AMDGPU_DIS = 'amdgpu-dis'
     UNKNOWN = None
 
     @classmethod
@@ -12,5 +13,7 @@ class DriverFormat(Enum):
             try:
                 return DriverFormat(value[1])
             except ValueError:
-                return DriverFormat.UNKNOWN
+                pass
+            if '\t.amdgpu_pal_metadata' in value:
+                return DriverFormat.AMDGPU_DIS
         return DriverFormat.UNKNOWN
