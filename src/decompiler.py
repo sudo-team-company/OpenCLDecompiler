@@ -12,7 +12,7 @@ from src.node import Node
 from src.node_processor import check_realisation_for_node
 from src.regions.functions_for_regions import make_region_graph_from_cfg, process_region_graph
 from src.unrolled_loops_processing import process_unrolled_loops
-from src.utils import get_context
+from src.utils import get_context, ConfigData
 from src.versions import find_max_and_prev_versions, change_values, check_for_use_new_version
 
 CONTEXT = get_context()
@@ -40,11 +40,11 @@ def process_src_with_unresolved_instruction(set_of_instructions):
 
 
 def process_src(  # pylint: disable=R0914
-        name_of_program,
-        config_data,
-        set_of_instructions,
-        set_of_global_data_bytes,
-        set_of_global_data_instruction,
+        name_of_program: str,
+        config_data: ConfigData,
+        set_of_instructions: list[str],
+        set_of_global_data_bytes: list[str],
+        set_of_global_data_instruction: list[str],
 ):
     decompiler_data = DecompilerData()
     decompiler_data.reset(name_of_program)
