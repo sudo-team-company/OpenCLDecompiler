@@ -10,7 +10,7 @@ class TestLinearKernels:
             ("", "clrxdisasm", False),
             ("gfx1010", "clrxdisasm", False),
             ("gfx1030", "clrxdisasm", False),
-            ("gfx1103", "amdgpu-dis", True),
+            ("gfx1103", "amdgpu-dis", False),
         ]
     )
     def test_addition(self, mcpu, disasm, is_new_parser):
@@ -28,7 +28,7 @@ class TestLinearKernels:
             ("", "clrxdisasm", False),
             ("gfx1010", "clrxdisasm", False),
             ("gfx1030", "clrxdisasm", False),
-            ("gfx1103", "amdgpu-dis", True),
+            ("gfx1103", "amdgpu-dis", False),
         ]
     )
     def test_subtraction(self, mcpu, disasm, is_new_parser):
@@ -46,7 +46,7 @@ class TestLinearKernels:
             ("", "clrxdisasm", False),
             ("gfx1010", "clrxdisasm", False),
             ("gfx1030", "clrxdisasm", False),
-            ("gfx1103", "amdgpu-dis", True),
+            ("gfx1103", "amdgpu-dis", False),
         ]
     )
     def test_multiplication(self, mcpu, disasm, is_new_parser):
@@ -64,7 +64,7 @@ class TestLinearKernels:
             ("", "clrxdisasm", False),
             ("gfx1010", "clrxdisasm", False),
             ("gfx1030", "clrxdisasm", False),
-            ("gfx1103", "amdgpu-dis", True),
+            ("gfx1103", "amdgpu-dis", False),
         ]
     )
     def test_many_linears(self, mcpu, disasm, is_new_parser):
@@ -82,7 +82,7 @@ class TestLinearKernels:
             ("", "clrxdisasm", False),
             ("gfx1010", "clrxdisasm", False),
             ("gfx1030", "clrxdisasm", False),
-            ("gfx1103", "amdgpu-dis", True),
+            ("gfx1103", "amdgpu-dis", False),
         ]
     )
     def test_copy_x(self, mcpu, disasm, is_new_parser):
@@ -100,7 +100,7 @@ class TestLinearKernels:
             ("", "clrxdisasm", False),
             ("gfx1010", "clrxdisasm", False),
             ("gfx1030", "clrxdisasm", False),
-            ("gfx1103", "amdgpu-dis", True),
+            ("gfx1103", "amdgpu-dis", False),
         ]
     )
     def test_copy_get_global_offset(self, mcpu, disasm, is_new_parser):
@@ -118,7 +118,7 @@ class TestLinearKernels:
             ("", "clrxdisasm", False),
             ("gfx1010", "clrxdisasm", False),
             ("gfx1030", "clrxdisasm", False),
-            ("gfx1103", "amdgpu-dis", True),
+            ("gfx1103", "amdgpu-dis", False),
         ]
     )
     def test_copy_get_local_id(self, mcpu, disasm, is_new_parser):
@@ -136,7 +136,7 @@ class TestLinearKernels:
             ("", "clrxdisasm", False),
             ("gfx1010", "clrxdisasm", False),
             ("gfx1030", "clrxdisasm", False),
-            ("gfx1103", "amdgpu-dis", True),
+            ("gfx1103", "amdgpu-dis", False),
         ]
     )
     def test_copy_get_group_id(self, mcpu, disasm, is_new_parser):
@@ -154,7 +154,7 @@ class TestLinearKernels:
             ("", "clrxdisasm", False),
             ("gfx1010", "clrxdisasm", False),
             ("gfx1030", "clrxdisasm", False),
-            ("gfx1103", "amdgpu-dis", True),
+            ("gfx1103", "amdgpu-dis", False),
         ]
     )
     def test_copy_get_local_size(self, mcpu, disasm, is_new_parser):
@@ -172,7 +172,7 @@ class TestLinearKernels:
             ("", "clrxdisasm", False),
             ("gfx1010", "clrxdisasm", False),
             ("gfx1030", "clrxdisasm", False),
-            ("gfx1103", "amdgpu-dis", True),
+            ("gfx1103", "amdgpu-dis", False),
         ]
     )
     def test_copy_get_global_id(self, mcpu, disasm, is_new_parser):
@@ -190,7 +190,7 @@ class TestLinearKernels:
             ("", "clrxdisasm", False),
             ("gfx1010", "clrxdisasm", False),
             ("gfx1030", "clrxdisasm", False),
-            ("gfx1103", "amdgpu-dis", True),
+            ("gfx1103", "amdgpu-dis", False),
         ]
     )
     def test_copy_get_global_size(self, mcpu, disasm, is_new_parser):
@@ -208,7 +208,7 @@ class TestLinearKernels:
             ("", "clrxdisasm", False),
             ("gfx1010", "clrxdisasm", False),
             ("gfx1030", "clrxdisasm", False),
-            ("gfx1103", "amdgpu-dis", True),
+            ("gfx1103", "amdgpu-dis", False),
         ]
     )
     def test_copy_get_num_groups(self, mcpu, disasm, is_new_parser):
@@ -226,7 +226,7 @@ class TestLinearKernels:
             ("", "clrxdisasm", False),
             ("gfx1010", "clrxdisasm", False),
             ("gfx1030", "clrxdisasm", False),
-            ("gfx1103", "amdgpu-dis", True),
+            ("gfx1103", "amdgpu-dis", False),
         ]
     )
     def test_copy_get_work_dim(self, mcpu, disasm, is_new_parser):
