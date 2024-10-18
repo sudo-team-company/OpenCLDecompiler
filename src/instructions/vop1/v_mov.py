@@ -21,8 +21,8 @@ class VMov(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'b32':
-            if self.node.state.registers.get(self.src0) is not None:
-                new_reg = copy.deepcopy(self.node.state.registers[self.src0])
+            if self.src0 in self.node.state:
+                new_reg = copy.deepcopy(self.node.state[self.src0])
 
                 return set_reg(
                     node=self.node,
@@ -43,7 +43,7 @@ class VMov(BaseInstruction):
                 data_type,
                 reg_type=reg_type,
                 register_content_type=(
-                    type(self.node.state.registers[self.src0].register_content)
+                    type(self.node.state[self.src0].register_content)
                     if is_reg(self.src0)
                     else RegisterContent
                 ),

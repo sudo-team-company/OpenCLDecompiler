@@ -23,7 +23,7 @@ class VBfe(BaseInstruction):
                 op3 = make_op(self.node, op2, str(pow(2, int(self.src2))), '*', '(ulong)', '(ulong)',
                               suffix=self.suffix)
                 new_value = make_op(self.node, op1, op3, '-', '(ulong)', '(ulong)', suffix=self.suffix)
-                reg_type = self.node.state.registers[self.src0].type
+                reg_type = self.node.state[self.src0].type
 
                 return set_reg_value(
                     node=self.node,
@@ -34,8 +34,8 @@ class VBfe(BaseInstruction):
                     reg_type=reg_type,
                 )
 
-            if isinstance(self.node.state.registers[self.src0].register_content, CombinedRegisterContent):
-                maybe_shift_register: Register = self.node.state.registers[self.src0] >> int(self.src1)
+            if isinstance(self.node.state[self.src0].register_content, CombinedRegisterContent):
+                maybe_shift_register: Register = self.node.state[self.src0] >> int(self.src1)
 
                 if maybe_shift_register is not None:
                     if isinstance(maybe_shift_register.register_content, CombinedRegisterContent):

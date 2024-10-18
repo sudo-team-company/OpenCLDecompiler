@@ -32,22 +32,22 @@ class VMulF32(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'f32':
-            if self.src1 in self.node.state.registers and self.node.state.registers[
+            if self.src1 in self.node.state and self.node.state[
                 self.src1].type == RegisterType.DIVISION_RECIPROCAL and self.src0 == "0x4f7ffffe":
-                new_value = self.node.state.registers[self.src1].val
+                new_value = self.node.state[self.src1].val
                 return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                      reg_type=RegisterType.DIVISION_PT2)
-            reg_entire = self.node.state.registers[self.src1].integrity
+            reg_entire = self.node.state[self.src1].integrity
             new_value = make_op(self.node, self.src0, self.src1, '*', '(float)', '(float)', suffix=self.suffix)
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                  integrity=reg_entire)
         if self.suffix == 'i32_i24':
-            reg_entire = self.node.state.registers[self.src1].integrity
+            reg_entire = self.node.state[self.src1].integrity
             new_value = make_op(self.node, self.src0, self.src1, '*', '(int)', '(int)', suffix=self.suffix)
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                  integrity=reg_entire)
         if self.suffix == 'u32_u24':
-            reg_entire = self.node.state.registers[self.src1].integrity
+            reg_entire = self.node.state[self.src1].integrity
             new_value = make_op(self.node, self.src0, self.src1, '*', suffix=self.suffix)
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                  integrity=reg_entire)

@@ -17,8 +17,8 @@ class SSext(BaseInstruction):
     def to_fill_node(self):
         if is_reg(self.ssrc) \
                 and is_reg(self.sdst) \
-                and self.node.state.registers[self.ssrc].get_data_type() == self.from_data_type:
-            new_reg = copy.deepcopy(self.node.state.registers[self.ssrc])
+                and self.node.state[self.ssrc].get_data_type() == self.from_data_type:
+            new_reg = copy.deepcopy(self.node.state[self.ssrc])
             new_reg.cast_to(self.to_data_type)
 
             return set_reg(

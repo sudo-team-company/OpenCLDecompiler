@@ -8,5 +8,5 @@ class SCbranchScc0(SCbranch):
         return self.node
 
     def to_print(self):
-        self.output_string = self.node.state.registers["scc"].val
+        self.output_string = self.node.state["scc"].val
         return self.output_string

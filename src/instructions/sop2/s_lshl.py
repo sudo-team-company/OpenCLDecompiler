@@ -25,14 +25,14 @@ class SLshl(BaseInstruction):
     def to_fill_node(self):
         if self.suffix == 'b32':
             new_value = make_op(self.node, self.ssrc0, str(pow(2, int(self.ssrc1))), '*', suffix=self.suffix)
-            if self.node.state.registers[self.ssrc0].type == RegisterType.WORK_GROUP_ID_X:
+            if self.node.state[self.ssrc0].type == RegisterType.WORK_GROUP_ID_X:
                 reg_type = RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE
-            elif self.node.state.registers[self.ssrc0].type == RegisterType.WORK_GROUP_ID_Y:
+            elif self.node.state[self.ssrc0].type == RegisterType.WORK_GROUP_ID_Y:
                 reg_type = RegisterType.WORK_GROUP_ID_Y_LOCAL_SIZE
-            elif self.node.state.registers[self.ssrc0].type == RegisterType.WORK_GROUP_ID_Z:
+            elif self.node.state[self.ssrc0].type == RegisterType.WORK_GROUP_ID_Z:
                 reg_type = RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE
             else:
-                reg_type = self.node.state.registers[self.ssrc0].type
+                reg_type = self.node.state[self.ssrc0].type
             return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix,
                                  reg_type=reg_type)
         if self.suffix == 'b64':
@@ -40,8 +40,8 @@ class SLshl(BaseInstruction):
             start_from_register, end_from_register = check_and_split_regs(self.ssrc0)
             new_value0 = make_op(self.node, start_from_register, str(pow(2, int(self.ssrc1))), '*', suffix=self.suffix)
             new_value1 = make_op(self.node, end_from_register, str(pow(2, int(self.ssrc1))), '*', suffix=self.suffix)
-            reg_type0 = self.node.state.registers[start_from_register].type
-            reg_type1 = self.node.state.registers[end_from_register].type
+            reg_type0 = self.node.state[start_from_register].type
+            reg_type1 = self.node.state[end_from_register].type
             data_type = self.suffix
             if self.ssrc1 == '3':
                 data_type = '8 bytes'
@@ -55,7 +55,7 @@ class SLshl(BaseInstruction):
 
         if self.decompiler_data.is_rdna3:
             try:
-                new_reg = self.node.state.registers[self.ssrc0] * pow(2, int(self.ssrc1))
+                new_reg = self.node.state[self.ssrc0] * pow(2, int(self.ssrc1))
                 new_reg.cast_to(self.suffix)
                 return set_reg(
                     node=self.node,

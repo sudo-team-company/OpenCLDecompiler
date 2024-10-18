@@ -19,7 +19,7 @@ class SMin(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'i32':
-            new_value = "min((int)" + self.node.state.registers[self.ssrc0].val + ", (int)" \
-                        + self.node.state.registers[self.ssrc1].val + ")"
+            new_value = "min((int)" + self.node.state[self.ssrc0].val + ", (int)" \
+                        + self.node.state[self.ssrc1].val + ")"
             return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix)
         return super().to_fill_node()

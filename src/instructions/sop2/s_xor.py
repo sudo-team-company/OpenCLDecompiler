@@ -25,10 +25,10 @@ class SXor(BaseInstruction):
                 return set_reg_value(self.node, new_exec_condition.top(), self.sdst, [self.ssrc0, self.ssrc1], None,
                                      exec_condition=new_exec_condition)
             reg_entire = Integrity.ENTIRE
-            if self.node.state.registers.get(self.ssrc1) is not None:
-                reg_entire = self.node.state.registers[self.ssrc1].integrity
-            if self.node.state.registers.get(self.ssrc0) is not None:
-                reg_entire = self.node.state.registers[self.ssrc0].integrity
+            if self.ssrc1 in self.node.state:
+                reg_entire = self.node.state[self.ssrc1].integrity
+            if self.ssrc0 in self.node.state:
+                reg_entire = self.node.state[self.ssrc0].integrity
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, '^', suffix=self.suffix)
             return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix,
                                  integrity=reg_entire)

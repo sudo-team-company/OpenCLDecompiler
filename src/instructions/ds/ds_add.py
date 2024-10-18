@@ -24,12 +24,12 @@ class DsAdd(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == "u32":
-            new_value = self.node.state.registers[self.varname].val + " + " + self.node.state.registers[self.vdata0].val
+            new_value = self.node.state[self.varname].val + " + " + self.node.state[self.vdata0].val
             return set_reg_value(self.node, new_value, self.varname, [], self.suffix)
         return super().to_fill_node()
 
     def to_print(self):
         if self.suffix == "u32":
-            self.output_string = self.varname + " += " + self.node.state.registers[self.vdata0].val
+            self.output_string = self.varname + " += " + self.node.state[self.vdata0].val
             return self.output_string
         return super().to_print()

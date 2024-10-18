@@ -24,14 +24,14 @@ class SMul(BaseInstruction):
             ssrc1_reg = is_sgpr(self.ssrc1)
             reg_type = RegisterType.UNKNOWN
             if ssrc0_reg and ssrc1_reg:
-                if self.node.state.registers[self.ssrc0].type == RegisterType.LOCAL_SIZE_X \
-                        and self.node.state.registers[self.ssrc1].type == RegisterType.WORK_GROUP_ID_X:
+                if self.node.state[self.ssrc0].type == RegisterType.LOCAL_SIZE_X \
+                        and self.node.state[self.ssrc1].type == RegisterType.WORK_GROUP_ID_X:
                     reg_type = RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE
-                elif self.node.state.registers[self.ssrc0].type == RegisterType.LOCAL_SIZE_Y \
-                        and self.node.state.registers[self.ssrc1].type == RegisterType.WORK_GROUP_ID_Y:
+                elif self.node.state[self.ssrc0].type == RegisterType.LOCAL_SIZE_Y \
+                        and self.node.state[self.ssrc1].type == RegisterType.WORK_GROUP_ID_Y:
                     reg_type = RegisterType.WORK_GROUP_ID_Y_LOCAL_SIZE
-                elif self.node.state.registers[self.ssrc0].type == RegisterType.LOCAL_SIZE_Z \
-                        and self.node.state.registers[self.ssrc1].type == RegisterType.WORK_GROUP_ID_Z:
+                elif self.node.state[self.ssrc0].type == RegisterType.LOCAL_SIZE_Z \
+                        and self.node.state[self.ssrc1].type == RegisterType.WORK_GROUP_ID_Z:
                     reg_type = RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE
             return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix,
                                  reg_type=reg_type)

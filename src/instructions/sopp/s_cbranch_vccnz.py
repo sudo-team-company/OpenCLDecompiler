@@ -8,5 +8,5 @@ class SCbranchVccnz(SCbranch):
         return self.node
 
     def to_print(self):
-        self.output_string = self.node.state.registers["vcc"].val
+        self.output_string = self.node.state["vcc"].val
         return self.output_string
