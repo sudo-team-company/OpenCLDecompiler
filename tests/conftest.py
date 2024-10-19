@@ -24,6 +24,8 @@ def template(
         mcpu: str = '',
         disasm: str = "clrxdisasm",
 ):
+    if mcpu == 'amd_gcn':
+        mcpu = ''
     if mcpu:
         mcpu = f'-{mcpu}'
     test_root = Path(".") / path_to_dir / dir_name
