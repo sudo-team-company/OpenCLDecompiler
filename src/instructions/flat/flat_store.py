@@ -144,7 +144,7 @@ class FlatStore(BaseInstruction):
                 if self.decompiler_data.names_of_vars.get(var):
                     # Убираем каст при записи в глобальную память
                     if self.decompiler_data.names_of_vars[var] != \
-                        self.node.state.registers[self.to_registers].data_type:
+                        self.node.state[self.to_registers].data_type:
                         var = "*(" + make_opencl_type(self.decompiler_data.names_of_vars[var]) + "*)(" + var + ")"
                 else:
                     var = "*" + var
