@@ -7,9 +7,9 @@ from src.register_type import RegisterType
 def v_sub_fill_node(node, src0, src1, vdst, new_value, suffix):
     reg_type = RegisterType.INT32
     if is_reg(src0):
-        reg_type = node.state.registers[src0].integrity
+        reg_type = node.state[src0].integrity
     elif is_reg(src1):
-        reg_type = node.state.registers[src1].integrity
+        reg_type = node.state[src1].integrity
     return set_reg_value(node, new_value, vdst, [src0, src1], suffix, reg_type=reg_type)
 
 

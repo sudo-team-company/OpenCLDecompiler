@@ -21,8 +21,8 @@ class SAddK(BaseInstruction):
     def to_fill_node(self):
         if self.suffix == 'i32':
             new_value = make_op(self.node, self.src0, self.simm16, '+', '(int)', '(int)', suffix=self.suffix)
-            data_type = self.node.state.registers[self.src0].data_type
-            reg_type = self.node.state.registers[self.src0].type
+            data_type = self.node.state[self.src0].data_type
+            reg_type = self.node.state[self.src0].type
             return set_reg_value(self.node, new_value, self.src0, [self.src0, self.simm16], data_type,
                                  reg_type=reg_type)
         return super().to_fill_node()

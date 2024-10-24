@@ -24,34 +24,34 @@ class VAnd(BaseInstruction):
         if self.suffix == 'b32':
             if is_reg(self.src1):
                 def default_behaviour() -> tuple[any, RegisterType]:
-                    new_value = self.node.state.registers[self.src1].val
+                    new_value = self.node.state[self.src1].val
                     reg_type = RegisterType.UNKNOWN
 
                     return new_value, reg_type
 
                 size_of_work_groups = self.decompiler_data.config_data.size_of_work_groups
-                if self.node.state.registers[self.src1].type == RegisterType.WORK_DIM and \
+                if self.node.state[self.src1].type == RegisterType.WORK_DIM and \
                         self.src0 == "0xffff":
-                    new_value = self.node.state.registers[self.src1].val
-                    reg_type = self.node.state.registers[self.src1].type
-                elif self.node.state.registers[self.src1].type == RegisterType.GLOBAL_SIZE_X and \
+                    new_value = self.node.state[self.src1].val
+                    reg_type = self.node.state[self.src1].type
+                elif self.node.state[self.src1].type == RegisterType.GLOBAL_SIZE_X and \
                         size_of_work_groups[0] == -int(self.src0):
                     new_value = make_op(self.node, "get_num_groups(0)", str(size_of_work_groups[0]), '*',
                                         suffix=self.suffix)
                     reg_type = RegisterType.UNKNOWN
-                elif self.node.state.registers[self.src1].type == RegisterType.GLOBAL_SIZE_Y and \
+                elif self.node.state[self.src1].type == RegisterType.GLOBAL_SIZE_Y and \
                         size_of_work_groups[1] == -int(self.src0):
                     new_value = make_op(self.node, "get_num_groups(1)", str(size_of_work_groups[1]), '*',
                                         suffix=self.suffix)
                     reg_type = RegisterType.UNKNOWN
-                elif self.node.state.registers[self.src1].type == RegisterType.GLOBAL_SIZE_Z and \
+                elif self.node.state[self.src1].type == RegisterType.GLOBAL_SIZE_Z and \
                         size_of_work_groups[2] == -int(self.src0):
                     new_value = make_op(self.node, "get_num_groups(2)", str(size_of_work_groups[2]), '*',
                                         suffix=self.suffix)
                     reg_type = RegisterType.UNKNOWN
-                elif isinstance(self.node.state.registers[self.src1].register_content, CombinedRegisterContent) and \
+                elif isinstance(self.node.state[self.src1].register_content, CombinedRegisterContent) and \
                         isinstance(self.src0, str) and self.src0.startswith("0x"):
-                    maybe_new_reg: Optional[Register] = self.node.state.registers[self.src1] & self.src0
+                    maybe_new_reg: Optional[Register] = self.node.state[self.src1] & self.src0
                     if maybe_new_reg is None:
                         new_value, reg_type = default_behaviour()
                     else:
@@ -71,6 +71,6 @@ class VAnd(BaseInstruction):
                     from_regs=[self.src0, self.src1],
                     data_type=self.suffix,
                     reg_type=reg_type,
-                    integrity=self.node.state.registers[self.src1].integrity
+                    integrity=self.node.state[self.src1].integrity
                 )
         return super().to_fill_node()

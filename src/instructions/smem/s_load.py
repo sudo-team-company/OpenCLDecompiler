@@ -31,7 +31,7 @@ class SLoad(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        sbase: Register | None = self.node.state.registers.get(self.from_registers)
+        sbase: Register | None = self.node.state.get(self.from_registers)
         if sbase is not None and self.suffix in ['dword', 'dwordx2', 'dwordx4', 'dwordx8', 'b32', 'b64', 'b128']:
             if sbase.val.isdigit():
                 self.offset = hex(int(self.offset, 16) + int(sbase.val))

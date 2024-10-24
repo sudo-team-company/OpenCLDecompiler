@@ -12,7 +12,7 @@ from src.node import Node
 from src.node_processor import check_realisation_for_node
 from src.regions.functions_for_regions import make_region_graph_from_cfg, process_region_graph
 from src.unrolled_loops_processing import process_unrolled_loops
-from src.utils import get_context
+from src.utils import get_context, ConfigData
 from src.versions import find_max_and_prev_versions, change_values, check_for_use_new_version
 
 CONTEXT = get_context()
@@ -40,17 +40,15 @@ def process_src_with_unresolved_instruction(set_of_instructions):
 
 
 def process_src(  # pylint: disable=R0914
-        name_of_program,
-        config_data,
-        set_of_instructions,
-        set_of_global_data_bytes,
-        set_of_global_data_instruction,
-        *,
-        is_rdna3: bool = False,
+        name_of_program: str,
+        config_data: ConfigData,
+        set_of_instructions: list[str],
+        set_of_global_data_bytes: list[str],
+        set_of_global_data_instruction: list[str],
 ):
     decompiler_data = DecompilerData()
     decompiler_data.reset(name_of_program)
-    if is_rdna3:
+    if decompiler_data.gpu.startswith('gfx11'):
         decompiler_data.is_rdna3 = True
     set_of_instructions = [instr.replace("null", "0x0") for instr in set_of_instructions]
     new_set_of_instructions = []
@@ -115,13 +113,12 @@ def process_src(  # pylint: disable=R0914
             common_if_else_part_start_index.append(None)
         if ('s_or' in instruction[0] or 's_mov' in instruction[0]) and \
                 'exec' in instruction[1] or 's_endpgm' in instruction[0]:
-            end_exec_condition = last_node.state.registers["exec"] \
+            end_exec_condition = last_node.state["exec"] \
                 .exec_condition
             while if_and_last_in_if_body_nodes and \
                     ExecCondition.is_closing_for(
                         end_exec_condition,
-                        if_and_last_in_if_body_nodes[-1][0] \
-                                .state.registers["exec"].exec_condition):
+                        if_and_last_in_if_body_nodes[-1][0].state["exec"].exec_condition):
                 if_and_last_in_if_nodes = if_and_last_in_if_body_nodes[-1]
                 parent = if_and_last_in_if_nodes[0] \
                     if len(if_and_last_in_if_nodes) == 1 else \

@@ -23,10 +23,10 @@ class SMov(BaseInstruction):
                                      | self.decompiler_data.exec_registers[self.ssrc0]
                 return set_reg_value(self.node, new_exec_condition.top(), self.sdst, [self.ssrc0], None,
                                      exec_condition=new_exec_condition)
-            if self.node.state.registers.get(self.ssrc0) is not None:
-                new_value = self.node.state.registers[self.ssrc0].val
-                reg_type = self.node.state.registers[self.ssrc0].type
-                data_type = self.node.state.registers[self.ssrc0].data_type
+            if self.ssrc0 in self.node.state:
+                new_value = self.node.state[self.ssrc0].val
+                reg_type = self.node.state[self.ssrc0].type
+                data_type = self.node.state[self.ssrc0].data_type
             else:
                 if ".gdata" in self.ssrc0:
                     new_value = "gdata" + str(get_gdata_offset(self.ssrc0))

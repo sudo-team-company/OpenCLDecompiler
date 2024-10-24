@@ -159,8 +159,8 @@ def process_unrolled_loops():  # pylint: disable=R0914
             end = decompiler_data.improve_cfg.end
             while cur != end and not cur.children[0].exclude_unrolled:
                 cur = cur.children[0]
-            before = cur.state.registers[dst].val
-            inside: str = vertices[vertices[chosen[0]].merged_vertices[-1]].node.state.registers[dst].val
+            before = cur.state[dst].val
+            inside: str = vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].val
             inside = inside.replace(f"({before})", 'acc').replace(f"{before}", 'acc')
             if len(progressions) != 0:
                 inside = inside.replace(str(progressions[0][0]), 'i')
@@ -168,5 +168,5 @@ def process_unrolled_loops():  # pylint: disable=R0914
                 child: Node = cur.children[0]
                 cur.children = child.children
 
-            cur.children[0].state.registers[dst].register_content._value = 'acc'  # pylint: disable=W0212
+            cur.children[0].state[dst].register_content._value = 'acc'  # pylint: disable=W0212
             cur.add_first_child(Region(RegionType.UNROLLED_LOOP, (before, first, last, diff, inside)))

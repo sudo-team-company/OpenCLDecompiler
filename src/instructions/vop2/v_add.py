@@ -38,25 +38,25 @@ class VAdd(BaseInstruction):
     def to_fill_node(self):
         if self.suffix == 'u32':
             if self.decompiler_data.is_rdna3:
-                if self.node.state.registers[self.src0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT and \
-                        self.decompiler_data.type_params.get("*" + self.node.state.registers[self.src0].val):
-                    reg_type = self.node.state.registers[self.src1].type
-                    data_type = self.node.state.registers[self.src0].data_type
+                if self.node.state[self.src0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT and \
+                        self.decompiler_data.type_params.get("*" + self.node.state[self.src0].val):
+                    reg_type = self.node.state[self.src1].type
+                    data_type = self.node.state[self.src0].data_type
                     data_size, _ = evaluate_size(data_type, True)
                     new_value = make_op(self.node, self.src1, str(data_size), '/', suffix=self.suffix)
 
                     return set_reg_value(
                         self.node,
                         [
-                            self.node.state.registers[self.src0].val,
+                            self.node.state[self.src0].val,
                             new_value,
                         ],
                         self.vdst,
                         [self.src0, self.src1],
                         self.suffix,
                         reg_type=[
-                            self.node.state.registers[self.src0].type,
-                            self.node.state.registers[self.src1].type,
+                            self.node.state[self.src0].type,
+                            self.node.state[self.src1].type,
                         ],
                         integrity=Integrity.ENTIRE,
                         register_content_type=OperationRegisterContent,
@@ -64,7 +64,7 @@ class VAdd(BaseInstruction):
                     )
 
                 try:
-                    new_reg = self.node.state.registers[self.src0] + self.node.state.registers[self.src1]
+                    new_reg = self.node.state[self.src0] + self.node.state[self.src1]
                     new_reg.cast_to(self.suffix)
                     return set_reg(
                         node=self.node,
@@ -82,40 +82,40 @@ class VAdd(BaseInstruction):
             reg_type = RegisterType.UNKNOWN
             reg_entire = Integrity.ENTIRE
             if src0_reg and src1_reg:
-                reg_entire = self.node.state.registers[self.src1].integrity
-                if self.node.state.registers[self.src0].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE_OFFSET and \
-                        self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_X or \
-                        self.node.state.registers[self.src0].type == RegisterType.GLOBAL_OFFSET_X and \
-                        self.node.state.registers[self.src1].type == RegisterType.WORK_GROUP_ID_X_WORK_ITEM_ID:
+                reg_entire = self.node.state[self.src1].integrity
+                if self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE_OFFSET and \
+                        self.node.state[self.src1].type == RegisterType.WORK_ITEM_ID_X or \
+                        self.node.state[self.src0].type == RegisterType.GLOBAL_OFFSET_X and \
+                        self.node.state[self.src1].type == RegisterType.WORK_GROUP_ID_X_WORK_ITEM_ID:
                     new_value = "get_global_id(0)"
                     reg_type = RegisterType.GLOBAL_ID_X
-                elif self.node.state.registers[self.src0].type == RegisterType.WORK_GROUP_ID_Y_LOCAL_SIZE_OFFSET and \
-                        self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_Y or \
-                        self.node.state.registers[self.src0].type == RegisterType.GLOBAL_OFFSET_Y and \
-                        self.node.state.registers[self.src1].type == RegisterType.WORK_GROUP_ID_Y_WORK_ITEM_ID:
+                elif self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_Y_LOCAL_SIZE_OFFSET and \
+                        self.node.state[self.src1].type == RegisterType.WORK_ITEM_ID_Y or \
+                        self.node.state[self.src0].type == RegisterType.GLOBAL_OFFSET_Y and \
+                        self.node.state[self.src1].type == RegisterType.WORK_GROUP_ID_Y_WORK_ITEM_ID:
                     new_value = "get_global_id(1)"
                     reg_type = RegisterType.GLOBAL_ID_Y
-                elif self.node.state.registers[self.src0].type == RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE_OFFSET and \
-                        self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_Z or \
-                        self.node.state.registers[self.src0].type == RegisterType.GLOBAL_OFFSET_Z and \
-                        self.node.state.registers[self.src1].type == RegisterType.WORK_GROUP_ID_Z_WORK_ITEM_ID or \
-                        self.node.state.registers[self.src1].type == RegisterType.GLOBAL_OFFSET_Z and \
-                        self.node.state.registers[self.src0].type == RegisterType.WORK_GROUP_ID_Z_WORK_ITEM_ID:
+                elif self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE_OFFSET and \
+                        self.node.state[self.src1].type == RegisterType.WORK_ITEM_ID_Z or \
+                        self.node.state[self.src0].type == RegisterType.GLOBAL_OFFSET_Z and \
+                        self.node.state[self.src1].type == RegisterType.WORK_GROUP_ID_Z_WORK_ITEM_ID or \
+                        self.node.state[self.src1].type == RegisterType.GLOBAL_OFFSET_Z and \
+                        self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_Z_WORK_ITEM_ID:
                     new_value = "get_global_id(2)"
                     reg_type = RegisterType.GLOBAL_ID_Z
-                elif self.node.state.registers[self.src0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
+                elif self.node.state[self.src0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
                     reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT
-                    argument = self.node.state.registers[self.src0].val
+                    argument = self.node.state[self.src0].val
                     if self.decompiler_data.type_params.get("*" + argument):
                         data_type = make_asm_type(self.decompiler_data.type_params["*" + argument])
                     else:
-                        data_type = self.node.state.registers[self.src0].data_type
+                        data_type = self.node.state[self.src0].data_type
                     data_size, _ = evaluate_size(data_type, True)
                     new_value = make_op(self.node, self.src1, str(data_size), '/', suffix=self.suffix)
                     new_value = make_op(self.node, argument, new_value, '+', suffix=self.suffix)
-                elif self.node.state.registers[self.src0].type == RegisterType.GLOBAL_DATA_POINTER:
-                    data_type = self.node.state.registers[self.src1].data_type
-                    name = self.node.state.registers[self.src0].val
+                elif self.node.state[self.src0].type == RegisterType.GLOBAL_DATA_POINTER:
+                    data_type = self.node.state[self.src1].data_type
+                    name = self.node.state[self.src0].val
                     reg_entire = Integrity.ENTIRE
                     if 'bytes' in data_type:
                         position = data_type.find(' ')
@@ -123,37 +123,37 @@ class VAdd(BaseInstruction):
                         new_value = make_op(self.node, self.src1, value, '/', suffix=self.suffix)
                         new_value = make_op(self.node, name, new_value, '+', suffix=self.suffix)
                         reg_type = RegisterType.GLOBAL_DATA_POINTER
-                elif self.node.state.registers[self.src0].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE and \
-                        self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_X:
+                elif self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE and \
+                        self.node.state[self.src1].type == RegisterType.WORK_ITEM_ID_X:
                     new_value = "get_global_id(0) - get_global_offset(0)"
                     reg_type = RegisterType.WORK_GROUP_ID_X_WORK_ITEM_ID
-                elif self.node.state.registers[self.src0].type == RegisterType.WORK_GROUP_ID_Y_LOCAL_SIZE and \
-                        self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_Y:
+                elif self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_Y_LOCAL_SIZE and \
+                        self.node.state[self.src1].type == RegisterType.WORK_ITEM_ID_Y:
                     new_value = "get_global_id(1) - get_global_offset(1)"
                     reg_type = RegisterType.WORK_GROUP_ID_Y_WORK_ITEM_ID
-                elif self.node.state.registers[self.src0].type == RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE and \
-                        self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_Z:
+                elif self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE and \
+                        self.node.state[self.src1].type == RegisterType.WORK_ITEM_ID_Z:
                     new_value = "get_global_id(2) - get_global_offset(2)"
                     reg_type = RegisterType.WORK_GROUP_ID_Z_WORK_ITEM_ID
-                elif self.node.state.registers[self.src0].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE and \
-                        self.node.state.registers[self.src1].type == RegisterType.WORK_ITEM_ID_X or \
-                        self.node.state.registers[self.src1].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE and \
-                        self.node.state.registers[self.src0].type == RegisterType.WORK_ITEM_ID_X:
+                elif self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE and \
+                        self.node.state[self.src1].type == RegisterType.WORK_ITEM_ID_X or \
+                        self.node.state[self.src1].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE and \
+                        self.node.state[self.src0].type == RegisterType.WORK_ITEM_ID_X:
                     new_value = "get_global_id(0) - get_global_offset(0)"
                 else:
-                    data_type = self.node.state.registers[self.src1].data_type
+                    data_type = self.node.state[self.src1].data_type
             else:
                 reg_type = RegisterType.INT32
                 if src0_reg:
-                    reg_type = self.node.state.registers[self.src0].type
-                    if self.node.state.registers[self.src0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT:
+                    reg_type = self.node.state[self.src0].type
+                    if self.node.state[self.src0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT:
                         reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT
-                        data_type = self.node.state.registers[self.src0].data_type
+                        data_type = self.node.state[self.src0].data_type
                         data_size, _ = evaluate_size(data_type, True)
                         new_value = make_op(self.node, self.src1, str(data_size), '/', suffix=self.suffix)
                         new_value = make_op(self.node, self.src0, new_value, '+', suffix=self.suffix)
                 if src1_reg:
-                    reg_type = self.node.state.registers[self.src1].type
+                    reg_type = self.node.state[self.src1].type
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], data_type, reg_type=reg_type,
                                  integrity=reg_entire)
         if self.suffix == 'f64':
@@ -161,11 +161,11 @@ class VAdd(BaseInstruction):
             start_from_src0, _ = check_and_split_regs(self.src0)
             start_from_src1, _ = check_and_split_regs(self.src1)
             start_to_register, _ = check_and_split_regs(self.vdst)
-            data_type = most_common_type(self.node.state.registers[start_from_src0].data_type,
-                                         self.node.state.registers[start_from_src1].data_type)
-            reg_type = self.node.state.registers[start_from_src1].type
-            if self.node.state.registers[start_from_src1].val == self.node.state.registers[start_from_src0].val:
-                new_value = self.node.state.registers[start_from_src1].val
+            data_type = most_common_type(self.node.state[start_from_src0].data_type,
+                                         self.node.state[start_from_src1].data_type)
+            reg_type = self.node.state[start_from_src1].type
+            if self.node.state[start_from_src1].val == self.node.state[start_from_src0].val:
+                new_value = self.node.state[start_from_src1].val
             else:
                 new_value = make_op(self.node, start_from_src0, start_from_src1, '+', '(double)', '(double)',
                                     suffix=self.suffix)

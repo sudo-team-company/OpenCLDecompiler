@@ -67,9 +67,9 @@ class FlatLoad(BaseInstruction):
             variable = "var" + str(self.decompiler_data.num_of_var)
             data_type = make_new_type_without_modifier(self.node, self.from_registers)
             # probably we should save only const data
-            self.decompiler_data.var_value[variable] = self.node.state.registers[self.from_registers].val
+            self.decompiler_data.var_value[variable] = self.node.state[self.from_registers].val
             register_type = RegisterType.KERNEL_ARGUMENT_PTR \
-                if self.node.state.registers[self.from_registers].type == RegisterType.ADDRESS_KERNEL_ARGUMENT \
+                if self.node.state[self.from_registers].type == RegisterType.ADDRESS_KERNEL_ARGUMENT \
                 else RegisterType.KERNEL_ARGUMENT_ELEMENT
             to_now = self.start_to_registers
             vector_position = 0
@@ -88,32 +88,32 @@ class FlatLoad(BaseInstruction):
                 if to_now == self.end_to_registers:
                     break
                 to_now = get_next_reg(to_now)
-            self.decompiler_data.make_var(self.node.state.registers[self.start_to_registers].version,
-                                          self.node.state.registers[self.start_to_registers].val, data_type)
+            self.decompiler_data.make_var(self.node.state[self.start_to_registers].version,
+                                          self.node.state[self.start_to_registers].val, data_type)
             return self.node
         return super().to_fill_node()
 
     def to_print(self):
         if self.suffix in ["dword", "dwordx2", "dwordx4"]:
             if self.start_to_registers == self.from_registers:
-                output = self.node.parent[0].state.registers[self.from_registers].val
-                data_type = self.node.parent[0].state.registers[self.from_registers].data_type
+                output = self.node.parent[0].state[self.from_registers].val
+                data_type = self.node.parent[0].state[self.from_registers].data_type
             else:
-                output = self.node.state.registers[self.from_registers].val
-                data_type = self.node.state.registers[self.from_registers].data_type
+                output = self.node.state[self.from_registers].val
+                data_type = self.node.state[self.from_registers].data_type
             if " + " in output:
                 output = make_elem_from_addr(output)
             else:
-                if self.node.state.registers[self.start_to_registers].data_type != \
+                if self.node.state[self.start_to_registers].data_type != \
                     self.decompiler_data.names_of_vars[output][1:]:
                     output = "*(" + make_opencl_type(self.decompiler_data.names_of_vars[output]) + "*)(" + output + ")"
                 else:
                     output = '*' + output
-            var_name = self.node.state.registers[self.start_to_registers].val
+            var_name = self.node.state[self.start_to_registers].val
             if is_vector_type(data_type):
                 if var_name[-2] == 's' and var_name[-1].isdigit():
                     var_name = var_name[:-5]
-                var_type = self.node.state.registers[self.start_to_registers].data_type
+                var_type = self.node.state[self.start_to_registers].data_type
                 if data_type != var_type:
                     output = get_output_for_different_vector_types(output, var_type, data_type)
             self.output_string = var_name + " = " + output

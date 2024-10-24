@@ -20,7 +20,7 @@ class SAndSaveexec(BaseInstruction):
     def to_fill_node(self):
         if self.suffix in ["b32", "b64"]:
             old_exec_condition = self.decompiler_data.exec_registers["exec"]
-            new_cond = self.node.state.registers[self.ssrc0].val
+            new_cond = self.node.state[self.ssrc0].val
 
             self.decompiler_data.exec_registers[self.sdst] = old_exec_condition
             set_reg_value(self.node, old_exec_condition.top(), self.sdst, ["exec"], None,
@@ -33,5 +33,5 @@ class SAndSaveexec(BaseInstruction):
         return super().to_fill_node()
 
     def to_print(self):
-        self.output_string = self.node.state.registers["exec"].val
+        self.output_string = self.node.state["exec"].val
         return self.output_string

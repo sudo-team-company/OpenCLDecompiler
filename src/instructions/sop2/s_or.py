@@ -37,9 +37,9 @@ class SOr(BaseInstruction):
                 return set_reg_value(self.node, new_exec_condition.top(), self.sdst, [self.ssrc0, self.ssrc1], None,
                                      exec_condition=new_exec_condition)
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, '||', suffix=self.suffix)
-            if self.ssrc1 not in self.node.state.registers:
+            if self.ssrc1 not in self.node.state:
                 return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix)
-            reg_entire = self.node.state.registers[self.ssrc1].integrity
+            reg_entire = self.node.state[self.ssrc1].integrity
             return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix,
                                  integrity=reg_entire)
         return super().to_fill_node()

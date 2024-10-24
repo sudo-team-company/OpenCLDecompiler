@@ -51,11 +51,11 @@ class SBfe(BaseInstruction):
         if self.decompiler_data.is_rdna3:
             if self.suffix.endswith("32"):
                 if is_reg(self.ssrc0) \
-                        and isinstance(self.node.state.registers[self.ssrc0].register_content, CombinedRegisterContent):
+                        and isinstance(self.node.state[self.ssrc0].register_content, CombinedRegisterContent):
                     shift_by = int(self.ssrc1, 16) & ((1 << 4) - 1)
                     and_by = hex((1 << ((int(self.ssrc1, 16) >> 16) & ((1 << 6) - 1))) - 1)
 
-                    new_reg = self.node.state.registers[self.ssrc0] >> shift_by
+                    new_reg = self.node.state[self.ssrc0] >> shift_by
                     new_reg = new_reg & and_by
                     new_reg.cast_to(self.suffix)
 
@@ -85,8 +85,8 @@ class SBfe(BaseInstruction):
             elif self.ssrc1 == '0x100010':
                 new_value = "get_local_size(1)"
                 reg_type = RegisterType.LOCAL_SIZE_Y
-            elif self.decompiler_data.bfe_offsets.get((self.node.state.registers[self.ssrc0].val, self.ssrc1)):
-                new_value = self.decompiler_data.bfe_offsets[self.node.state.registers[self.ssrc0].val, self.ssrc1]
+            elif self.decompiler_data.bfe_offsets.get((self.node.state[self.ssrc0].val, self.ssrc1)):
+                new_value = self.decompiler_data.bfe_offsets[self.node.state[self.ssrc0].val, self.ssrc1]
                 reg_type = RegisterType.KERNEL_ARGUMENT_VALUE
             else:
                 print("Unknown pattern in s_bfe")
@@ -94,8 +94,8 @@ class SBfe(BaseInstruction):
                 raise NotImplementedError()
             return set_reg_value(self.node, new_value, self.sdst, [], self.suffix, reg_type=reg_type)
         if self.suffix == 'i32':
-            if self.decompiler_data.bfe_offsets.get((self.node.state.registers[self.ssrc0].val, self.ssrc1)):
-                new_value = self.decompiler_data.bfe_offsets[self.node.state.registers[self.ssrc0].val, self.ssrc1]
+            if self.decompiler_data.bfe_offsets.get((self.node.state[self.ssrc0].val, self.ssrc1)):
+                new_value = self.decompiler_data.bfe_offsets[self.node.state[self.ssrc0].val, self.ssrc1]
                 reg_type = RegisterType.KERNEL_ARGUMENT_VALUE
                 set_reg_value(self.node, new_value, self.sdst, [], self.suffix, reg_type=reg_type)
             return self.node

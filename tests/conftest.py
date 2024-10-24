@@ -23,8 +23,9 @@ def template(
         flag: Optional[str] = None,
         mcpu: str = '',
         disasm: str = "clrxdisasm",
-        is_new_parser: bool = False,
 ):
+    if mcpu == 'amd_gcn':
+        mcpu = ''
     if mcpu:
         mcpu = f'-{mcpu}'
     test_root = Path(".") / path_to_dir / dir_name
@@ -37,7 +38,7 @@ def template(
         "path_to_asm": path_to_asm,
     }).invoke()
 
-    main(path_to_asm, path_to_cl, flag if flag else 'AUTO_DECOMPILATION', None, is_new_parser)
+    main(path_to_asm, path_to_cl, flag if flag else 'AUTO_DECOMPILATION', None)
 
     hands = test_root / f"{dir_name}_hands.cl"
     if "gfx" in mcpu and (test_root / f"{dir_name}_hands{mcpu}.cl").exists():
