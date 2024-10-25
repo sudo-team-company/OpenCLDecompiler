@@ -5,7 +5,7 @@ s1 = *(uint*)(smem + (0x40 & ~3)) // s_load_dword
 s_waitcnt       lgkmcnt(0)
 s0 = s0 & 0xffff // s_and_b32
 scc = s0 != 0
-vcc = (uint)s1 > (uint)v0 // v_cmp_gt_u32
+vcc[laneId] = (uint)s1 > (uint)v0 // v_cmp_gt_u32
 s[2:3] = exec // s_and_saveexec_b64
 exec = vcc & exec
 scc = exec != 0
@@ -55,7 +55,7 @@ uint temp4 = (ulong)v5 + (ulong)v2 + cc1
 vcc = 0
 v2 = CLAMP ? min(temp4, 0xffffffff) : temp4
 vcc = (vcc&~mask4) | ((temp4 >> 32) ? mask4 : 0)
-vcc = (uint)s1 > (uint)v3 // v_cmp_gt_u32
+vcc[laneId] = (uint)s1 > (uint)v3 // v_cmp_gt_u32
 exec = exec & vcc // s_and_b64
 scc = exec != 0
 s_cbranch_execnz .L96_0
@@ -78,7 +78,7 @@ vcc = (vcc&~mask5) | ((temp5 >> 32) ? mask5 : 0)
 ulong* V0 // ds_write_b64
 V0 = (ulong*)(ds + ((v3 + 0) & ~7))
 *V0 = v[1:2]
-scc = s0==0 // s_cmp_eq_i32
+scc = (int)s0 == (int)0 // s_cmp_eq_i32
 pc = scc==1 ?.L348_0 : pc+4 // s_cbranch_scc1
 v1 = 0 // v_mov_b32
 s_nop           0x0
@@ -92,7 +92,7 @@ s_nop           0x0
 s_barrier
 v4 = s0 // v_mov_b32
 v5 = 0 // v_mov_b32
-vcc = (ulong)v[4:5] > (uint)v[0:1] // v_cmp_gt_u64
+vcc[laneId] = (ulong)v[4:5] > (ulong)v[0:1] // v_cmp_gt_u64
 s[2:3] = exec // s_and_saveexec_b64
 exec = vcc & exec
 scc = exec != 0
@@ -128,9 +128,9 @@ V1 = (ulong*)(ds + ((v3 + 0) & ~7))
 .L332_0:exec = s[2:3] // s_mov_b64
 s0 = s0 >> (1 & 31) // s_lshr_b32
 scc = s0!= 0
-scc = s0==0 // s_cmp_eq_i32
+scc = (int)s0 == (int)0 // s_cmp_eq_i32
 pc = scc==0 ?.L256_0 : pc+4 // s_cbranch_scc0
-.L348_0:vcc(LANEID) = (int)0 == (int)v0 // v_cmp_eq_i32
+.L348_0:vcc[laneId] = (int)0 == (int)v0 // v_cmp_eq_i32
 s[2:3] = exec // s_and_saveexec_b64
 exec = vcc & exec
 scc = exec != 0

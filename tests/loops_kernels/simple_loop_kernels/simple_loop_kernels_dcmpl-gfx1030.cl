@@ -1,82 +1,77 @@
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
 void loop_kernel_0(__global uint *data, uint x, uint y, uint unrollingBreaker)
 {
-    uint var0;
     __global uint *var10;
     __global uint *var11;
     uint var12;
-    __global uint *var13;
-    uint var9;
-    if (unrollingBreaker == 0) {
-        var9 = 0x1;
-        var10 = data;
-        var11 = data;
-        var12 = y;
+    int var13;
+    __global uint *var14;
+    uint var7;
+    int var8;
+    int var9;
+    var8 = 0;
+    if ((uint)unrollingBreaker == (uint)0) {
         do {
-            var13 = var10;
-            var0 = *(__global uint*)(var13);
-            var9 = (ulong)var9 + (ulong)1;
+            var7 = (ulong)var8 + (ulong)1;
+            var14 = var10;
+            var8 = var7;
+            var9 = (ulong) + (ulong)var9;
             var10 = var10 + 4 / 4;
+            var13 = var9;
             var11 = var11 + 0 / 4;
-            var12 = (ulong)var0 + (ulong)var12;
-            *(__global uint*)(var13) = var12;
-            var12 = (var12) * x;
-        } while ((((ulong)0 - (ulong)unrollingBreaker) == var9 ? 1 : 0) | var9 > 63 ? 1 : 0);
+            var12 = (uint)var8 < (uint)63 && (uint)!(unrollingBreaker) != (uint)var8;
+            var9 = (var9) * x;
+            *(__global uint*)(var14) = var13;
+        } while ((uint)var8 < (uint)63 && (uint)!(unrollingBreaker) != (uint)var8);
     }
 }
 
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
 void loop_kernel_1(__global uint *data, uint x, uint y, uint unrollingBreaker)
 {
-    uint var0;
     __global uint *var10;
-    uint var11;
-    uint var12;
-    __global uint *var13;
-    __global uint *var9;
-    var11 = unrollingBreaker;
-    if (var11 == 0) {
-        var9 = data;
-        var10 = data;
-        var11 = unrollingBreaker;
-        var12 = y;
+    int var5;
+    int var6;
+    __global uint *var7;
+    __global uint *var8;
+    int var9;
+    var5 = unrollingBreaker;
+    if ((uint)var5 == (uint)0) {
         do {
-            var13 = var9;
-            var0 = *(__global uint*)(var13);
-            var9 = var9 + 4 / 4;
-            var10 = var10 + 0 / 4;
-            var11 = (ulong)var11 + (ulong)(-1);
-            var12 = (ulong)var0 + (ulong)var12;
-            *(__global uint*)(var13) = var12;
-            var12 = (var12) * x;
-        } while (!(((ulong)var11 + (ulong)(-1)) == 0));
+            var10 = var7;
+            var5 = (ulong)var5 + (ulong)(-1);
+            var6 = (ulong) + (ulong)var6;
+            var7 = var7 + 4 / 4;
+            var9 = var6;
+            var8 = var8 + 0 / 4;
+            var6 = (var6) * x;
+            *(__global uint*)(var10) = var9;
+        } while (!((uint)((ulong)var5 + (ulong)(-1)) == (uint)0));
     }
 }
 
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
 void loop_kernel_2(__global uint *data, uint x, uint y, uint unrollingBreaker)
 {
-    uint var0;
     __global uint *var10;
-    uint var11;
-    uint var12;
-    __global uint *var13;
+    int var11;
+    __global uint *var12;
+    int var7;
+    int var8;
     __global uint *var9;
-    var11 = unrollingBreaker;
-    if (var11 == 0) {
-        var9 = data + (var11 * 4) / 4;
-        var10 = data + (0x0 * 4) / 4;
-        var11 = unrollingBreaker;
-        var12 = y;
+    var7 = unrollingBreaker;
+    if ((uint)var7 == (uint)0) {
+        var9 = data + (var7 * 4) / 4;
+        var10 = data + (0 * 4) / 4;
         do {
-            var13 = var9;
-            var0 = *(__global uint*)(var13);
+            var12 = var9;
+            var7 = (ulong)var7 + (ulong)(-1);
+            var8 = (ulong) + (ulong)var8;
             var9 = var9 + (-4) / 4;
+            var11 = var8;
             var10 = var10 + (-1) / 4;
-            var11 = (ulong)var11 + (ulong)(-1);
-            var12 = (ulong)var0 + (ulong)var12;
-            *(__global uint*)(var13) = var12;
-            var12 = (var12) * x;
-        } while (!(((ulong)var11 + (ulong)(-1)) == 0));
+            var8 = (var8) * x;
+            *(__global uint*)(var12) = var11;
+        } while (!((uint)((ulong)var7 + (ulong)(-1)) == (uint)0));
     }
 }

@@ -5,7 +5,3 @@ void int_test(__global int8* out, int i) {
 	uint id0 = get_global_id(0);
 	out[id0] = gdata0[id0];
 }
-
-
-
-

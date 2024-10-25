@@ -46,7 +46,9 @@ asm_to_opencl_scalar_dict = {
     "b32": "uint",
     "b64": "ulong",
     "dword": "int",
-    "dwordx2": "long"
+    "dwordx2": "long",
+    "char": "char",
+    "short": "short",
 }
 
 
@@ -75,9 +77,11 @@ opencl_to_asm_dict = {
     "__global uint8": "uint8",
     "__global float4": "float4",
     "char": "char",
+    "__global char": "char",
     "__global char2": "char2",
     "__global char4": "char4",
-    "short": "short"
+    "short": "short",
+    "__global short": "short",
 }
 
 
@@ -97,7 +101,7 @@ def evaluate_size(asm_type, only_size=False):
             information = (8, 1)
         else:
             information = (8, 0)
-    elif asm_type in ["uint4", "int4"]:
+    elif asm_type in ["uint4", "int4", "float4"]:
         information = (16, 0)
     elif asm_type in ["uint8", "int8"]:
         information = (32, 0)
@@ -105,6 +109,8 @@ def evaluate_size(asm_type, only_size=False):
         information = (1, 1)
     elif asm_type in ["short", "char2"]:
         information = (2, 1)
+    elif asm_type in ["char4"]:
+        information = (4, 1)
     elif only_size:
         if "bytes" in asm_type:
             information = (int(asm_type[0]), 1)

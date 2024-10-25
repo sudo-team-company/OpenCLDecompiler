@@ -15,8 +15,7 @@ class VMulF32(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix == 'f32':
-            self.decompiler_data.write(self.vdst + " = as_float(" + self.src0 +
-                                       ") * as_float(" + self.src1 + ") // v_mul_f32\n")
+            self.decompiler_data.write(f"{self.vdst} = (float){self.src0} * (float){self.src1} // {self.name}\n")
             return self.node
         if self.suffix in ['i32_i24', 'u32_u24']:
             v0 = "V0" + str(self.decompiler_data.number_of_v0)
@@ -33,23 +32,23 @@ class VMulF32(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == 'f32':
-            if self.src1 in self.node.state.registers and self.node.state.registers[
+            if self.src1 in self.node.state and self.node.state[
                 self.src1].type == RegisterType.DIVISION_RECIPROCAL and self.src0 == "0x4f7ffffe":
-                new_value = self.node.state.registers[self.src1].val
+                new_value = self.node.state[self.src1].val
                 return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                      reg_type=RegisterType.DIVISION_PT2)
-            reg_entire = self.node.state.registers[self.src1].integrity
-            new_value = make_op(self.node, self.src0, self.src1, " * ", 'as_float(', 'as_float(')
+            reg_entire = self.node.state[self.src1].integrity
+            new_value = make_op(self.node, self.src0, self.src1, '*', '(float)', '(float)', suffix=self.suffix)
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
-                                 reg_entire=reg_entire)
+                                 integrity=reg_entire)
         if self.suffix == 'i32_i24':
-            reg_entire = self.node.state.registers[self.src1].integrity
-            new_value = make_op(self.node, self.src0, self.src1, " * ", '(int)', '(int)')
+            reg_entire = self.node.state[self.src1].integrity
+            new_value = make_op(self.node, self.src0, self.src1, '*', '(int)', '(int)', suffix=self.suffix)
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
-                                 reg_entire=reg_entire)
+                                 integrity=reg_entire)
         if self.suffix == 'u32_u24':
-            reg_entire = self.node.state.registers[self.src1].integrity
-            new_value = make_op(self.node, self.src0, self.src1, " * ")
+            reg_entire = self.node.state[self.src1].integrity
+            new_value = make_op(self.node, self.src0, self.src1, '*', suffix=self.suffix)
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
-                                 reg_entire=reg_entire)
+                                 integrity=reg_entire)
         return super().to_fill_node()

@@ -18,28 +18,28 @@ class VMulLo(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in {'u16', 'u32', 'i32'}:
-            if self.src1 in self.node.state.registers and \
-                    self.node.state.registers[self.src1].type == RegisterType.DIVISION_PT3:
-                new_value = self.node.state.registers[self.src1].val
+            if self.src1 in self.node.state and \
+                    self.node.state[self.src1].type == RegisterType.DIVISION_PT3:
+                new_value = self.node.state[self.src1].val
                 return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                      reg_type=RegisterType.DIVISION_PT4)
-            if self.src1 in self.node.state.registers and \
-                    self.node.state.registers[self.src1].type == RegisterType.DIVISION_PT4:
-                new_value = self.node.state.registers[self.src1].val
+            if self.src1 in self.node.state and \
+                    self.node.state[self.src1].type == RegisterType.DIVISION_PT4:
+                new_value = self.node.state[self.src1].val
                 return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                      reg_type=RegisterType.DIVISION_PT5)
-            if self.src1 in self.node.state.registers and \
-                    self.node.state.registers[self.src1].type == RegisterType.DIVISION_PT6:
-                new_value = make_op(self.node, self.src0, self.src1, " / ")
+            if self.src1 in self.node.state and \
+                    self.node.state[self.src1].type == RegisterType.DIVISION_PT6:
+                new_value = make_op(self.node, self.src0, self.src1, '/', suffix=self.suffix)
                 return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                      reg_type=RegisterType.DIVISION_PT7)
-            if self.src0 in self.node.state.registers and \
-                    self.node.state.registers[self.src0].type == RegisterType.DIVISION_PT7:
+            if self.src0 in self.node.state and \
+                    self.node.state[self.src0].type == RegisterType.DIVISION_PT7:
                 new_value = ""
                 return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                      reg_type=RegisterType.DIVISION_PASS)
-            reg_entire = self.node.state.registers[self.src0].integrity
-            new_value = make_op(self.node, self.src0, self.src1, " * ")
+            reg_entire = self.node.state[self.src0].integrity
+            new_value = make_op(self.node, self.src0, self.src1, '*', suffix=self.suffix)
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
-                                 reg_entire=reg_entire)
+                                 integrity=reg_entire)
         return super().to_fill_node()

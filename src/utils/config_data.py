@@ -1,12 +1,15 @@
-from dataclasses import dataclass
-from typing import Optional, List, Tuple
+from dataclasses import dataclass, field
+from typing import Optional
+
+from src.register_content import RegisterContent
+from .kernel_argument import KernelArgument
 
 
 @dataclass
 class ConfigData:
     dimensions: str
     usesetup: bool
-    size_of_work_groups: Optional[List[int]]
+    size_of_work_groups: Optional[list[int]]
     local_size: Optional[int]
-    params: List[Tuple[str, str]]
-    setup_params_offsets: List[str]
+    arguments: list[KernelArgument]
+    offset_to_content: dict[str, RegisterContent] = field(default_factory=dict)

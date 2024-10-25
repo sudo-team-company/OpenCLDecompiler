@@ -1,9 +1,15 @@
+from src import base
+from src import utils
+
+
 class Node:
     def __init__(self, instruction, state):
-        self.instruction = instruction
+        self.id = utils.generate_uuid()
+        self.instruction: base.Instruction = instruction
         self.children = []
         self.parent = []
         self.state = state
+        self.exclude_unrolled: bool = False
 
     def add_child(self, child):
         self.children.append(child)

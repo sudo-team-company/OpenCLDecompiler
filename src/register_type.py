@@ -3,6 +3,7 @@ from enum import Enum, auto
 
 class RegisterType(Enum):
     UNKNOWN = auto()
+    EMPTY = auto()
 
     GLOBAL_ID_X = auto()
     GLOBAL_ID_Y = auto()
@@ -47,6 +48,10 @@ class RegisterType(Enum):
     GLOBAL_SIZE_X = auto()
     GLOBAL_SIZE_Y = auto()
     GLOBAL_SIZE_Z = auto()
+
+    NUM_GROUPS_X = auto()
+    NUM_GROUPS_Y = auto()
+    NUM_GROUPS_Z = auto()
 
     KERNEL_ARGUMENT_VALUE = auto()  # x, y, z
     KERNEL_ARGUMENT_PTR = auto()  # __global *data

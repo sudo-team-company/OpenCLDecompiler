@@ -1,7 +1,8 @@
 from src.base_instruction import BaseInstruction
-from src.register import check_and_split_regs
+from src.decompiler_data import DecompilerData
+from src.register import check_and_split_regs, Register
 from src.register_type import RegisterType
-from src.upload import upload_usesetup, upload
+from src.upload import upload_usesetup, upload_by_offset, upload_kernel_param, upload_global_data_pointer
 
 
 class SLoad(BaseInstruction):
@@ -30,13 +31,25 @@ class SLoad(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ['dword', 'dwordx2', 'dwordx4', 'dwordx8']:
-            if self.node.state.registers[self.from_registers].val.isdigit():
-                self.offset = hex(int(self.offset, 16) + int(self.node.state.registers[self.from_registers].val))
-            if self.node.state.registers[self.from_registers] is not None \
-                    and self.node.state.registers[self.from_registers].type \
-                    in (RegisterType.GLOBAL_DATA_POINTER, RegisterType.ARGUMENTS_POINTER):
-                upload(self.node.state, self.sdata, self.sbase, self.offset, self.decompiler_data.kernel_params)
+        sbase: Register | None = self.node.state.get(self.from_registers)
+        if sbase is not None and self.suffix in ['dword', 'dwordx2', 'dwordx4', 'dwordx8', 'b32', 'b64', 'b128']:
+            if sbase.val.isdigit():
+                self.offset = hex(int(self.offset, 16) + int(sbase.val))
+            if sbase.type in (RegisterType.GLOBAL_DATA_POINTER, RegisterType.ARGUMENTS_POINTER):
+                if DecompilerData().is_rdna3:
+                    bits = -1
+                    if self.suffix.startswith("b"):
+                        bits = int(self.suffix[1:])
+                    upload_by_offset(
+                        self.node.state,
+                        self.sdata,
+                        self.offset,
+                        bits=bits,
+                    )
+                elif sbase.type == RegisterType.ARGUMENTS_POINTER:
+                    upload_kernel_param(self.node.state, int(self.offset, 16), self.sdata)
+                elif sbase.type == RegisterType.GLOBAL_DATA_POINTER:
+                    upload_global_data_pointer(self.node.state, self.sdata, self.sbase)
             else:
                 upload_usesetup(self.node.state, self.sdata, self.offset)
             return self.node

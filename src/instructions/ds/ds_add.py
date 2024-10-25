@@ -9,8 +9,8 @@ class DsAdd(BaseInstruction):
         self.vdata0 = self.instruction[2]
         self.offset = int(self.instruction[3][7:]) if len(self.instruction) == 4 else 0
 
-        self.new_value = make_op(node, self.addr, "4", " / ", '', '')
-        self.name = self.decompiler_data.lds_vars[self.offset][0] + "[" + self.new_value + "]"
+        self.new_value = make_op(node, self.addr, '4', '/', suffix=self.suffix)
+        self.varname = self.decompiler_data.lds_vars[self.offset][0] + "[" + self.new_value + "]"
 
     def to_print_unresolved(self):
         if self.suffix == "u32":
@@ -24,12 +24,12 @@ class DsAdd(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == "u32":
-            new_value = self.node.state.registers[self.name].val + " + " + self.node.state.registers[self.vdata0].val
-            return set_reg_value(self.node, new_value, self.name, [], self.suffix)
+            new_value = self.node.state[self.varname].val + " + " + self.node.state[self.vdata0].val
+            return set_reg_value(self.node, new_value, self.varname, [], self.suffix)
         return super().to_fill_node()
 
     def to_print(self):
         if self.suffix == "u32":
-            self.output_string = self.name + " += " + self.node.state.registers[self.vdata0].val
+            self.output_string = self.varname + " += " + self.node.state[self.vdata0].val
             return self.output_string
         return super().to_print()

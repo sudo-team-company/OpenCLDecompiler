@@ -17,9 +17,10 @@ class SCselect(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix == 'b64':
+        if self.suffix in ['b32', 'b64']:
+            ssrc0 = self.ssrc0
             if self.ssrc0 == "exec":
                 ssrc0 = "1"
-            new_value = self.node.state.registers["scc"].val + " ? " + ssrc0 + " : " + self.ssrc1
+            new_value = self.node.state["scc"].val + " ? " + ssrc0 + " : " + self.ssrc1
             return set_reg_value(self.node, new_value, self.sdst, [ssrc0, self.ssrc1], self.suffix)
         return super().to_fill_node()

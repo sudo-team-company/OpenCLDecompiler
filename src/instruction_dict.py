@@ -16,6 +16,7 @@ from src.instructions.sop1.s_mov import SMov
 from src.instructions.sop1.s_not import SNot
 from src.instructions.sop1.s_or_saveexec import SOrSaveexec
 from src.instructions.sop1.s_setpc import SSetpc
+from src.instructions.sop1.s_sext import SSext
 from src.instructions.sop1.s_swappc import SSwappc
 from src.instructions.sop2.s_add import SAdd
 from src.instructions.sop2.s_addc import SAddc
@@ -31,12 +32,7 @@ from src.instructions.sop2.s_mul import SMul
 from src.instructions.sop2.s_or import SOr
 from src.instructions.sop2.s_sub import SSub
 from src.instructions.sop2.s_xor import SXor
-from src.instructions.sopc.s_cmp_eq import SCmpEq
-from src.instructions.sopc.s_cmp_ge import SCmpGe
-from src.instructions.sopc.s_cmp_gt import SCmpGt
-from src.instructions.sopc.s_cmp_lg import SCmpLg
-from src.instructions.sopc.s_cmp_lt import SCmpLt
-from src.instructions.sopc.s_set_gpr_idx_on import SSetGprIdxOn
+from src.instructions.sopc import SCmpEq, SCmpGe, SCmpGt, SCmpLe, SCmpLg, SCmpLt
 from src.instructions.sopk.s_addk import SAddK
 from src.instructions.sopk.s_cmpk_lg import SCmpkLg
 from src.instructions.sopk.s_movk import SMovk
@@ -50,9 +46,10 @@ from src.instructions.sopp.s_cbranch_scc1 import SCbranchScc1
 from src.instructions.sopp.s_cbranch_vccnz import SCbranchVccnz
 from src.instructions.sopp.s_cbranch_vccz import SCbranchVccz
 from src.instructions.sopp.s_clause import SClause
+from src.instructions.sopp.s_delay_alu import SDelayAlu
 from src.instructions.sopp.s_endpgm import SEndpgm
 from src.instructions.sopp.s_nop import SNop
-from src.instructions.sopp.s_set_gpr_idx_off import SSetGprIdxOff
+from src.instructions.sopp.s_sendmsg import SSendmsg
 from src.instructions.sopp.s_waitcnt import SWaitcnt
 from src.instructions.vop1.v_cvt import VCvt
 from src.instructions.vop1.v_mov import VMov
@@ -63,6 +60,7 @@ from src.instructions.vop2.v_addc import VAddc
 from src.instructions.vop2.v_and import VAnd
 from src.instructions.vop2.v_ashrrev import VAshrrev
 from src.instructions.vop2.v_cndmask import VCndmask
+from src.instructions.vop2.v_dual_lshlrev import VDualLshlrev
 from src.instructions.vop2.v_lshlrev import VLshlrev
 from src.instructions.vop2.v_lshrrev import VLshrrev
 from src.instructions.vop2.v_mac import VMac
@@ -78,12 +76,14 @@ from src.instructions.vop3.v_add_lshl import VAddLshl
 from src.instructions.vop3.v_alignbit import VAlignbit
 from src.instructions.vop3.v_alignbyte import VAlignbyte
 from src.instructions.vop3.v_and_or import VAndOr
+from src.instructions.vop3.v_bfe import VBfe
 from src.instructions.vop3.v_bfi import VBfi
 from src.instructions.vop3.v_div_fixup import VDivFixup
 from src.instructions.vop3.v_fma import VFma
 from src.instructions.vop3.v_ldexp import VLdexp
 from src.instructions.vop3.v_lshl_add import VLshlAdd
 from src.instructions.vop3.v_lshl_or import VLshlOr
+from src.instructions.vop3.v_mad import VMad
 from src.instructions.vop3.v_mul_f64 import VMulF64
 from src.instructions.vop3.v_mul_lo import VMulLo
 from src.instructions.vop3.v_perm import VPerm
@@ -93,9 +93,14 @@ from src.instructions.vopc.v_cmp_gt import VCmpGt
 from src.instructions.vopc.v_cmp_le import VCmpLe
 from src.instructions.vopc.v_cmp_lg import VCmpLg
 from src.instructions.vopc.v_cmp_lt import VCmpLt
+from src.instructions.vopc.v_cmp_ne import VCmpNe
 from src.instructions.vopc.v_cmpx_class import VCmpxClass
 from src.instructions.vopc.v_cmpx_eq import VCmpxEq
 from src.instructions.vopc.v_cmpx_le import VCmpxLe
+from src.instructions.vopd.v_dual_add import VDualAdd
+from src.instructions.vopd.v_dual_add_nc import VDualAddNc
+from src.instructions.vopd.v_dual_and import VDualAnd
+from src.instructions.vopd.v_dual_mov import VDualMov
 
 instruction_dict = {'ds_add': DsAdd,
                     'ds_bpermute': DsBpermute,
@@ -127,6 +132,7 @@ instruction_dict = {'ds_add': DsAdd,
                     's_cmp_ge': SCmpGe,
                     's_cmp_gt': SCmpGt,
                     's_cmp_lt': SCmpLt,
+                    's_cmp_le': SCmpLe,
                     's_cselect': SCselect,
                     's_endpgm': SEndpgm,
                     's_getpc': SGetpc,
@@ -141,8 +147,6 @@ instruction_dict = {'ds_add': DsAdd,
                     's_not': SNot,
                     's_nop': SNop,
                     's_or': SOr,
-                    's_set_gpr_idx_on': SSetGprIdxOn,
-                    's_set_gpr_idx_off': SSetGprIdxOff,
                     's_setpc': SSetpc,
                     's_setreg': SSetreg,
                     's_sub': SSub,
@@ -158,6 +162,7 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_ashrrev': VAshrrev,
                     'v_bfi': VBfi,
                     'v_cmp_eq': VCmpEq,
+                    'v_cmp_ne': VCmpNe,
                     'v_cmp_ge': VCmpGe,
                     'v_cmp_gt': VCmpGt,
                     'v_cmp_lg': VCmpLg,
@@ -171,6 +176,7 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_fma': VFma,
                     'v_ldexp': VLdexp,
                     'v_lshlrev': VLshlrev,
+                    "v_dual_lshlrev": VDualLshlrev,
                     'v_lshrrev': VLshrrev,
                     'v_mac': VMac,
                     'v_min': VMin,
@@ -188,27 +194,37 @@ instruction_dict = {'ds_add': DsAdd,
                     'v_xor': VXor,
 
                     # rocm specific instructions
+                    's_addk': SAddK,
                     's_clause': SClause,
+                    's_cmpk_lg': SCmpkLg,
+                    's_delay_alu': SDelayAlu,
+                    's_mul_hi': VMulLo,
+                    's_or_saveexec': SOrSaveexec,
+                    's_sendmsg': SSendmsg,
+                    's_sext': SSext,
+                    's_waitcnt_decptr': SWaitcnt,
+                    's_waitcnt_depctr': SWaitcnt,
+                    's_xor': SXor,
                     'v_add3': VAdd3,
                     'v_add_co': VAdd,
                     'v_add_co_ci': VAddc,
-                    'v_lshl_or': VLshlOr,
+                    'v_add_lshl': VAddLshl,
                     'v_add_nc': VAddNc,
-                    's_cmpk_lg': SCmpkLg,
+                    'v_bfe': VBfe,
+                    'v_cmp_le': VCmpLe,
+                    'v_dual_add': VDualAdd,
+                    'v_dual_add_nc': VDualAddNc,
+                    'v_dual_and': VDualAnd,
+                    'v_dual_mov': VDualMov,
+                    'v_lshl_or': VLshlOr,
                     'v_lshl_add': VLshlAdd,
                     'v_or': VOr,
-                    'v_add_lshl': VAddLshl,
+                    'v_mad': VMad,
                     'v_mul_u32_u24': VMulF32,
-                    's_mul_hi': VMulLo,
                     'v_subrev_nc': VSubNc,
                     'v_sub_nc': VSubNc,
                     'v_subrev_co_ci': VSubrev,
                     'v_sub_co': VSub,
                     'v_sub_co_ci': VSub,
-                    's_addk': SAddK,
-                    's_waitcnt_decptr': SWaitcnt,
-                    's_xor': SXor,
-                    's_or_saveexec': SOrSaveexec,
-                    'v_cmp_le': VCmpLe,
                     'v_rcp_iflag': VRcpIflag,
                     }

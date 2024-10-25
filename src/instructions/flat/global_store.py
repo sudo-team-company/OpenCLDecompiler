@@ -7,13 +7,11 @@ class GlobalStore(FlatStore):
         super().__init__(node, suffix)
         self.vaddr = self.instruction[1]
         self.vdata = self.instruction[2]
-        if self.instruction[3] != "off":
-            raise NotImplementedError(
-                f"Only 'off' as saddr implemented for global_store instructions. "
-                f"Current instruction: '{' '.join(self.instruction)}'"
-            )
-        self.saddr = "0"
-        self.inst_offset = "0" if len(self.instruction) == 4 else self.instruction[4]
+        if self.instruction[3] == "off":
+            self.saddr = "0"
+            self.inst_offset = "0" if len(self.instruction) == 4 else self.instruction[4]
+        else:
+            pass
 
         self.to_registers, _ = check_and_split_regs(self.vaddr)
         self.from_registers, self.from_registers_1 = check_and_split_regs(self.vdata)

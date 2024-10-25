@@ -26,15 +26,15 @@ class VSubNc(BaseInstruction):
     def to_fill_node(self):
         reg_type = RegisterType.INT32
         if is_reg(self.src0):
-            reg_type = self.node.state.registers[self.src0].integrity
+            reg_type = self.node.state[self.src0].integrity
         elif is_reg(self.src1):
-            reg_type = self.node.state.registers[self.src1].integrity
+            reg_type = self.node.state[self.src1].integrity
         if self.suffix == 'u32':
-            new_value = make_op(self.node, self.src0, self.src1, " - ", '(uint)', '(uint)')
+            new_value = make_op(self.node, self.src0, self.src1, '-', '(uint)', '(uint)', suffix=self.suffix)
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                  reg_type=reg_type)
         if self.suffix == 'u16':
-            new_value = make_op(self.node, self.src0, self.src1, " - ", '(ushort)', '(ushort)')
+            new_value = make_op(self.node, self.src0, self.src1, '-', '(ushort)', '(ushort)', suffix=self.suffix)
             return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
                                  reg_type=reg_type)
         return super().to_fill_node()
