@@ -14,3 +14,4 @@ venv.bak/
 
 # PyCharm
 .idea/
+﻿tests/.idea
