@@ -1,6 +1,7 @@
 # pylint: disable=R0401
 
 import binascii
+import re
 import struct
 from typing import Optional, Union
 
@@ -12,7 +13,7 @@ from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
 from src.node import Node
-from src.opencl_types import make_opencl_type
+from src.opencl_types import evaluate_size, make_asm_type, make_opencl_type
 from src.operation_register_content import OperationType, OperationRegisterContent
 from src.register import Register, is_reg, is_range, check_and_split_regs, split_range
 from src.register_content import RegisterContent, RegisterSignType
@@ -248,14 +249,79 @@ def check_big_values(node, start_register, end_register):
         return True, "1e12"
     return False, 0
 
+def chech_value_needs_cast(value, from_type, to_type):
+    if from_type == "" or to_type == "" or from_type == None or to_type == None:
+        if re.match("[0-9]+((\\.|,)[0-9]+)?", value) is not None:
+            return False
+        else:
+            return True
+
+    if from_type == to_type:
+        return False
+    
+    # global types
+    if from_type[0] == 'g' and to_type[0] == 'g':
+        from_type = from_type[1:]
+        to_type = to_type[1:]
+    elif from_type[0] == 'g' or to_type[0] == 'g':
+        return True
+    
+    # same type, different size
+    if (re.match("i[0-9]+", from_type) is not None and re.match("i[0-9]+", to_type) is not None) or\
+        (re.match("[u, b][0-9]+", from_type) is not None and re.match("[u, b][0-9]+", to_type) is not None) or\
+        (re.match("f[0-9]+", from_type) is not None and re.match("f[0-9]+", to_type) is not None):
+        from_bits = evaluate_size(from_type)[0]
+        to_bits = evaluate_size(to_type)[0]
+        return from_bits > to_bits
+
+    # from unsigned type to signed or from signed type to unsigned
+    if re.match("[u,b][0-9]+", from_type) is not None and re.match("i[0-9]+", to_type) is not None or\
+        re.match("i[0-9]+", from_type) is not None and re.match("[u,b][0-9]+", to_type) is not None:
+        if value[0] == '-' or not value[1:].isnumeric():
+            return True
+        
+        from_bits = evaluate_size(from_type)[0]
+        to_bits = evaluate_size(to_type)[0]
+        return from_bits > to_bits
+    
+    # from float to unsigned
+    if re.match("f[0-9]+", from_type) is not None and re.match("[u,b][0-9]+", to_type) is not None:
+        try:
+            float_value = float(value)
+            if float_value != int(float_value) or float_value < 0:
+                return True
+            from_bits = evaluate_size(from_type)[0]
+            to_bits = evaluate_size(to_type)[0]
+            return from_bits > to_bits
+        except ValueError:
+            return True
+        
+    # from float to signed
+    if re.match("f[0-9]+", from_type) is not None and re.match("i[0-9]+", to_type) is not None:
+        try:
+            float_value = float(value)
+            if float_value != int(float_value):
+                return True
+            from_bits = evaluate_size(from_type)[0]
+            to_bits = evaluate_size(to_type)[0]
+            return from_bits > to_bits
+        except ValueError:
+            return True
+    
+    # hex
+    if re.match("0x[0-9,a,b,c,d,e,f]+", value) is not None:
+        from_bits = evaluate_size(from_type)[0]
+        to_bits = evaluate_size(to_type)[0]
+        return from_bits > to_bits
+            
+    return True
 
 def check_reg_for_val(node, register, suffix=''):
-    needs_casting = True
+    data_type = ""
     if is_reg(register) or is_range(register):  # TODO: Выяснить зачем нужен range
         if register in node.state:
             new_val = node.state[register].get_value()
-            if suffix != '':
-                needs_casting = suffix != node.state[register].data_type
+            data_type = node.state[register].data_type
         else:
             if is_range(register):
                 start_register, end_register = check_and_split_regs(register)
@@ -264,23 +330,13 @@ def check_reg_for_val(node, register, suffix=''):
                     new_val = value
                 else:
                     new_val = node.state[start_register].get_value()
-                    if suffix != '':
-                        needs_casting = suffix != node.state[start_register].data_type
+                    data_type = node.state[start_register].data_type
             else:
                 raise NotImplementedError
     else:
         new_val = register
-        if new_val.isnumeric():
-            needs_casting = False
-        elif new_val[0] == '-' and new_val[1:].isnumeric() and suffix != '' and suffix.count('u') == 0:
-            needs_casting = False
-        else:
-            try:
-                _ = float(new_val)
-                needs_casting = suffix.count('f') == 0
-            except ValueError:
-                needs_casting = True
 
+    needs_casting = chech_value_needs_cast(new_val, data_type, suffix)
     return (new_val, needs_casting)
 
 
@@ -300,9 +356,9 @@ def change_vals_for_make_op(node, register, reg_type, operation, suffix):
     new_val, needs_cast = check_reg_for_val(node, register, suffix)
     if (operation != "+" or reg_type) and ("-" in new_val or "+" in new_val or "*" in new_val or "/" in new_val):
         new_val = f'({new_val})'
-    if reg_type != '':
-        decompiler_data.type_conversion[new_val] = reg_type
     if needs_cast:
+        if reg_type != '':
+            decompiler_data.type_conversion[new_val] = reg_type
         new_val = reg_type + new_val
     if len(reg_type) > 0 and ')' not in reg_type:
         new_val += ')'
