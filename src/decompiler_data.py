@@ -251,7 +251,7 @@ def check_big_values(node, start_register, end_register):
 
 def chech_value_needs_cast(value, from_type, to_type):
     if from_type == "" or to_type == "" or from_type == None or to_type == None:
-        if re.match("[0-9]+((\\.|,)[0-9]+)?", value) is not None:
+        if re.fullmatch("[0-9]+((\\.|,)[0-9]+)?", value) is not None:
             return False
         else:
             return True
@@ -267,17 +267,17 @@ def chech_value_needs_cast(value, from_type, to_type):
         return True
     
     # same type, different size
-    if (re.match("i[0-9]+", from_type) is not None and re.match("i[0-9]+", to_type) is not None) or\
-        (re.match("[u, b][0-9]+", from_type) is not None and re.match("[u, b][0-9]+", to_type) is not None) or\
-        (re.match("f[0-9]+", from_type) is not None and re.match("f[0-9]+", to_type) is not None):
+    if (re.fullmatch("i[0-9]+", from_type) is not None and re.fullmatch("i[0-9]+", to_type) is not None) or\
+        (re.fullmatch("[u, b][0-9]+", from_type) is not None and re.fullmatch("[u, b][0-9]+", to_type) is not None) or\
+        (re.fullmatch("f[0-9]+", from_type) is not None and re.fullmatch("f[0-9]+", to_type) is not None):
         from_bits = evaluate_size(from_type)[0]
         to_bits = evaluate_size(to_type)[0]
         return from_bits > to_bits
 
     # from unsigned type to signed or from signed type to unsigned
-    if re.match("[u,b][0-9]+", from_type) is not None and re.match("i[0-9]+", to_type) is not None or\
-        re.match("i[0-9]+", from_type) is not None and re.match("[u,b][0-9]+", to_type) is not None:
-        if value[0] == '-' or not value[1:].isnumeric():
+    if re.fullmatch("[u,b][0-9]+", from_type) is not None and re.fullmatch("i[0-9]+", to_type) is not None or\
+        re.fullmatch("i[0-9]+", from_type) is not None and re.fullmatch("[u,b][0-9]+", to_type) is not None:
+        if value[0] == '-' or not value[1:].isnumeric() and value != "0":
             return True
         
         from_bits = evaluate_size(from_type)[0]
@@ -285,7 +285,7 @@ def chech_value_needs_cast(value, from_type, to_type):
         return from_bits > to_bits
     
     # from float to unsigned
-    if re.match("f[0-9]+", from_type) is not None and re.match("[u,b][0-9]+", to_type) is not None:
+    if re.fullmatch("f[0-9]+", from_type) is not None and re.fullmatch("[u,b][0-9]+", to_type) is not None:
         try:
             float_value = float(value)
             if float_value != int(float_value) or float_value < 0:
@@ -297,7 +297,7 @@ def chech_value_needs_cast(value, from_type, to_type):
             return True
         
     # from float to signed
-    if re.match("f[0-9]+", from_type) is not None and re.match("i[0-9]+", to_type) is not None:
+    if re.fullmatch("f[0-9]+", from_type) is not None and re.fullmatch("i[0-9]+", to_type) is not None:
         try:
             float_value = float(value)
             if float_value != int(float_value):
@@ -309,7 +309,7 @@ def chech_value_needs_cast(value, from_type, to_type):
             return True
     
     # hex
-    if re.match("0x[0-9,a,b,c,d,e,f]+", value) is not None:
+    if re.fullmatch("0x[0-9,a,b,c,d,e,f]+", value) is not None:
         from_bits = evaluate_size(from_type)[0]
         to_bits = evaluate_size(to_type)[0]
         return from_bits > to_bits
@@ -335,7 +335,6 @@ def check_reg_for_val(node, register, suffix=''):
                 raise NotImplementedError
     else:
         new_val = register
-
     needs_casting = chech_value_needs_cast(new_val, data_type, suffix)
     return (new_val, needs_casting)
 
@@ -356,9 +355,9 @@ def change_vals_for_make_op(node, register, reg_type, operation, suffix):
     new_val, needs_cast = check_reg_for_val(node, register, suffix)
     if (operation != "+" or reg_type) and ("-" in new_val or "+" in new_val or "*" in new_val or "/" in new_val):
         new_val = f'({new_val})'
-    if needs_cast:
-        if reg_type != '':
+    if reg_type != '':
             decompiler_data.type_conversion[new_val] = reg_type
+    if needs_cast:
         new_val = reg_type + new_val
     if len(reg_type) > 0 and ')' not in reg_type:
         new_val += ')'

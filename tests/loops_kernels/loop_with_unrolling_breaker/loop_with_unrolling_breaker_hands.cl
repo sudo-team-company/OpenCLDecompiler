@@ -21,9 +21,9 @@ void loop_with_unrolling_breaker(__global int *data, int x, int unrollingBreaker
             var9 = var9;
             var10 = var10 + (-1) / 4;
             var11 = var11 + (-1) / 4;
-            var12 = (ulong)1 != (ulong)(0 - var0);
-            var12 = (ulong)1 != (ulong)(0 - var0);
-        } while ((ulong)1 != (ulong)(0 - var0));
+            var12 = 1 != (0 - var0);
+            var12 = 1 != (0 - var0);
+        } while (1 != (0 - var0));
         data[get_global_id(0)] = (var6) - (0 - var0);
     }
 }
