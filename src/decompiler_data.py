@@ -296,7 +296,7 @@ def chech_value_needs_cast(value, from_type, to_type) -> bool:
     if from_type == "" or to_type == "" or from_type is None or to_type is None:
         if re.fullmatch("-?[0-9]+((\\.|,)[0-9]+)?", value) is not None:
             return value[0] == "-" and re.fullmatch("g?[u,b][0-9]+", from_type) is not None
-        return True
+        return re.fullmatch("0x[0-9,a,b,c,d,e,f]+", value) is None
     from_type, from_type_size, from_type_component_count, is_global_from_type = get_type_info(from_type)
     to_type, to_type_size, to_type_component_count, is_global_to_type = get_type_info(to_type)
     # strange case, but still

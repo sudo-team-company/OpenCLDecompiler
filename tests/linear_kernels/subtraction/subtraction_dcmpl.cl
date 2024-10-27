@@ -1789,17 +1789,17 @@ void subtract_char_get_work_dim_get_group_id(int x, __global uchar *data)
 __kernel __attribute__((reqd_work_group_size(16, 2, 2)))
 void subtract_char_x_get_local_size(__global char *data, int x)
 {
-    data[get_global_id(0)] = (ulong)x + (ulong)0xf0;
-    data[get_global_id(1)] = (ulong)x + (ulong)0xfe;
-    data[get_global_id(2)] = (ulong)x + (ulong)0xfe;
+    data[get_global_id(0)] = (ulong)x + 0xf0;
+    data[get_global_id(1)] = (ulong)x + 0xfe;
+    data[get_global_id(2)] = (ulong)x + 0xfe;
 }
 
 __kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void subtract_char_get_global_offset_get_local_size(int x, __global char *data)
 {
-    data[get_global_id(0)] = (ulong)get_global_offset(0) + (ulong)0xfe;
-    data[get_global_id(1)] = (ulong)get_global_offset(1) + (ulong)0xf0;
-    data[get_global_id(2)] = (ulong)get_global_offset(2) + (ulong)0xfe;
+    data[get_global_id(0)] = (ulong)get_global_offset(0) + 0xfe;
+    data[get_global_id(1)] = (ulong)get_global_offset(1) + 0xf0;
+    data[get_global_id(2)] = (ulong)get_global_offset(2) + 0xfe;
 }
 
 __kernel __attribute__((reqd_work_group_size(8, 4, 2)))
@@ -1829,9 +1829,9 @@ void subtract_char_get_local_size_get_local_size(int x, __global uchar *data)
 __kernel __attribute__((reqd_work_group_size(2, 2, 4)))
 void subtract_char_get_global_id_get_local_size(int x, __global uchar *data)
 {
-    data[get_global_id(0) - get_global_offset(0)] = (ulong)0xfe + get_global_id(0);
-    data[get_global_id(1)] = (ulong)0xfe + get_global_id(1);
-    data[get_global_id(2)] = (ulong)0xfc + get_global_id(2);
+    data[get_global_id(0) - get_global_offset(0)] = 0xfe + get_global_id(0);
+    data[get_global_id(1)] = 0xfe + get_global_id(1);
+    data[get_global_id(2)] = 0xfc + get_global_id(2);
 }
 
 __kernel __attribute__((reqd_work_group_size(16, 2, 2)))
@@ -1853,9 +1853,9 @@ void subtract_char_get_num_groups_get_local_size(int x, __global uchar *data)
 __kernel __attribute__((reqd_work_group_size(2, 2, 4)))
 void subtract_char_get_work_dim_get_local_size(int x, __global uchar *data)
 {
-    data[get_global_id(0)] = get_work_dim() + (ulong)0xfe;
-    data[get_global_id(1)] = get_work_dim() + (ulong)0xfe;
-    data[get_global_id(2)] = get_work_dim() + (ulong)0xfc;
+    data[get_global_id(0)] = get_work_dim() + 0xfe;
+    data[get_global_id(1)] = get_work_dim() + 0xfe;
+    data[get_global_id(2)] = get_work_dim() + 0xfc;
 }
 
 __kernel __attribute__((reqd_work_group_size(16, 2, 2)))

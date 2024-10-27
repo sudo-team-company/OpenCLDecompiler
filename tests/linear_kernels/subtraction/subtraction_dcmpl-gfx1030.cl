@@ -1789,7 +1789,7 @@ void subtract_char_get_work_dim_get_group_id(int x, __global uchar *data)
 __kernel __attribute__((reqd_work_group_size(16, 2, 2)))
 void subtract_char_x_get_local_size(__global char *data, int x)
 {
-    data[get_global_id(0)] = x + (ulong)0xf0;
+    data[get_global_id(0)] = x + 0xf0;
     data[get_global_id(1)] = (ulong)x + (-2);
     data[get_global_id(2)] = (ulong)x + (-2);
 }
@@ -1798,23 +1798,23 @@ __kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void subtract_char_get_global_offset_get_local_size(int x, __global char *data)
 {
     data[get_global_id(0)] = (ulong)get_global_offset(0) + 0xfe;
-    data[get_global_id(1)] = (int)get_global_offset(1) + (int)0xf0;
+    data[get_global_id(1)] = (int)get_global_offset(1) + 0xf0;
     data[get_global_id(2)] = (ulong)get_global_offset(2) + 0xfe;
 }
 
 __kernel __attribute__((reqd_work_group_size(8, 4, 2)))
 void subtract_char_get_local_id_get_local_size(int x, __global char *data)
 {
-    data[get_global_id(0)] = (ulong)0xf8 + (ulong)get_local_id(0);
-    data[get_global_id(1)] = (ulong)0xfc + (ulong)get_local_id(1);
-    data[get_global_id(2)] = (ulong)0xfe + (ulong)get_local_id(2);
+    data[get_global_id(0)] = 0xf8 + (ulong)get_local_id(0);
+    data[get_global_id(1)] = 0xfc + (ulong)get_local_id(1);
+    data[get_global_id(2)] = 0xfe + (ulong)get_local_id(2);
 }
 
 __kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void subtract_char_get_group_id_get_local_size(int x, __global char *data)
 {
     data[get_global_id(0)] = (ulong)get_group_id(0) + 0xfe;
-    data[get_global_id(1)] = (int)get_group_id(1) + (int)0xf0;
+    data[get_global_id(1)] = (int)get_group_id(1) + 0xf0;
     data[get_global_id(2)] = (ulong)get_group_id(2) + 0xfe;
 }
 
@@ -1837,7 +1837,7 @@ void subtract_char_get_global_id_get_local_size(int x, __global uchar *data)
 __kernel __attribute__((reqd_work_group_size(16, 2, 2)))
 void subtract_char_get_global_size_get_local_size(__global char *data, int x)
 {
-    data[get_global_id(0)] = (ulong)get_global_size(0) + (ulong)0xf0;
+    data[get_global_id(0)] = (ulong)get_global_size(0) + 0xf0;
     data[get_global_id(1)] = (ulong)get_global_size(1) + 0xfe;
     data[get_global_id(2)] = (ulong)get_global_size(2) + 0xfe;
 }
@@ -1847,7 +1847,7 @@ void subtract_char_get_num_groups_get_local_size(int x, __global uchar *data)
 {
     data[get_global_id(0)] = get_num_groups(0) + (ulong)0xfe;
     data[get_global_id(1)] = get_num_groups(1) + (ulong)0xfe;
-    data[get_global_id(2)] = get_num_groups(2) + (ulong)0xfc;
+    data[get_global_id(2)] = get_num_groups(2) + 0xfc;
 }
 
 __kernel __attribute__((reqd_work_group_size(2, 2, 4)))
@@ -1855,7 +1855,7 @@ void subtract_char_get_work_dim_get_local_size(int x, __global uchar *data)
 {
     data[get_global_id(0)] = (ulong)get_work_dim() + (-2);
     data[get_global_id(1)] = (ulong)get_work_dim() + (-2);
-    data[get_global_id(2)] = (ulong)0xfc + (ulong)get_work_dim();
+    data[get_global_id(2)] = 0xfc + (ulong)get_work_dim();
 }
 
 __kernel __attribute__((reqd_work_group_size(16, 2, 2)))
