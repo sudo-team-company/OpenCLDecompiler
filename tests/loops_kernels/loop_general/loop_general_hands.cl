@@ -15,7 +15,7 @@ void loop_general(__global int *data, int from, int to, int x)
             var4 = (ulong)var5 + (var3);
             var5 = var5 + 1;
         } while (!((var5 + 1) >= to));
-        var2 = (var3) + (ulong)(var5 + 1) + (ulong)(-1);
+        var2 = (var3) + (ulong)(var5 + 1) + (-1);
     }
     data[get_global_id(0)] = var2;
 }

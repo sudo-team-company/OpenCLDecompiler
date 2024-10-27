@@ -15,10 +15,10 @@ void loop_general(__global int *data, int block, int x)
             var3 = var0;
             var3 = x * var3;
             var3 = var4 + (x * varvar4);
-            var4 = var4 + 1;
+            var4 = (ulong)var4 + 1;
             *var5 = var3;
             var5 = var5 + 4 / 4;
             var6 = 0 + (var6);
-        } while (!((uint)block == (uint)(var4 + 1)));
+        } while (!((uint)block == (uint)((ulong)var4 + 1)));
     }
 }

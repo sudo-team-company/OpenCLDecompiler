@@ -13,7 +13,7 @@ from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
 from src.node import Node
-from src.opencl_types import evaluate_size, make_asm_type, make_opencl_type
+from src.opencl_types import evaluate_size, make_asm_type, make_opencl_type, vector_type_dict
 from src.operation_register_content import OperationType, OperationRegisterContent
 from src.register import Register, is_reg, is_range, check_and_split_regs, split_range
 from src.register_content import RegisterContent, RegisterSignType
@@ -249,70 +249,102 @@ def check_big_values(node, start_register, end_register):
         return True, "1e12"
     return False, 0
 
+
+def get_raw_asm_type(data_type):
+    if data_type.startswith("g"):
+        data_type = data_type.removeprefix("g")
+    if data_type in vector_type_dict:
+        data_type = make_asm_type(data_type[:-1])
+    additional_convertions = {
+        "char" : "i8",
+        "uchar" : "u8",
+        "short" : "i16",
+        "ushort" : "u16",
+        "half" : "f16"
+    }
+    if data_type in additional_convertions:
+        data_type = additional_convertions[data_type]
+    return data_type
+
+
+def get_type_info(data_type):
+    components_count = 1
+    is_global_type = data_type.startswith("g")
+    if data_type in vector_type_dict:
+        components_count = int(data_type[-1])
+        data_type = make_asm_type(data_type[:-1])
+    data_type_size = evaluate_size(data_type)[0]
+    raw_data_type = get_raw_asm_type(data_type)
+    return (raw_data_type, data_type_size, components_count, is_global_type)
+
+
+def is_type_signed(type):
+    return re.fullmatch("i[0-9]+", type) is not None
+
+
+def is_type_unsigned(type):
+    return re.fullmatch("[u,b][0-9]+", type) is not None
+
+
+def is_type_float(type):
+    return re.fullmatch("f[0-9]+", type) is not None
+
+
 def chech_value_needs_cast(value, from_type, to_type):
+    if from_type == to_type:
+        return False
+    
     if from_type == "" or to_type == "" or from_type == None or to_type == None:
-        if re.fullmatch("[0-9]+((\\.|,)[0-9]+)?", value) is not None:
+        if re.fullmatch("-?[0-9]+((\\.|,)[0-9]+)?", value) is not None:
+            if value[0] == "-" and re.fullmatch("g?[u,b][0-9]+", from_type) is not None:
+                return True
             return False
         else:
             return True
 
-    if from_type == to_type:
-        return False
-    
-    # global types
-    if from_type[0] == 'g' and to_type[0] == 'g':
-        from_type = from_type[1:]
-        to_type = to_type[1:]
-    elif from_type[0] == 'g' or to_type[0] == 'g':
+    from_type, from_type_size, from_type_component_count, is_global_from_type = get_type_info(from_type)
+    to_type, to_type_size, to_type_component_count, is_global_to_type = get_type_info(to_type)
+
+    # strange case, but still
+    if (is_global_from_type == True and is_global_to_type == False) or\
+        (is_global_from_type == False and is_global_to_type == True):
         return True
     
     # same type, different size
-    if (re.fullmatch("i[0-9]+", from_type) is not None and re.fullmatch("i[0-9]+", to_type) is not None) or\
-        (re.fullmatch("[u, b][0-9]+", from_type) is not None and re.fullmatch("[u, b][0-9]+", to_type) is not None) or\
-        (re.fullmatch("f[0-9]+", from_type) is not None and re.fullmatch("f[0-9]+", to_type) is not None):
-        from_bits = evaluate_size(from_type)[0]
-        to_bits = evaluate_size(to_type)[0]
-        return from_bits > to_bits
+    if (is_type_signed(from_type) and is_type_signed(to_type)) or\
+        (is_type_unsigned(from_type) and is_type_unsigned(to_type)) or\
+        (is_type_float(from_type) and is_type_float(to_type)):
+        return (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
 
     # from unsigned type to signed or from signed type to unsigned
-    if re.fullmatch("[u,b][0-9]+", from_type) is not None and re.fullmatch("i[0-9]+", to_type) is not None or\
-        re.fullmatch("i[0-9]+", from_type) is not None and re.fullmatch("[u,b][0-9]+", to_type) is not None:
-        if value[0] == '-' or not value[1:].isnumeric() and value != "0":
+    if is_type_unsigned(from_type) and is_type_signed(to_type) or\
+        is_type_signed(from_type) and is_type_unsigned(to_type):
+        if (value[0] == '-' and value[1:].isnumeric()) or\
+            re.fullmatch("[0-9]+", value) is None or\
+            re.fullmatch("0x[0-9,a,b,c,d,e,f]+", value) is None:
             return True
         
-        from_bits = evaluate_size(from_type)[0]
-        to_bits = evaluate_size(to_type)[0]
-        return from_bits > to_bits
+        return (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
     
     # from float to unsigned
-    if re.fullmatch("f[0-9]+", from_type) is not None and re.fullmatch("[u,b][0-9]+", to_type) is not None:
+    if is_type_float(from_type) and is_type_unsigned(to_type):
         try:
             float_value = float(value)
             if float_value != int(float_value) or float_value < 0:
                 return True
-            from_bits = evaluate_size(from_type)[0]
-            to_bits = evaluate_size(to_type)[0]
-            return from_bits > to_bits
+            return (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
         except ValueError:
             return True
         
     # from float to signed
-    if re.fullmatch("f[0-9]+", from_type) is not None and re.fullmatch("i[0-9]+", to_type) is not None:
+    if is_type_float(from_type) and is_type_signed(to_type):
         try:
             float_value = float(value)
             if float_value != int(float_value):
                 return True
-            from_bits = evaluate_size(from_type)[0]
-            to_bits = evaluate_size(to_type)[0]
-            return from_bits > to_bits
+            return (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
         except ValueError:
             return True
-    
-    # hex
-    if re.fullmatch("0x[0-9,a,b,c,d,e,f]+", value) is not None:
-        from_bits = evaluate_size(from_type)[0]
-        to_bits = evaluate_size(to_type)[0]
-        return from_bits > to_bits
             
     return True
 
