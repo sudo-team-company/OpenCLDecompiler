@@ -267,7 +267,7 @@ def get_raw_asm_type(data_type):
     return data_type
 
 
-def get_type_info(data_type):
+def get_type_info(data_type) -> tuple[str, int, int, bool]:
     components_count = 1
     is_global_type = data_type.startswith("g")
     if data_type in vector_type_dict:
@@ -278,75 +278,64 @@ def get_type_info(data_type):
     return (raw_data_type, data_type_size, components_count, is_global_type)
 
 
-def is_type_signed(type):
-    return re.fullmatch("i[0-9]+", type) is not None
+def is_type_signed(t) -> bool:
+    return re.fullmatch("i[0-9]+", t) is not None
 
 
-def is_type_unsigned(type):
-    return re.fullmatch("[u,b][0-9]+", type) is not None
+def is_type_unsigned(t) -> bool:
+    return re.fullmatch("[u,b][0-9]+", t) is not None
 
 
-def is_type_float(type):
-    return re.fullmatch("f[0-9]+", type) is not None
+def is_type_float(t) -> bool:
+    return re.fullmatch("f[0-9]+", t) is not None
 
 
-def chech_value_needs_cast(value, from_type, to_type):
+def chech_value_needs_cast(value, from_type, to_type) -> bool:
     if from_type == to_type:
         return False
-    
-    if from_type == "" or to_type == "" or from_type == None or to_type == None:
+    if from_type == "" or to_type == "" or from_type is None or to_type is None:
         if re.fullmatch("-?[0-9]+((\\.|,)[0-9]+)?", value) is not None:
-            if value[0] == "-" and re.fullmatch("g?[u,b][0-9]+", from_type) is not None:
-                return True
-            return False
-        else:
-            return True
-
+            return value[0] == "-" and re.fullmatch("g?[u,b][0-9]+", from_type) is not None
+        return True
     from_type, from_type_size, from_type_component_count, is_global_from_type = get_type_info(from_type)
     to_type, to_type_size, to_type_component_count, is_global_to_type = get_type_info(to_type)
-
     # strange case, but still
-    if (is_global_from_type == True and is_global_to_type == False) or\
-        (is_global_from_type == False and is_global_to_type == True):
+    if (is_global_from_type and not is_global_to_type) or\
+        (not is_global_from_type and is_global_to_type):
         return True
-    
+    needs_casting = True
     # same type, different size
     if (is_type_signed(from_type) and is_type_signed(to_type)) or\
         (is_type_unsigned(from_type) and is_type_unsigned(to_type)) or\
         (is_type_float(from_type) and is_type_float(to_type)):
-        return (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
-
+        needs_casting = (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
     # from unsigned type to signed or from signed type to unsigned
     if is_type_unsigned(from_type) and is_type_signed(to_type) or\
         is_type_signed(from_type) and is_type_unsigned(to_type):
-        if (value[0] == '-' and value[1:].isnumeric()) or\
-            re.fullmatch("[0-9]+", value) is None or\
-            re.fullmatch("0x[0-9,a,b,c,d,e,f]+", value) is None:
-            return True
-        
-        return (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
-    
+        needs_casting = ((value[0] == '-' and value[1:].isnumeric()) or\
+                        re.fullmatch("[0-9]+", value) is None or\
+                        re.fullmatch("0x[0-9,a,b,c,d,e,f]+", value) is None) or\
+                        (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
     # from float to unsigned
     if is_type_float(from_type) and is_type_unsigned(to_type):
         try:
             float_value = float(value)
-            if float_value != int(float_value) or float_value < 0:
-                return True
-            return (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
+            needs_casting = (float_value != int(float_value)) or\
+                (float_value < 0) or\
+                (from_type_size > to_type_size) or\
+                (from_type_component_count != to_type_component_count)
         except ValueError:
             return True
-        
     # from float to signed
     if is_type_float(from_type) and is_type_signed(to_type):
         try:
             float_value = float(value)
-            if float_value != int(float_value):
-                return True
-            return (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
+            needs_casting = (float_value != int(float_value)) or\
+                (from_type_size > to_type_size) or\
+                (from_type_component_count != to_type_component_count)
         except ValueError:
             return True
-            
-    return True
+    return needs_casting
 
 def check_reg_for_val(node, register, suffix=''):
     data_type = ""
@@ -388,7 +377,7 @@ def change_vals_for_make_op(node, register, reg_type, operation, suffix):
     if (operation != "+" or reg_type) and ("-" in new_val or "+" in new_val or "*" in new_val or "/" in new_val):
         new_val = f'({new_val})'
     if reg_type != '':
-            decompiler_data.type_conversion[new_val] = reg_type
+        decompiler_data.type_conversion[new_val] = reg_type
     if needs_cast:
         new_val = reg_type + new_val
     if len(reg_type) > 0 and ')' not in reg_type:
