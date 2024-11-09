@@ -1,6 +1,7 @@
 # pylint: disable=R0401
 
 import binascii
+import re
 import struct
 from typing import Optional, Union
 
@@ -12,7 +13,7 @@ from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
 from src.node import Node
-from src.opencl_types import make_opencl_type
+from src.opencl_types import evaluate_size, make_asm_type, make_opencl_type, vector_type_dict
 from src.operation_register_content import OperationType, OperationRegisterContent
 from src.register import Register, is_reg, is_range, check_and_split_regs, split_range
 from src.register_content import RegisterContent, RegisterSignType
@@ -249,10 +250,100 @@ def check_big_values(node, start_register, end_register):
     return False, 0
 
 
-def check_reg_for_val(node, register):
+def get_raw_asm_type(data_type):
+    if data_type.startswith("g"):
+        data_type = data_type.removeprefix("g")
+    if data_type in vector_type_dict:
+        data_type = make_asm_type(data_type[:-1])
+    additional_convertions = {
+        "char" : "i8",
+        "uchar" : "u8",
+        "short" : "i16",
+        "ushort" : "u16",
+        "half" : "f16"
+    }
+    if data_type in additional_convertions:
+        data_type = additional_convertions[data_type]
+    return data_type
+
+
+def get_type_info(data_type) -> tuple[str, int, int, bool]:
+    components_count = 1
+    is_global_type = data_type.startswith("g")
+    if data_type in vector_type_dict:
+        components_count = int(data_type[-1])
+        data_type = make_asm_type(data_type[:-1])
+    data_type_size = evaluate_size(data_type)[0]
+    raw_data_type = get_raw_asm_type(data_type)
+    return (raw_data_type, data_type_size, components_count, is_global_type)
+
+
+def is_type_signed(t) -> bool:
+    return re.fullmatch("i[0-9]+", t) is not None
+
+
+def is_type_unsigned(t) -> bool:
+    return re.fullmatch("[u,b][0-9]+", t) is not None
+
+
+def is_type_float(t) -> bool:
+    return re.fullmatch("f[0-9]+", t) is not None
+
+
+def check_value_needs_cast(value, from_type, to_type) -> bool:
+    if from_type == to_type:
+        return False
+    if from_type == "" or to_type == "" or from_type is None or to_type is None:
+        if re.fullmatch("-?[0-9]+((\\.|,)[0-9]+)?", value) is not None:
+            return value[0] == "-" and re.fullmatch("g?[u,b][0-9]+", from_type) is not None
+        return re.fullmatch("0x[0-9,a,b,c,d,e,f]+", value) is None and\
+                re.fullmatch("-?[0-9,.]+((e|E)(\\+|-)?[0-9]+)?", value) is None
+    from_type, from_type_size, from_type_component_count, is_global_from_type = get_type_info(from_type)
+    to_type, to_type_size, to_type_component_count, is_global_to_type = get_type_info(to_type)
+    # strange case, but still
+    if (is_global_from_type and not is_global_to_type) or\
+        (not is_global_from_type and is_global_to_type):
+        return True
+    needs_casting = True
+    # same type, different size
+    if (is_type_signed(from_type) and is_type_signed(to_type)) or\
+        (is_type_unsigned(from_type) and is_type_unsigned(to_type)) or\
+        (is_type_float(from_type) and is_type_float(to_type)):
+        needs_casting = (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
+    # from unsigned type to signed or from signed type to unsigned
+    if is_type_unsigned(from_type) and is_type_signed(to_type) or\
+        is_type_signed(from_type) and is_type_unsigned(to_type):
+        needs_casting = ((value[0] == '-' and value[1:].isnumeric()) or\
+                        re.fullmatch("[0-9]+", value) is None or\
+                        re.fullmatch("0x[0-9,a,b,c,d,e,f]+", value) is None) or\
+                        (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
+    # from float to unsigned
+    if is_type_float(from_type) and is_type_unsigned(to_type):
+        try:
+            float_value = float(value)
+            needs_casting = (float_value != int(float_value)) or\
+                (float_value < 0) or\
+                (from_type_size > to_type_size) or\
+                (from_type_component_count != to_type_component_count)
+        except ValueError:
+            return True
+    # from float to signed
+    if is_type_float(from_type) and is_type_signed(to_type):
+        try:
+            float_value = float(value)
+            needs_casting = (float_value != int(float_value)) or\
+                (from_type_size > to_type_size) or\
+                (from_type_component_count != to_type_component_count)
+        except ValueError:
+            return True
+    return needs_casting
+
+def check_reg_for_val(node, register, suffix=''):
+    data_type = ""
     if is_reg(register) or is_range(register):  # TODO: Выяснить зачем нужен range
         if register in node.state:
             new_val = node.state[register].get_value()
+            data_type = node.state[register].data_type
         else:
             if is_range(register):
                 start_register, end_register = check_and_split_regs(register)
@@ -261,11 +352,13 @@ def check_reg_for_val(node, register):
                     new_val = value
                 else:
                     new_val = node.state[start_register].get_value()
+                    data_type = node.state[start_register].data_type
             else:
                 raise NotImplementedError
     else:
         new_val = register
-    return new_val
+    needs_casting = check_value_needs_cast(new_val, data_type, suffix)
+    return (new_val, needs_casting)
 
 
 def try_get_reg(node, register):
@@ -279,15 +372,15 @@ def try_get_reg(node, register):
             return node.state[end_register]
     raise NotImplementedError
 
-
-def change_vals_for_make_op(node, register, reg_type, operation, _suffix):
+def change_vals_for_make_op(node, register, reg_type, operation, suffix):
     decompiler_data = DecompilerData()
-    new_val = check_reg_for_val(node, register)
+    new_val, needs_cast = check_reg_for_val(node, register, suffix)
     if (operation != "+" or reg_type) and ("-" in new_val or "+" in new_val or "*" in new_val or "/" in new_val):
         new_val = f'({new_val})'
     if reg_type != '':
         decompiler_data.type_conversion[new_val] = reg_type
-    new_val = reg_type + new_val
+    if needs_cast:
+        new_val = reg_type + new_val
     if len(reg_type) > 0 and ')' not in reg_type:
         new_val += ')'
     return new_val

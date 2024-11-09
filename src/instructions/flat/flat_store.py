@@ -131,7 +131,6 @@ class FlatStore(BaseInstruction):
     def to_print(self):
         if self.suffix in ["dword", "dwordx2", "dwordx4", "byte", "short", "b32", "b64", "b8"]:
             var = self.node.state[self.to_registers].get_value()
-
             if is_sgpr_range(self.inst_offset):
                 offset_reg, _ = check_and_split_regs(self.inst_offset)
                 if self.node.state[offset_reg].get_type() == RegisterType.ADDRESS_KERNEL_ARGUMENT:
@@ -142,7 +141,8 @@ class FlatStore(BaseInstruction):
             elif " + " in var:
                 var = make_elem_from_addr(var)
             else:
-                if self.decompiler_data.names_of_vars.get(var):
+                if var in self.decompiler_data.names_of_vars and self.decompiler_data.names_of_vars[var] != \
+                    self.node.state[self.to_registers].data_type:
                     var = "*(" + make_opencl_type(self.decompiler_data.names_of_vars[var]) + "*)(" + var + ")"
                 else:
                     var = "*" + var

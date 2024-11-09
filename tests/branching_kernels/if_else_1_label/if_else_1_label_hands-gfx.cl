@@ -5,14 +5,14 @@ void if_else_1_label(int x, __global int *data, int y)
     uint var3;
     uint var4;
     var3 = get_global_id(0);
-    if ((uint)2 != (uint)var3) {
+    if (2 != var3) {
         var0 = get_global_id(0) * y;
         var4 = get_global_id(1);
     }
     else {
         var4 = get_global_id(1);
         var3 = 2;
-        var0 = (uint)(get_global_id(1) * x) - (uint)y;
+        var0 = (get_global_id(1) * x) - (uint)y;
     }
     data[var3] = var0;
     data[var4] = x;
