@@ -1,12 +1,14 @@
 from . import amdcl2_parser, rocm_parser, amdgpu_dis_parser, unknown_parser
-from ..utils import DriverFormat
 
-parsers = {
-    DriverFormat.AMDCL2: amdcl2_parser,
-    DriverFormat.ROCM: rocm_parser,
-    DriverFormat.AMDGPU_DIS: amdgpu_dis_parser,
-    DriverFormat.UNKNOWN: unknown_parser,
-}
+
+def _choose_parser(text: list[str]):
+    if '.amdcl2' in text:
+        return amdcl2_parser
+    if '.rocm' in text:
+        return rocm_parser
+    if '\t.amdgpu_pal_metadata' in text:
+        return amdgpu_dis_parser
+    return unknown_parser
 
 
 def parse_gpu(text: list[str]) -> str | None:
@@ -16,7 +18,6 @@ def parse_gpu(text: list[str]) -> str | None:
     return None
 
 
-def parse_kernel(text):
-    driver_format = DriverFormat(text)
+def parse_kernel(text: list[str]):
     gpu = parse_gpu(text)
-    return parsers[driver_format].parse_kernel(text), gpu
+    return _choose_parser(text).parse_kernel(text), gpu
