@@ -1,10 +1,11 @@
 import yaml
 
 from ..decompiler_data import DecompilerData
+from ..model import KernelArgument
 from ..opencl_types import make_asm_type
 from ..register_content import RegisterContent
 from ..register_type import RegisterType
-from ..utils import ConfigData, KernelArgument
+from ..utils import ConfigData
 
 _ARG_KIND_TO_REGISTER_TYPE = {
     "by_value": RegisterType.KERNEL_ARGUMENT_VALUE,
