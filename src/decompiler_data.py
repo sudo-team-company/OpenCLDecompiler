@@ -6,7 +6,6 @@ from typing import Optional, Union
 
 import sympy
 
-from .model import ConfigData
 from src import utils
 from src.combined_register_content import CombinedRegisterContent
 from src.flag_type import FlagType
@@ -20,6 +19,7 @@ from src.register_content import RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 from src.state import KernelState
 from src.utils import Singleton
+from .model import ConfigData
 
 
 def set_reg_value(  # pylint: disable=R0913

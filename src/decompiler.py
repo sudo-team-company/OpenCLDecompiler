@@ -1,6 +1,5 @@
 import copy
 
-from .model import ConfigData
 from src.cfg import make_cfg_node, make_unresolved_node
 from src.code_printer import create_opencl_body
 from src.decompiler_data import DecompilerData, optimize_names_of_vars
@@ -15,6 +14,7 @@ from src.regions.functions_for_regions import make_region_graph_from_cfg, proces
 from src.unrolled_loops_processing import process_unrolled_loops
 from src.utils import get_context
 from src.versions import find_max_and_prev_versions, change_values, check_for_use_new_version
+from .model import ConfigData
 
 CONTEXT = get_context()
 

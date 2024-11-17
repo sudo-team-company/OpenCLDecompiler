@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from .kernel_argument import KernelArgument
 from src.register_content import RegisterContent
+from .kernel_argument import KernelArgument
 
 
 @dataclass
