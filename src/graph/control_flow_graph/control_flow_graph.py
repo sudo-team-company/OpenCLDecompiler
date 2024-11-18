@@ -1,4 +1,3 @@
-from src import base
 from src.graph.common import Graph, GraphType
 from src.node import Node
 
@@ -56,7 +55,7 @@ class ControlFlowGraph(Graph):
     def _node_dfs_with_instructions_buffer(
             self,
             node: Node,
-            instructions_buffer: list[base.Instruction],
+            instructions_buffer: list[(str, list[object])],
     ) -> str:
         """
         Do dfs algorithm to build control flow graph.
@@ -95,7 +94,7 @@ class ControlFlowGraph(Graph):
 
     @staticmethod
     def _build_node_title_based_on_instructions_list(
-            instructions_list: list[base.Instruction],
+            instructions_list: list[(str, list[object])],
     ) -> str:
         tr_td_text = "\n".join([
             f"<TR><TD><B>{instruction[0]}</B></TD><TD>{' '.join(instruction[1:])}</TD></TR>"
