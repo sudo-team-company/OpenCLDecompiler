@@ -449,16 +449,18 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         state[reg].add_version(reg, self.versions[reg])
         self.versions[reg] += 1
 
+    def set_reg_make_version(self, state, reg, value):
+        state[reg] = value
+        self.make_version(state, reg)
+
     def init_work_group(self, dim, g_id_dim, is_rdna3: bool):
-        self.initial_state[g_id_dim] = Register(
+        self.set_reg_make_version(self.initial_state, g_id_dim, Register(
             integrity=Integrity.ENTIRE,
             register_content=RegisterContent(
                 value=f"get_group_id({dim})",
                 type_=[RegisterType.WORK_GROUP_ID_X, RegisterType.WORK_GROUP_ID_Y, RegisterType.WORK_GROUP_ID_Z][dim],
             )
-        )
-        self.initial_state[g_id_dim].add_version(g_id_dim, 0)
-        self.versions[g_id_dim] = 1
+        ))
 
         if is_rdna3:
             v_dim = "v0"
@@ -479,24 +481,20 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
                 type_=[RegisterType.WORK_ITEM_ID_X, RegisterType.WORK_ITEM_ID_Y, RegisterType.WORK_ITEM_ID_Z][dim],
             )
 
-        self.initial_state[v_dim] = Register(
+        self.set_reg_make_version(self.initial_state, v_dim, Register(
             integrity=Integrity.ENTIRE,
             register_content=register_content
-        )
-        self.initial_state[v_dim].add_version(v_dim, 0)
-        self.versions[v_dim] = 1
+        ))
 
     def init_exec(self):
-        self.initial_state["exec"] = Register(
+        self.set_reg_make_version(self.initial_state, "exec", Register(
             integrity=Integrity.ENTIRE,
             exec_condition=ExecCondition.default(),
             register_content=RegisterContent(
                 value=None,
                 type_=RegisterType.UNKNOWN,
             ),
-        )
-        self.initial_state["exec"].add_version("exec", 0)
-        self.versions["exec"] = 1
+        ))
 
     def init_state(self):
         if self.is_rdna3:
@@ -514,39 +512,35 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         lp, hp = ("s6", "s7") if self.config_data.usesetup else ("s4", "s5")
         if self.is_rdna3:
             lp, hp = ("s0", "s1")
-        self.initial_state[lp] = Register(
+        self.set_reg_make_version(self.initial_state, lp, Register(
             integrity=Integrity.LOW_PART,
             register_content=RegisterContent(
                 value="0",
                 type_=RegisterType.ARGUMENTS_POINTER,
             ),
-        )
-        self.make_version(self.initial_state, lp)
-        self.initial_state[hp] = Register(
+        ))
+        self.set_reg_make_version(self.initial_state, hp, Register(
             integrity=Integrity.HIGH_PART,
             register_content=RegisterContent(
                 value="0",
                 type_=RegisterType.ARGUMENTS_POINTER,
             ),
-        )
-        self.make_version(self.initial_state, hp)
+        ))
         if self.config_data.usesetup:
-            self.initial_state["s4"] = Register(
+            self.set_reg_make_version(self.initial_state, "s4", Register(
                 integrity=Integrity.LOW_PART,
                 register_content=RegisterContent(
                     value="0",
                     type_=RegisterType.DISPATCH_POINTER,
                 ),
-            )
-            self.make_version(self.initial_state, "s4")
-            self.initial_state["s5"] = Register(
+            ))
+            self.set_reg_make_version(self.initial_state, "s5", Register(
                 integrity=Integrity.HIGH_PART,
                 register_content=RegisterContent(
                     value="0",
                     type_=RegisterType.DISPATCH_POINTER,
                 ),
-            )
-            self.make_version(self.initial_state, "s5")
+            ))
 
     def set_config_data(self, config_data: ConfigData):
         self.config_data = config_data

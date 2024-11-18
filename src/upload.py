@@ -64,8 +64,7 @@ def upload_usesetup(state, to_registers, offset):
     start_to_register, end_to_register = check_and_split_regs(to_registers)
     curr_to_register = start_to_register
     while True:
-        state[curr_to_register] = usesetup_dict[offset]
-        decompiler_data.make_version(state, curr_to_register)
+        decompiler_data.set_reg_make_version(state, curr_to_register, usesetup_dict[offset])
         offset = hex(int(offset, 16) + 4)
         if curr_to_register == end_to_register:
             break
@@ -85,19 +84,19 @@ def upload_kernel_param(state, offset, to_registers):
             # This last argument isn't there since it's aligned.
             break
         if content.get_size() <= 4:
-            state[f's{start}'] = Register(integrity=Integrity.ENTIRE, register_content=content)
-            decompiler_data.make_version(state, f's{start}')
+            decompiler_data.set_reg_make_version(state, f's{start}',
+                                                 Register(integrity=Integrity.ENTIRE, register_content=content))
             start += 1
             offset += 4
         elif content.get_size() == 8:
             if start + 1 > end:
-                state[f's{start}'] = Register(integrity=Integrity.ENTIRE, register_content=content)
-                decompiler_data.make_version(state, f's{start}')
+                decompiler_data.set_reg_make_version(state, f's{start}',
+                                                     Register(integrity=Integrity.ENTIRE, register_content=content))
                 break
-            state[f's{start}'] = Register(integrity=Integrity.LOW_PART, register_content=content)
-            decompiler_data.make_version(state, f's{start}')
-            state[f's{start + 1}'] = Register(integrity=Integrity.HIGH_PART, register_content=content)
-            decompiler_data.make_version(state, f's{start + 1}')
+            decompiler_data.set_reg_make_version(state, f's{start}',
+                                                 Register(integrity=Integrity.LOW_PART, register_content=content))
+            decompiler_data.set_reg_make_version(state, f's{start + 1}',
+                                                 Register(integrity=Integrity.HIGH_PART, register_content=content))
             start += 2
             offset += 8
         else:
@@ -110,15 +109,14 @@ def upload_global_data_pointer(state, to_registers, from_registers):
     start_from_register, _ = check_and_split_regs(from_registers)
     data_type = state[start_from_register].data_type
     new_val = make_elem_from_addr(state[start_from_register].val)
-    state[start_to_register] = Register(
+    decompiler_data.set_reg_make_version(state, start_to_register, Register(
         integrity=Integrity.ENTIRE,
         register_content=RegisterContent(
             value=new_val,
             type_=RegisterType.GLOBAL_DATA_POINTER,
             data_type=data_type,
         ),
-    )
-    decompiler_data.make_version(state, start_to_register)
+    ))
 
 
 def upload_by_offset(
@@ -197,29 +195,27 @@ def upload_by_offset(
         else:
             if state[curr_to_register].register_content.get_size() == 0 and \
                     register_content.get_size() == state[curr_to_register].get_size() * 2:
-                state[curr_to_register] = Register(
+                decompiler_data.set_reg_make_version(state, curr_to_register, Register(
                     integrity=Integrity.LOW_PART,
                     register_content=RegisterContent(
                         value=register_content.get_value(),
                         type_=register_content.get_type(),
                         data_type=register_content.get_data_type(),
                     )
-                )
-                decompiler_data.make_version(state, curr_to_register)
+                ))
                 written_bits += register_content.get_size() // 2
                 if curr_to_register == end_to_register:
                     break
                 state[curr_to_register].try_simplify()
                 curr_to_register = get_next_reg(curr_to_register)
-                state[curr_to_register] = Register(
+                decompiler_data.set_reg_make_version(state, curr_to_register, Register(
                     integrity=Integrity.HIGH_PART,
                     register_content=RegisterContent(
                         value=register_content.get_value(),
                         type_=register_content.get_type(),
                         data_type=register_content.get_data_type(),
                     )
-                )
-                decompiler_data.make_version(state, curr_to_register)
+                ))
 
                 offset = hex(int(offset, 16) + register_content.get_size() // 8)
                 written_bits += register_content.get_size() // 2
