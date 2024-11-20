@@ -12,8 +12,8 @@ class TestRealKernels:
     )
     def test_mask_kernel(self, mcpu, disasm):
         template(
-            path_to_dir='real_kernels',
-            dir_name='mask_kernel',
+            path_to_dir="real_kernels",
+            dir_name="mask_kernel",
             mcpu=mcpu,
             disasm=disasm,
         )
@@ -26,8 +26,8 @@ class TestRealKernels:
     )
     def test_weighted_sum_kernel(self, mcpu, disasm):
         template(
-            path_to_dir='real_kernels',
-            dir_name='weighted_sum_kernel',
+            path_to_dir="real_kernels",
+            dir_name="weighted_sum_kernel",
             mcpu=mcpu,
             disasm=disasm,
         )
@@ -40,8 +40,8 @@ class TestRealKernels:
     )
     def test_bellmanFordInit_ver1(self, mcpu, disasm):
         template(
-            path_to_dir='real_kernels',
-            dir_name='bellmanFordInit_ver1',
+            path_to_dir="real_kernels",
+            dir_name="bellmanFordInit_ver1",
             mcpu=mcpu,
             disasm=disasm,
         )

@@ -15,18 +15,20 @@ class VAddc(BaseInstruction):
         self.ssrc2 = self.instruction[5]
 
     def to_print_unresolved(self):
-        if self.suffix == 'u32':
+        if self.suffix == "u32":
             temp = "temp" + str(self.decompiler_data.number_of_temp)
             mask = "mask" + str(self.decompiler_data.number_of_mask)
             cc = "cc" + str(self.decompiler_data.number_of_cc)
             self.decompiler_data.write("ulong " + mask + " = (1ULL<<LANEID) // v_addc_u32\n")
             self.decompiler_data.write("uchar " + cc + " = ((" + self.ssrc2 + "&" + mask + " ? 1 : 0)\n")
-            self.decompiler_data.write("uint " + temp + " = (ulong)" + self.src0
-                                       + " + (ulong)" + self.src1 + " + " + cc + "\n")
+            self.decompiler_data.write(
+                "uint " + temp + " = (ulong)" + self.src0 + " + (ulong)" + self.src1 + " + " + cc + "\n"
+            )
             self.decompiler_data.write(self.sdst + " = 0\n")
             self.decompiler_data.write(self.vdst + " = CLAMP ? min(" + temp + ", 0xffffffff) : " + temp + "\n")
-            self.decompiler_data.write(self.sdst + " = (" + self.sdst + "&~" + mask + ") | (("
-                                       + temp + " >> 32) ? " + mask + " : 0)\n")
+            self.decompiler_data.write(
+                self.sdst + " = (" + self.sdst + "&~" + mask + ") | ((" + temp + " >> 32) ? " + mask + " : 0)\n"
+            )
             self.decompiler_data.number_of_temp += 1
             self.decompiler_data.number_of_mask += 1
             self.decompiler_data.number_of_cc += 1
@@ -45,8 +47,8 @@ class VAddc(BaseInstruction):
                     reg=new_reg,
                 )
 
-        if self.suffix == 'u32':
-            new_value = make_op(self.node, self.src0, self.src1, '+', '(ulong)', '(ulong)', suffix=self.suffix)
+        if self.suffix == "u32":
+            new_value = make_op(self.node, self.src0, self.src1, "+", "(ulong)", "(ulong)", suffix=self.suffix)
             src0_reg = is_reg(self.src0)
             src1_reg = is_reg(self.src1)
             reg_type = RegisterType.UNKNOWN
@@ -62,8 +64,10 @@ class VAddc(BaseInstruction):
                     reg_entire = self.node.state[self.src1].integrity
                 else:
                     reg_entire = self.node.state[self.src1].integrity
-                    if self.node.state[self.src0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT \
-                            and self.node.state[self.src1].type == RegisterType.GLOBAL_ID_X:
+                    if (
+                        self.node.state[self.src0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT
+                        and self.node.state[self.src1].type == RegisterType.GLOBAL_ID_X
+                    ):
                         new_value = self.node.state[self.src0].val + "[get_global_id(0)]"
                         reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT
             else:
@@ -72,6 +76,13 @@ class VAddc(BaseInstruction):
                     reg_type = self.node.state[self.src0].type
                 if src1_reg:
                     reg_type = self.node.state[self.src1].type
-            return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
-                                 reg_type=reg_type, integrity=reg_entire)
+            return set_reg_value(
+                self.node,
+                new_value,
+                self.vdst,
+                [self.src0, self.src1],
+                self.suffix,
+                reg_type=reg_type,
+                integrity=reg_entire,
+            )
         return super().to_fill_node()

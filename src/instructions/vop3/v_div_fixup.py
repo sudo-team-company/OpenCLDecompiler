@@ -11,7 +11,7 @@ class VDivFixup(BaseInstruction):
 
     def to_print_unresolved(self):
         tab = "    "
-        if self.suffix == 'f64':
+        if self.suffix == "f64":
             sf0 = "sf0" + str(self.decompiler_data.number_of_sf0)
             sf1 = "sf1" + str(self.decompiler_data.number_of_sf1)
             sf2 = "sf2" + str(self.decompiler_data.number_of_sf2)

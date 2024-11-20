@@ -16,10 +16,12 @@ class DsBpermute(BaseInstruction):
             self.decompiler_data.write("ulong " + tmp + " // ds_bpermute_b32\n")
             self.decompiler_data.write("for (short i = 0; i < 64; i++)\n")
             self.decompiler_data.write("{\n")
-            self.decompiler_data.write(tab + "uint lane_id = " + self.addr
-                                       + "[(i + (" + self.offset + " >> 2)) & 63]\n")
-            self.decompiler_data.write(tab + tmp + "[i] = exec & (1ULL << lane_id) != 0) ? "
-                                       + self.src + "[lane_id] : 0\n")
+            self.decompiler_data.write(
+                tab + "uint lane_id = " + self.addr + "[(i + (" + self.offset + " >> 2)) & 63]\n"
+            )
+            self.decompiler_data.write(
+                tab + tmp + "[i] = exec & (1ULL << lane_id) != 0) ? " + self.src + "[lane_id] : 0\n"
+            )
             self.decompiler_data.write("}\n")
             self.decompiler_data.write("for (short i = 0; i < 64; i++)\n")
             self.decompiler_data.write(tab + "if (exec & (1ULL << i) != 0)\n")

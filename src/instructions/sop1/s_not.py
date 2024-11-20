@@ -9,14 +9,14 @@ class SNot(BaseInstruction):
         self.ssrc0 = self.instruction[2]
 
     def to_print_unresolved(self):
-        if self.suffix in ['b32', 'b64']:
+        if self.suffix in ["b32", "b64"]:
             self.decompiler_data.write(self.sdst + " = ~" + self.ssrc0 + f" // s_not_{self.suffix}\n")
             self.decompiler_data.write("scc = " + self.sdst + " != 0\n")
             return self.node
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ['b32', 'b64']:
+        if self.suffix in ["b32", "b64"]:
             new_value = "!(" + self.node.state[self.ssrc0].val + ")"
             data_type = self.suffix
             reg_type = self.node.state[self.ssrc0].type

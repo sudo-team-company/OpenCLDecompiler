@@ -13,17 +13,19 @@ class VLshrrev(BaseInstruction):
         self.src1 = self.instruction[3]
 
     def to_print_unresolved(self):
-        if self.suffix == 'b64':
-            self.decompiler_data.write(self.vdst + " = " + self.src1 + " >> ("
-                                       + self.src0 + " & 63) // v_lshrrev_b64\n")
+        if self.suffix == "b64":
+            self.decompiler_data.write(
+                self.vdst + " = " + self.src1 + " >> (" + self.src0 + " & 63) // v_lshrrev_b64\n"
+            )
             return self.node
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ['b32']:
+        if self.suffix in ["b32"]:
             if is_reg(self.src1):
+
                 def default_behaviour():
-                    new_value = make_op(self.node, self.src1, str(pow(2, int(self.src0))), '//', suffix=self.suffix)
+                    new_value = make_op(self.node, self.src1, str(pow(2, int(self.src0))), "//", suffix=self.suffix)
                     reg_type = self.node.state[self.src1].type
 
                     return set_reg_value(
@@ -46,8 +48,8 @@ class VLshrrev(BaseInstruction):
                             reg=maybe_new_register,
                         )
 
-                if self.node.state[self.src1].val == '0':
-                    new_value = '0'
+                if self.node.state[self.src1].val == "0":
+                    new_value = "0"
                     reg_type = RegisterType.INT32
                 else:
                     return default_behaviour()

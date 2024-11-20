@@ -6,11 +6,11 @@ class SMulk(BaseInstruction):
     def __init__(self, node, suffix):
         super().__init__(node, suffix)
         self.sdst = self.instruction[1]
-        self.simm16 = self.instruction[2][self.instruction[2].find("x") + 1:]
+        self.simm16 = self.instruction[2][self.instruction[2].find("x") + 1 :]
         self.unmodified_simm16 = self.instruction[2]
 
     def to_print_unresolved(self):
-        if self.suffix == 'i32':
+        if self.suffix == "i32":
             self.decompiler_data.write(self.sdst + " = " + self.sdst + " * " + self.simm16 + " // s_mulk_i32\n")
             return self.node
         return super().to_print_unresolved()
@@ -42,7 +42,7 @@ class SMulk(BaseInstruction):
             except Exception:
                 pass
 
-        if self.suffix == 'i32':
-            new_value = make_op(self.node, self.sdst, self.simm16, '*', suffix=self.suffix)
+        if self.suffix == "i32":
+            new_value = make_op(self.node, self.sdst, self.simm16, "*", suffix=self.suffix)
             return set_reg_value(self.node, new_value, self.sdst, [self.sdst], self.suffix)
         return super().to_fill_node()

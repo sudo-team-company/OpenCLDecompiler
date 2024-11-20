@@ -10,14 +10,15 @@ class SCselect(BaseInstruction):
         self.ssrc1 = self.instruction[3]
 
     def to_print_unresolved(self):
-        if self.suffix == 'b64':
-            self.decompiler_data.write(self.sdst + " = scc ? " + self.ssrc0 + " : "
-                                       + self.ssrc1 + " // s_cselect_b64\n")
+        if self.suffix == "b64":
+            self.decompiler_data.write(
+                self.sdst + " = scc ? " + self.ssrc0 + " : " + self.ssrc1 + " // s_cselect_b64\n"
+            )
             return self.node
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ['b32', 'b64']:
+        if self.suffix in ["b32", "b64"]:
             ssrc0 = self.ssrc0
             if self.ssrc0 == "exec":
                 ssrc0 = "1"

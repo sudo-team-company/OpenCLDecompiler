@@ -14,10 +14,18 @@ class DsWrite2(BaseInstruction):
         if self.suffix == "b64":
             v0 = "V0" + str(self.decompiler_data.number_of_v0)
             v1 = "V1" + str(self.decompiler_data.number_of_v1)
-            self.decompiler_data.write("ulong* " + v0 + " = (ulong*)(ds + (" + self.addr + " + "
-                                       + self.offset0 + " * 8) & ~7) // ds_write2_b64\n")
-            self.decompiler_data.write("ulong* " + v1 + " = (ulong*)(ds + (" + self.addr + " + "
-                                       + self.offset1 + " * 8) & ~7)\n")
+            self.decompiler_data.write(
+                "ulong* "
+                + v0
+                + " = (ulong*)(ds + ("
+                + self.addr
+                + " + "
+                + self.offset0
+                + " * 8) & ~7) // ds_write2_b64\n"
+            )
+            self.decompiler_data.write(
+                "ulong* " + v1 + " = (ulong*)(ds + (" + self.addr + " + " + self.offset1 + " * 8) & ~7)\n"
+            )
             self.decompiler_data.write("*" + v0 + " = " + self.vdata0 + "\n")
             self.decompiler_data.write("*" + v1 + " = " + self.vdata1 + "\n")
             self.decompiler_data.number_of_v0 += 1

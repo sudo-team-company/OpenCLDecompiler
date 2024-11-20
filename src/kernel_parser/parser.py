@@ -2,11 +2,11 @@ from . import amdcl2_parser, rocm_parser, amdgpu_dis_parser, unknown_parser
 
 
 def _choose_parser(text: list[str]):
-    if '.amdcl2' in text:
+    if ".amdcl2" in text:
         return amdcl2_parser
-    if '.rocm' in text:
+    if ".rocm" in text:
         return rocm_parser
-    if '\t.amdgpu_pal_metadata' in text:
+    if "\t.amdgpu_pal_metadata" in text:
         return amdgpu_dis_parser
     return unknown_parser
 

@@ -4,4 +4,4 @@ from ...node import Node
 
 class SCmpLt(SCmp):
     def __init__(self, node: Node, suffix: str):
-        super().__init__(node, suffix, '<')
+        super().__init__(node, suffix, "<")

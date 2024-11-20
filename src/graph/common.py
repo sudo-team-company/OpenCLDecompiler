@@ -13,10 +13,10 @@ class GraphType(enum.Enum):
 
 class Graph(metaclass=Singleton):
     def __init__(
-            self,
-            graph_type: GraphType,
-            render_path: str,
-            kwargs: dict[str, any],
+        self,
+        graph_type: GraphType,
+        render_path: str,
+        kwargs: dict[str, any],
     ):
         self._graph_type = type
         self._render_path = render_path

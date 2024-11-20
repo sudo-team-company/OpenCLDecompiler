@@ -9,9 +9,10 @@ class VLshlAdd(BaseInstruction):
         self.vdst, self.src0, self.src1, self.src2 = self.instruction[1:5]
 
     def to_print_unresolved(self):
-        if self.suffix == 'u32':
+        if self.suffix == "u32":
             self.decompiler_data.write(
-                f"{self.vdst} = ({self.src0} << {self.src1}) + {self.src2} // {self.instruction[0]}\n")
+                f"{self.vdst} = ({self.src0} << {self.src1}) + {self.src2} // {self.instruction[0]}\n"
+            )
             return self.node
         return super().to_print_unresolved()
 
@@ -28,10 +29,10 @@ class VLshlAdd(BaseInstruction):
                     reg=new_reg,
                 )
 
-        if self.suffix == 'u32':
+        if self.suffix == "u32":
             if self.src1.isdigit():
-                new_value = make_op(self.node, self.src0, str(int(pow(2, int(self.src1)))), '*', suffix=self.suffix)
-                new_value = make_op(self.node, new_value, self.src2, '+', '(ulong)', '(ulong)', suffix=self.suffix)
+                new_value = make_op(self.node, self.src0, str(int(pow(2, int(self.src1)))), "*", suffix=self.suffix)
+                new_value = make_op(self.node, new_value, self.src2, "+", "(ulong)", "(ulong)", suffix=self.suffix)
                 return set_reg_value(
                     node=self.node,
                     new_value=new_value,

@@ -11,11 +11,12 @@ class VSubrev(BaseInstruction):
         self.src1 = self.instruction[4]
 
     def to_print_unresolved(self):
-        if self.suffix == 'u32':
+        if self.suffix == "u32":
             temp = "temp" + str(self.decompiler_data.number_of_temp)
             mask = "mask" + str(self.decompiler_data.number_of_mask)
             self.decompiler_data.write(
-                f"ulong {temp} = (ulong){self.src1} - (ulong){self.src0} // {self.instruction[0]}\n")
+                f"ulong {temp} = (ulong){self.src1} - (ulong){self.src0} // {self.instruction[0]}\n"
+            )
             self.decompiler_data.write(f"{self.vdst} = CLAMP ? ({temp}>>32 ? 0 : {temp}) : {temp}\n")
             self.decompiler_data.write(f"{self.vcc} = 0\n")  # vop2, sdst
             self.decompiler_data.write(f"ulong {mask} = (1ULL<<LANEID)\n")
@@ -26,9 +27,10 @@ class VSubrev(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix == 'u32':
-            new_value = make_op(self.node, self.src1, self.src0, '-', '(ulong)', '(ulong)', suffix=self.suffix)
+        if self.suffix == "u32":
+            new_value = make_op(self.node, self.src1, self.src0, "-", "(ulong)", "(ulong)", suffix=self.suffix)
             reg_entire = self.node.state[self.src1].integrity
-            return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix,
-                                 integrity=reg_entire)
+            return set_reg_value(
+                self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix, integrity=reg_entire
+            )
         return super().to_fill_node()

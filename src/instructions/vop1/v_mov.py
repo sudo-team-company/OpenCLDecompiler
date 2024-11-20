@@ -14,13 +14,13 @@ class VMov(BaseInstruction):
         self.src0 = self.instruction[2]
 
     def to_print_unresolved(self):
-        if self.suffix == 'b32':
+        if self.suffix == "b32":
             self.decompiler_data.write(self.vdst + " = " + self.src0 + " // v_mov_b32\n")
             return self.node
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix == 'b32':
+        if self.suffix == "b32":
             if self.src0 in self.node.state:
                 new_reg = copy.deepcopy(self.node.state[self.src0])
 
@@ -43,9 +43,7 @@ class VMov(BaseInstruction):
                 data_type,
                 reg_type=reg_type,
                 register_content_type=(
-                    type(self.node.state[self.src0].register_content)
-                    if is_reg(self.src0)
-                    else RegisterContent
+                    type(self.node.state[self.src0].register_content) if is_reg(self.src0) else RegisterContent
                 ),
             )
         return super().to_fill_node()

@@ -10,13 +10,13 @@ class VMin(BaseInstruction):
         self.src1 = self.instruction[3]
 
     def to_print_unresolved(self):
-        if self.suffix == 'u32':
+        if self.suffix == "u32":
             self.decompiler_data.write(self.vdst + " = min(" + self.src0 + ", " + self.src1 + ") // v_min_u32\n")
             return self.node
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix == 'u32':
+        if self.suffix == "u32":
             self.src0, _ = check_reg_for_val(self.node, self.src0)
             self.src1, _ = check_reg_for_val(self.node, self.src1)
             new_value = "min(" + self.src0 + ", " + self.src1 + ")"

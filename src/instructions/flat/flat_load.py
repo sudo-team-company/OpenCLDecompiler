@@ -9,14 +9,14 @@ def get_output_for_different_vector_types(output, var_type, data_type):
     if output.find(" + ") != -1:
         open_square_bracket_position = output.find("[")
         close_square_bracket_position = output.find("]")
-        element_number = output[open_square_bracket_position + 1:close_square_bracket_position]
+        element_number = output[open_square_bracket_position + 1 : close_square_bracket_position]
         second_term_separator = element_number.find(" + ")
-        size_type_part = element_number[second_term_separator + 3:]
+        size_type_part = element_number[second_term_separator + 3 :]
         dividend_separator = size_type_part.find("/")
         size_elements = size_type_part[:dividend_separator]
         one_element_size, _ = evaluate_size(make_asm_type(data_type[:-1]), True)
         curr_element = int(int(size_elements) / one_element_size)
-        output = output[:output.find(" + ")] + "]"
+        output = output[: output.find(" + ")] + "]"
     else:
         curr_element = 0
     output += "___s"
@@ -43,17 +43,20 @@ class FlatLoad(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix == "dword":
-            self.decompiler_data.write(self.vdst + " = *(uint*)(" + self.vaddr + " + "
-                                       + self.inst_offset + ") // flat_load_dword\n")
+            self.decompiler_data.write(
+                self.vdst + " = *(uint*)(" + self.vaddr + " + " + self.inst_offset + ") // flat_load_dword\n"
+            )
             return self.node
         if self.suffix == "dwordx2":
-            self.decompiler_data.write(self.vdst + " = *(uint*)(" + self.vaddr + " + "
-                                       + self.inst_offset + ") // flat_load_dword2\n")
+            self.decompiler_data.write(
+                self.vdst + " = *(uint*)(" + self.vaddr + " + " + self.inst_offset + ") // flat_load_dword2\n"
+            )
             return self.node
         if self.suffix == "dwordx4":
             vm = "vm" + str(self.decompiler_data.number_of_vm)
-            self.decompiler_data.write("short* " + vm + " = (" + self.vaddr + " + "
-                                       + self.inst_offset + ") // flat_load_dwordx4\n")
+            self.decompiler_data.write(
+                "short* " + vm + " = (" + self.vaddr + " + " + self.inst_offset + ") // flat_load_dwordx4\n"
+            )
             self.decompiler_data.write(self.vdst + "[0] = *(uint*)" + vm + "\n")
             self.decompiler_data.write(self.vdst + "[1] = *(uint*)(" + vm + " + 4)\n")
             self.decompiler_data.write(self.vdst + "[2] = *(uint*)(" + vm + " + 8)\n")
@@ -68,9 +71,11 @@ class FlatLoad(BaseInstruction):
             data_type = make_new_type_without_modifier(self.node, self.from_registers)
             # probably we should save only const data
             self.decompiler_data.var_value[variable] = self.node.state[self.from_registers].val
-            register_type = RegisterType.KERNEL_ARGUMENT_PTR \
-                if self.node.state[self.from_registers].type == RegisterType.ADDRESS_KERNEL_ARGUMENT \
+            register_type = (
+                RegisterType.KERNEL_ARGUMENT_PTR
+                if self.node.state[self.from_registers].type == RegisterType.ADDRESS_KERNEL_ARGUMENT
                 else RegisterType.KERNEL_ARGUMENT_ELEMENT
+            )
             to_now = self.start_to_registers
             vector_position = 0
             reg_val = variable
@@ -88,8 +93,11 @@ class FlatLoad(BaseInstruction):
                 if to_now == self.end_to_registers:
                     break
                 to_now = get_next_reg(to_now)
-            self.decompiler_data.make_var(self.node.state[self.start_to_registers].version,
-                                          self.node.state[self.start_to_registers].val, data_type)
+            self.decompiler_data.make_var(
+                self.node.state[self.start_to_registers].version,
+                self.node.state[self.start_to_registers].val,
+                data_type,
+            )
             return self.node
         return super().to_fill_node()
 
@@ -104,14 +112,13 @@ class FlatLoad(BaseInstruction):
             if " + " in output:
                 output = make_elem_from_addr(output)
             else:
-                if self.node.state[self.start_to_registers].data_type != \
-                    self.decompiler_data.names_of_vars[output][1:]:
+                if self.node.state[self.start_to_registers].data_type != self.decompiler_data.names_of_vars[output][1:]:
                     output = "*(" + make_opencl_type(self.decompiler_data.names_of_vars[output]) + "*)(" + output + ")"
                 else:
-                    output = '*' + output
+                    output = "*" + output
             var_name = self.node.state[self.start_to_registers].val
             if is_vector_type(data_type):
-                if var_name[-2] == 's' and var_name[-1].isdigit():
+                if var_name[-2] == "s" and var_name[-1].isdigit():
                     var_name = var_name[:-5]
                 var_type = self.node.state[self.start_to_registers].data_type
                 if data_type != var_type:

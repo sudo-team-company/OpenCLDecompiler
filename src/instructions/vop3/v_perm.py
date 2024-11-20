@@ -13,7 +13,7 @@ class VPerm(BaseInstruction):
         self.src2 = self.instruction[4]
 
     def to_print_unresolved(self):
-        if self.suffix == 'b32':
+        if self.suffix == "b32":
             tab = "    "
             qword = "qword" + str(self.decompiler_data.number_of_qword)
             choice = "choice" + str(self.decompiler_data.number_of_choice)
@@ -41,8 +41,8 @@ class VPerm(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix == 'b32':
-            if self.node.state[self.src2].val == '0x2010004':
+        if self.suffix == "b32":
+            if self.node.state[self.src2].val == "0x2010004":
                 new_value = self.node.state[self.src0].val + ", " + self.node.state[self.src1].val
                 reg_type = RegisterType.KERNEL_ARGUMENT_VALUE
                 if is_vector_type(self.node.state[self.src0].data_type):

@@ -12,8 +12,8 @@ class TestLocalMemoryKernels:
     )
     def test_barrier_1(self, mcpu, disasm):
         template(
-            path_to_dir='local_memory_kernels',
-            dir_name='barrier_1',
+            path_to_dir="local_memory_kernels",
+            dir_name="barrier_1",
             mcpu=mcpu,
             disasm=disasm,
         )

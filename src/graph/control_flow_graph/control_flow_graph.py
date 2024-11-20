@@ -4,10 +4,10 @@ from src.node import Node
 
 class ControlFlowGraph(Graph):
     def __init__(
-            self,
-            graph_type: GraphType,
-            render_path: str,
-            kwargs: dict[str, any],
+        self,
+        graph_type: GraphType,
+        render_path: str,
+        kwargs: dict[str, any],
     ):
         super().__init__(
             graph_type=graph_type,
@@ -24,10 +24,10 @@ class ControlFlowGraph(Graph):
     # +==============+
 
     def build_from_node(
-            self,
-            node: Node,
-            program_name: str,
-            program_id: str,
+        self,
+        node: Node,
+        program_name: str,
+        program_id: str,
     ):
         """
         Build graphviz graph based on passed $node as a root node.
@@ -53,9 +53,9 @@ class ControlFlowGraph(Graph):
     # +===============+
 
     def _node_dfs_with_instructions_buffer(
-            self,
-            node: Node,
-            instructions_buffer: list[(str, list[object])],
+        self,
+        node: Node,
+        instructions_buffer: list[(str, list[object])],
     ) -> str:
         """
         Do dfs algorithm to build control flow graph.
@@ -94,16 +94,13 @@ class ControlFlowGraph(Graph):
 
     @staticmethod
     def _build_node_title_based_on_instructions_list(
-            instructions_list: list[(str, list[object])],
+        instructions_list: list[(str, list[object])],
     ) -> str:
-        tr_td_text = "\n".join([
-            f"<TR><TD><B>{instruction[0]}</B></TD><TD>{' '.join(instruction[1:])}</TD></TR>"
-            for instruction
-            in instructions_list
-        ])
-
-        return (
-            "<<TABLE>"
-            f"{tr_td_text}"
-            "</TABLE>>"
+        tr_td_text = "\n".join(
+            [
+                f"<TR><TD><B>{instruction[0]}</B></TD><TD>{' '.join(instruction[1:])}</TD></TR>"
+                for instruction in instructions_list
+            ]
         )
+
+        return "<<TABLE>" f"{tr_td_text}" "</TABLE>>"

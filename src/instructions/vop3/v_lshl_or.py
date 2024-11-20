@@ -21,26 +21,27 @@ class VLshlOr(BaseInstruction):
                 f"get_global_id({i}) - get_global_offset({i})"
                 if not self.decompiler_data.is_rdna3
                 else [f"get_global_id({i})", f"get_global_offset({i})"],
-
                 RegisterType[f"WORK_GROUP_ID_{dim}_WORK_ITEM_ID"]
                 if not self.decompiler_data.is_rdna3
                 else [RegisterType[f"GLOBAL_ID_{dim}"], RegisterType[f"GLOBAL_OFFSET_{dim}"]],
-
                 RegisterSignType.POSITIVE
                 if not self.decompiler_data.is_rdna3
                 else [RegisterSignType.POSITIVE, RegisterSignType.NEGATIVE],
-            ) for i, dim in enumerate("XYZ") if i < len(size_of_work_groups)
+            )
+            for i, dim in enumerate("XYZ")
+            if i < len(size_of_work_groups)
         }
 
     def to_print_unresolved(self):
-        if self.suffix == 'b32':
+        if self.suffix == "b32":
             self.decompiler_data.write(
-                f"{self.vdst} = ({self.src0} << {self.src1}) | {self.src2} // {self.instruction[0]}\n")
+                f"{self.vdst} = ({self.src0} << {self.src1}) | {self.src2} // {self.instruction[0]}\n"
+            )
             return self.node
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix == 'b32':
+        if self.suffix == "b32":
             if is_reg(self.src0) and self.src1.isdigit() and is_reg(self.src2):
                 src0_type = self.node.state[self.src0].type
                 src1_type = self.node.state[self.src2].type

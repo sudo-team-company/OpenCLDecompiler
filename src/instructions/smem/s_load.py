@@ -15,24 +15,26 @@ class SLoad(BaseInstruction):
         self.from_registers, _ = check_and_split_regs(self.sbase)
 
     def to_print_unresolved(self):
-        if self.suffix == 'dword':
+        if self.suffix == "dword":
             self.decompiler_data.write(self.sdata + " = *(uint*)(smem + (" + self.offset + " & ~3)) // s_load_dword\n")
             return self.node
-        if self.suffix == 'dwordx2':
+        if self.suffix == "dwordx2":
             self.decompiler_data.write(
-                self.sdata + " = *(ulong*)(smem + (" + self.offset + " & ~3)) // s_load_dwordx2\n")
+                self.sdata + " = *(ulong*)(smem + (" + self.offset + " & ~3)) // s_load_dwordx2\n"
+            )
             return self.node
-        if self.suffix in ['dwordx4', 'dwordx8']:
+        if self.suffix in ["dwordx4", "dwordx8"]:
             i_cnt = self.suffix[-1]
             self.decompiler_data.write("for (BYTE i = 0; i < " + i_cnt + "; i++) // s_load_dword" + i_cnt + "\n")
             self.decompiler_data.write(
-                "    " + self.sdata + "[i] = *(uint*)(SMEM + i*4 + (" + self.offset + " & ~3))\n")
+                "    " + self.sdata + "[i] = *(uint*)(SMEM + i*4 + (" + self.offset + " & ~3))\n"
+            )
             return self.node
         return super().to_print_unresolved()
 
     def to_fill_node(self):
         sbase: Register | None = self.node.state.get(self.from_registers)
-        if sbase is not None and self.suffix in ['dword', 'dwordx2', 'dwordx4', 'dwordx8', 'b32', 'b64', 'b128']:
+        if sbase is not None and self.suffix in ["dword", "dwordx2", "dwordx4", "dwordx8", "b32", "b64", "b128"]:
             if sbase.val.isdigit():
                 self.offset = hex(int(self.offset, 16) + int(sbase.val))
             if sbase.type in (RegisterType.GLOBAL_DATA_POINTER, RegisterType.ARGUMENTS_POINTER):

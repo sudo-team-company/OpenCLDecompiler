@@ -10,21 +10,28 @@ class SAndn2(BaseInstruction):
         self.ssrc1 = self.instruction[3]
 
     def to_print_unresolved(self):
-        if self.suffix == 'b64':
+        if self.suffix == "b64":
             self.decompiler_data.write(self.sdst + " = " + self.ssrc0 + " & ~" + self.ssrc1 + " // s_andn2_b64\n")
             self.decompiler_data.write("scc" + " = " + self.sdst + " != 0\n")
             return self.node
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ['b32', 'b64']:
+        if self.suffix in ["b32", "b64"]:
             if "exec" in [self.sdst, self.ssrc0, self.ssrc1]:
                 if self.ssrc1 == "exec":
                     self.ssrc1, self.ssrc0 = self.ssrc0, self.ssrc1
-                new_exec_condition = self.decompiler_data.exec_registers[self.ssrc0] ^ \
-                                     self.decompiler_data.exec_registers[self.ssrc1]
+                new_exec_condition = (
+                    self.decompiler_data.exec_registers[self.ssrc0] ^ self.decompiler_data.exec_registers[self.ssrc1]
+                )
                 self.decompiler_data.exec_registers[self.sdst] = new_exec_condition
-                return set_reg_value(self.node, new_exec_condition.top(), self.sdst, [self.ssrc0, self.ssrc1], None,
-                                     exec_condition=new_exec_condition)
+                return set_reg_value(
+                    self.node,
+                    new_exec_condition.top(),
+                    self.sdst,
+                    [self.ssrc0, self.ssrc1],
+                    None,
+                    exec_condition=new_exec_condition,
+                )
             return self.node
         return super().to_fill_node()

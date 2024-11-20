@@ -23,13 +23,20 @@ class SAndSaveexec(BaseInstruction):
             new_cond = self.node.state[self.ssrc0].val
 
             self.decompiler_data.exec_registers[self.sdst] = old_exec_condition
-            set_reg_value(self.node, old_exec_condition.top(), self.sdst, ["exec"], None,
-                          exec_condition=old_exec_condition)
+            set_reg_value(
+                self.node, old_exec_condition.top(), self.sdst, ["exec"], None, exec_condition=old_exec_condition
+            )
 
             new_exec_condition = old_exec_condition & new_cond
             self.decompiler_data.exec_registers["exec"] = new_exec_condition
-            return set_reg_value(self.node, new_exec_condition.top(), "exec", ["exec", self.ssrc0], None,
-                                 exec_condition=new_exec_condition)
+            return set_reg_value(
+                self.node,
+                new_exec_condition.top(),
+                "exec",
+                ["exec", self.ssrc0],
+                None,
+                exec_condition=new_exec_condition,
+            )
         return super().to_fill_node()
 
     def to_print(self):

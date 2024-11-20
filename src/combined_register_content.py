@@ -49,23 +49,29 @@ class CombinedRegisterContent(RegisterContent):
         if len(self._value) == 2:
             if self._type[0] == RegisterType.EMPTY:
                 return RegisterContent(
-                            value=self._value[1],
-                            type_=self._type[1],
-                            size=self._size[1],
-                            data_type=self._data_type[1],
-                            sign=self._sign[1],
-                        ) * (2 ** int(self._size[0]))
+                    value=self._value[1],
+                    type_=self._type[1],
+                    size=self._size[1],
+                    data_type=self._data_type[1],
+                    sign=self._sign[1],
+                ) * (2 ** int(self._size[0]))
 
         return None
 
     def _maybe_acquire_content(self, begin: int, end: int) -> Optional[RegisterContent]:
         curr_pos = 0
-        for value, type_, size, data_type, sign, in zip(
-                self._value,
-                self._type,
-                self._size,
-                self._data_type,
-                self._sign,
+        for (
+            value,
+            type_,
+            size,
+            data_type,
+            sign,
+        ) in zip(
+            self._value,
+            self._type,
+            self._size,
+            self._data_type,
+            self._sign,
         ):
             if curr_pos == begin and curr_pos + size - 1 >= end:
                 return RegisterContent(
@@ -103,7 +109,7 @@ class CombinedRegisterContent(RegisterContent):
             if isinstance(other, int):
                 hex_int = int(other, 16)
 
-            bit_str = "{:b}".format(hex_int)   # pylint: disable=C0209
+            bit_str = "{:b}".format(hex_int)  # pylint: disable=C0209
 
             if hex_int == 0:
                 return RegisterContent(
@@ -120,19 +126,19 @@ class CombinedRegisterContent(RegisterContent):
                 reversed_i = len(bit_str) - i - 1
 
                 if begin is None:
-                    if bit_str[reversed_i] == '0':
+                    if bit_str[reversed_i] == "0":
                         continue
-                    if bit_str[reversed_i] == '1':
+                    if bit_str[reversed_i] == "1":
                         begin = i
                         end = begin
 
                     continue
 
-                if bit_str[reversed_i] == '1':
+                if bit_str[reversed_i] == "1":
                     end = i
 
                     continue
-                if bit_str[reversed_i] == '0':
+                if bit_str[reversed_i] == "0":
                     break
 
             for i in range(len(bit_str)):
@@ -141,7 +147,7 @@ class CombinedRegisterContent(RegisterContent):
                 if i <= end:
                     continue
 
-                if bit_str[reversed_i] == '1':
+                if bit_str[reversed_i] == "1":
                     return None
 
             return self._maybe_acquire_content(begin, end)
@@ -157,36 +163,38 @@ class CombinedRegisterContent(RegisterContent):
             add_to_new_combiner_flag = False
             cur_pos = 0
             for value, type_, size, data_type, sign in zip(
-                    self._value,
-                    self._type,
-                    self._size,
-                    self._data_type,
-                    self._sign,
+                self._value,
+                self._type,
+                self._size,
+                self._data_type,
+                self._sign,
             ):
                 if bits == cur_pos:
                     add_to_new_combiner_flag = True
 
                 if add_to_new_combiner_flag:
-                    register_contents.append(RegisterContent(
-                        value=value,
-                        type_=type_,
-                        size=size,
-                        data_type=data_type,
-                        sign=sign,
-                    ))
+                    register_contents.append(
+                        RegisterContent(
+                            value=value,
+                            type_=type_,
+                            size=size,
+                            data_type=data_type,
+                            sign=sign,
+                        )
+                    )
                     continue
 
                 if bits < cur_pos:
+                    register_contents.append(EmptyRegisterContent(cur_pos - bits))
                     register_contents.append(
-                        EmptyRegisterContent(cur_pos - bits)
+                        RegisterContent(
+                            value=value,
+                            type_=type_,
+                            size=size,
+                            data_type=data_type,
+                            sign=sign,
+                        )
                     )
-                    register_contents.append(RegisterContent(
-                        value=value,
-                        type_=type_,
-                        size=size,
-                        data_type=data_type,
-                        sign=sign,
-                    ))
 
                     add_to_new_combiner_flag = True
                     continue
