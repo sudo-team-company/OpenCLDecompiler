@@ -58,7 +58,7 @@ def prepare_vector_type_output(from_registers, vdata, to_registers, node):
             for element in new_vector:
                 output_string += str(get_vector_element_number(element))
     else:
-        output_string = "(" + node.state[to_registers].data_type + ")(" + ", ".join(new_vector) + ")"
+        output_string = f"({node.state[to_registers].data_type})(" + ", ".join(new_vector) + ")"
     return output_string
 
 
@@ -74,24 +74,18 @@ class FlatStore(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix in ["dword", "byte"]:
-            self.decompiler_data.write(
-                "*(uint32*)(" + self.vaddr + " + " + self.inst_offset + ") = " + self.vdata + " // flat_store_dword\n"
-            )
+            self.decompiler_data.write(f"*(uint32*)({self.vaddr} + {self.inst_offset}) = {self.vdata} // {self.name}\n")
             return self.node
         if self.suffix == "dwordx2":
-            self.decompiler_data.write(
-                "*(ulong*)(" + self.vaddr + " + " + self.inst_offset + " = " + self.vdata + " // flat_store_dwordx2\n"
-            )
+            self.decompiler_data.write(f"*(ulong*)({self.vaddr} + {self.inst_offset} = {self.vdata} // {self.name}\n")
             return self.node
         if self.suffix == "dwordx4":
-            vm = "vm" + str(self.decompiler_data.number_of_vm)
-            self.decompiler_data.write(
-                "short* " + vm + " = (" + self.vaddr + " + " + self.inst_offset + ") // flat_store_dwordx4\n"
-            )
-            self.decompiler_data.write("*(uint*)(" + vm + ") = " + self.vdata + "[0]\n")
-            self.decompiler_data.write("*(uint*)(" + vm + " + 4) = " + self.vdata + "[1]\n")
-            self.decompiler_data.write("*(uint*)(" + vm + " + 8) = " + self.vdata + "[2]\n")
-            self.decompiler_data.write("*(uint*)(" + vm + " + 12) = " + self.vdata + "[3]\n")
+            vm = f"vm{self.decompiler_data.number_of_vm}"
+            self.decompiler_data.write(f"short* {vm} = ({self.vaddr} + {self.inst_offset}) // {self.name}\n")
+            self.decompiler_data.write(f"*(uint*)({vm}) = {self.vdata}[0]\n")
+            self.decompiler_data.write(f"*(uint*)({vm} + 4) = {self.vdata}[1]\n")
+            self.decompiler_data.write(f"*(uint*)({vm} + 8) = {self.vdata}[2]\n")
+            self.decompiler_data.write(f"*(uint*)({vm} + 12) = {self.vdata}[3]\n")
             self.decompiler_data.number_of_vm += 1
             return self.node
         return super().to_print_unresolved()
@@ -150,7 +144,7 @@ class FlatStore(BaseInstruction):
                     var = f"{self.node.state[offset_reg].get_value()} + {var}"
 
             if self.inst_offset == "inst_offset:4":
-                var = var + "[get_global_id(0)]"
+                var = f"{var}[get_global_id(0)]"
             elif " + " in var:
                 var = make_elem_from_addr(var)
             else:
@@ -158,9 +152,9 @@ class FlatStore(BaseInstruction):
                     var in self.decompiler_data.names_of_vars
                     and self.decompiler_data.names_of_vars[var] != self.node.state[self.to_registers].data_type
                 ):
-                    var = "*(" + make_opencl_type(self.decompiler_data.names_of_vars[var]) + "*)(" + var + ")"
+                    var = f"*({make_opencl_type(self.decompiler_data.names_of_vars[var])}*)({var})"
                 else:
-                    var = "*" + var
+                    var = f"*{var}"
             if self.node.state.get(self.from_registers):
                 if self.node.state[self.from_registers].val == "0" and self.node.state.get(self.from_registers_1):
                     self.output_string = self.node.state[self.from_registers_1].val
@@ -173,5 +167,5 @@ class FlatStore(BaseInstruction):
                         self.output_string = self.node.state[self.from_registers].get_value()
             else:
                 self.output_string = self.decompiler_data.initial_state[self.from_registers].val
-            return var + " = " + self.output_string
+            return f"{var} = {self.output_string}"
         return super().to_print()

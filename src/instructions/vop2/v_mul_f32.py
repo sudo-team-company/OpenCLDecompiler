@@ -18,21 +18,15 @@ class VMulF32(BaseInstruction):
             self.decompiler_data.write(f"{self.vdst} = (float){self.src0} * (float){self.src1} // {self.name}\n")
             return self.node
         if self.suffix in ["i32_i24", "u32_u24"]:
-            v0 = "V0" + str(self.decompiler_data.number_of_v0)
-            v1 = "V1" + str(self.decompiler_data.number_of_v1)
+            v0 = f"V0{self.decompiler_data.number_of_v0}"
+            v1 = f"V1{self.decompiler_data.number_of_v1}"
             self.decompiler_data.write(
-                "int "
-                + v0
-                + " (int)(("
-                + self.src0
-                + "&0x7fffff) | ("
-                + self.src0
-                + f"&0x800000 ? 0xff800000 : 0)) // {self.instruction[0]}\n"
+                f"int {v0} (int)(({self.src0}&0x7fffff) | ({self.src0}&0x800000 ? 0xff800000 : 0)) // {self.name}\n"
             )
             self.decompiler_data.write(
-                "int " + v1 + " (int)((" + self.src1 + "&0x7fffff) | (" + self.src1 + "&0x800000 ? 0xff800000 : 0))\n"
+                f"int {v1} (int)(({self.src1}&0x7fffff) | ({self.src1}&0x800000 ? 0xff800000 : 0))\n"
             )
-            self.decompiler_data.write(self.vdst + " = " + v0 + " * " + v1 + "\n")
+            self.decompiler_data.write(f"{self.vdst} = {v0} * {v1}\n")
             self.decompiler_data.number_of_v0 += 1
             self.decompiler_data.number_of_v1 += 1
             return self.node

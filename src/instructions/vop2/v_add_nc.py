@@ -24,7 +24,7 @@ class VAddNc(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix in ["u16", "u32"]:
-            self.decompiler_data.write(f"{self.vdst} = {self.src0} + {self.src1} // {self.instruction[0]}\n")
+            self.decompiler_data.write(f"{self.vdst} = {self.src0} + {self.src1} // {self.name}\n")
             return self.node
         return super().to_print_unresolved()
 

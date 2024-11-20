@@ -10,29 +10,11 @@ class FlatAtomicAdd(BaseInstruction):
         self.inst_offset = self.instruction[4] if len(self.instruction) > 4 else ""
 
     def to_print_unresolved(self):
-        vm = "vm" + str(self.decompiler_data.number_of_vm)
-        p = "p" + str(self.decompiler_data.number_of_p)
+        vm = f"vm{self.decompiler_data.number_of_vm}"
+        p = f"p{self.decompiler_data.number_of_p}"
+        self.decompiler_data.write(f"uint* {vm} = (uint*)({self.vaddr} + {self.inst_offset}) // {self.name}\n")
         self.decompiler_data.write(
-            "uint* " + vm + " = (uint*)(" + self.vaddr + " + " + self.inst_offset + ") // flat_atomic_add\n"
-        )
-        self.decompiler_data.write(
-            "uint "
-            + p
-            + " = *"
-            + vm
-            + "; *"
-            + vm
-            + " = *"
-            + vm
-            + " + "
-            + self.vdata
-            + "; "
-            + self.vdst
-            + " = (glc) ? "
-            + p
-            + " : "
-            + self.vdst
-            + "  // atomic\n"
+            f"uint {p} = *{vm}; *{vm} = *{vm} + {self.vdata}; {self.vdst} = (glc) ? {p} : {self.vdst}  // atomic\n"
         )
         self.decompiler_data.number_of_vm += 1
         self.decompiler_data.number_of_p += 1

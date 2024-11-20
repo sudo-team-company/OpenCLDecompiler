@@ -11,7 +11,7 @@ class VRcpIflag(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix == "f32":
-            self.decompiler_data.write(f"{self.vdst} = 1.0 / {self.src0} // {self.instruction[0]}\n")
+            self.decompiler_data.write(f"{self.vdst} = 1.0 / {self.src0} // {self.name}\n")
             return self.node
         return super().to_print_unresolved()
 

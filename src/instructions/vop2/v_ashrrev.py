@@ -13,14 +13,10 @@ class VAshrrev(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix == "i32":
-            self.decompiler_data.write(
-                self.vdst + " = (int)" + self.src1 + " >> (" + self.src0 + "&31) // v_ashrrev_i32\n"
-            )
+            self.decompiler_data.write(f"{self.vdst} = (int){self.src1} >> ({self.src0}&31) // {self.name}\n")
             return self.node
         if self.suffix == "i64":
-            self.decompiler_data.write(
-                self.vdst + " = (long)" + self.src1 + " >> (" + self.src0 + "&63) // v_ashrrev_i64\n"
-            )
+            self.decompiler_data.write(f"{self.vdst} = (long){self.src1} >> ({self.src0}&63) // {self.name}\n")
             return self.node
         return super().to_print_unresolved()
 

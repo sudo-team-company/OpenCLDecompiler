@@ -9,9 +9,9 @@ class SAddK(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix == "i32":
-            temp = "temp" + str(self.decompiler_data.number_of_temp)
+            temp = f"temp{self.decompiler_data.number_of_temp}"
             self.decompiler_data.write(f"{temp} = {self.src0}\n")
-            self.decompiler_data.write(f"{self.src0} = {self.src0} + {self.simm16} // {self.instruction[0]}\n")
+            self.decompiler_data.write(f"{self.src0} = {self.src0} + {self.simm16} // {self.name}\n")
             self.decompiler_data.write(
                 f"scc = (({temp} >> 31) == ({self.simm16} >> 15) && ({temp} >> 31) != ({self.src0} >> 31))\n"
             )

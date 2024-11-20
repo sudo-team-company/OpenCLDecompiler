@@ -21,17 +21,13 @@ class VAdd(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix == "u32":
-            temp = "temp" + str(self.decompiler_data.number_of_temp)
-            mask = "mask" + str(self.decompiler_data.number_of_mask)
-            self.decompiler_data.write(
-                "uint " + temp + " = (ulong)" + self.src0 + " + (ulong)" + self.src1 + " // v_add_u32\n"
-            )
-            self.decompiler_data.write(self.vdst + " = CLAMP ? min(" + temp + ", 0xffffffff) : " + temp + "\n")
-            self.decompiler_data.write(self.sdst + " = 0\n")
-            self.decompiler_data.write("ulong " + mask + " = (1ULL<<LANEID)\n")
-            self.decompiler_data.write(
-                self.sdst + " = (" + self.sdst + "&~" + mask + ") | ((" + temp + " >> 32) ? " + mask + " : 0)\n"
-            )
+            temp = f"temp{self.decompiler_data.number_of_temp}"
+            mask = f"mask{self.decompiler_data.number_of_mask}"
+            self.decompiler_data.write(f"uint {temp} = (ulong){self.src0} + (ulong){self.src1} // {self.name}\n")
+            self.decompiler_data.write(f"{self.vdst} = CLAMP ? min({temp}, 0xffffffff) : {temp}\n")
+            self.decompiler_data.write(f"{self.sdst} = 0\n")
+            self.decompiler_data.write(f"ulong {mask} = (1ULL<<LANEID)\n")
+            self.decompiler_data.write(f"{self.sdst} = ({self.sdst}&~{mask}) | (({temp} >> 32) ? {mask} : 0)\n")
             self.decompiler_data.number_of_temp += 1
             self.decompiler_data.number_of_mask += 1
             return self.node
@@ -43,7 +39,7 @@ class VAdd(BaseInstruction):
                 if self.node.state[
                     self.src0
                 ].type == RegisterType.ADDRESS_KERNEL_ARGUMENT and self.decompiler_data.type_params.get(
-                    "*" + self.node.state[self.src0].val
+                    f"*{self.node.state[self.src0].val}"
                 ):
                     reg_type = self.node.state[self.src1].type
                     data_type = self.node.state[self.src0].data_type
@@ -117,8 +113,8 @@ class VAdd(BaseInstruction):
                 elif self.node.state[self.src0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
                     reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT
                     argument = self.node.state[self.src0].val
-                    if self.decompiler_data.type_params.get("*" + argument):
-                        data_type = make_asm_type(self.decompiler_data.type_params["*" + argument])
+                    if self.decompiler_data.type_params.get(f"*{argument}"):
+                        data_type = make_asm_type(self.decompiler_data.type_params[f"*{argument}"])
                     else:
                         data_type = self.node.state[self.src0].data_type
                     data_size, _ = evaluate_size(data_type, True)

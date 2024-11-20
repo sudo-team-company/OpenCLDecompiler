@@ -12,7 +12,7 @@ class SAnd(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix in ["b32", "b64"]:
-            self.decompiler_data.write(f"{self.sdst} = {self.ssrc0} & {self.ssrc1} // {self.instruction[0]}\n")
+            self.decompiler_data.write(f"{self.sdst} = {self.ssrc0} & {self.ssrc1} // {self.name}\n")
             self.decompiler_data.write(f"scc = {self.sdst} != 0\n")
             return self.node
         return super().to_print_unresolved()

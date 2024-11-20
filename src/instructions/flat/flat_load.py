@@ -42,32 +42,23 @@ class FlatLoad(BaseInstruction):
         self.from_registers, _ = check_and_split_regs(self.vaddr)
 
     def to_print_unresolved(self):
-        if self.suffix == "dword":
-            self.decompiler_data.write(
-                self.vdst + " = *(uint*)(" + self.vaddr + " + " + self.inst_offset + ") // flat_load_dword\n"
-            )
-            return self.node
-        if self.suffix == "dwordx2":
-            self.decompiler_data.write(
-                self.vdst + " = *(uint*)(" + self.vaddr + " + " + self.inst_offset + ") // flat_load_dword2\n"
-            )
+        if self.suffix in ["dword", "dwordx2"]:
+            self.decompiler_data.write(f"{self.vdst} = *(uint*)({self.vaddr} + {self.inst_offset}) // {self.name}\n")
             return self.node
         if self.suffix == "dwordx4":
-            vm = "vm" + str(self.decompiler_data.number_of_vm)
-            self.decompiler_data.write(
-                "short* " + vm + " = (" + self.vaddr + " + " + self.inst_offset + ") // flat_load_dwordx4\n"
-            )
-            self.decompiler_data.write(self.vdst + "[0] = *(uint*)" + vm + "\n")
-            self.decompiler_data.write(self.vdst + "[1] = *(uint*)(" + vm + " + 4)\n")
-            self.decompiler_data.write(self.vdst + "[2] = *(uint*)(" + vm + " + 8)\n")
-            self.decompiler_data.write(self.vdst + "[3] = *(uint*)(" + vm + " + 12)\n")
+            vm = f"vm{self.decompiler_data.number_of_vm}"
+            self.decompiler_data.write(f"short* {vm} = ({self.vaddr} + {self.inst_offset}) // {self.name}\n")
+            self.decompiler_data.write(f"{self.vdst}[0] = *(uint*){vm}\n")
+            self.decompiler_data.write(f"{self.vdst}[1] = *(uint*)({vm} + 4)\n")
+            self.decompiler_data.write(f"{self.vdst}[2] = *(uint*)({vm} + 8)\n")
+            self.decompiler_data.write(f"{self.vdst}[3] = *(uint*)({vm} + 12)\n")
             self.decompiler_data.number_of_vm += 1
             return self.node
         return super().to_print_unresolved()
 
     def to_fill_node(self):  # нужно ли здесь делать self.node
         if self.suffix in ["dword", "dwordx2", "dwordx4"]:
-            variable = "var" + str(self.decompiler_data.num_of_var)
+            variable = f"var{self.decompiler_data.num_of_var}"
             data_type = make_new_type_without_modifier(self.node, self.from_registers)
             # probably we should save only const data
             self.decompiler_data.var_value[variable] = self.node.state[self.from_registers].val
@@ -83,7 +74,7 @@ class FlatLoad(BaseInstruction):
                 if is_vector_type(data_type):
                     data_type = data_type[:-1]
                     if self.suffix[-1].isdigit():
-                        reg_val = variable + "___s" + str(vector_position)
+                        reg_val = f"{variable}___s{vector_position}"
                         data_type += self.suffix[-1]
                     else:
                         data_type = make_asm_type(data_type)
@@ -113,9 +104,9 @@ class FlatLoad(BaseInstruction):
                 output = make_elem_from_addr(output)
             else:
                 if self.node.state[self.start_to_registers].data_type != self.decompiler_data.names_of_vars[output][1:]:
-                    output = "*(" + make_opencl_type(self.decompiler_data.names_of_vars[output]) + "*)(" + output + ")"
+                    output = f"*({make_opencl_type(self.decompiler_data.names_of_vars[output])}*)({output})"
                 else:
-                    output = "*" + output
+                    output = f"*{output}"
             var_name = self.node.state[self.start_to_registers].val
             if is_vector_type(data_type):
                 if var_name[-2] == "s" and var_name[-1].isdigit():
@@ -123,6 +114,6 @@ class FlatLoad(BaseInstruction):
                 var_type = self.node.state[self.start_to_registers].data_type
                 if data_type != var_type:
                     output = get_output_for_different_vector_types(output, var_type, data_type)
-            self.output_string = var_name + " = " + output
+            self.output_string = f"{var_name} = {output}"
             return self.output_string
         return super().to_print()

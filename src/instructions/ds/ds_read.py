@@ -13,12 +13,12 @@ class DsRead(BaseInstruction):
     def to_print_unresolved(self):
         if self.suffix == "b32":
             self.decompiler_data.write(
-                self.vdst + " = *(uint*)(DS + ((" + self.addr + " + " + str(self.offset) + ")&~3)) // ds_read_b32\n"
+                f"{self.vdst} = *(uint*)(DS + (({self.addr} + {self.offset})&~3)) // {self.name}\n"
             )
             return self.node
         if self.suffix == "b64":
             self.decompiler_data.write(
-                self.vdst + " = *(ulong*)(DS + ((" + self.addr + " + " + str(self.offset) + ")&~7)) // ds_read_b64\n"
+                f"{self.vdst} = *(ulong*)(DS + (({self.addr} + {self.offset})&~7)) // {self.name}\n"
             )
             return self.node
         return super().to_print_unresolved()
@@ -26,14 +26,14 @@ class DsRead(BaseInstruction):
     def to_fill_node(self):
         if self.suffix == "b32":
             new_value = make_op(self.node, self.addr, "4", "/", suffix=self.suffix)
-            name = self.decompiler_data.lds_vars[self.offset][0] + "[" + new_value + "]"
+            name = f"{self.decompiler_data.lds_vars[self.offset][0]}[{new_value}]"
             if name in self.node.state:
                 reg_type = self.node.state[name].type
             else:
                 reg_type = RegisterType.UNKNOWN
-            return set_reg_value(self.node, name, self.vdst, [], "u" + self.suffix[1:], reg_type=reg_type)
+            return set_reg_value(self.node, name, self.vdst, [], f"u{self.suffix[1:]}", reg_type=reg_type)
         if self.suffix == "b64":
-            name = self.decompiler_data.lds_vars[self.offset][0] + "[" + self.node.state[self.addr].var + "]"
+            name = f"{self.decompiler_data.lds_vars[self.offset][0]}[{self.node.state[self.addr].var}]"
             reg_type = self.node.state[name].type
-            return set_reg_value(self.node, name, self.vdst, [], "u" + self.suffix[1:], reg_type=reg_type)
+            return set_reg_value(self.node, name, self.vdst, [], f"u{self.suffix[1:]}", reg_type=reg_type)
         return super().to_fill_node()

@@ -12,16 +12,7 @@ class VBfi(BaseInstruction):
     def to_print_unresolved(self):
         if self.suffix == "b32":
             self.decompiler_data.write(
-                self.vdst
-                + " = ("
-                + self.src0
-                + " & "
-                + self.src1
-                + ") | (~"
-                + self.src0
-                + " & "
-                + self.src2
-                + ") // v_bfi_b32\n"
+                f"{self.vdst} = ({self.src0} & {self.src1}) | (~{self.src0} & {self.src2}) // {self.name}\n"
             )
             return self.node
         return super().to_print_unresolved()

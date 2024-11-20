@@ -7,21 +7,17 @@ from src.register_type import RegisterType
 class VSubNc(BaseInstruction):
     def __init__(self, node, suffix):
         super().__init__(node, suffix)
-        if "rev" in self.instruction[0]:
+        if "rev" in self.name:
             self.vdst, self.src1, self.src0 = self.instruction[1:4]
         else:
             self.vdst, self.src0, self.src1 = self.instruction[1:4]
 
     def to_print_unresolved(self):
         if self.suffix == "u32":
-            self.decompiler_data.write(
-                f"{self.vdst} = (uint){self.src0} - (uint){self.src1} // {self.instruction[0]}\n"
-            )
+            self.decompiler_data.write(f"{self.vdst} = (uint){self.src0} - (uint){self.src1} // {self.name}\n")
             return self.node
         if self.suffix == "u16":
-            self.decompiler_data.write(
-                f"{self.vdst} = (ushort){self.src0} - (ushort){self.src1} // {self.instruction[0]}\n"
-            )
+            self.decompiler_data.write(f"{self.vdst} = (ushort){self.src0} - (ushort){self.src1} // {self.name}\n")
             return self.node
         return super().to_print_unresolved()
 

@@ -12,23 +12,12 @@ class SSetreg(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix == "b32":
-            mask = "mask" + str(self.decompiler_data.number_of_mask)
+            mask = f"mask{self.decompiler_data.number_of_mask}"
             self.decompiler_data.write(
-                "uint " + mask + " = (1U << " + self.bitsize + ") - 1U) << " + self.bitoffset + " // s_setreg_b32\n"
+                f"uint {mask} = (1U << {self.bitsize}) - 1U) << {self.bitoffset} // {self.name}\n"
             )
             self.decompiler_data.write(
-                self.hwreg
-                + " = ("
-                + self.hwreg
-                + "& ~"
-                + mask
-                + ") | (("
-                + self.sdst
-                + " << "
-                + self.bitoffset
-                + ") & "
-                + mask
-                + ")\n"
+                f"{self.hwreg} = ({self.hwreg}& ~{mask}) | (({self.sdst} << {self.bitoffset}) & {mask})\n"
             )
             self.decompiler_data.number_of_mask += 1
             return self.node

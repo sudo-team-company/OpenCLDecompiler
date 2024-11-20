@@ -13,12 +13,12 @@ class SAddc(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix == "u32":
-            temp = "temp" + str(self.decompiler_data.number_of_temp)
+            temp = f"temp{self.decompiler_data.number_of_temp}"
             self.decompiler_data.write(
-                "ulong " + temp + " = (ulong)" + self.ssrc0 + " + (ulong)" + self.ssrc1 + " + scc // s_addc_u32\n"
+                f"ulong {temp} = (ulong){self.ssrc0} + (ulong){self.ssrc1} + scc // {self.name}\n"
             )
-            self.decompiler_data.write(self.sdst + " = " + temp + "\n")
-            self.decompiler_data.write("scc = " + temp + " >> 32\n")
+            self.decompiler_data.write(f"{self.sdst} = {temp}\n")
+            self.decompiler_data.write(f"scc = {temp} >> 32\n")
             self.decompiler_data.number_of_temp += 1
             return self.node
         return super().to_print_unresolved()

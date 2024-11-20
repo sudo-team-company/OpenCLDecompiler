@@ -19,28 +19,12 @@ class GlobalStore(FlatStore):
     def to_print_unresolved(self):
         if self.suffix == "dword":
             self.decompiler_data.write(
-                "*(uint*)("
-                + self.vaddr
-                + " + "
-                + self.saddr
-                + " + "
-                + self.inst_offset
-                + ") = "
-                + self.vdata
-                + " // global_store_dword\n"
+                f"*(uint*)({self.vaddr} + {self.saddr} + {self.inst_offset}) = {self.vdata} // {self.name}\n"
             )
             return self.node
         if self.suffix == "dwordx2":
             self.decompiler_data.write(
-                "*(ulong*)("
-                + self.vaddr
-                + " + "
-                + self.saddr
-                + " + "
-                + self.inst_offset
-                + ") = "
-                + self.vdata
-                + " // global_store_dwordx2\n"
+                f"*(ulong*)({self.vaddr} + {self.saddr} + {self.inst_offset}) = {self.vdata} // {self.name}\n"
             )
             return self.node
         return super().to_print_unresolved()

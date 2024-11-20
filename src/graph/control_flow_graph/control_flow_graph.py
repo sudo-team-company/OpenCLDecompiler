@@ -103,4 +103,4 @@ class ControlFlowGraph(Graph):
             ]
         )
 
-        return "<<TABLE>" f"{tr_td_text}" "</TABLE>>"
+        return f"<<TABLE>{tr_td_text}</TABLE>>"

@@ -15,7 +15,7 @@ class VLshlrev(BaseInstruction):
     def to_print_unresolved(self):
         if self.suffix in ["b16", "b32", "b64"]:
             num = int(self.suffix[1:]) - 1
-            self.decompiler_data.write(f"{self.vdst} = {self.src1} << ({self.src0}&{num}) // {self.instruction[0]}\n")
+            self.decompiler_data.write(f"{self.vdst} = {self.src1} << ({self.src0}&{num}) // {self.name}\n")
             return self.node
         return super().to_print_unresolved()
 
@@ -56,9 +56,9 @@ class VLshlrev(BaseInstruction):
                     reg_type = self.node.state[start_from_register].type
             data_type = self.suffix
             if src0_flag:
-                data_type = str(pow(2, int(self.src1))) + " bytes"
+                data_type = f"{pow(2, int(self.src1))} bytes"
             elif src1_flag:
-                data_type = str(pow(2, int(self.src0))) + " bytes"
+                data_type = f"{pow(2, int(self.src0))} bytes"
             node = set_reg_value(
                 self.node,
                 new_value0,

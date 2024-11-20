@@ -29,26 +29,12 @@ class GlobalLoad(FlatLoad):
     def to_print_unresolved(self):
         if self.suffix == "dword":
             self.decompiler_data.write(
-                self.vdst
-                + " = *(uint*)("
-                + self.vaddr
-                + " + "
-                + self.saddr
-                + " + "
-                + self.inst_offset
-                + ") // global_load_dword\n"
+                f"{self.vdst} = *(uint*)({self.vaddr} + {self.saddr} + {self.inst_offset}) // {self.name}\n"
             )
             return self.node
         if self.suffix == "dwordx2":
             self.decompiler_data.write(
-                self.vdst
-                + " = *(ulong*)("
-                + self.vaddr
-                + " + "
-                + self.saddr
-                + " + "
-                + self.inst_offset
-                + ")  // global_load_dwordx2\n"
+                f"{self.vdst} = *(ulong*)({self.vaddr} + {self.saddr} + {self.inst_offset}) // {self.name}\n"
             )
             return self.node
         return super().to_print_unresolved()

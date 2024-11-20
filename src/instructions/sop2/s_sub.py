@@ -12,19 +12,17 @@ class SSub(BaseInstruction):
         self.ssrc1 = self.instruction[3]
 
     def to_print_unresolved(self):
-        temp = "temp" + str(self.decompiler_data.number_of_temp)
+        temp = f"temp{self.decompiler_data.number_of_temp}"
         if self.suffix == "i32":
-            self.decompiler_data.write(self.sdst + " = " + self.ssrc0 + " - " + self.ssrc1 + " // s_sub_i32\n")
-            self.decompiler_data.write("long " + temp + " = (long)" + self.ssrc0 + " - (long)" + self.ssrc1 + "\n")
-            self.decompiler_data.write("scc = " + temp + " > ((1LL << 31) - 1) || " + temp + " < (-1LL << 31)\n")
+            self.decompiler_data.write(f"{self.sdst} = {self.ssrc0} - {self.ssrc1} // {self.name}\n")
+            self.decompiler_data.write(f"long {temp} = (long){self.ssrc0} - (long){self.ssrc1}\n")
+            self.decompiler_data.write(f"scc = {temp} > ((1LL << 31) - 1) || {temp} < (-1LL << 31)\n")
             self.decompiler_data.number_of_temp += 1
             return self.node
         if self.suffix == "u32":
-            self.decompiler_data.write(
-                "ulong " + temp + " = (ulong)" + self.ssrc0 + " - (ulong)" + self.ssrc1 + " // s_sub_u32\n"
-            )
-            self.decompiler_data.write(self.sdst + " = " + temp + "\n")
-            self.decompiler_data.write("scc = (" + temp + ">>32)!=0\n")
+            self.decompiler_data.write(f"ulong {temp} = (ulong){self.ssrc0} - (ulong){self.ssrc1} // {self.name}\n")
+            self.decompiler_data.write(f"{self.sdst} = {temp}\n")
+            self.decompiler_data.write(f"scc = ({temp}>>32)!=0\n")
             self.decompiler_data.number_of_temp += 1
             return self.node
         return super().to_print_unresolved()

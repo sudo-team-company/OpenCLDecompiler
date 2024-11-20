@@ -15,7 +15,7 @@ class VMov(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix == "b32":
-            self.decompiler_data.write(self.vdst + " = " + self.src0 + " // v_mov_b32\n")
+            self.decompiler_data.write(f"{self.vdst} = {self.src0} // {self.name}\n")
             return self.node
         return super().to_print_unresolved()
 

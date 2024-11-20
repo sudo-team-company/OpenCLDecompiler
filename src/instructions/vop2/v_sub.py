@@ -27,11 +27,9 @@ class VSub(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix == "u32":
-            temp = "temp" + str(self.decompiler_data.number_of_temp)
-            mask = "mask" + str(self.decompiler_data.number_of_mask)
-            self.decompiler_data.write(
-                f"ulong {temp} = (ulong){self.src0} - (ulong){self.src1} // {self.instruction[0]}\n"
-            )
+            temp = f"temp{self.decompiler_data.number_of_temp}"
+            mask = f"mask{self.decompiler_data.number_of_mask}"
+            self.decompiler_data.write(f"ulong {temp} = (ulong){self.src0} - (ulong){self.src1} // {self.name}\n")
             self.decompiler_data.write(f"{self.vdst} = CLAMP ? ({temp}>>32 ? 0 : {temp}) : {temp}\n")
             self.decompiler_data.write(f"{self.vcc} = 0\n")  # vop2, sdst
             self.decompiler_data.write(f"ulong {mask} = (1ULL<<LANEID)\n")

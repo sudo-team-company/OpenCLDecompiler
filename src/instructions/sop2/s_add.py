@@ -23,12 +23,10 @@ class SAdd(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix in {"u32", "i32"}:
-            temp = "temp" + str(self.decompiler_data.number_of_temp)
-            self.decompiler_data.write(
-                f"ulong {temp} = (ulong){self.ssrc0} + (ulong){self.ssrc1} // {self.instruction[0]}\n"
-            )
-            self.decompiler_data.write(self.sdst + " = " + temp + "\n")
-            self.decompiler_data.write("scc = " + temp + " >> 32\n")
+            temp = f"temp{self.decompiler_data.number_of_temp}"
+            self.decompiler_data.write(f"ulong {temp} = (ulong){self.ssrc0} + (ulong){self.ssrc1} // {self.name}\n")
+            self.decompiler_data.write(f"{self.sdst} = {temp}\n")
+            self.decompiler_data.write(f"scc = {temp} >> 32\n")
             self.decompiler_data.number_of_temp += 1
             return self.node
         return super().to_print_unresolved()

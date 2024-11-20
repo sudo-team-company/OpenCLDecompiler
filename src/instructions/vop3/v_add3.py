@@ -51,21 +51,13 @@ class VAdd3(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix == "u32":
-            temp = "temp" + str(self.decompiler_data.number_of_temp)
-            mask = "mask" + str(self.decompiler_data.number_of_mask)
+            temp = f"temp{self.decompiler_data.number_of_temp}"
+            mask = f"mask{self.decompiler_data.number_of_mask}"
             self.decompiler_data.write(
-                "uint "
-                + temp
-                + " = (ulong)"
-                + self.src0
-                + " + (ulong)"
-                + self.src1
-                + " + (ulong)"
-                + self.src2
-                + " // v_add3_u32\n"
+                f"uint {temp} = (ulong){self.src0} + (ulong){self.src1} + (ulong){self.src2} // {self.name}\n"
             )
-            self.decompiler_data.write(self.vdst + " = CLAMP ? min(" + temp + ", 0xffffffff) : " + temp + "\n")
-            self.decompiler_data.write("ulong " + mask + " = (1ULL<<LANEID)\n")
+            self.decompiler_data.write(f"{self.vdst} = CLAMP ? min({temp}, 0xffffffff) : {temp}\n")
+            self.decompiler_data.write(f"ulong {mask} = (1ULL<<LANEID)\n")
             self.decompiler_data.number_of_temp += 1
             self.decompiler_data.number_of_mask += 1
             return self.node

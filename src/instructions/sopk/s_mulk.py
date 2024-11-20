@@ -11,7 +11,7 @@ class SMulk(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix == "i32":
-            self.decompiler_data.write(self.sdst + " = " + self.sdst + " * " + self.simm16 + " // s_mulk_i32\n")
+            self.decompiler_data.write(f"{self.sdst} = {self.sdst} * {self.simm16} // {self.name}\n")
             return self.node
         return super().to_print_unresolved()
 

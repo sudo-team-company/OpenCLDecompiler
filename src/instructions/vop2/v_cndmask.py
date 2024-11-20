@@ -14,14 +14,7 @@ class VCndmask(BaseInstruction):
     def to_print_unresolved(self):
         if self.suffix == "b32":
             self.decompiler_data.write(
-                self.vdst
-                + " = "
-                + self.ssrc2
-                + "&(1ULL<<LANEID) ? "
-                + self.src1
-                + " : "
-                + self.src0
-                + " // v_cndmask_b32\n"
+                f"{self.vdst} = {self.ssrc2}&(1ULL<<LANEID) ? {self.src1} : {self.src0} // {self.name}\n"
             )
             return self.node
         return super().to_print_unresolved()
@@ -49,13 +42,13 @@ class VCndmask(BaseInstruction):
                 )
             if self.ssrc2 in self.node.state and self.node.state[self.ssrc2].val == "0":
                 return set_reg_value(self.node, self.src0, self.vdst, [self.src0, self.src1], self.suffix)
-            variable = "var" + str(self.decompiler_data.num_of_var)
+            variable = f"var{self.decompiler_data.num_of_var}"
             if (
                 self.vdst in self.node.state
                 and self.node.state[self.vdst] is not None
                 and self.node.state[self.vdst].type == RegisterType.KERNEL_ARGUMENT_ELEMENT
             ):
-                variable = "*" + variable
+                variable = f"*{variable}"
             reg_type = RegisterType.PROGRAM_PARAM
             node = set_reg_value(self.node, variable, self.vdst, [self.src0, self.src1], self.suffix, reg_type=reg_type)
             self.decompiler_data.make_var(node.state[self.vdst].version, variable, self.suffix)
@@ -75,7 +68,7 @@ class VCndmask(BaseInstruction):
             if vdst and vdst.val == "0":
                 return ""
             if "?" in ssrc2.val:
-                ssrc2.register_content._value = "(" + ssrc2.val + ")"  # pylint: disable=W0212
+                ssrc2.register_content._value = f"({ssrc2.val})"  # pylint: disable=W0212
             if "s" in self.src1 or "v" in self.src1:
                 src1_parent_val = self.node.parent[0].state[self.src1].val
             else:
@@ -84,6 +77,6 @@ class VCndmask(BaseInstruction):
                 src0_parent_val = self.node.parent[0].state[self.src0].val
             else:
                 src0_parent_val = self.src0
-            self.output_string = vdst.val + " = " + ssrc2.val + " ? " + src1_parent_val + " : " + src0_parent_val
+            self.output_string = f"{vdst.val} = {ssrc2.val} ? {src1_parent_val} : {src0_parent_val}"
             return self.output_string
         return super().to_print()

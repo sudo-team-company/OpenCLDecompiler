@@ -14,56 +14,36 @@ class SBfe(BaseInstruction):
 
     def to_print_unresolved(self):
         tab = "    "
-        shift = "shift" + str(self.decompiler_data.number_of_shift)
-        length = "length" + str(self.decompiler_data.number_of_length)
+        shift = f"shift{self.decompiler_data.number_of_shift}"
+        length = f"length{self.decompiler_data.number_of_length}"
 
         if self.suffix == "u32":
-            self.decompiler_data.write("uchar " + shift + " = " + self.ssrc1 + " & 31 // s_bfe_u32\n")
-            self.decompiler_data.write("uchar " + length + " = (" + self.ssrc1 + ">>16) & 07xf\n")
-            self.decompiler_data.write("if (" + length + "==0)\n")
-            self.decompiler_data.write(tab + self.sdst + " = 0\n")
-            self.decompiler_data.write("if (" + shift + " + " + length + " < 32)\n")
+            self.decompiler_data.write(f"uchar {shift} = {self.ssrc1} & 31 // {self.name}\n")
+            self.decompiler_data.write(f"uchar {length} = ({self.ssrc1}>>16) & 07xf\n")
+            self.decompiler_data.write(f"if ({length}==0)\n")
+            self.decompiler_data.write(f"{tab}{self.sdst} = 0\n")
+            self.decompiler_data.write(f"if ({shift} + {length} < 32)\n")
             self.decompiler_data.write(
-                tab
-                + self.sdst
-                + " = "
-                + self.ssrc0
-                + " << (32 - "
-                + shift
-                + " - "
-                + length
-                + ") >> (32 - "
-                + length
-                + ")\n"
+                f"{tab}{self.sdst} = {self.ssrc0} << (32 - {shift} - {length}) >> (32 - {length})\n"
             )
             self.decompiler_data.write("else\n")
-            self.decompiler_data.write(tab + self.sdst + " = " + self.ssrc0 + " >> " + shift + "\n")
-            self.decompiler_data.write("scc = " + self.sdst + " != 0\n")
+            self.decompiler_data.write(f"{tab}{self.sdst} = {self.ssrc0} >> {shift}\n")
+            self.decompiler_data.write(f"scc = {self.sdst} != 0\n")
             self.decompiler_data.number_of_length += 1
             self.decompiler_data.number_of_shift += 1
             return self.node
         if self.suffix == "i32":
-            self.decompiler_data.write("uchar " + shift + " = " + self.ssrc1 + " & 31 // s_bfe_i32\n")
-            self.decompiler_data.write("uchar " + length + " = (" + self.ssrc1 + ">>16) & 07xf\n")
-            self.decompiler_data.write("if (" + length + "==0)\n")
-            self.decompiler_data.write(tab + self.sdst + " = 0\n")
-            self.decompiler_data.write("if (" + shift + " + " + length + " < 32)\n")
+            self.decompiler_data.write(f"uchar {shift} = {self.ssrc1} & 31 // {self.name}\n")
+            self.decompiler_data.write(f"uchar {length} = ({self.ssrc1}>>16) & 07xf\n")
+            self.decompiler_data.write(f"if ({length}==0)\n")
+            self.decompiler_data.write(f"{tab}{self.sdst} = 0\n")
+            self.decompiler_data.write(f"if ({shift} + {length} < 32)\n")
             self.decompiler_data.write(
-                tab
-                + self.sdst
-                + " = (int)"
-                + self.ssrc0
-                + " << (32 - "
-                + shift
-                + " - "
-                + length
-                + ") >> (32 - "
-                + length
-                + ")\n"
+                f"{tab}{self.sdst} = (int){self.ssrc0} << (32 - {shift} - {length}) >> (32 - {length})\n"
             )
             self.decompiler_data.write("else\n")
-            self.decompiler_data.write(tab + self.sdst + " = (int)" + self.ssrc0 + " >> " + shift + "\n")
-            self.decompiler_data.write("scc = " + self.sdst + " != 0\n")
+            self.decompiler_data.write(f"{tab}{self.sdst} = (int){self.ssrc0} >> {shift}\n")
+            self.decompiler_data.write(f"scc = {self.sdst} != 0\n")
             self.decompiler_data.number_of_length += 1
             self.decompiler_data.number_of_shift += 1
             return self.node

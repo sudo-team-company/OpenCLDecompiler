@@ -8,6 +8,6 @@ class SGetpc(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix == "b64":
-            self.decompiler_data.write(self.sdst + " = pc + 4 // s_getpc_b64\n")
+            self.decompiler_data.write(f"{self.sdst} = pc + 4 // {self.name}\n")
             return self.node
         return super().to_print_unresolved()

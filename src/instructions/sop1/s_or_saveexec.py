@@ -11,7 +11,7 @@ class SOrSaveexec(BaseInstruction):
     def to_print_unresolved(self):
         if self.suffix in ["b32", "b64"]:
             exec_reg = "exec_lo" if self.suffix == "b32" else "exec"
-            self.decompiler_data.write(f"{self.sdst} = {exec_reg} // {self.instruction[0]}\n")
+            self.decompiler_data.write(f"{self.sdst} = {exec_reg} // {self.name}\n")
             self.decompiler_data.write(f"{exec_reg} = {self.ssrc0} | {exec_reg}\n")
             self.decompiler_data.write(f"scc = {exec_reg} != 0\n")
             return self.node

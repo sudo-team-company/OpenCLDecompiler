@@ -12,7 +12,7 @@ class SMov(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix in ["b32", "b64"]:
-            self.decompiler_data.write(self.sdst + " = " + self.ssrc0 + " // s_mov_" + self.suffix + "\n")
+            self.decompiler_data.write(f"{self.sdst} = {self.ssrc0} // {self.name}\n")
             return self.node
         return super().to_print_unresolved()
 
@@ -36,7 +36,7 @@ class SMov(BaseInstruction):
                 data_type = self.node.state[self.ssrc0].data_type
             else:
                 if ".gdata" in self.ssrc0:
-                    new_value = "gdata" + str(get_gdata_offset(self.ssrc0))
+                    new_value = f"gdata{get_gdata_offset(self.ssrc0)}"
                     reg_type = RegisterType.GLOBAL_DATA_POINTER
                 else:
                     new_value = self.ssrc0

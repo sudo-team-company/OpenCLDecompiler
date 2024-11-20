@@ -12,20 +12,16 @@ class DsBpermute(BaseInstruction):
     def to_print_unresolved(self):
         if self.suffix == "b32":
             tab = "    "
-            tmp = "tmp" + str(self.decompiler_data.number_of_tmp)
-            self.decompiler_data.write("ulong " + tmp + " // ds_bpermute_b32\n")
+            tmp = f"tmp{self.decompiler_data.number_of_tmp}"
+            self.decompiler_data.write(f"ulong {tmp} // {self.name}\n")
             self.decompiler_data.write("for (short i = 0; i < 64; i++)\n")
             self.decompiler_data.write("{\n")
-            self.decompiler_data.write(
-                tab + "uint lane_id = " + self.addr + "[(i + (" + self.offset + " >> 2)) & 63]\n"
-            )
-            self.decompiler_data.write(
-                tab + tmp + "[i] = exec & (1ULL << lane_id) != 0) ? " + self.src + "[lane_id] : 0\n"
-            )
+            self.decompiler_data.write(f"{tab}uint lane_id = {self.addr}[(i + ({self.offset} >> 2)) & 63]\n")
+            self.decompiler_data.write(f"{tab}{tmp}[i] = exec & (1ULL << lane_id) != 0) ? {self.src}[lane_id] : 0\n")
             self.decompiler_data.write("}\n")
             self.decompiler_data.write("for (short i = 0; i < 64; i++)\n")
-            self.decompiler_data.write(tab + "if (exec & (1ULL << i) != 0)\n")
-            self.decompiler_data.write(tab + tab + self.dst + "[i] = " + tmp + "[i]\n")
+            self.decompiler_data.write(f"{tab}if (exec & (1ULL << i) != 0)\n")
+            self.decompiler_data.write(f"{tab}{tab}{self.dst}[i] = {tmp}[i]\n")
             self.decompiler_data.number_of_tmp += 1
             return self.node
         return super().to_print_unresolved()
