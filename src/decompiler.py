@@ -12,8 +12,9 @@ from src.node import Node
 from src.node_processor import check_realisation_for_node
 from src.regions.functions_for_regions import make_region_graph_from_cfg, process_region_graph
 from src.unrolled_loops_processing import process_unrolled_loops
-from src.utils import get_context, ConfigData
+from src.utils import get_context
 from src.versions import find_max_and_prev_versions, change_values, check_for_use_new_version
+from .model import ConfigData
 
 CONTEXT = get_context()
 

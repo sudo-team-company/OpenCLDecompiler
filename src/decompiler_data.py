@@ -19,7 +19,8 @@ from src.register import Register, is_reg, is_range, check_and_split_regs, split
 from src.register_content import RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 from src.state import KernelState
-from src.utils import ConfigData, Singleton
+from src.utils import Singleton
+from .model import ConfigData
 
 
 def set_reg_value(  # pylint: disable=R0913
@@ -541,68 +542,102 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         state[reg].add_version(reg, self.versions[reg])
         self.versions[reg] += 1
 
-    def init_work_group(self):
-        dimensions = self.config_data.dimensions
-        g_id = ["s8", "s9", "s10"] if self.config_data.usesetup else ["s6", "s7", "s8"]
-        if self.is_rdna3:
-            g_id = ["s2", "s3", "s4"]
-        if ',' in dimensions:
-            dimensions = dimensions.split(',')
-            max_dim = dimensions[0]
-            for dim in dimensions:
-                if len(dim) > len(max_dim):
-                    max_dim = dim
-            dimensions = max_dim
-        for dim in range(len(dimensions)):
-            g_id_dim = g_id[dim]
+    def set_reg_make_version(self, state, reg, value):
+        state[reg] = value
+        self.make_version(state, reg)
+
+    def init_work_group(self, dim, g_id_dim, is_rdna3: bool):
+        self.set_reg_make_version(self.initial_state, g_id_dim, Register(
+            integrity=Integrity.ENTIRE,
+            register_content=RegisterContent(
+                value=f"get_group_id({dim})",
+                type_=[RegisterType.WORK_GROUP_ID_X, RegisterType.WORK_GROUP_ID_Y, RegisterType.WORK_GROUP_ID_Z][dim],
+            )
+        ))
+
+        if is_rdna3:
+            v_dim = "v0"
+            register_content = CombinedRegisterContent(
+                register_contents=[
+                    RegisterContent(
+                        value=f"get_local_id({i})",
+                        type_=t,
+                        size=10,
+                    ) for i, t in
+                    enumerate([RegisterType.WORK_ITEM_ID_X, RegisterType.WORK_ITEM_ID_Y, RegisterType.WORK_ITEM_ID_Z])
+                ]
+            )
+        else:
             v_dim = "v" + str(dim)
-            self.initial_state.init_work_group(dim, g_id_dim, self.is_rdna3)
-            self.versions[g_id_dim] = 1
-            self.versions[v_dim] = 1
-        self.initial_state.init_exec()
-        self.versions["exec"] = 1
+            register_content = RegisterContent(
+                value=f"get_local_id({dim})",
+                type_=[RegisterType.WORK_ITEM_ID_X, RegisterType.WORK_ITEM_ID_Y, RegisterType.WORK_ITEM_ID_Z][dim],
+            )
+
+        self.set_reg_make_version(self.initial_state, v_dim, Register(
+            integrity=Integrity.ENTIRE,
+            register_content=register_content
+        ))
+
+    def init_exec(self):
+        self.set_reg_make_version(self.initial_state, "exec", Register(
+            integrity=Integrity.ENTIRE,
+            exec_condition=ExecCondition.default(),
+            register_content=RegisterContent(
+                value=None,
+                type_=RegisterType.UNKNOWN,
+            ),
+        ))
+
+    def init_state(self):
+        if self.is_rdna3:
+            g_id_shift = 2
+        elif self.config_data.usesetup:
+            g_id_shift = 8
+        else:
+            g_id_shift = 6
+        dimensions = max(self.config_data.dimensions.split(','), key=len)
+        for dim in range(len(dimensions)):
+            self.init_work_group(dim, f"s{g_id_shift + dim}", self.is_rdna3)
+        self.init_exec()
 
     def process_initial_state(self):
         lp, hp = ("s6", "s7") if self.config_data.usesetup else ("s4", "s5")
         if self.is_rdna3:
             lp, hp = ("s0", "s1")
-        self.initial_state[lp] = Register(
+        self.set_reg_make_version(self.initial_state, lp, Register(
             integrity=Integrity.LOW_PART,
             register_content=RegisterContent(
                 value="0",
                 type_=RegisterType.ARGUMENTS_POINTER,
             ),
-        )
-        self.make_version(self.initial_state, lp)
-        self.initial_state[hp] = Register(
+        ))
+        self.set_reg_make_version(self.initial_state, hp, Register(
             integrity=Integrity.HIGH_PART,
             register_content=RegisterContent(
                 value="0",
                 type_=RegisterType.ARGUMENTS_POINTER,
             ),
-        )
-        self.make_version(self.initial_state, hp)
+        ))
         if self.config_data.usesetup:
-            self.initial_state["s4"] = Register(
+            self.set_reg_make_version(self.initial_state, "s4", Register(
                 integrity=Integrity.LOW_PART,
                 register_content=RegisterContent(
                     value="0",
                     type_=RegisterType.DISPATCH_POINTER,
                 ),
-            )
-            self.make_version(self.initial_state, "s4")
-            self.initial_state["s5"] = Register(
+            ))
+            self.set_reg_make_version(self.initial_state, "s5", Register(
                 integrity=Integrity.HIGH_PART,
                 register_content=RegisterContent(
                     value="0",
                     type_=RegisterType.DISPATCH_POINTER,
                 ),
-            )
-            self.make_version(self.initial_state, "s5")
+            ))
 
     def set_config_data(self, config_data: ConfigData):
         self.config_data = config_data
-        self.init_work_group()
+        self.init_state()
         self.process_initial_state()
         for arg in self.config_data.arguments:
             self.type_params[arg.name] = arg.type_name

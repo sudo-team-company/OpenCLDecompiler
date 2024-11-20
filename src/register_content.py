@@ -21,6 +21,53 @@ class RegisterSignType(enum.Enum):
             raise Exception()
 
 
+# Data for known register values
+CONSTANT_VALUES: dict[RegisterType, (str, int, str, RegisterSignType)] = {
+    RegisterType.WORK_DIM: ("get_work_dim()", 32, "u32", RegisterSignType.POSITIVE),
+
+    RegisterType.GLOBAL_SIZE_X: ("get_global_size(0)", 32, "u32", RegisterSignType.POSITIVE),
+    RegisterType.GLOBAL_SIZE_Y: ("get_global_size(1)", 32, "u32", RegisterSignType.POSITIVE),
+    RegisterType.GLOBAL_SIZE_Z: ("get_global_size(2)", 32, "u32", RegisterSignType.POSITIVE),
+
+    RegisterType.GLOBAL_ID_X: ("get_global_id(0)", 32, "u32", RegisterSignType.POSITIVE),
+    RegisterType.GLOBAL_ID_Y: ("get_global_id(1)", 32, "u32", RegisterSignType.POSITIVE),
+    RegisterType.GLOBAL_ID_Z: ("get_global_id(2)", 32, "u32", RegisterSignType.POSITIVE),
+
+    RegisterType.LOCAL_SIZE_X: ("get_local_size(0)", 32, "u32", RegisterSignType.POSITIVE),
+    RegisterType.LOCAL_SIZE_Y: ("get_local_size(1)", 32, "u32", RegisterSignType.POSITIVE),
+    RegisterType.LOCAL_SIZE_Z: ("get_local_size(2)", 32, "u32", RegisterSignType.POSITIVE),
+
+    # u32 get_enqueued_local_size(0)
+    # u32 get_enqueued_local_size(1)
+    # u32 get_enqueued_local_size(2)
+
+    RegisterType.WORK_ITEM_ID_X: ("get_local_id(0)", 32, "u32", RegisterSignType.POSITIVE),
+    RegisterType.WORK_ITEM_ID_Y: ("get_local_id(1)", 32, "u32", RegisterSignType.POSITIVE),
+    RegisterType.WORK_ITEM_ID_Z: ("get_local_id(2)", 32, "u32", RegisterSignType.POSITIVE),
+
+    RegisterType.NUM_GROUPS_X: ("get_num_groups(0)", 32, "u32", RegisterSignType.POSITIVE),
+    RegisterType.NUM_GROUPS_Y: ("get_num_groups(1)", 32, "u32", RegisterSignType.POSITIVE),
+    RegisterType.NUM_GROUPS_Z: ("get_num_groups(2)", 32, "u32", RegisterSignType.POSITIVE),
+
+    RegisterType.WORK_GROUP_ID_X: ("get_group_id(0)", 32, "u32", RegisterSignType.POSITIVE),
+    RegisterType.WORK_GROUP_ID_Y: ("get_group_id(1)", 32, "u32", RegisterSignType.POSITIVE),
+    RegisterType.WORK_GROUP_ID_Z: ("get_group_id(2)", 32, "u32", RegisterSignType.POSITIVE),
+
+    RegisterType.GLOBAL_OFFSET_X: ("get_global_offset(0)", 32, "u32", RegisterSignType.POSITIVE),
+    RegisterType.GLOBAL_OFFSET_Y: ("get_global_offset(0)", 32, "u32", RegisterSignType.POSITIVE),
+    RegisterType.GLOBAL_OFFSET_Z: ("get_global_offset(0)", 32, "u32", RegisterSignType.POSITIVE),
+
+    # u32 get_global_linear_id()
+    # u32 get_local_linear_id()
+    # u32 get_sub_group_size()
+    # u32 get_max_sub_group_size()
+    # u32 get_num_sub_groups()
+    # u32 get_enqueued_num_sub_groups()
+    # u32 get_sub_group_id()
+    # u32 get_sub_group_local_id()
+}
+
+
 class RegisterContent:
     def __init__(
             self,
@@ -30,6 +77,16 @@ class RegisterContent:
             data_type: Union[list, Optional[str]] = None,
             sign: Union[list, RegisterSignType] = RegisterSignType.POSITIVE,
     ):
+        if type_ is RegisterType and type_ in CONSTANT_VALUES:
+            self._type = type_
+            self._value, self._size, self._data_type, self._sign = CONSTANT_VALUES[type_]
+            # TODO: remove deviation check
+            assert (self._value == value or value is None) and \
+                   (self._type == type_ or type_ is None) and \
+                   (self._size == size or size is None) and \
+                   (self._data_type == data_type or data_type is None) and \
+                   (self._sign == sign or sign is None)
+            return
         self._value = value
         self._type = type_
         self._size = size

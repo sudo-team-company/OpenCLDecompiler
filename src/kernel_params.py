@@ -2,7 +2,7 @@ from src.decompiler_data import DecompilerData
 from src.opencl_types import make_asm_type
 from src.register_content import RegisterContent
 from src.register_type import RegisterType
-from src.utils import KernelArgument
+from .model import KernelArgument
 
 
 def get_bfe_offset(name_of_param: str, offset: int, arg: KernelArgument):

@@ -1,7 +1,7 @@
 import re
 from typing import List, Optional
 
-from ..utils import ConfigData, KernelArgument
+from ..model import ConfigData, KernelArgument
 from ..opencl_types import evaluate_size, make_asm_type
 
 
