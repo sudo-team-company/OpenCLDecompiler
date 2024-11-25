@@ -38,7 +38,7 @@ class TestRealKernels:
             ("amd_gcn", "clrxdisasm"),
         ],
     )
-    def test_bellmanFordInit_ver1(self, mcpu, disasm):
+    def test_bellman_ford_init_ver1(self, mcpu, disasm):
         template(
             path_to_dir="real_kernels",
             dir_name="bellmanFordInit_ver1",
