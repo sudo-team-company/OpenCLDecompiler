@@ -177,7 +177,7 @@ class Register:
         elif isinstance(other, int):
             from src.decompiler_data import DecompilerData  # pylint: disable=C0415
 
-            _MUL_SIMPLIFY_COMBINATIONS = [
+            _mul_simplify_combinations = [
                 *[
                     (
                         frozenset(
@@ -196,7 +196,7 @@ class Register:
                 ]
             ]
 
-            for simplify_combination in _MUL_SIMPLIFY_COMBINATIONS:
+            for simplify_combination in _mul_simplify_combinations:
                 types_to_find, simplification = simplify_combination
                 types_to_find_permutations = list(itertools.permutations(types_to_find))
 
