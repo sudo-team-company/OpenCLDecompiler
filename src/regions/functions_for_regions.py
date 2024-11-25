@@ -1,10 +1,10 @@
 import re
 from collections import deque
 
-from src.register_type import RegisterType
 from src.decompiler_data import DecompilerData
 from src.region_type import RegionType
 from src.regions.region import Region
+from src.register_type import RegisterType
 
 
 def add_parent_and_child(before_r, next_r, region, prev_child, prev_parent):

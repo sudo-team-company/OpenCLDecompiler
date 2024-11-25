@@ -1,6 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.combined_register_content import CombinedRegisterContent
-from src.decompiler_data import make_op, set_reg_value, set_reg
+from src.decompiler_data import make_op, set_reg, set_reg_value
 from src.register import Register
 from src.register_type import RegisterType
 

@@ -14,12 +14,13 @@ from src.integrity import Integrity
 from src.logical_variable import ExecCondition
 from src.node import Node
 from src.opencl_types import evaluate_size, make_asm_type, make_opencl_type, vector_type_dict
-from src.operation_register_content import OperationType, OperationRegisterContent
-from src.register import Register, is_reg, is_range, check_and_split_regs, split_range
+from src.operation_register_content import OperationRegisterContent, OperationType
+from src.register import Register, check_and_split_regs, is_range, is_reg, split_range
 from src.register_content import RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 from src.state import KernelState
 from src.utils import Singleton
+
 from .model import ConfigData
 
 

@@ -1,10 +1,10 @@
 from src.base_instruction import BaseInstruction
 from src.combined_register_content import CombinedRegisterContent
-from src.decompiler_data import set_reg_value, set_reg
+from src.decompiler_data import set_reg, set_reg_value
 from src.integrity import Integrity
-from src.register import is_reg, RegisterSignType
-from src.register_type import RegisterType
 from src.operation_register_content import OperationRegisterContent, OperationType
+from src.register import RegisterSignType, is_reg
+from src.register_type import RegisterType
 
 
 class VLshlOr(BaseInstruction):

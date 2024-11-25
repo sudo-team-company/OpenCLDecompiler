@@ -1,5 +1,5 @@
-from .s_cmp import SCmp
 from ...node import Node
+from .s_cmp import SCmp
 
 
 class SCmpLe(SCmp):

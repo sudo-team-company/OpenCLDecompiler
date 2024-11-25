@@ -5,7 +5,7 @@ from src.decompiler import process_src
 from src.decompiler_data import DecompilerData
 from src.flag_type import FlagType
 from src.graph import GraphType
-from src.graph.control_flow_graph import ControlFlowGraph, CONTROL_FLOW_GRAPH_ENABLED_CONTEXT_KEY
+from src.graph.control_flow_graph import CONTROL_FLOW_GRAPH_ENABLED_CONTEXT_KEY, ControlFlowGraph
 from src.kernel_parser import parse_kernel
 from src.utils import get_context
 

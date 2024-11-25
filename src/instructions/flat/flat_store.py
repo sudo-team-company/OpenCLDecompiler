@@ -3,10 +3,10 @@ from src.decompiler_data import make_elem_from_addr, make_new_type_without_modif
 from src.opencl_types import make_opencl_type
 from src.register import (
     check_and_split_regs,
-    is_vgpr,
-    is_vector_type,
     check_and_split_regs_range_to_full_list,
     is_sgpr_range,
+    is_vector_type,
+    is_vgpr,
 )
 from src.register_type import RegisterType
 

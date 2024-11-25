@@ -4,8 +4,8 @@ from src.cfg import make_cfg_node, make_unresolved_node
 from src.code_printer import create_opencl_body
 from src.decompiler_data import DecompilerData, optimize_names_of_vars
 from src.flag_type import FlagType
-from src.global_data import process_global_data, gdata_type_processing
-from src.graph.control_flow_graph import ControlFlowGraph, CONTROL_FLOW_GRAPH_ENABLED_CONTEXT_KEY
+from src.global_data import gdata_type_processing, process_global_data
+from src.graph.control_flow_graph import CONTROL_FLOW_GRAPH_ENABLED_CONTEXT_KEY, ControlFlowGraph
 from src.kernel_params import process_kernel_params
 from src.logical_variable import ExecCondition
 from src.node import Node
@@ -13,7 +13,8 @@ from src.node_processor import check_realisation_for_node
 from src.regions.functions_for_regions import make_region_graph_from_cfg, process_region_graph
 from src.unrolled_loops_processing import process_unrolled_loops
 from src.utils import get_context
-from src.versions import find_max_and_prev_versions, change_values, check_for_use_new_version
+from src.versions import change_values, check_for_use_new_version, find_max_and_prev_versions
+
 from .model import ConfigData
 
 CONTEXT = get_context()

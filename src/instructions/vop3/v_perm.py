@@ -1,7 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
-from src.register_type import RegisterType
 from src.register import is_vector_type
+from src.register_type import RegisterType
 
 
 class VPerm(BaseInstruction):

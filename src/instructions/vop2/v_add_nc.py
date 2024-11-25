@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import set_reg_value, make_op, set_reg
+from src.decompiler_data import make_op, set_reg, set_reg_value
 from src.register import is_reg
 from src.register_type import RegisterType
 

@@ -2,6 +2,7 @@ from src.decompiler_data import DecompilerData
 from src.opencl_types import make_asm_type
 from src.register_content import RegisterContent
 from src.register_type import RegisterType
+
 from .model import KernelArgument
 
 

@@ -1,10 +1,10 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, set_reg_value, set_reg
+from src.decompiler_data import make_op, set_reg, set_reg_value
 from src.integrity import Integrity
-from src.opencl_types import most_common_type, make_asm_type, evaluate_size
+from src.opencl_types import evaluate_size, make_asm_type, most_common_type
+from src.operation_register_content import OperationRegisterContent, OperationType
 from src.register import check_and_split_regs, is_reg
 from src.register_type import RegisterType
-from src.operation_register_content import OperationRegisterContent, OperationType
 
 
 class VAdd(BaseInstruction):

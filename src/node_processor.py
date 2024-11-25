@@ -1,7 +1,7 @@
 from src.decompiler_data import DecompilerData
 from src.instruction_dict import instruction_dict
-from src.instructions.sopp.s_endpgm import SEndpgm
 from src.instructions.label import Label
+from src.instructions.sopp.s_endpgm import SEndpgm
 
 
 def check_realisation_for_node(curr_node, row):

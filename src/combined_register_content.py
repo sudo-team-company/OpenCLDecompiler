@@ -1,6 +1,6 @@
 from typing import Iterable, Optional
 
-from src.register_content import RegisterContent, EmptyRegisterContent, RegisterSignType
+from src.register_content import EmptyRegisterContent, RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 
 

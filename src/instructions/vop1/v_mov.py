@@ -1,7 +1,7 @@
 import copy
 
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import set_reg_value, set_reg
+from src.decompiler_data import set_reg, set_reg_value
 from src.register import is_reg
 from src.register_content import RegisterContent
 from src.register_type import RegisterType

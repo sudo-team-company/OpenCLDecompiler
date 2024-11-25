@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import set_reg_value, make_op
+from src.decompiler_data import make_op, set_reg_value
 from src.register import check_and_split_regs
 
 

@@ -1,8 +1,8 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import DecompilerData
-from src.register import check_and_split_regs, Register
+from src.register import Register, check_and_split_regs
 from src.register_type import RegisterType
-from src.upload import upload_usesetup, upload_by_offset, upload_kernel_param, upload_global_data_pointer
+from src.upload import upload_by_offset, upload_global_data_pointer, upload_kernel_param, upload_usesetup
 
 
 class SLoad(BaseInstruction):

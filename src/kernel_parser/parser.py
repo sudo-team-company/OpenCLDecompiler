@@ -1,4 +1,4 @@
-from . import amdcl2_parser, rocm_parser, amdgpu_dis_parser, unknown_parser
+from . import amdcl2_parser, amdgpu_dis_parser, rocm_parser, unknown_parser
 
 
 def _choose_parser(text: list[str]):
