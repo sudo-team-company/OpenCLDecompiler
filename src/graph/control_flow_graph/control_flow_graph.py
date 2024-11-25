@@ -7,7 +7,7 @@ class ControlFlowGraph(Graph):
         self,
         graph_type: GraphType,
         render_path: str,
-        kwargs: dict[str, any],
+        kwargs: dict[str, object],
     ):
         super().__init__(
             graph_type=graph_type,

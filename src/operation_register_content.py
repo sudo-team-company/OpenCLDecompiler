@@ -189,7 +189,7 @@ class OperationRegisterContent(RegisterContent):
     def get_operation(self) -> OperationType:
         return self._operation
 
-    def get_value(self) -> any:
+    def get_value(self) -> object:
         joined_string = f" {self._operation.value} ".join(
             [
                 f"{'-' if sign == RegisterSignType.NEGATIVE else ''}{value}"

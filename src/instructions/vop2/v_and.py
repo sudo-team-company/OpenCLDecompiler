@@ -24,7 +24,7 @@ class VAnd(BaseInstruction):
         if self.suffix == "b32":
             if is_reg(self.src1):
 
-                def default_behaviour() -> tuple[any, RegisterType]:
+                def default_behaviour() -> tuple[object, RegisterType]:
                     new_value = self.node.state[self.src1].val
                     reg_type = RegisterType.UNKNOWN
 

@@ -16,7 +16,7 @@ class VBfe(BaseInstruction):
     def to_fill_node(self):
         if self.suffix in ["u32"]:
 
-            def default_behaviour() -> (any, RegisterType):
+            def default_behaviour() -> (object, RegisterType):
                 op1 = make_op(
                     self.node, self.src0, str(pow(2, int(self.src1))), "/", "(ulong)", "(ulong)", suffix=self.suffix
                 )

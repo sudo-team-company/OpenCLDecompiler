@@ -62,7 +62,7 @@ CONSTANT_VALUES: dict[RegisterType, (str, int, str, RegisterSignType)] = {
 class RegisterContent:
     def __init__(
         self,
-        value: Union[list[any], any],
+        value: Union[list[object], object],
         type_: Union[list, RegisterType],
         size: Union[list, int] = DEFAULT_REGISTER_SIZE,
         data_type: Union[list, Optional[str]] = None,
@@ -86,7 +86,7 @@ class RegisterContent:
         self._data_type = data_type
         self._sign = sign
 
-    def get_value(self) -> any:
+    def get_value(self) -> object:
         return self._value
 
     def get_type(self) -> RegisterType:

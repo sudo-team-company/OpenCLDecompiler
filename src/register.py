@@ -27,7 +27,7 @@ class Register:
         self._size = size
 
     @property
-    def val(self) -> any:
+    def val(self) -> object:
         return self.register_content.get_value()
 
     @property
@@ -60,7 +60,7 @@ class Register:
     def cast_to(self, data_type: str):
         self.register_content._data_type = data_type  # pylint: disable=W0212
 
-    def get_value(self) -> any:
+    def get_value(self) -> object:
         return self.register_content.get_value()
 
     def get_type(self) -> RegisterType:

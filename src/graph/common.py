@@ -16,7 +16,7 @@ class Graph(metaclass=Singleton):
         self,
         graph_type: GraphType,
         render_path: str,
-        kwargs: dict[str, any],
+        kwargs: dict[str, object],
     ):
         self._graph_type = type
         self._render_path = render_path

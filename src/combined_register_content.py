@@ -86,7 +86,7 @@ class CombinedRegisterContent(RegisterContent):
 
         return None
 
-    def get_value(self) -> any:
+    def get_value(self) -> object:
         return self._value[0]
 
     def get_type(self) -> RegisterType:
