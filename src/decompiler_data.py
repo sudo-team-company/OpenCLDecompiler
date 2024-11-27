@@ -197,10 +197,9 @@ def simplify_opencl_statement(opencl_line):
         if open_bracket_position == -1:
             break
         substring = opencl_line[open_bracket_position + 1 : close_bracket_position]
-        current_type_conversion = {}
-        for key, data_type in decompiler_data.type_conversion.items():
-            if data_type + key in substring:
-                current_type_conversion[key] = data_type
+        current_type_conversion = {
+            key: data_type for key, data_type in decompiler_data.type_conversion.items() if data_type + key in substring
+        }
         for data_type in current_type_conversion.values():
             substring = substring.replace(data_type, "")
         if substring != "":
