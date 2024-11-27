@@ -114,7 +114,7 @@ def split_kernels_texts(lines: list[str], names: set[str]) -> dict[str, list[str
         else:
             result[current_kernel].append(line)
 
-    for _, text in result.items():
+    for text in result.values():
         while re.match(r"\s*s_nop\s+0x0\s*", text[-1]):
             text = text[:-1]
     return result
