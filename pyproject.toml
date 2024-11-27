@@ -16,6 +16,7 @@ select = [
     "UP", # pyupgrade
     "YTT", # flake8-2020
     "ARG", # flake8-unused-arguments
+    "RUF100", # unused-noqa # Unused noqa directive
 ]
 ignore = []
 
