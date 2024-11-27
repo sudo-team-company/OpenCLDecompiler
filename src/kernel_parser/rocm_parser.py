@@ -1,17 +1,17 @@
 import re
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Optional
 
 from ..model import ConfigData, KernelArgument
 
 
-def get_dimensions(set_of_config: List[str]) -> str:
+def get_dimensions(set_of_config: list[str]) -> str:
     for row in set_of_config:
         if row.startswith(".dims "):
             return row.removeprefix(".dims ")
     return ""
 
 
-def get_size_of_work_groups(set_of_config: List[str]) -> Optional[List[int]]:
+def get_size_of_work_groups(set_of_config: list[str]) -> Optional[list[int]]:
     for row in set_of_config:
         if row.startswith(".reqd_work_group_size "):
             return [int(it.strip()) for it in row.removeprefix(".reqd_work_group_size ").split(",")]
@@ -23,7 +23,7 @@ def get_local_size(*_) -> Optional[int]:
     return None
 
 
-def get_params(set_of_config: List[str]) -> List[KernelArgument]:
+def get_params(set_of_config: list[str]) -> list[KernelArgument]:
     args = []
     offset = 0
     for row in set_of_config:
@@ -60,7 +60,7 @@ def get_params(set_of_config: List[str]) -> List[KernelArgument]:
     return args
 
 
-def process_config(set_of_config: List[str]) -> ConfigData:
+def process_config(set_of_config: list[str]) -> ConfigData:
     return ConfigData(
         dimensions=get_dimensions(set_of_config),
         usesetup=".use_dispatch_ptr" in set_of_config,
@@ -70,8 +70,8 @@ def process_config(set_of_config: List[str]) -> ConfigData:
     )
 
 
-def parse_common_configuration(lines: List[str]) -> List[str]:
-    res: List[str] = []
+def parse_common_configuration(lines: list[str]) -> list[str]:
+    res: list[str] = []
     for line in lines:
         if line.startswith(".kernel "):
             break
@@ -79,13 +79,13 @@ def parse_common_configuration(lines: List[str]) -> List[str]:
     return res
 
 
-def split_configurations_and_text(lines: List[str]) -> Tuple[List[str], List[str]]:
+def split_configurations_and_text(lines: list[str]) -> tuple[list[str], list[str]]:
     index: int = lines.index(".text")
     return lines[:index], lines[index + 1 :]
 
 
-def split_kernels_configurations(lines: List[str]) -> Dict[str, List[str]]:
-    result: Dict[str, List[str]] = {}
+def split_kernels_configurations(lines: list[str]) -> dict[str, list[str]]:
+    result: dict[str, list[str]] = {}
     current_kernel: str = ""
 
     for line in lines:
@@ -98,8 +98,8 @@ def split_kernels_configurations(lines: List[str]) -> Dict[str, List[str]]:
     return result
 
 
-def split_kernels_texts(lines: List[str], names: Set[str]) -> Dict[str, List[str]]:
-    result: Dict[str, List[str]] = {}
+def split_kernels_texts(lines: list[str], names: set[str]) -> dict[str, list[str]]:
+    result: dict[str, list[str]] = {}
     current_kernel: str = ""
 
     for line in lines:
@@ -121,13 +121,13 @@ def split_kernels_texts(lines: List[str], names: Set[str]) -> Dict[str, List[str
     return result
 
 
-def parse_kernel(text: List[str]):
-    lines: List[str] = [line.strip() for line in text]
+def parse_kernel(text: list[str]):
+    lines: list[str] = [line.strip() for line in text]
 
-    common_configuration: List[str] = parse_common_configuration(lines)
+    common_configuration: list[str] = parse_common_configuration(lines)
     configurations, text = split_configurations_and_text(lines[len(common_configuration) :])
 
-    kernels_configurations: Dict[str, List[str]] = split_kernels_configurations(configurations)
+    kernels_configurations: dict[str, list[str]] = split_kernels_configurations(configurations)
     kernels_texts = split_kernels_texts(text, set(kernels_configurations.keys()))
 
     set_of_global_data_bytes = []

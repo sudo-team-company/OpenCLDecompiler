@@ -1,21 +1,21 @@
 import re
-from typing import List, Optional
+from typing import Optional
 
 from ..model import ConfigData, KernelArgument
 from ..opencl_types import evaluate_size, make_asm_type
 
 
-def process_size_of_work_groups(set_of_config: List[str]) -> Optional[List[int]]:
+def process_size_of_work_groups(set_of_config: list[str]) -> Optional[list[int]]:
     cws: bool = ".cws" in set_of_config[1]
     return list(map(int, set_of_config[1].replace(",", " ").split()[1:])) if cws else None
 
 
-def process_local_size(set_of_config: List[str]) -> Optional[int]:
+def process_local_size(set_of_config: list[str]) -> Optional[int]:
     localsize: bool = "localsize" in set_of_config[4]
     return int(set_of_config[4][11:]) if localsize else None
 
 
-def process_params(set_of_config: List[str]) -> List[KernelArgument]:
+def process_params(set_of_config: list[str]) -> list[KernelArgument]:
     args = []
     offset = 0
     for row in set_of_config:
@@ -48,7 +48,7 @@ def process_params(set_of_config: List[str]) -> List[KernelArgument]:
     return args
 
 
-def process_config(set_of_config: List[str]) -> ConfigData:
+def process_config(set_of_config: list[str]) -> ConfigData:
     return ConfigData(
         dimensions=set_of_config[0][6:],
         usesetup=".usesetup" in set_of_config,
