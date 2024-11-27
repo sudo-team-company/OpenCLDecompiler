@@ -39,7 +39,7 @@ class ExecCondition:
         return "!(" + cond + ")"
 
     def __str__(self):
-        return " && ".join(list(map(lambda x: "(" + x + ")", self.and_chain)))
+        return " && ".join("(" + x + ")" for x in self.and_chain)
 
     @staticmethod
     def default():
