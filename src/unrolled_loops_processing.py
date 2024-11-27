@@ -102,7 +102,7 @@ def process_unrolled_loops():  # pylint: disable=R0914
                         instruction: str = child.instruction
                         if instruction == "s_nop":
                             continue
-                        counters2[(instruction, j)] = counters2.get((instruction, j), 0) + 1
+                        counters2[instruction, j] = counters2.get((instruction, j), 0) + 1
 
                 counters2: list[tuple[str, int, int]] = [
                     (name, num, cnt)

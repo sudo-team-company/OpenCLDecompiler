@@ -12,7 +12,7 @@ def get_bfe_offset(name_of_param: str, offset: int, arg: KernelArgument):
     offset_in_reg = hex((offset - load_offset) * 8)
     bfe_offset = param_size_bit + "".rjust(4 - len(offset_in_reg[2:]), "0") + offset_in_reg[2:]
     value = DecompilerData().config_data.offset_to_content[hex(load_offset)].get_value()
-    DecompilerData().bfe_offsets[(value, bfe_offset)] = name_of_param
+    DecompilerData().bfe_offsets[value, bfe_offset] = name_of_param
 
 
 def get_reg_type(value: str) -> RegisterType:
