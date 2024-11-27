@@ -73,7 +73,7 @@ def process_unrolled_loops():  # pylint: disable=R0914
                 edge_ends[reg] = idx
 
         counters: dict[str, int] = {}
-        for i, vertex in enumerate(vertices):
+        for vertex in vertices:
             instruction: str = vertex.instruction
             if instruction == "s_nop":
                 continue

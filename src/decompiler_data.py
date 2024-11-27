@@ -197,7 +197,7 @@ def simplify_opencl_statement(opencl_line):
         for key, data_type in decompiler_data.type_conversion.items():
             if data_type + key in substring:
                 current_type_conversion[key] = data_type
-        for key, data_type in current_type_conversion.items():
+        for data_type in current_type_conversion.values():
             substring = substring.replace(data_type, "")
         if substring != "":
             substring = sympy.simplify(substring)
