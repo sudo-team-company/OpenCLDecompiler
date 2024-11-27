@@ -102,7 +102,7 @@ class CombinedRegisterContent(RegisterContent):
         return self._sign[0]
 
     def __and__(self, other) -> RegisterContent | None:
-        if isinstance(other, (int, str)):
+        if isinstance(other, int | str):
             if isinstance(other, str):
                 hex_str = other
                 hex_int = int(hex_str, 16)
