@@ -4,6 +4,6 @@ from .uuid import generate_uuid
 
 __all__ = [
     "Singleton",
-    "get_context",
     "generate_uuid",
+    "get_context",
 ]
