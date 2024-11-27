@@ -5,6 +5,19 @@ requires-python = ">=3.12"
 line-length = 120
 indent-width = 4
 
+[tool.ruff.lint]
+select = [
+    "F", # Pyflakes
+    "E", # pycodestyle (Error)
+    "W", # pycodestyle (Warning)
+    "I", # isort
+    "N", # pep8-naming
+    "UP", # pyupgrade
+    "YTT", # flake8-2020
+    "ARG", # flake8-unused-arguments
+]
+ignore = []
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
