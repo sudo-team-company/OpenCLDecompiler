@@ -105,10 +105,8 @@ def process_src(  # pylint: disable=R0914
             if_and_last_in_if_body_nodes.append([last_node])
             common_if_else_part_start_index.append(None)
         if (
-            ("s_or" in instruction[0] or "s_mov" in instruction[0])
-            and "exec" in instruction[1]
-            or "s_endpgm" in instruction[0]
-        ):
+            ("s_or" in instruction[0] or "s_mov" in instruction[0]) and "exec" in instruction[1]
+        ) or "s_endpgm" in instruction[0]:
             end_exec_condition = last_node.state["exec"].exec_condition
             while if_and_last_in_if_body_nodes and ExecCondition.is_closing_for(
                 end_exec_condition, if_and_last_in_if_body_nodes[-1][0].state["exec"].exec_condition

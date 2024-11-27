@@ -23,10 +23,14 @@ def check_if(curr_region):
         curr_region.type == RegionType.BASIC
         and len(curr_region.children) == 2
         and (
-            len(curr_region.children[0].children) > 0
-            and curr_region.children[0].children[0] == curr_region.children[1]
-            or len(curr_region.children[1].children) > 0
-            and curr_region.children[1].children[0] == curr_region.children[0]
+            (
+                len(curr_region.children[0].children) > 0
+                and curr_region.children[0].children[0] == curr_region.children[1]
+            )
+            or (
+                len(curr_region.children[1].children) > 0
+                and curr_region.children[1].children[0] == curr_region.children[0]
+            )
         )
     )
 

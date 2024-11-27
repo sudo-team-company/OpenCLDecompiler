@@ -50,7 +50,8 @@ def prepare_vector_type_output(from_registers, vdata, to_registers, node):
     to_type = node.state[to_registers].data_type
     from_type = node.state[from_registers].data_type
     if is_same_name(new_vector) and (
-        not is_vector_type(from_type) and to_type[:-1] == make_opencl_type(from_type) or to_type[:-1] == from_type[:-1]
+        (not is_vector_type(from_type) and to_type[:-1] == make_opencl_type(from_type))
+        or to_type[:-1] == from_type[:-1]
     ):
         output_string = get_vector_name(new_vector[0])
         if not is_right_order(new_vector):

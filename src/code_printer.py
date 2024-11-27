@@ -116,8 +116,7 @@ def make_output_for_linear_region(region, indent):
                     and curr_node.state[reg].val.strip() != ""
                     and (
                         "cmp" not in curr_node.instruction[0]
-                        or decompiler_data.gpu
-                        and decompiler_data.gpu.startswith("gfx")
+                        or (decompiler_data.gpu and decompiler_data.gpu.startswith("gfx"))
                     )
                 ):  # версия поменялась по сравнению с предком
                     decompiler_data.write(indent + var + " = " + curr_node.state[reg].val + ";\n")

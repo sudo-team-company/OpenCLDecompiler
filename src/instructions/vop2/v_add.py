@@ -87,7 +87,8 @@ class VAdd(BaseInstruction):
                 if (
                     self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE_OFFSET
                     and self.node.state[self.src1].type == RegisterType.WORK_ITEM_ID_X
-                    or self.node.state[self.src0].type == RegisterType.GLOBAL_OFFSET_X
+                ) or (
+                    self.node.state[self.src0].type == RegisterType.GLOBAL_OFFSET_X
                     and self.node.state[self.src1].type == RegisterType.WORK_GROUP_ID_X_WORK_ITEM_ID
                 ):
                     new_value = "get_global_id(0)"
@@ -95,18 +96,25 @@ class VAdd(BaseInstruction):
                 elif (
                     self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_Y_LOCAL_SIZE_OFFSET
                     and self.node.state[self.src1].type == RegisterType.WORK_ITEM_ID_Y
-                    or self.node.state[self.src0].type == RegisterType.GLOBAL_OFFSET_Y
+                ) or (
+                    self.node.state[self.src0].type == RegisterType.GLOBAL_OFFSET_Y
                     and self.node.state[self.src1].type == RegisterType.WORK_GROUP_ID_Y_WORK_ITEM_ID
                 ):
                     new_value = "get_global_id(1)"
                     reg_type = RegisterType.GLOBAL_ID_Y
                 elif (
-                    self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE_OFFSET
-                    and self.node.state[self.src1].type == RegisterType.WORK_ITEM_ID_Z
-                    or self.node.state[self.src0].type == RegisterType.GLOBAL_OFFSET_Z
-                    and self.node.state[self.src1].type == RegisterType.WORK_GROUP_ID_Z_WORK_ITEM_ID
-                    or self.node.state[self.src1].type == RegisterType.GLOBAL_OFFSET_Z
-                    and self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_Z_WORK_ITEM_ID
+                    (
+                        self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE_OFFSET
+                        and self.node.state[self.src1].type == RegisterType.WORK_ITEM_ID_Z
+                    )
+                    or (
+                        self.node.state[self.src0].type == RegisterType.GLOBAL_OFFSET_Z
+                        and self.node.state[self.src1].type == RegisterType.WORK_GROUP_ID_Z_WORK_ITEM_ID
+                    )
+                    or (
+                        self.node.state[self.src1].type == RegisterType.GLOBAL_OFFSET_Z
+                        and self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_Z_WORK_ITEM_ID
+                    )
                 ):
                     new_value = "get_global_id(2)"
                     reg_type = RegisterType.GLOBAL_ID_Z
@@ -151,7 +159,8 @@ class VAdd(BaseInstruction):
                 elif (
                     self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE
                     and self.node.state[self.src1].type == RegisterType.WORK_ITEM_ID_X
-                    or self.node.state[self.src1].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE
+                ) or (
+                    self.node.state[self.src1].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE
                     and self.node.state[self.src0].type == RegisterType.WORK_ITEM_ID_X
                 ):
                     new_value = "get_global_id(0) - get_global_offset(0)"

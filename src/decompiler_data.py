@@ -311,11 +311,8 @@ def check_value_needs_cast(value, from_type, to_type) -> bool:
     ):
         needs_casting = (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
     # from unsigned type to signed or from signed type to unsigned
-    if (
-        is_type_unsigned(from_type)
-        and is_type_signed(to_type)
-        or is_type_signed(from_type)
-        and is_type_unsigned(to_type)
+    if (is_type_unsigned(from_type) and is_type_signed(to_type)) or (
+        is_type_signed(from_type) and is_type_unsigned(to_type)
     ):
         needs_casting = (
             (
