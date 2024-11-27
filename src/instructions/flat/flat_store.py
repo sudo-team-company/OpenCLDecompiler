@@ -101,38 +101,37 @@ class FlatStore(BaseInstruction):
             else:
                 if self.suffix[-1].isdigit():
                     suffix_size = int(self.suffix[-1])
-            for self.from_registers in check_and_split_regs_range_to_full_list(self.vdata)[:suffix_size]:
+            for from_reg in check_and_split_regs_range_to_full_list(self.vdata)[:suffix_size]:
                 if is_vgpr(self.vaddr):
                     self.node.state[self.to_registers].copy_version_from(self.node.parent[0].state[self.to_registers])
                     self.node.state[self.to_registers].cast_to(self.suffix)
                 # TODO: Сделать присвоение в пары
                 else:
                     if (
-                        self.node.state[self.from_registers].data_type is not None
-                        and "bytes" in self.node.state[self.from_registers].data_type
+                        self.node.state[from_reg].data_type is not None
+                        and "bytes" in self.node.state[from_reg].data_type
                     ):
-                        self.node.state[self.from_registers].cast_to(self.node.state[self.to_registers].data_type)
-                        self.decompiler_data.names_of_vars[self.node.state[self.from_registers].val] = self.node.state[
+                        self.node.state[from_reg].cast_to(self.node.state[self.to_registers].data_type)
+                        self.decompiler_data.names_of_vars[self.node.state[from_reg].val] = self.node.state[
                             self.to_registers
                         ].data_type
                     else:
                         if (
-                            str(self.node.state[self.from_registers].data_type)
-                            not in self.node.state[self.to_registers].data_type
-                            and not is_vector_type(self.node.state[self.from_registers].data_type)
+                            str(self.node.state[from_reg].data_type) not in self.node.state[self.to_registers].data_type
+                            and not is_vector_type(self.node.state[from_reg].data_type)
                             and not is_vector_type(self.node.state[self.to_registers].data_type)
                         ):
-                            val = self.node.state[self.from_registers].get_value()
+                            val = self.node.state[from_reg].get_value()
                             if val[0] == "(":
                                 val = val[val.find(")") + 1 :]
                             if val not in self.decompiler_data.names_of_vars:
-                                self.node.state[self.from_registers].cast_to(
+                                self.node.state[from_reg].cast_to(
                                     make_new_type_without_modifier(self.node, self.to_registers),
                                 )
-                                self.decompiler_data.names_of_vars[val] = self.node.state[self.from_registers].data_type
+                                self.decompiler_data.names_of_vars[val] = self.node.state[from_reg].data_type
                             else:
                                 # init var - i32, gdata - i64. var = gdata -> var - i64
-                                self.decompiler_data.names_of_vars[val] = self.node.state[self.from_registers].data_type
+                                self.decompiler_data.names_of_vars[val] = self.node.state[from_reg].data_type
             return self.node
         return super().to_fill_node()
 
