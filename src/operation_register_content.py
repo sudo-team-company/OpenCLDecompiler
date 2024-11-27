@@ -192,7 +192,7 @@ class OperationRegisterContent(RegisterContent):
         joined_string = f" {self._operation.value} ".join(
             [
                 f"{'-' if sign == RegisterSignType.NEGATIVE else ''}{value}"
-                for value, sign in zip(self._value, self._sign)
+                for value, sign in zip(self._value, self._sign, strict=False)
             ]
         )
 
@@ -212,8 +212,8 @@ class OperationRegisterContent(RegisterContent):
 
     def maybe_simplify(self) -> RegisterContent | None:
         def maybe_find_opposite_pos() -> tuple[int, int] | None:
-            for i, (val_i, type_i, sign_i) in enumerate(zip(self._value, self._type, self._sign)):
-                for j, (val_j, type_j, sign_j) in enumerate(zip(self._value, self._type, self._sign)):
+            for i, (val_i, type_i, sign_i) in enumerate(zip(self._value, self._type, self._sign, strict=False)):
+                for j, (val_j, type_j, sign_j) in enumerate(zip(self._value, self._type, self._sign, strict=False)):
                     if i >= j:
                         continue
 
@@ -252,6 +252,7 @@ class OperationRegisterContent(RegisterContent):
                     self._value,
                     self._type,
                     self._sign,
+                    strict=False,
                 )
             ):
                 if i in pos_list:

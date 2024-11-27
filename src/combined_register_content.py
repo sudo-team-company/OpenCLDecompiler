@@ -72,6 +72,7 @@ class CombinedRegisterContent(RegisterContent):
             self._size,
             self._data_type,
             self._sign,
+            strict=False,
         ):
             if curr_pos == begin and curr_pos + size - 1 >= end:
                 return RegisterContent(
@@ -168,6 +169,7 @@ class CombinedRegisterContent(RegisterContent):
                 self._size,
                 self._data_type,
                 self._sign,
+                strict=False,
             ):
                 if bits == cur_pos:
                     add_to_new_combiner_flag = True

@@ -61,7 +61,9 @@ def set_reg_value(  # pylint: disable=R0913
                         data_type=data_type_,
                         size=size_,
                     )
-                    for value, type_, sign_, data_type_, size_ in zip(new_value, reg_type, sign, data_type, size)
+                    for value, type_, sign_, data_type_, size_ in zip(
+                        new_value, reg_type, sign, data_type, size, strict=False
+                    )
                 ]
             ),
         )
@@ -77,7 +79,7 @@ def set_reg_value(  # pylint: disable=R0913
                             type_=type_,
                             data_type=data_type,
                         )
-                        for value, type_ in zip(new_value, reg_type)
+                        for value, type_ in zip(new_value, reg_type, strict=False)
                     ],
                 ),
             )
@@ -94,7 +96,9 @@ def set_reg_value(  # pylint: disable=R0913
                                 sign=sign_,
                                 data_type=data_type_,
                             )
-                            for value, type_, sign_, data_type_ in zip(new_value, reg_type, sign, data_type)
+                            for value, type_, sign_, data_type_ in zip(
+                                new_value, reg_type, sign, data_type, strict=False
+                            )
                         ],
                     ),
                 )
@@ -110,7 +114,7 @@ def set_reg_value(  # pylint: disable=R0913
                                 sign=sign_,
                                 data_type=data_type,
                             )
-                            for value, type_, sign_ in zip(new_value, reg_type, sign)
+                            for value, type_, sign_ in zip(new_value, reg_type, sign, strict=False)
                         ],
                     ),
                 )
