@@ -1,4 +1,4 @@
-from typing import Iterable
+from collections.abc import Iterable
 
 from src.register_content import EmptyRegisterContent, RegisterContent, RegisterSignType
 from src.register_type import RegisterType
