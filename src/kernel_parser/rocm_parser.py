@@ -1,5 +1,4 @@
 import re
-from typing import Optional
 
 from ..model import ConfigData, KernelArgument
 
@@ -11,7 +10,7 @@ def get_dimensions(set_of_config: list[str]) -> str:
     return ""
 
 
-def get_size_of_work_groups(set_of_config: list[str]) -> Optional[list[int]]:
+def get_size_of_work_groups(set_of_config: list[str]) -> list[int] | None:
     for row in set_of_config:
         if row.startswith(".reqd_work_group_size "):
             return [int(it.strip()) for it in row.removeprefix(".reqd_work_group_size ").split(",")]
@@ -19,7 +18,7 @@ def get_size_of_work_groups(set_of_config: list[str]) -> Optional[list[int]]:
 
 
 # TODO: implement local_size parsing for rocm
-def get_local_size(*_) -> Optional[int]:
+def get_local_size(*_) -> int | None:
     return None
 
 

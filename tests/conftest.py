@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from typing import Optional
 
 import pytest
 
@@ -20,7 +19,7 @@ def check_and_set_pythonpath():
 def template(
     path_to_dir: str,
     dir_name: str,
-    flag: Optional[str] = None,
+    flag: str | None = None,
     mcpu: str = "",
     disasm: str = "clrxdisasm",
 ):

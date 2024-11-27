@@ -3,7 +3,6 @@
 import binascii
 import re
 import struct
-from typing import Optional, Union
 
 import sympy
 
@@ -34,9 +33,9 @@ def set_reg_value(  # pylint: disable=R0913
     reg_type=RegisterType.UNKNOWN,
     integrity=Integrity.ENTIRE,
     register_content_type=RegisterContent,
-    sign: Union[RegisterSignType, list[RegisterSignType]] = RegisterSignType.POSITIVE,
-    operation: Optional[OperationType] = None,
-    size: Optional[list[int]] = None,
+    sign: RegisterSignType | list[RegisterSignType] = RegisterSignType.POSITIVE,
+    operation: OperationType | None = None,
+    size: list[int] | None = None,
 ):
     decompiler_data = DecompilerData()
     if register_content_type == RegisterContent:
@@ -424,7 +423,7 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
     def __init__(self):
         self.pragram_id = utils.generate_uuid()
         self.name_of_program = None
-        self.config_data: Optional[ConfigData] = None
+        self.config_data: ConfigData | None = None
         self.output_file = None
         self.cfg = None
         self.improve_cfg = None

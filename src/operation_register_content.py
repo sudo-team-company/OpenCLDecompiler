@@ -3,7 +3,6 @@
 import copy
 import enum
 import itertools
-from typing import Optional
 
 from src.constants import DEFAULT_REGISTER_SIZE
 from src.register_content import RegisterContent, RegisterSignType
@@ -205,14 +204,14 @@ class OperationRegisterContent(RegisterContent):
     def get_size(self) -> int:
         return self._size
 
-    def get_data_type(self) -> Optional[str]:
+    def get_data_type(self) -> str | None:
         return self._data_type
 
     def get_sign(self) -> RegisterSignType:
         return None
 
-    def maybe_simplify(self) -> Optional[RegisterContent]:
-        def maybe_find_opposite_pos() -> Optional[tuple[int, int]]:
+    def maybe_simplify(self) -> RegisterContent | None:
+        def maybe_find_opposite_pos() -> tuple[int, int] | None:
             for i, (val_i, type_i, sign_i) in enumerate(zip(self._value, self._type, self._sign)):
                 for j, (val_j, type_j, sign_j) in enumerate(zip(self._value, self._type, self._sign)):
                     if i >= j:
@@ -222,7 +221,7 @@ class OperationRegisterContent(RegisterContent):
                         return i, j
             return None
 
-        def maybe_find_types_pos(types: tuple[RegisterType]) -> Optional[list[int]]:
+        def maybe_find_types_pos(types: tuple[RegisterType]) -> list[int] | None:
             if len(types) == 0:
                 return []
 

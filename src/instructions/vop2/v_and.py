@@ -1,5 +1,3 @@
-from typing import Optional
-
 from src.base_instruction import BaseInstruction
 from src.combined_register_content import CombinedRegisterContent
 from src.decompiler_data import make_op, set_reg, set_reg_value
@@ -60,7 +58,7 @@ class VAnd(BaseInstruction):
                     and isinstance(self.src0, str)
                     and self.src0.startswith("0x")
                 ):
-                    maybe_new_reg: Optional[Register] = self.node.state[self.src1] & self.src0
+                    maybe_new_reg: Register | None = self.node.state[self.src1] & self.src0
                     if maybe_new_reg is None:
                         new_value, reg_type = default_behaviour()
                     else:

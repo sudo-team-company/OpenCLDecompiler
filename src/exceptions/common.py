@@ -1,8 +1,5 @@
-from typing import Optional
-
-
 class OpenCLDecompilerError(Exception):
-    def __init__(self, message: str, prefix: Optional[str] = "OPENCL_DECOMPILER_COMMON_ERROR"):
+    def __init__(self, message: str, prefix: str | None = "OPENCL_DECOMPILER_COMMON_ERROR"):
         """
         Common OpenCLDecompiler error.
         In case of prefix is not None, the output message is formatted as [%prefix%]: %message%.

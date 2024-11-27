@@ -1,4 +1,4 @@
-from typing import Iterable, Optional
+from typing import Iterable
 
 from src.register_content import EmptyRegisterContent, RegisterContent, RegisterSignType
 from src.register_type import RegisterType
@@ -21,7 +21,7 @@ class CombinedRegisterContent(RegisterContent):
         self._data_type.append(register_content.get_data_type())
         self._sign.append(register_content.get_sign())
 
-    def maybe_get_by_idx(self, idx: int) -> Optional[RegisterContent]:
+    def maybe_get_by_idx(self, idx: int) -> RegisterContent | None:
         try:
             return RegisterContent(
                 value=self._value[idx],
@@ -36,7 +36,7 @@ class CombinedRegisterContent(RegisterContent):
     def get_count(self) -> int:
         return len(self._value)
 
-    def maybe_simplify(self) -> Optional[RegisterContent]:
+    def maybe_simplify(self) -> RegisterContent | None:
         if len(self._value) == 1:
             return RegisterContent(
                 value=self._value[0],
@@ -58,7 +58,7 @@ class CombinedRegisterContent(RegisterContent):
 
         return None
 
-    def _maybe_acquire_content(self, begin: int, end: int) -> Optional[RegisterContent]:
+    def _maybe_acquire_content(self, begin: int, end: int) -> RegisterContent | None:
         curr_pos = 0
         for (
             value,
@@ -92,7 +92,7 @@ class CombinedRegisterContent(RegisterContent):
     def get_type(self) -> RegisterType:
         return self._type[0]
 
-    def get_data_type(self) -> Optional[str]:
+    def get_data_type(self) -> str | None:
         return self._data_type[0]
 
     def get_size(self) -> int:
@@ -101,7 +101,7 @@ class CombinedRegisterContent(RegisterContent):
     def get_sign(self) -> RegisterSignType:
         return self._sign[0]
 
-    def __and__(self, other) -> Optional[RegisterContent]:
+    def __and__(self, other) -> RegisterContent | None:
         if isinstance(other, (int, str)):
             if isinstance(other, str):
                 hex_str = other
