@@ -253,7 +253,7 @@ def process_loop(region_start, region_end):
     first_reg_version = None
     while curr_node != region_end.start:
         list_of_reg_nums = list(range(1, len(curr_node.instruction))[1:])
-        list_of_reg_nums = list_of_reg_nums if len(curr_node.instruction) == 1 else list_of_reg_nums + [1]
+        list_of_reg_nums = list_of_reg_nums if len(curr_node.instruction) == 1 else [*list_of_reg_nums, 1]
         if len(list_of_reg_nums) > 0:
             first_reg = curr_node.instruction[1]
             if len(first_reg) > 1 and first_reg[1] == "[":
