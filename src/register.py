@@ -248,12 +248,12 @@ def is_vector_type(data_type: str) -> bool:
 
 def is_sgpr(reg: str) -> bool:
     """Matches s0, s12 and etc."""
-    return re.match("s[0-9]+", reg) is not None
+    return re.match(r"s\d+", reg) is not None
 
 
 def is_vgpr(reg: str) -> bool:
     """Matches v0, v12 and etc."""
-    return re.match("v[0-9]+", reg) is not None or reg == "vcc"
+    return re.match(r"v\d+", reg) is not None or reg == "vcc"
 
 
 def is_reg(reg: str) -> bool:
@@ -262,7 +262,7 @@ def is_reg(reg: str) -> bool:
 
 def is_sgpr_pair(reg: str) -> bool:
     """Matches s[0:1], s[10:11] and etc."""
-    if re.match("s\\[[0-9]+:[0-9]+]", reg) is not None:
+    if re.match(r"s\[\d+:\d+]", reg) is not None:
         start, end = reg.split(":")
         start: int = int(start[2:])
         end: int = int(end[:-1])
@@ -272,7 +272,7 @@ def is_sgpr_pair(reg: str) -> bool:
 
 def is_vgpr_pair(reg: str) -> bool:
     """Matches v[0:1], v[10:11] and etc."""
-    if re.match("v\\[[0-9]+:[0-9]+]", reg) is not None:
+    if re.match(r"v\[\d+:\d+]", reg) is not None:
         start, end = reg.split(":")
         start: int = int(start[2:])
         end: int = int(end[:-1])
@@ -286,12 +286,12 @@ def is_pair(reg: str) -> bool:
 
 def is_sgpr_range(reg: str) -> bool:
     """Matches s[0:1], s[10:12] and etc."""
-    return re.match("s\\[[0-9]+:[0-9]+]", reg) is not None
+    return re.match(r"s\[\d+:\d+]", reg) is not None
 
 
 def is_vgpr_range(reg: str) -> bool:
     """Matches v[0:1], v[10:12] and etc."""
-    return re.match("v\\[[0-9]+:[0-9]+]", reg) is not None
+    return re.match(r"v\[\d+:\d+]", reg) is not None
 
 
 def is_range(reg: str) -> bool:

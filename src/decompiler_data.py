@@ -277,26 +277,25 @@ def get_type_info(data_type) -> tuple[str, int, int, bool]:
 
 
 def is_type_signed(t) -> bool:
-    return re.fullmatch("i[0-9]+", t) is not None
+    return re.fullmatch(r"i\d+", t) is not None
 
 
 def is_type_unsigned(t) -> bool:
-    return re.fullmatch("[u,b][0-9]+", t) is not None
+    return re.fullmatch(r"[ub]\d+", t) is not None
 
 
 def is_type_float(t) -> bool:
-    return re.fullmatch("f[0-9]+", t) is not None
+    return re.fullmatch(r"f\d+", t) is not None
 
 
 def check_value_needs_cast(value, from_type, to_type) -> bool:
     if from_type == to_type:
         return False
     if from_type == "" or to_type == "" or from_type is None or to_type is None:
-        if re.fullmatch("-?[0-9]+((\\.|,)[0-9]+)?", value) is not None:
-            return value[0] == "-" and re.fullmatch("g?[u,b][0-9]+", from_type) is not None
+        if re.fullmatch(r"[+-]?\d+([.,]\d+)?", value) is not None:
+            return value[0] == "-" and re.fullmatch(r"g?[ub]\d+", from_type) is not None
         return (
-            re.fullmatch("0x[0-9,a,b,c,d,e,f]+", value) is None
-            and re.fullmatch("-?[0-9,.]+((e|E)(\\+|-)?[0-9]+)?", value) is None
+            re.fullmatch(r"0x[\da-f]+", value) is None and re.fullmatch(r"[+-]?[\d,.]+([eE][+-]?\d+)?", value) is None
         )
     from_type, from_type_size, from_type_component_count, is_global_from_type = get_type_info(from_type)
     to_type, to_type_size, to_type_component_count, is_global_to_type = get_type_info(to_type)
@@ -321,8 +320,8 @@ def check_value_needs_cast(value, from_type, to_type) -> bool:
         needs_casting = (
             (
                 (value[0] == "-" and value[1:].isnumeric())
-                or re.fullmatch("[0-9]+", value) is None
-                or re.fullmatch("0x[0-9,a,b,c,d,e,f]+", value) is None
+                or re.fullmatch(r"\d+", value) is None
+                or re.fullmatch(r"0x[\da-f]+", value) is None
             )
             or (from_type_size > to_type_size)
             or (from_type_component_count != to_type_component_count)

@@ -102,7 +102,7 @@ def split_kernels_texts(lines: list[str], names: set[str]) -> dict[str, list[str
     current_kernel: str = ""
 
     for line in lines:
-        line = re.sub("^\\s*/\\*\\w+\\*/", "", line).strip()
+        line = re.sub(r"^\s*/\*.*?\*/", "", line).strip()
         if line.endswith("s_code_end"):
             break
 
@@ -115,7 +115,7 @@ def split_kernels_texts(lines: list[str], names: set[str]) -> dict[str, list[str
             result[current_kernel].append(line)
 
     for _, text in result.items():
-        while re.match("\\s*s_nop\\s+0x0\\s*", text[-1]):
+        while re.match(r"\s*s_nop\s+0x0\s*", text[-1]):
             text = text[:-1]
     return result
 
