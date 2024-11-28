@@ -27,7 +27,7 @@ def template(
         mcpu = ""
     if mcpu:
         mcpu = f"-{mcpu}"
-    test_root = Path(".") / path_to_dir / dir_name
+    test_root = Path() / path_to_dir / dir_name
     path_to_bin = str(test_root / f"{dir_name}{mcpu}.bin")
     path_to_asm = str(test_root / f"{dir_name}{mcpu}.asm")
     path_to_cl = str(test_root / f"{dir_name}_dcmpl{mcpu}.cl")
