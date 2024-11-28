@@ -1,5 +1,5 @@
-name: Test
-on: push
+name: Main
+on: [push, pull_request]
 jobs:
   test:
     runs-on: ${{ matrix.os }}
@@ -9,19 +9,31 @@ jobs:
         os: [windows-latest, ubuntu-latest]
         python-version: ['3.12']
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "pytest~=6.2.5" pytest-xdist
-          python -m pip install -r requirements.txt
+          pip install -r requirements.txt
+          pip install "pytest~=6.2.5" pytest-xdist
       - name: Test with pytest
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: |
           cd tests
           pytest -v -n 8
+  lint:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/ruff-action@v1
+  format:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/ruff-action@v1
+        with:
+          args: "format --diff"
