@@ -27,10 +27,7 @@ class DsRead(BaseInstruction):
         if self.suffix == "b32":
             new_value = make_op(self.node, self.addr, "4", "/", suffix=self.suffix)
             name = f"{self.decompiler_data.lds_vars[self.offset][0]}[{new_value}]"
-            if name in self.node.state:
-                reg_type = self.node.state[name].type
-            else:
-                reg_type = RegisterType.UNKNOWN
+            reg_type = self.node.state[name].type if name in self.node.state else RegisterType.UNKNOWN
             return set_reg_value(self.node, name, self.vdst, [], f"u{self.suffix[1:]}", reg_type=reg_type)
         if self.suffix == "b64":
             name = f"{self.decompiler_data.lds_vars[self.offset][0]}[{self.node.state[self.addr].var}]"

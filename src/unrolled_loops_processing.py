@@ -151,10 +151,7 @@ def process_unrolled_loops():  # pylint: disable=R0914
                 first = constants[0]
                 last = constants[-1]
                 diff = constants[1] - constants[0]
-                if diff < 0:
-                    diff = f"i = i - {-diff}"
-                else:
-                    diff = f"i = i + {diff}"
+                diff = f"i = i - {-diff}" if diff < 0 else f"i = i + {diff}"
 
             dst = vertices[vertices[chosen[-1]].merged_vertices[-1]].node.instruction[1]
 

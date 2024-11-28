@@ -57,10 +57,7 @@ def decode_instruction(node, flag_of_status):
                 "dwordx8",
                 "dwordx16",
             ]:
-                if suffix != "":
-                    suffix = suffix + "_" + part
-                else:
-                    suffix = part
+                suffix = suffix + "_" + part if suffix != "" else part
             else:
                 root = root + "_" + part
     prefix_root = prefix + "_" + root

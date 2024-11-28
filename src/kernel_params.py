@@ -28,10 +28,7 @@ def get_reg_type(value: str) -> RegisterType:
 
 
 def process_arg(offset: int, arg: KernelArgument):
-    if not arg.is_vector():
-        value = arg.name.removeprefix("*")
-    else:
-        value = arg.get_vector_element_by_offset(offset)
+    value = arg.name.removeprefix("*") if not arg.is_vector() else arg.get_vector_element_by_offset(offset)
     if offset % 4 == 0:
         DecompilerData().config_data.offset_to_content[hex(offset)] = RegisterContent(
             value=value, type_=get_reg_type(arg.name), size=arg.basic_size(), data_type=make_asm_type(arg.type_name)
