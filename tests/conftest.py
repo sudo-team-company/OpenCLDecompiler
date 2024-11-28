@@ -32,12 +32,7 @@ def template(
     path_to_asm = str(test_root / f"{dir_name}{mcpu}.asm")
     path_to_cl = str(test_root / f"{dir_name}_dcmpl{mcpu}.cl")
 
-    DISASMS.get(disasm)(
-        **{
-            "path_to_bin": path_to_bin,
-            "path_to_asm": path_to_asm,
-        }
-    ).invoke()
+    DISASMS.get(disasm)(path_to_bin=path_to_bin, path_to_asm=path_to_asm).invoke()
 
     main(path_to_asm, path_to_cl, flag if flag else "AUTO_DECOMPILATION", None)
 
