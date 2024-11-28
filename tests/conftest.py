@@ -41,5 +41,4 @@ def template(
         hands = test_root / f"{dir_name}_hands{mcpu}.cl"
     elif "gfx" in mcpu and (test_root / f"{dir_name}_hands-gfx.cl").exists():
         hands = test_root / f"{dir_name}_hands-gfx.cl"
-    with open(path_to_cl, encoding="utf-8") as decompiled, open(hands, encoding="utf-8") as hands_decompilation:
-        assert decompiled.read() == hands_decompilation.read()
+    assert Path(path_to_cl).read_text(encoding="utf-8") == Path(hands).read_text(encoding="utf-8")

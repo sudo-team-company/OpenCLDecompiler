@@ -1,5 +1,6 @@
 import argparse
 import sys
+from pathlib import Path
 
 from src.decompiler import process_src
 from src.decompiler_data import DecompilerData
@@ -29,8 +30,7 @@ def main(input_par, output_par, flag_for_decompilation, cfg_path, unrolling_limi
         )
 
     with open(output_par, "w", encoding="utf-8") as output_file:
-        with open(input_par, encoding="utf-8") as file:
-            body_of_file = file.read()
+        body_of_file = Path(input_par).read_text(encoding="utf-8")
 
         decompiler_data = DecompilerData()
         decompiler_data.output_file = output_file
