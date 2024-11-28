@@ -186,14 +186,16 @@ class CombinedRegisterContent(RegisterContent):
                     continue
 
                 if bits < cur_pos:
-                    register_contents.append(EmptyRegisterContent(cur_pos - bits))
-                    register_contents.append(
-                        RegisterContent(
-                            value=value,
-                            type_=type_,
-                            size=size,
-                            data_type=data_type,
-                            sign=sign,
+                    register_contents.extend(
+                        (
+                            EmptyRegisterContent(cur_pos - bits),
+                            RegisterContent(
+                                value=value,
+                                type_=type_,
+                                size=size,
+                                data_type=data_type,
+                                sign=sign,
+                            ),
                         )
                     )
 
