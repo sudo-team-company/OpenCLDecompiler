@@ -202,7 +202,7 @@ def simplify_opencl_statement(opencl_line):
         }
         for data_type in current_type_conversion.values():
             substring = substring.replace(data_type, "")
-        if substring != "":
+        if substring:
             substring = sympy.simplify(substring)
             substring = sympy.sstr(substring)
         # doesn't recover type (int)A in case (int)(A + B) - B
@@ -294,7 +294,7 @@ def is_type_float(t) -> bool:
 def check_value_needs_cast(value, from_type, to_type) -> bool:
     if from_type == to_type:
         return False
-    if from_type == "" or to_type == "" or from_type is None or to_type is None:
+    if not from_type or not to_type:
         if re.fullmatch(r"[+-]?\d+([.,]\d+)?", value) is not None:
             return value[0] == "-" and re.fullmatch(r"g?[ub]\d+", from_type) is not None
         return (
@@ -392,7 +392,7 @@ def change_vals_for_make_op(node, register, reg_type, operation, suffix):
     new_val, needs_cast = check_reg_for_val(node, register, suffix)
     if (operation != "+" or reg_type) and ("-" in new_val or "+" in new_val or "*" in new_val or "/" in new_val):
         new_val = f"({new_val})"
-    if reg_type != "":
+    if reg_type:
         decompiler_data.type_conversion[new_val] = reg_type
     if needs_cast:
         new_val = reg_type + new_val

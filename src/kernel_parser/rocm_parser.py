@@ -40,7 +40,7 @@ def get_params(set_of_config: list[str]) -> list[KernelArgument]:
         align = int(align)
         if offset % align != 0:
             offset += align - offset % align
-        hidden = name == ""
+        hidden = not name
         value_kind = other[0]
         for i, global_offset_kind in enumerate(["gox", "goy", "goz"]):
             if value_kind == global_offset_kind:

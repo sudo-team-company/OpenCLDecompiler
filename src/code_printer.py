@@ -96,7 +96,7 @@ def make_output_for_linear_region(region, indent):
             new_output = to_opencl(curr_node, OperationStatus.TO_PRINT)
             if decompiler_data.loops_nodes_for_variables.get(curr_node):
                 make_output_for_loop_vars(curr_node, indent)
-            elif new_output != "" and new_output is not None:
+            elif new_output:
                 decompiler_data.write(indent + new_output + ";\n")
             if (
                 len(curr_node.instruction) > 1
@@ -110,7 +110,7 @@ def make_output_for_linear_region(region, indent):
                 if (
                     var is not None
                     and var != curr_node.state[reg].val
-                    and curr_node.state[reg].val.strip() != ""
+                    and curr_node.state[reg].val.strip()
                     and (
                         "cmp" not in curr_node.instruction[0]
                         or (decompiler_data.gpu and decompiler_data.gpu.startswith("gfx"))
