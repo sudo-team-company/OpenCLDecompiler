@@ -10,7 +10,7 @@ class SOr(BaseInstruction):
         self.ssrc1 = self.instruction[3]
 
     def to_print_unresolved(self):
-        if self.suffix in ["b32", "b64"]:
+        if self.suffix in {"b32", "b64"}:
             self.decompiler_data.write(f"{self.sdst} = {self.ssrc0} | {self.ssrc1} // {self.name}\n")
             self.decompiler_data.write(f"scc = {self.sdst} != 0\n")
             return self.node
@@ -27,7 +27,7 @@ class SOr(BaseInstruction):
                 data_type=self.suffix,
             )
 
-        if self.suffix in ["b32", "b64"]:
+        if self.suffix in {"b32", "b64"}:
             if self.sdst == "exec" and self.ssrc0 == "exec":
                 new_exec_condition = (
                     self.decompiler_data.exec_registers[self.ssrc0] | self.decompiler_data.exec_registers[self.ssrc1]

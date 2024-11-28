@@ -11,15 +11,15 @@ class SAnd(BaseInstruction):
         self.ssrc1 = self.instruction[3]
 
     def to_print_unresolved(self):
-        if self.suffix in ["b32", "b64"]:
+        if self.suffix in {"b32", "b64"}:
             self.decompiler_data.write(f"{self.sdst} = {self.ssrc0} & {self.ssrc1} // {self.name}\n")
             self.decompiler_data.write(f"scc = {self.sdst} != 0\n")
             return self.node
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ["b32", "b64"]:
-            if "exec" in [self.sdst, self.ssrc0, self.ssrc1]:
+        if self.suffix in {"b32", "b64"}:
+            if "exec" in {self.sdst, self.ssrc0, self.ssrc1}:
                 if self.ssrc1 == "exec":
                     self.ssrc1, self.ssrc0 = self.ssrc0, self.ssrc1
                 old_exec_condition = self.decompiler_data.exec_registers[self.ssrc0]

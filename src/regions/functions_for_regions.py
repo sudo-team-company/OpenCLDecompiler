@@ -334,7 +334,7 @@ def process_control_structures_in_loop(region_start, region_end):
             if (
                 curr_region.type == RegionType.BASIC
                 and len(curr_region.children) == 2
-                and (after_region_end in [curr_region.children[0], curr_region.children[1]])
+                and (after_region_end in {curr_region.children[0], curr_region.children[1]})
             ):
                 curr_region.type = RegionType.BREAK_REGION  # надо отдельно написать на return и обрезание на break
                 next_region = (

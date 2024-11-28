@@ -47,7 +47,7 @@ class VCvt(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ["f32_u32", "f64_i32", "f64_u32", "i32_f64", "u32_f64", "u32_f32", "i32_f32", "f32_i32"]:
+        if self.suffix in {"f32_u32", "f64_i32", "f64_u32", "i32_f64", "u32_f64", "u32_f32", "i32_f32", "f32_i32"}:
             if self.src0 in self.node.state and self.node.state[self.src0].type == RegisterType.DIVISION_PT2:
                 new_value = self.node.state[self.src0].val
                 return set_reg_value(

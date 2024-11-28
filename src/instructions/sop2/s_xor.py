@@ -17,8 +17,8 @@ class SXor(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ["b32", "b64"]:
-            if "exec" in [self.sdst, self.ssrc0]:
+        if self.suffix in {"b32", "b64"}:
+            if "exec" in {self.sdst, self.ssrc0}:
                 new_exec_condition = (
                     self.decompiler_data.exec_registers[self.ssrc0] ^ self.decompiler_data.exec_registers[self.ssrc1]
                 )

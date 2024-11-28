@@ -42,7 +42,7 @@ class FlatLoad(BaseInstruction):
         self.from_registers, _ = check_and_split_regs(self.vaddr)
 
     def to_print_unresolved(self):
-        if self.suffix in ["dword", "dwordx2"]:
+        if self.suffix in {"dword", "dwordx2"}:
             self.decompiler_data.write(f"{self.vdst} = *(uint*)({self.vaddr} + {self.inst_offset}) // {self.name}\n")
             return self.node
         if self.suffix == "dwordx4":
@@ -57,7 +57,7 @@ class FlatLoad(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):  # нужно ли здесь делать self.node
-        if self.suffix in ["dword", "dwordx2", "dwordx4"]:
+        if self.suffix in {"dword", "dwordx2", "dwordx4"}:
             variable = f"var{self.decompiler_data.num_of_var}"
             data_type = make_new_type_without_modifier(self.node, self.from_registers)
             # probably we should save only const data
@@ -93,7 +93,7 @@ class FlatLoad(BaseInstruction):
         return super().to_fill_node()
 
     def to_print(self):
-        if self.suffix in ["dword", "dwordx2", "dwordx4"]:
+        if self.suffix in {"dword", "dwordx2", "dwordx4"}:
             if self.start_to_registers == self.from_registers:
                 output = self.node.parent[0].state[self.from_registers].val
                 data_type = self.node.parent[0].state[self.from_registers].data_type

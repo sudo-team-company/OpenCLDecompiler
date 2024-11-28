@@ -11,13 +11,13 @@ class SMov(BaseInstruction):
         self.ssrc0 = self.instruction[2]
 
     def to_print_unresolved(self):
-        if self.suffix in ["b32", "b64"]:
+        if self.suffix in {"b32", "b64"}:
             self.decompiler_data.write(f"{self.sdst} = {self.ssrc0} // {self.name}\n")
             return self.node
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ["b32", "b64"]:
+        if self.suffix in {"b32", "b64"}:
             if self.sdst == "exec":
                 new_exec_condition = (
                     self.decompiler_data.exec_registers["exec"] | self.decompiler_data.exec_registers[self.ssrc0]

@@ -16,7 +16,7 @@ class SCselect(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ["b32", "b64"]:
+        if self.suffix in {"b32", "b64"}:
             ssrc0 = self.ssrc0
             if self.ssrc0 == "exec":
                 ssrc0 = "1"

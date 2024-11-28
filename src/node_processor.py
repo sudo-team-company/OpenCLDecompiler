@@ -21,7 +21,7 @@ def decode_instruction(node, flag_of_status):
     root = parts_of_operation[1]
     if len(parts_of_operation) >= 3:
         for part in parts_of_operation[2:]:
-            if part in [
+            if part in {
                 "b8",
                 "b16",
                 "b32",
@@ -56,7 +56,7 @@ def decode_instruction(node, flag_of_status):
                 "dwordx4",
                 "dwordx8",
                 "dwordx16",
-            ]:
+            }:
                 suffix = suffix + "_" + part if suffix else part
             else:
                 root = root + "_" + part

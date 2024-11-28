@@ -21,7 +21,7 @@ class SLoad(BaseInstruction):
         if self.suffix == "dwordx2":
             self.decompiler_data.write(f"{self.sdata} = *(ulong*)(smem + ({self.offset} & ~3)) // {self.name}\n")
             return self.node
-        if self.suffix in ["dwordx4", "dwordx8"]:
+        if self.suffix in {"dwordx4", "dwordx8"}:
             i_cnt = self.suffix[-1]
             self.decompiler_data.write(f"for (BYTE i = 0; i < {i_cnt}; i++) // {self.name}\n")
             self.decompiler_data.write(f"    {self.sdata}[i] = *(uint*)(SMEM + i*4 + ({self.offset} & ~3))\n")
@@ -30,10 +30,10 @@ class SLoad(BaseInstruction):
 
     def to_fill_node(self):
         sbase: Register | None = self.node.state.get(self.from_registers)
-        if sbase is not None and self.suffix in ["dword", "dwordx2", "dwordx4", "dwordx8", "b32", "b64", "b128"]:
+        if sbase is not None and self.suffix in {"dword", "dwordx2", "dwordx4", "dwordx8", "b32", "b64", "b128"}:
             if sbase.val.isdigit():
                 self.offset = hex(int(self.offset, 16) + int(sbase.val))
-            if sbase.type in (RegisterType.GLOBAL_DATA_POINTER, RegisterType.ARGUMENTS_POINTER):
+            if sbase.type in {RegisterType.GLOBAL_DATA_POINTER, RegisterType.ARGUMENTS_POINTER}:
                 if DecompilerData().is_rdna3:
                     bits = -1
                     if self.suffix.startswith("b"):

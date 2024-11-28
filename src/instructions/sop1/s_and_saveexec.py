@@ -9,7 +9,7 @@ class SAndSaveexec(BaseInstruction):
         self.ssrc0 = self.instruction[2]
 
     def to_print_unresolved(self):
-        if self.suffix in ["b32", "b64"]:
+        if self.suffix in {"b32", "b64"}:
             exec_reg = "exec_lo" if self.suffix == "b32" else "exec"
             self.decompiler_data.write(f"{self.sdst} = {exec_reg} // {self.name}\n")
             self.decompiler_data.write(f"{exec_reg} = {self.ssrc0} & {exec_reg}\n")
@@ -18,7 +18,7 @@ class SAndSaveexec(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ["b32", "b64"]:
+        if self.suffix in {"b32", "b64"}:
             old_exec_condition = self.decompiler_data.exec_registers["exec"]
             new_cond = self.node.state[self.ssrc0].val
 

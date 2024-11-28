@@ -47,7 +47,7 @@ class SAddc(BaseInstruction):
                 new_value = self.node.state[self.ssrc0].val
                 reg_type = self.node.state[self.ssrc0].type
             if ssrc0_reg and self.node.state[self.ssrc0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
-                if self.node.state[self.ssrc0].data_type in ["u32", "i32", "gu32", "gi32"]:
+                if self.node.state[self.ssrc0].data_type in {"u32", "i32", "gu32", "gi32"}:
                     new_value = make_op(self.node, self.ssrc1, "4", "/", suffix=self.suffix)
                     new_value = make_op(self.node, self.ssrc0, new_value, "+", suffix=self.suffix)
                 if self.ssrc0 == self.sdst:

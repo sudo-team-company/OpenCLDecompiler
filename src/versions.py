@@ -10,7 +10,7 @@ from src.register_type import RegisterType
 
 def find_max_and_prev_versions(curr_node):
     for reg in curr_node.state:
-        if reg in ["vcc", "scc", "exec"]:
+        if reg in {"vcc", "scc", "exec"}:
             continue
         prev_versions_of_reg = set()
         max_version = 0
@@ -36,10 +36,10 @@ def update_reg_version(reg, curr_node, max_version, prev_versions_of_reg):
             decompiler_data.checked_variables[prev] = variable
             decompiler_data.variables = {k: v.replace(old_var, variable) for k, v in decompiler_data.variables.items()}
     curr_node.state[reg].register_content._value = variable  # pylint: disable=W0212
-    if curr_node.state[reg].type in [
+    if curr_node.state[reg].type in {
         RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT,
         RegisterType.ADDRESS_KERNEL_ARGUMENT,
-    ]:
+    }:
         decompiler_data.address_params.add(variable)
     decompiler_data.update_reg_version(prev_versions_of_reg, variable, curr_node, reg, max_version)
     return curr_node
@@ -150,7 +150,7 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
                     val_reg, decompiler_data.checked_variables[check_version]
                 )  # pylint: disable=W0212
                 # а тут наоборот, наверное, надо сделать присвоение для первого регистра
-        elif curr_node.state[first_reg].val.find(val_reg) != -1 and first_reg in ["vcc", "scc", "exec"]:
+        elif curr_node.state[first_reg].val.find(val_reg) != -1 and first_reg in {"vcc", "scc", "exec"}:
             curr_node.state[first_reg].register_content._value = curr_node.state[first_reg].val.replace(
                 val_reg, decompiler_data.variables[check_version]
             )  # pylint: disable=W0212

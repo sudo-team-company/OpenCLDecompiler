@@ -23,13 +23,13 @@ class VAddNc(BaseInstruction):
         self.vdst, self.src0, self.src1 = self.instruction[1:4]
 
     def to_print_unresolved(self):
-        if self.suffix in ["u16", "u32"]:
+        if self.suffix in {"u16", "u32"}:
             self.decompiler_data.write(f"{self.vdst} = {self.src0} + {self.src1} // {self.name}\n")
             return self.node
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ["u16", "u32"]:
+        if self.suffix in {"u16", "u32"}:
             if self.decompiler_data.is_rdna3:
                 try:
                     new_reg = self.node.state[self.src0] + self.node.state[self.src1]

@@ -74,7 +74,7 @@ class FlatStore(BaseInstruction):
         self.from_registers, self.from_registers_1 = check_and_split_regs(self.vdata)
 
     def to_print_unresolved(self):
-        if self.suffix in ["dword", "byte"]:
+        if self.suffix in {"dword", "byte"}:
             self.decompiler_data.write(f"*(uint32*)({self.vaddr} + {self.inst_offset}) = {self.vdata} // {self.name}\n")
             return self.node
         if self.suffix == "dwordx2":
@@ -92,7 +92,7 @@ class FlatStore(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ["dword", "dwordx2", "dwordx4", "byte", "short", "b32", "b64", "b8", "u8"]:
+        if self.suffix in {"dword", "dwordx2", "dwordx4", "byte", "short", "b32", "b64", "b8", "u8"}:
             suffix_size = 1
             if self.decompiler_data.is_rdna3:
                 suffix_size = int(self.suffix[1:]) // 32
@@ -130,7 +130,7 @@ class FlatStore(BaseInstruction):
         return super().to_fill_node()
 
     def to_print(self):
-        if self.suffix in ["dword", "dwordx2", "dwordx4", "byte", "short", "b32", "b64", "b8"]:
+        if self.suffix in {"dword", "dwordx2", "dwordx4", "byte", "short", "b32", "b64", "b8"}:
             var = self.node.state[self.to_registers].get_value()
             if is_sgpr_range(self.inst_offset):
                 offset_reg, _ = check_and_split_regs(self.inst_offset)

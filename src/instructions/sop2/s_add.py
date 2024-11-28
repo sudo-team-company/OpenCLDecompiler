@@ -77,7 +77,7 @@ class SAdd(BaseInstruction):
                         data_type = "8 bytes"
                 elif ssrc0_type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
                     reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT
-                    if self.node.state[self.ssrc0].data_type in ["u32", "i32", "gi32", "gu32"]:
+                    if self.node.state[self.ssrc0].data_type in {"u32", "i32", "gi32", "gu32"}:
                         new_value = make_op(self.node, self.ssrc1, "4", "/", suffix=self.suffix)
                         new_value = make_op(self.node, self.ssrc0, new_value, "+", suffix=self.suffix)
                 elif RegisterType.KERNEL_ARGUMENT_VALUE in src_types:
@@ -92,7 +92,7 @@ class SAdd(BaseInstruction):
                     reg_type = self.node.state[self.ssrc1].type
                 if self.node.state[self.ssrc0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT and self.node.state[
                     self.ssrc0
-                ].data_type in ["u32", "i32", "gi32", "gu32"]:
+                ].data_type in {"u32", "i32", "gi32", "gu32"}:
                     new_value = make_op(self.node, self.ssrc1, "4", "/", suffix=self.suffix)
                     new_value = make_op(self.node, self.ssrc0, new_value, "+", suffix=self.suffix)
             if self.node.state[self.ssrc0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:

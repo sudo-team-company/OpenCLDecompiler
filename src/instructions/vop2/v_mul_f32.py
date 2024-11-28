@@ -17,7 +17,7 @@ class VMulF32(BaseInstruction):
         if self.suffix == "f32":
             self.decompiler_data.write(f"{self.vdst} = (float){self.src0} * (float){self.src1} // {self.name}\n")
             return self.node
-        if self.suffix in ["i32_i24", "u32_u24"]:
+        if self.suffix in {"i32_i24", "u32_u24"}:
             v0 = f"V0{self.decompiler_data.number_of_v0}"
             v1 = f"V1{self.decompiler_data.number_of_v1}"
             self.decompiler_data.write(

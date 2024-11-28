@@ -17,8 +17,8 @@ class SAndn2(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ["b32", "b64"]:
-            if "exec" in [self.sdst, self.ssrc0, self.ssrc1]:
+        if self.suffix in {"b32", "b64"}:
+            if "exec" in {self.sdst, self.ssrc0, self.ssrc1}:
                 if self.ssrc1 == "exec":
                     self.ssrc1, self.ssrc0 = self.ssrc0, self.ssrc1
                 new_exec_condition = (
