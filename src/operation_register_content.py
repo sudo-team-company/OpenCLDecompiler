@@ -115,7 +115,7 @@ class OperationRegisterContent(RegisterContent):
             return
 
         if operation == OperationType.MINUS:
-            for idx, _ in enumerate(register_contents):
+            for idx in range(len(register_contents)):
                 if idx == 0:
                     continue
 
