@@ -100,11 +100,11 @@ def evaluate_size(asm_type, only_size=False):
         information = (16, 0)
     elif asm_type in {"uint8", "int8"}:
         information = (32, 0)
-    elif asm_type in {"char"}:
+    elif asm_type == "char":
         information = (1, 1)
     elif asm_type in {"short", "char2"}:
         information = (2, 1)
-    elif asm_type in {"char4"}:
+    elif asm_type == "char4":
         information = (4, 1)
     elif only_size:
         information = (int(asm_type[0]), 1) if "bytes" in asm_type else (1, 1)

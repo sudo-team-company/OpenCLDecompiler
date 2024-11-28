@@ -14,7 +14,7 @@ class VBfe(BaseInstruction):
         self.src2 = self.instruction[4]
 
     def to_fill_node(self):
-        if self.suffix in {"u32"}:
+        if self.suffix == "u32":
 
             def default_behaviour() -> (object, RegisterType):
                 op1 = make_op(
