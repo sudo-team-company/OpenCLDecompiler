@@ -29,7 +29,7 @@ def main(input_par, output_par, flag_for_decompilation, cfg_path, unrolling_limi
             },
         )
 
-    with open(output_par, "w", encoding="utf-8") as output_file:
+    with Path(output_par).open("w", encoding="utf-8") as output_file:
         body_of_file = Path(input_par).read_text(encoding="utf-8")
 
         decompiler_data = DecompilerData()
