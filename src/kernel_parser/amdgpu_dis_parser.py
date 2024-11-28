@@ -1,3 +1,5 @@
+from itertools import starmap
+
 import yaml
 
 from ..decompiler_data import DecompilerData
@@ -114,7 +116,7 @@ def _parse_amdgpu_pal_metadata(amdgpu_pal_metadata: list[str]) -> dict[str, Conf
             usesetup=False,
             size_of_work_groups=km[".reqd_workgroup_size"],
             local_size=None,
-            arguments=[_make_argument(idx, arg) for idx, arg in enumerate(list(km[".args"]))],
+            arguments=list(starmap(_make_argument, enumerate(list(km[".args"])))),
             offset_to_content=_convert_args_to_offset_to_content(km[".args"]),
         )
     return result
