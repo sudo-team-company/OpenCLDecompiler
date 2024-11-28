@@ -15,7 +15,10 @@ select = [
     "N", # pep8-naming
     "UP", # pyupgrade
     "YTT", # flake8-2020
+    "B", # flake8-bugbear
+    "C4", # flake8-comprehensions
     "ARG", # flake8-unused-arguments
+    "PERF", # Perflint
     "RUF100", # unused-noqa # Unused noqa directive
 ]
 ignore = []
