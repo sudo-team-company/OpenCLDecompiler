@@ -1,3 +1,5 @@
+import operator
+
 from src.decompiler_data import DecompilerData
 from src.node import Node
 from src.region_type import RegionType
@@ -80,7 +82,7 @@ def process_unrolled_loops():  # pylint: disable=R0914
             counters[instruction] = counters.get(instruction, 0) + 1
 
         counters: list[tuple[str, int]] = [(name, cnt) for name, cnt in counters.items() if cnt >= unrolling_limit]
-        counters.sort(key=lambda x: x[1], reverse=True)
+        counters.sort(key=operator.itemgetter(1), reverse=True)
 
         chosen = []
         for name, cnt in counters:
@@ -109,7 +111,7 @@ def process_unrolled_loops():  # pylint: disable=R0914
                     for (name, num), cnt in counters2.items()
                     if cnt >= unrolling_limit and cnt > len(chosen) // 2
                 ]
-                counters2.sort(key=lambda x: x[2], reverse=True)
+                counters2.sort(key=operator.itemgetter(2), reverse=True)
                 if len(counters2) == 0:
                     break
 
