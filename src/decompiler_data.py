@@ -83,41 +83,38 @@ def set_reg_value(  # pylint: disable=R0913
                     ],
                 ),
             )
+        elif isinstance(data_type, list):
+            node.state[to_reg] = Register(
+                integrity=integrity,
+                register_content=OperationRegisterContent(
+                    operation=operation,
+                    register_contents=[
+                        RegisterContent(
+                            value=value,
+                            type_=type_,
+                            sign=sign_,
+                            data_type=data_type_,
+                        )
+                        for value, type_, sign_, data_type_ in zip(new_value, reg_type, sign, data_type, strict=False)
+                    ],
+                ),
+            )
         else:
-            if isinstance(data_type, list):
-                node.state[to_reg] = Register(
-                    integrity=integrity,
-                    register_content=OperationRegisterContent(
-                        operation=operation,
-                        register_contents=[
-                            RegisterContent(
-                                value=value,
-                                type_=type_,
-                                sign=sign_,
-                                data_type=data_type_,
-                            )
-                            for value, type_, sign_, data_type_ in zip(
-                                new_value, reg_type, sign, data_type, strict=False
-                            )
-                        ],
-                    ),
-                )
-            else:
-                node.state[to_reg] = Register(
-                    integrity=integrity,
-                    register_content=OperationRegisterContent(
-                        operation=operation,
-                        register_contents=[
-                            RegisterContent(
-                                value=value,
-                                type_=type_,
-                                sign=sign_,
-                                data_type=data_type,
-                            )
-                            for value, type_, sign_ in zip(new_value, reg_type, sign, strict=False)
-                        ],
-                    ),
-                )
+            node.state[to_reg] = Register(
+                integrity=integrity,
+                register_content=OperationRegisterContent(
+                    operation=operation,
+                    register_contents=[
+                        RegisterContent(
+                            value=value,
+                            type_=type_,
+                            sign=sign_,
+                            data_type=data_type,
+                        )
+                        for value, type_, sign_ in zip(new_value, reg_type, sign, strict=False)
+                    ],
+                ),
+            )
     else:
         raise NotImplementedError()
 
@@ -358,17 +355,16 @@ def check_reg_for_val(node, register, suffix=""):
         if register in node.state:
             new_val = node.state[register].get_value()
             data_type = node.state[register].data_type
-        else:
-            if is_range(register):
-                start_register, end_register = check_and_split_regs(register)
-                flag_big_value, value = check_big_values(node, start_register, end_register)
-                if flag_big_value:
-                    new_val = value
-                else:
-                    new_val = node.state[start_register].get_value()
-                    data_type = node.state[start_register].data_type
+        elif is_range(register):
+            start_register, end_register = check_and_split_regs(register)
+            flag_big_value, value = check_big_values(node, start_register, end_register)
+            if flag_big_value:
+                new_val = value
             else:
-                raise NotImplementedError
+                new_val = node.state[start_register].get_value()
+                data_type = node.state[start_register].data_type
+        else:
+            raise NotImplementedError
     else:
         new_val = register
     needs_casting = check_value_needs_cast(new_val, data_type, suffix)

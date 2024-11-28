@@ -98,40 +98,34 @@ class FlatStore(BaseInstruction):
                 suffix_size = int(self.suffix[1:]) // 32
                 if suffix_size == 0:
                     suffix_size = 1
-            else:
-                if self.suffix[-1].isdigit():
-                    suffix_size = int(self.suffix[-1])
+            elif self.suffix[-1].isdigit():
+                suffix_size = int(self.suffix[-1])
             for from_reg in check_and_split_regs_range_to_full_list(self.vdata)[:suffix_size]:
                 if is_vgpr(self.vaddr):
                     self.node.state[self.to_registers].copy_version_from(self.node.parent[0].state[self.to_registers])
                     self.node.state[self.to_registers].cast_to(self.suffix)
                 # TODO: Сделать присвоение в пары
-                else:
-                    if (
-                        self.node.state[from_reg].data_type is not None
-                        and "bytes" in self.node.state[from_reg].data_type
-                    ):
-                        self.node.state[from_reg].cast_to(self.node.state[self.to_registers].data_type)
-                        self.decompiler_data.names_of_vars[self.node.state[from_reg].val] = self.node.state[
-                            self.to_registers
-                        ].data_type
+                elif self.node.state[from_reg].data_type is not None and "bytes" in self.node.state[from_reg].data_type:
+                    self.node.state[from_reg].cast_to(self.node.state[self.to_registers].data_type)
+                    self.decompiler_data.names_of_vars[self.node.state[from_reg].val] = self.node.state[
+                        self.to_registers
+                    ].data_type
+                elif (
+                    str(self.node.state[from_reg].data_type) not in self.node.state[self.to_registers].data_type
+                    and not is_vector_type(self.node.state[from_reg].data_type)
+                    and not is_vector_type(self.node.state[self.to_registers].data_type)
+                ):
+                    val = self.node.state[from_reg].get_value()
+                    if val[0] == "(":
+                        val = val[val.find(")") + 1 :]
+                    if val not in self.decompiler_data.names_of_vars:
+                        self.node.state[from_reg].cast_to(
+                            make_new_type_without_modifier(self.node, self.to_registers),
+                        )
+                        self.decompiler_data.names_of_vars[val] = self.node.state[from_reg].data_type
                     else:
-                        if (
-                            str(self.node.state[from_reg].data_type) not in self.node.state[self.to_registers].data_type
-                            and not is_vector_type(self.node.state[from_reg].data_type)
-                            and not is_vector_type(self.node.state[self.to_registers].data_type)
-                        ):
-                            val = self.node.state[from_reg].get_value()
-                            if val[0] == "(":
-                                val = val[val.find(")") + 1 :]
-                            if val not in self.decompiler_data.names_of_vars:
-                                self.node.state[from_reg].cast_to(
-                                    make_new_type_without_modifier(self.node, self.to_registers),
-                                )
-                                self.decompiler_data.names_of_vars[val] = self.node.state[from_reg].data_type
-                            else:
-                                # init var - i32, gdata - i64. var = gdata -> var - i64
-                                self.decompiler_data.names_of_vars[val] = self.node.state[from_reg].data_type
+                        # init var - i32, gdata - i64. var = gdata -> var - i64
+                        self.decompiler_data.names_of_vars[val] = self.node.state[from_reg].data_type
             return self.node
         return super().to_fill_node()
 
@@ -147,24 +141,22 @@ class FlatStore(BaseInstruction):
                 var = f"{var}[get_global_id(0)]"
             elif " + " in var:
                 var = make_elem_from_addr(var)
+            elif (
+                var in self.decompiler_data.names_of_vars
+                and self.decompiler_data.names_of_vars[var] != self.node.state[self.to_registers].data_type
+            ):
+                var = f"*({make_opencl_type(self.decompiler_data.names_of_vars[var])}*)({var})"
             else:
-                if (
-                    var in self.decompiler_data.names_of_vars
-                    and self.decompiler_data.names_of_vars[var] != self.node.state[self.to_registers].data_type
-                ):
-                    var = f"*({make_opencl_type(self.decompiler_data.names_of_vars[var])}*)({var})"
-                else:
-                    var = f"*{var}"
+                var = f"*{var}"
             if self.node.state.get(self.from_registers):
                 if self.node.state[self.from_registers].val == "0" and self.node.state.get(self.from_registers_1):
                     self.output_string = self.node.state[self.from_registers_1].val
+                elif is_vector_type(self.node.state[self.to_registers].data_type):
+                    self.output_string = prepare_vector_type_output(
+                        self.from_registers, self.vdata, self.to_registers, self.node
+                    )
                 else:
-                    if is_vector_type(self.node.state[self.to_registers].data_type):
-                        self.output_string = prepare_vector_type_output(
-                            self.from_registers, self.vdata, self.to_registers, self.node
-                        )
-                    else:
-                        self.output_string = self.node.state[self.from_registers].get_value()
+                    self.output_string = self.node.state[self.from_registers].get_value()
             else:
                 self.output_string = self.decompiler_data.initial_state[self.from_registers].val
             return f"{var} = {self.output_string}"

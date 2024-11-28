@@ -416,16 +416,14 @@ def preprocess_if_and_if_else(curr_region, visited, start_region, q):
             visited, q, start_region = process_if_statement_region(curr_region)
         elif check_if_else(curr_region):
             visited, q, start_region = process_if_else_statement_region(curr_region)
-        else:
-            if curr_region.children:
-                for child in curr_region.children:
-                    if child not in visited:
-                        q.append(child)
-    else:
-        if curr_region.children:
+        elif curr_region.children:
             for child in curr_region.children:
                 if child not in visited:
                     q.append(child)
+    elif curr_region.children:
+        for child in curr_region.children:
+            if child not in visited:
+                q.append(child)
     if not q:
         q = deque()
         q.append(start_region)

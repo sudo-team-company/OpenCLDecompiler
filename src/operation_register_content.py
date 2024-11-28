@@ -155,19 +155,18 @@ class OperationRegisterContent(RegisterContent):
                     sizes.append(register_content.get_size())
                     data_types.append(register_content.get_data_type())
                     signs.append(register_content.get_sign())
+                elif is_same_operation:
+                    values.extend(register_content._value)
+                    types.extend(register_content._type)
+                    sizes.extend(itertools.repeat(register_content._size, len(register_content._value)))
+                    data_types.extend(itertools.repeat(register_content._data_type, len(register_content._value)))
+                    signs.extend(register_content._sign)
                 else:
-                    if is_same_operation:
-                        values.extend(register_content._value)
-                        types.extend(register_content._type)
-                        sizes.extend(itertools.repeat(register_content._size, len(register_content._value)))
-                        data_types.extend(itertools.repeat(register_content._data_type, len(register_content._value)))
-                        signs.extend(register_content._sign)
-                    else:
-                        values.append(f"({register_content.get_value()})")
-                        types.append(register_content.get_type())
-                        sizes.append(register_content.get_size())
-                        data_types.append(register_content.get_data_type())
-                        signs.append(register_content.get_sign())
+                    values.append(f"({register_content.get_value()})")
+                    types.append(register_content.get_type())
+                    sizes.append(register_content.get_size())
+                    data_types.append(register_content.get_data_type())
+                    signs.append(register_content.get_sign())
 
         data_types = set(data_types)
         # if len(data_types) != 1:

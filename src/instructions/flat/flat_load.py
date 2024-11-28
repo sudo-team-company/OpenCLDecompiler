@@ -102,11 +102,10 @@ class FlatLoad(BaseInstruction):
                 data_type = self.node.state[self.from_registers].data_type
             if " + " in output:
                 output = make_elem_from_addr(output)
+            elif self.node.state[self.start_to_registers].data_type != self.decompiler_data.names_of_vars[output][1:]:
+                output = f"*({make_opencl_type(self.decompiler_data.names_of_vars[output])}*)({output})"
             else:
-                if self.node.state[self.start_to_registers].data_type != self.decompiler_data.names_of_vars[output][1:]:
-                    output = f"*({make_opencl_type(self.decompiler_data.names_of_vars[output])}*)({output})"
-                else:
-                    output = f"*{output}"
+                output = f"*{output}"
             var_name = self.node.state[self.start_to_registers].val
             if is_vector_type(data_type):
                 if var_name[-2] == "s" and var_name[-1].isdigit():
