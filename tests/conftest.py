@@ -34,7 +34,7 @@ def template(
 
     DISASMS.get(disasm)(path_to_bin=path_to_bin, path_to_asm=path_to_asm).invoke()
 
-    main(path_to_asm, path_to_cl, flag if flag else "AUTO_DECOMPILATION", None)
+    main(path_to_asm, path_to_cl, flag or "AUTO_DECOMPILATION", None)
 
     hands = test_root / f"{dir_name}_hands.cl"
     if "gfx" in mcpu and (test_root / f"{dir_name}_hands{mcpu}.cl").exists():
