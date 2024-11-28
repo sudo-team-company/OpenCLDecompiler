@@ -30,42 +30,37 @@ class VAddLshl(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix == "u32":
-            if is_reg(self.src0) and is_reg(self.src1) and self.src2.isdigit():
-                if not isinstance(
-                    self.node.state[self.src0].register_content, OperationRegisterContent
-                ) and not isinstance(
-                    self.node.state[self.src1].register_content,
-                    OperationRegisterContent,
-                ):
-                    src_types = frozenset(
-                        {
-                            self.node.state[self.src0].type,
-                            self.node.state[self.src1].type,
-                        }
+        if self.suffix == "u32" and is_reg(self.src0) and is_reg(self.src1) and self.src2.isdigit():
+            if not isinstance(self.node.state[self.src0].register_content, OperationRegisterContent) and not isinstance(
+                self.node.state[self.src1].register_content,
+                OperationRegisterContent,
+            ):
+                src_types = frozenset(
+                    {
+                        self.node.state[self.src0].type,
+                        self.node.state[self.src1].type,
+                    }
+                )
+                if src_types in _instruction_internal_mapping_by_types:
+                    new_value, _ = _instruction_internal_mapping_by_types[src_types]
+                    new_value = make_op(self.node, new_value, str(pow(2, int(self.src2))), "*", suffix=self.suffix)
+                    return set_reg_value(
+                        node=self.node,
+                        new_value=new_value,
+                        to_reg=self.vdst,
+                        from_regs=[self.src0, self.src1, self.src2],
+                        data_type=self.suffix,
                     )
-                    if src_types in _instruction_internal_mapping_by_types:
-                        new_value, _ = _instruction_internal_mapping_by_types[src_types]
-                        new_value = make_op(self.node, new_value, str(pow(2, int(self.src2))), "*", suffix=self.suffix)
-                        return set_reg_value(
-                            node=self.node,
-                            new_value=new_value,
-                            to_reg=self.vdst,
-                            from_regs=[self.src0, self.src1, self.src2],
-                            data_type=self.suffix,
-                        )
-                else:
-                    new_reg = self.node.state[self.src0] + self.node.state[self.src1]
+            else:
+                new_reg = self.node.state[self.src0] + self.node.state[self.src1]
 
-                    if not isinstance(new_reg.register_content, OperationRegisterContent):
-                        new_value = make_op(
-                            self.node, new_reg.val, str(pow(2, int(self.src2))), "*", suffix=self.suffix
-                        )
-                        return set_reg_value(
-                            node=self.node,
-                            new_value=new_value,
-                            to_reg=self.vdst,
-                            from_regs=[self.src0, self.src1, self.src2],
-                            data_type=self.suffix,
-                        )
+                if not isinstance(new_reg.register_content, OperationRegisterContent):
+                    new_value = make_op(self.node, new_reg.val, str(pow(2, int(self.src2))), "*", suffix=self.suffix)
+                    return set_reg_value(
+                        node=self.node,
+                        new_value=new_value,
+                        to_reg=self.vdst,
+                        from_regs=[self.src0, self.src1, self.src2],
+                        data_type=self.suffix,
+                    )
         return super().to_fill_node()

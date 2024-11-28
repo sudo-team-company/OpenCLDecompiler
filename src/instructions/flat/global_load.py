@@ -55,16 +55,18 @@ class GlobalLoad(FlatLoad):
                 reg_type=RegisterType.WORK_DIM,
             )
 
-        if self.suffix in ["b32", "u16", "u8"]:
-            if self.node.state[self.from_registers].type == RegisterType.ARGUMENTS_POINTER:
-                offset = hex(int(self.inst_offset.split(":")[-1]))
-                if self.suffix in ["u16", "u8"]:
-                    if "12 : 18" in self.node.state[self.extra_registers].get_value():
-                        offset = "0x1c"
-                    if "14 : 20" in self.node.state[self.extra_registers].get_value():
-                        offset = "0x1e"
-                    if "16 : 22" in self.node.state[self.extra_registers].get_value():
-                        offset = "0x20"
-                upload_by_offset(self.node.state, self.vdst, offset, bits=int(self.suffix[1:]))
-                return self.node
+        if (
+            self.suffix in ["b32", "u16", "u8"]
+            and self.node.state[self.from_registers].type == RegisterType.ARGUMENTS_POINTER
+        ):
+            offset = hex(int(self.inst_offset.split(":")[-1]))
+            if self.suffix in ["u16", "u8"]:
+                if "12 : 18" in self.node.state[self.extra_registers].get_value():
+                    offset = "0x1c"
+                if "14 : 20" in self.node.state[self.extra_registers].get_value():
+                    offset = "0x1e"
+                if "16 : 22" in self.node.state[self.extra_registers].get_value():
+                    offset = "0x20"
+            upload_by_offset(self.node.state, self.vdst, offset, bits=int(self.suffix[1:]))
+            return self.node
         return super().to_fill_node()

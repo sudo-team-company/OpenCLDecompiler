@@ -15,27 +15,25 @@ class VLshlAdd(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.decompiler_data.is_rdna3:
-            if is_reg(self.src0) and self.src1.isdigit() and is_reg(self.src2):
-                new_reg = self.node.state[self.src0] * int(pow(2, int(self.src1)))
-                new_reg = new_reg + self.node.state[self.src2]
+        if self.decompiler_data.is_rdna3 and is_reg(self.src0) and self.src1.isdigit() and is_reg(self.src2):
+            new_reg = self.node.state[self.src0] * int(pow(2, int(self.src1)))
+            new_reg = new_reg + self.node.state[self.src2]
 
-                return set_reg(
-                    node=self.node,
-                    to_reg=self.vdst,
-                    from_regs=[self.src0, self.src1, self.src2],
-                    reg=new_reg,
-                )
+            return set_reg(
+                node=self.node,
+                to_reg=self.vdst,
+                from_regs=[self.src0, self.src1, self.src2],
+                reg=new_reg,
+            )
 
-        if self.suffix == "u32":
-            if self.src1.isdigit():
-                new_value = make_op(self.node, self.src0, str(int(pow(2, int(self.src1)))), "*", suffix=self.suffix)
-                new_value = make_op(self.node, new_value, self.src2, "+", "(ulong)", "(ulong)", suffix=self.suffix)
-                return set_reg_value(
-                    node=self.node,
-                    new_value=new_value,
-                    to_reg=self.vdst,
-                    from_regs=[self.src0, self.src1, self.src2],
-                    data_type=self.suffix,
-                )
+        if self.suffix == "u32" and self.src1.isdigit():
+            new_value = make_op(self.node, self.src0, str(int(pow(2, int(self.src1)))), "*", suffix=self.suffix)
+            new_value = make_op(self.node, new_value, self.src2, "+", "(ulong)", "(ulong)", suffix=self.suffix)
+            return set_reg_value(
+                node=self.node,
+                new_value=new_value,
+                to_reg=self.vdst,
+                from_regs=[self.src0, self.src1, self.src2],
+                data_type=self.suffix,
+            )
         return super().to_fill_node()

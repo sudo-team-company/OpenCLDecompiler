@@ -19,38 +19,11 @@ class VLshrrev(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix in ["b32"]:
-            if is_reg(self.src1):
+        if self.suffix in ["b32"] and is_reg(self.src1):
 
-                def default_behaviour():
-                    new_value = make_op(self.node, self.src1, str(pow(2, int(self.src0))), "//", suffix=self.suffix)
-                    reg_type = self.node.state[self.src1].type
-
-                    return set_reg_value(
-                        self.node,
-                        new_value,
-                        self.vdst,
-                        [self.src0, self.src1],
-                        self.suffix,
-                        reg_type=reg_type,
-                    )
-
-                if isinstance(self.node.state[self.src1].register_content, CombinedRegisterContent):
-                    maybe_new_register: Register = self.node.state[self.src1] >> int(self.src0)
-
-                    if maybe_new_register is not None:
-                        return set_reg(
-                            node=self.node,
-                            to_reg=self.vdst,
-                            from_regs=[self.src0, self.src1],
-                            reg=maybe_new_register,
-                        )
-
-                if self.node.state[self.src1].val == "0":
-                    new_value = "0"
-                    reg_type = RegisterType.INT32
-                else:
-                    return default_behaviour()
+            def default_behaviour():
+                new_value = make_op(self.node, self.src1, str(pow(2, int(self.src0))), "//", suffix=self.suffix)
+                reg_type = self.node.state[self.src1].type
 
                 return set_reg_value(
                     self.node,
@@ -60,5 +33,31 @@ class VLshrrev(BaseInstruction):
                     self.suffix,
                     reg_type=reg_type,
                 )
+
+            if isinstance(self.node.state[self.src1].register_content, CombinedRegisterContent):
+                maybe_new_register: Register = self.node.state[self.src1] >> int(self.src0)
+
+                if maybe_new_register is not None:
+                    return set_reg(
+                        node=self.node,
+                        to_reg=self.vdst,
+                        from_regs=[self.src0, self.src1],
+                        reg=maybe_new_register,
+                    )
+
+            if self.node.state[self.src1].val == "0":
+                new_value = "0"
+                reg_type = RegisterType.INT32
+            else:
+                return default_behaviour()
+
+            return set_reg_value(
+                self.node,
+                new_value,
+                self.vdst,
+                [self.src0, self.src1],
+                self.suffix,
+                reg_type=reg_type,
+            )
 
         return super().to_fill_node()

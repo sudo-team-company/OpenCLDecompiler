@@ -50,36 +50,37 @@ class SBfe(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.decompiler_data.is_rdna3:
-            if self.suffix.endswith("32"):
-                if is_reg(self.ssrc0) and isinstance(
-                    self.node.state[self.ssrc0].register_content, CombinedRegisterContent
-                ):
-                    shift_by = int(self.ssrc1, 16) & ((1 << 4) - 1)
-                    and_by = hex((1 << ((int(self.ssrc1, 16) >> 16) & ((1 << 6) - 1))) - 1)
+        if (
+            self.decompiler_data.is_rdna3
+            and self.suffix.endswith("32")
+            and is_reg(self.ssrc0)
+            and isinstance(self.node.state[self.ssrc0].register_content, CombinedRegisterContent)
+        ):
+            shift_by = int(self.ssrc1, 16) & ((1 << 4) - 1)
+            and_by = hex((1 << ((int(self.ssrc1, 16) >> 16) & ((1 << 6) - 1))) - 1)
 
-                    new_reg = self.node.state[self.ssrc0] >> shift_by
-                    new_reg = new_reg & and_by
-                    new_reg.cast_to(self.suffix)
+            new_reg = self.node.state[self.ssrc0] >> shift_by
+            new_reg = new_reg & and_by
+            new_reg.cast_to(self.suffix)
 
-                    set_reg(
-                        node=self.node,
-                        to_reg=self.sdst,
-                        from_regs=[self.ssrc0, self.ssrc1],
-                        reg=new_reg,
-                    )
+            set_reg(
+                node=self.node,
+                to_reg=self.sdst,
+                from_regs=[self.ssrc0, self.ssrc1],
+                reg=new_reg,
+            )
 
-                    is_zero = str(new_reg.get_value()) == "0"
+            is_zero = str(new_reg.get_value()) == "0"
 
-                    set_reg_value(
-                        node=self.node,
-                        new_value=str(int(not is_zero)),
-                        to_reg="scc",
-                        from_regs=[self.sdst],
-                        data_type=self.suffix,
-                    )
+            set_reg_value(
+                node=self.node,
+                new_value=str(int(not is_zero)),
+                to_reg="scc",
+                from_regs=[self.sdst],
+                data_type=self.suffix,
+            )
 
-                    return self.node
+            return self.node
 
         if self.suffix == "u32":
             if self.ssrc1 == "0x20010":

@@ -39,44 +39,43 @@ class VLshlOr(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix == "b32":
-            if is_reg(self.src0) and self.src1.isdigit() and is_reg(self.src2):
-                src0_type = self.node.state[self.src0].type
-                src1_type = self.node.state[self.src2].type
-                if isinstance(src0_type, list):
-                    src0_type = src0_type[0]
-                if isinstance(self.node.state[self.src2].register_content, CombinedRegisterContent):
-                    src1_type = self.node.state[self.src2].get_type()
-                src_types = (
-                    src0_type,
-                    pow(2, int(self.src1)),
-                    src1_type,
-                )
-                if src_types in self._instruction_internal_mapping_by_types:
-                    new_value, reg_type, reg_sign = self._instruction_internal_mapping_by_types[src_types]
+        if self.suffix == "b32" and is_reg(self.src0) and self.src1.isdigit() and is_reg(self.src2):
+            src0_type = self.node.state[self.src0].type
+            src1_type = self.node.state[self.src2].type
+            if isinstance(src0_type, list):
+                src0_type = src0_type[0]
+            if isinstance(self.node.state[self.src2].register_content, CombinedRegisterContent):
+                src1_type = self.node.state[self.src2].get_type()
+            src_types = (
+                src0_type,
+                pow(2, int(self.src1)),
+                src1_type,
+            )
+            if src_types in self._instruction_internal_mapping_by_types:
+                new_value, reg_type, reg_sign = self._instruction_internal_mapping_by_types[src_types]
 
-                    if self.decompiler_data.is_rdna3:
-                        return set_reg_value(
-                            self.node,
-                            new_value,
-                            self.vdst,
-                            [self.src0, self.src1, self.src2],
-                            self.suffix,
-                            reg_type=reg_type,
-                            register_content_type=OperationRegisterContent,
-                            sign=reg_sign,
-                            operation=OperationType.PLUS,
-                        )
-
+                if self.decompiler_data.is_rdna3:
                     return set_reg_value(
-                        node=self.node,
-                        new_value=new_value,
-                        to_reg=self.vdst,
-                        from_regs=[self.src0, self.src1, self.src2],
-                        data_type=self.suffix,
+                        self.node,
+                        new_value,
+                        self.vdst,
+                        [self.src0, self.src1, self.src2],
+                        self.suffix,
                         reg_type=reg_type,
-                        integrity=Integrity.ENTIRE,
+                        register_content_type=OperationRegisterContent,
+                        sign=reg_sign,
+                        operation=OperationType.PLUS,
                     )
+
+                return set_reg_value(
+                    node=self.node,
+                    new_value=new_value,
+                    to_reg=self.vdst,
+                    from_regs=[self.src0, self.src1, self.src2],
+                    data_type=self.suffix,
+                    reg_type=reg_type,
+                    integrity=Integrity.ENTIRE,
+                )
 
         new_reg = self.node.state[self.src0] << int(self.src1)
         new_reg = new_reg | self.node.state[self.src2]

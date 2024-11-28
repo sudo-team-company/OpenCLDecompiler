@@ -119,11 +119,10 @@ class RegisterContent:
                 ],
             )
 
-        if isinstance(other, str):
-            if other.startswith("0x"):
-                bit_str = f"{int(other, 16):b}"  # pylint: disable=C0209
-                if bit_str.count("0") == 0 and len(bit_str) == self.get_size():
-                    return copy.deepcopy(self)
+        if isinstance(other, str) and other.startswith("0x"):
+            bit_str = f"{int(other, 16):b}"  # pylint: disable=C0209
+            if bit_str.count("0") == 0 and len(bit_str) == self.get_size():
+                return copy.deepcopy(self)
 
         raise NotImplementedError()
 

@@ -32,16 +32,15 @@ class VAddc(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.decompiler_data.is_rdna3:
-            if is_reg(self.src0) and is_reg(self.src1):
-                new_reg = self.node.state[self.src0] + self.node.state[self.src1]
+        if self.decompiler_data.is_rdna3 and is_reg(self.src0) and is_reg(self.src1):
+            new_reg = self.node.state[self.src0] + self.node.state[self.src1]
 
-                return set_reg(
-                    node=self.node,
-                    to_reg=self.vdst,
-                    from_regs=[self.src0, self.src1],
-                    reg=new_reg,
-                )
+            return set_reg(
+                node=self.node,
+                to_reg=self.vdst,
+                from_regs=[self.src0, self.src1],
+                reg=new_reg,
+            )
 
         if self.suffix == "u32":
             new_value = make_op(self.node, self.src0, self.src1, "+", "(ulong)", "(ulong)", suffix=self.suffix)

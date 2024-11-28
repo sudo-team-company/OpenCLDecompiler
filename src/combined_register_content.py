@@ -46,15 +46,14 @@ class CombinedRegisterContent(RegisterContent):
                 sign=self._sign[0],
             )
 
-        if len(self._value) == 2:
-            if self._type[0] == RegisterType.EMPTY:
-                return RegisterContent(
-                    value=self._value[1],
-                    type_=self._type[1],
-                    size=self._size[1],
-                    data_type=self._data_type[1],
-                    sign=self._sign[1],
-                ) * (2 ** int(self._size[0]))
+        if len(self._value) == 2 and self._type[0] == RegisterType.EMPTY:
+            return RegisterContent(
+                value=self._value[1],
+                type_=self._type[1],
+                size=self._size[1],
+                data_type=self._data_type[1],
+                sign=self._sign[1],
+            ) * (2 ** int(self._size[0]))
 
         return None
 

@@ -90,10 +90,11 @@ class SAdd(BaseInstruction):
                     reg_type = self.node.state[self.ssrc0].type
                 if ssrc1_reg:
                     reg_type = self.node.state[self.ssrc1].type
-                if self.node.state[self.ssrc0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
-                    if self.node.state[self.ssrc0].data_type in ["u32", "i32", "gi32", "gu32"]:
-                        new_value = make_op(self.node, self.ssrc1, "4", "/", suffix=self.suffix)
-                        new_value = make_op(self.node, self.ssrc0, new_value, "+", suffix=self.suffix)
+                if self.node.state[self.ssrc0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT and self.node.state[
+                    self.ssrc0
+                ].data_type in ["u32", "i32", "gi32", "gu32"]:
+                    new_value = make_op(self.node, self.ssrc1, "4", "/", suffix=self.suffix)
+                    new_value = make_op(self.node, self.ssrc0, new_value, "+", suffix=self.suffix)
             if self.node.state[self.ssrc0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
                 if self.ssrc0 == self.sdst:
                     data_type = self.node.parent[0].state[self.ssrc0].data_type
