@@ -19,7 +19,7 @@ class _Context:
 
 
 def get_context() -> _Context:
-    global _CONTEXT  # pylint: disable=W0603
+    global _CONTEXT  # pylint: disable=W0603  # noqa: PLW0603
 
     if not _CONTEXT:
         _CONTEXT = _Context()
