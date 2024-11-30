@@ -18,7 +18,7 @@ class RegisterSignType(enum.Enum):
         elif self.value == 1:
             return RegisterSignType.POSITIVE
         else:
-            raise Exception()
+            raise ValueError()
 
 
 # Data for known register values
