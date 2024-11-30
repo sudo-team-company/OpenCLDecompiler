@@ -66,7 +66,7 @@ def get_global_data_bytes(row, set_of_global_data_bytes):
         set_of_global_data_bytes += expand_list
     else:
         for i, elem in enumerate(line_of_bytes):
-            line_of_bytes[i] = re.sub(r",", "", elem)
+            line_of_bytes[i] = elem.replace(",", "")
         set_of_global_data_bytes += line_of_bytes
     return set_of_global_data_bytes
 
