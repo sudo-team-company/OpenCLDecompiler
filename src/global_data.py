@@ -15,7 +15,7 @@ def gdata_type_processing():
     # evaluate gdata type
     for key, val in decompiler_data.names_of_vars.items():
         if "g" in val:
-            val = val[1:]
+            val = val[1:]  # noqa: PLW2901
         if "gdata" in key:
             decompiler_data.type_gdata[key] = make_opencl_type(val)
         elif "var" in key and key in decompiler_data.var_value:

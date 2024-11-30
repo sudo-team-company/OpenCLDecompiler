@@ -20,7 +20,7 @@ def process_params(set_of_config: list[str]) -> list[KernelArgument]:
     for row in set_of_config:
         if not row.startswith(".arg "):
             continue
-        row = row.removeprefix(".arg ").removesuffix(",")
+        row = row.removeprefix(".arg ").removesuffix(",")  # noqa: PLW2901
         name, _, type_name, *other = row.split(", ")
         if len(other) > 0:
             type_name = "__" + other[0] + " " + type_name
@@ -79,8 +79,8 @@ def parse_kernel(text):
     set_of_global_data_bytes = []
     name_of_program = ""
     for row in text:
-        row = re.sub(r"/\*(.*?)\*/", "", row)
-        row = row.strip()
+        row = re.sub(r"/\*(.*?)\*/", "", row)  # noqa: PLW2901
+        row = row.strip()  # noqa: PLW2901
         if ".kernel " in row:
             if status_of_parse == "instruction":
                 status_of_parse = "kernel"

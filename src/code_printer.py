@@ -17,9 +17,9 @@ def create_opencl_body():
         if " " not in var:
             type_of_var = make_opencl_type(decompiler_data.names_of_vars[var])
             if var in decompiler_data.address_params:
-                var = "*" + var
+                var = "*" + var  # noqa: PLW2901
             if "___" in var:
-                var = var[: var.find("___")]
+                var = var[: var.find("___")]  # noqa: PLW2901
             decompiler_data.write("    " + type_of_var + " " + var + ";\n")
     offsets = list(decompiler_data.lds_vars.keys())
     offsets.append(decompiler_data.config_data.local_size)

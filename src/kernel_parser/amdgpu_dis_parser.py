@@ -126,7 +126,7 @@ def _parse_sections(text: list[str]) -> dict[str, list[str]]:
     result: dict[str, list[str]] = {}
     name: str = ""
     for line in text:
-        line: str = line.rstrip()
+        line: str = line.rstrip()  # noqa: PLW2901
         if not line:
             continue
         if line.startswith("\t.section") or line == "\t.text":

@@ -28,7 +28,7 @@ def get_params(set_of_config: list[str]) -> list[KernelArgument]:
     for row in set_of_config:
         if not row.startswith(".arg "):
             continue
-        row = row.removeprefix(".arg ")
+        row = row.removeprefix(".arg ")  # noqa: PLW2901
         name, type_name, size, align, *other = row.split(", ")
         type_name = type_name[1:-1]
         if "global" in other:
@@ -102,7 +102,7 @@ def split_kernels_texts(lines: list[str], names: set[str]) -> dict[str, list[str
     current_kernel: str = ""
 
     for line in lines:
-        line = re.sub(r"^\s*/\*.*?\*/", "", line).strip()
+        line = re.sub(r"^\s*/\*.*?\*/", "", line).strip()  # noqa: PLW2901
         if line.endswith("s_code_end"):
             break
 
@@ -116,7 +116,7 @@ def split_kernels_texts(lines: list[str], names: set[str]) -> dict[str, list[str
 
     for text in result.values():
         while re.match(r"\s*s_nop\s+0x0\s*", text[-1]):
-            text = text[:-1]
+            text = text[:-1]  # noqa: PLW2901
     return result
 
 
