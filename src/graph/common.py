@@ -26,7 +26,7 @@ class Graph(metaclass=Singleton):
         elif graph_type == GraphType.NOT_DIRECTED:
             self._dot = graphviz.Graph(**kwargs)
         else:
-            raise LogicalError(f"Unknown graph type '{graph_type}'")
+            raise LogicalError(f"Unknown graph type '{graph_type}'")  # noqa: TRY003
 
     # ---------------------
     # [SECTION] Build graph
