@@ -127,7 +127,7 @@ def upload_global_data_pointer(state, to_registers, from_registers):
     )
 
 
-def upload_by_offset(
+def upload_by_offset(  # noqa: PLR0912
     state,
     to_registers: str,
     offset: str,

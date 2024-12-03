@@ -45,7 +45,7 @@ def to_int(x: str) -> int | None:
             return None
 
 
-def process_unrolled_loops():  # pylint: disable=R0914  # noqa: PLR0915
+def process_unrolled_loops():  # pylint: disable=R0914  # noqa: PLR0912, PLR0915
     decompiler_data = DecompilerData()
     unrolling_limit = decompiler_data.unrolling_limit
     region: Region = decompiler_data.improve_cfg

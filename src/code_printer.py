@@ -41,7 +41,7 @@ def create_opencl_body():
     decompiler_data.write("}\n")
 
 
-def write_global_data():
+def write_global_data():  # noqa: PLR0912
     decompiler_data = DecompilerData()
     for key, var in sorted(decompiler_data.type_gdata.items()):
         if var in {"uint", "int"}:

@@ -101,7 +101,7 @@ class CombinedRegisterContent(RegisterContent):
     def get_sign(self) -> RegisterSignType:
         return self._sign[0]
 
-    def __and__(self, other) -> RegisterContent | None:
+    def __and__(self, other) -> RegisterContent | None:  # noqa: PLR0912
         if isinstance(other, int | str):
             if isinstance(other, str):
                 hex_str = other

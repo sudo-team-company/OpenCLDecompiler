@@ -115,7 +115,7 @@ def join_regions(before_region, curr_region, next_region):
     return result
 
 
-def make_region_graph_from_cfg():  # noqa: PLR0915
+def make_region_graph_from_cfg():  # noqa: PLR0912, PLR0915
     decompiler_data = DecompilerData()
     curr_node = decompiler_data.cfg
     region = Region(RegionType.LINEAR, curr_node)
@@ -243,7 +243,7 @@ def check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_v
                 make_var_for_loop(change_node, instruction_register, register_version, prev_register_version)
 
 
-def process_loop(region_start, region_end):
+def process_loop(region_start, region_end):  # noqa: PLR0912
     region = Region(RegionType.LOOP, region_start)
     region.end = region_end
     before_r = region_start.parent[0]
