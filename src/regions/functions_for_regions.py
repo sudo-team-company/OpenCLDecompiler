@@ -115,7 +115,7 @@ def join_regions(before_region, curr_region, next_region):
     return result
 
 
-def make_region_graph_from_cfg():
+def make_region_graph_from_cfg():  # noqa: PLR0915
     decompiler_data = DecompilerData()
     curr_node = decompiler_data.cfg
     region = Region(RegionType.LINEAR, curr_node)

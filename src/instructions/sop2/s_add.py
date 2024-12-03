@@ -31,7 +31,7 @@ class SAdd(BaseInstruction):
             return self.node
         return super().to_print_unresolved()
 
-    def to_fill_node(self):
+    def to_fill_node(self):  # noqa: PLR0915
         if self.suffix in {"u32", "i32"}:
             if self.decompiler_data.is_rdna3:
                 try:

@@ -415,7 +415,7 @@ def evaluate_from_hex(global_data, size, flag):
 
 
 class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
-    def __init__(self):
+    def __init__(self):  # noqa: PLR0915
         self.pragram_id = utils.generate_uuid()
         self.name_of_program = None
         self.config_data: ConfigData | None = None
@@ -479,7 +479,7 @@ class DecompilerData(metaclass=Singleton):  # pylint: disable=R0904, R0902
         self.gpu: str | None = None
         self.unrolling_limit = 16
 
-    def reset(self, name_of_program):
+    def reset(self, name_of_program):  # noqa: PLR0915
         self.name_of_program = name_of_program
         self.config_data = None
         self.cfg = None
