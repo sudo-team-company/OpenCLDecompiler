@@ -9,7 +9,7 @@ class GlobalStore(FlatStore):
         self.vdata = self.instruction[2]
         if self.instruction[3] == "off":
             self.saddr = "0"
-            self.inst_offset = "0" if len(self.instruction) == 4 else self.instruction[4]
+            self.inst_offset = "0" if len(self.instruction) == 4 else self.instruction[4]  # noqa: PLR2004
         else:
             pass
 

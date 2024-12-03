@@ -29,7 +29,7 @@ def process_params(set_of_config: list[str]) -> list[KernelArgument]:
             type_name = type_name[:-1]
             name = "*" + name
         size = 8 if name.startswith("*") else evaluate_size(make_asm_type(type_name))[0]
-        if offset % size != 0 and size <= 8:
+        if offset % size != 0 and size <= 8:  # noqa: PLR2004
             offset += size - offset % size
         for i in range(3):
             if name == f"_.global_offset_{i}":

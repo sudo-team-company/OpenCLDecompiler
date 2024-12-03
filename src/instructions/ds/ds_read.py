@@ -8,7 +8,7 @@ class DsRead(BaseInstruction):
         super().__init__(node, suffix)
         self.vdst = self.instruction[1]
         self.addr = self.instruction[2]
-        self.offset = int(self.instruction[3][7:]) if len(self.instruction) == 4 else 0
+        self.offset = int(self.instruction[3][7:]) if len(self.instruction) == 4 else 0  # noqa: PLR2004
 
     def to_print_unresolved(self):
         if self.suffix == "b32":

@@ -7,7 +7,7 @@ class FlatAtomicAdd(BaseInstruction):
         self.vdst = self.instruction[1]
         self.vaddr = self.instruction[2]
         self.vdata = self.instruction[3]
-        self.inst_offset = self.instruction[4] if len(self.instruction) > 4 else ""
+        self.inst_offset = self.instruction[4] if len(self.instruction) > 4 else ""  # noqa: PLR2004
 
     def to_print_unresolved(self):
         vm = f"vm{self.decompiler_data.number_of_vm}"

@@ -46,7 +46,7 @@ class CombinedRegisterContent(RegisterContent):
                 sign=self._sign[0],
             )
 
-        if len(self._value) == 2 and self._type[0] == RegisterType.EMPTY:
+        if len(self._value) == 2 and self._type[0] == RegisterType.EMPTY:  # noqa: PLR2004
             return RegisterContent(
                 value=self._value[1],
                 type_=self._type[1],

@@ -21,7 +21,7 @@ def add_parent_and_child(before_r, next_r, region, prev_child, prev_parent):
 def check_if(curr_region):
     return (
         curr_region.type == RegionType.BASIC
-        and len(curr_region.children) == 2
+        and len(curr_region.children) == 2  # noqa: PLR2004
         and (
             (
                 len(curr_region.children[0].children) > 0
@@ -38,7 +38,7 @@ def check_if(curr_region):
 def check_if_else(curr_region):
     return (
         curr_region.type == RegionType.BASIC
-        and len(curr_region.children) == 2
+        and len(curr_region.children) == 2  # noqa: PLR2004
         and len(curr_region.children[0].children) > 0
         and len(curr_region.children[1].children) > 0
         and curr_region.children[0].children[0] == curr_region.children[1].children[0]
@@ -188,7 +188,7 @@ def process_if_statement_region(curr_region):
     child0 = curr_region.children[0] if len(curr_region.children[0].parent) == 1 else curr_region.children[1]
     child1 = curr_region.children[1] if len(curr_region.children[1].parent) > 1 else curr_region.children[0]
     before_r = curr_region.parent[0]
-    if len(child1.parent) > 2:
+    if len(child1.parent) > 2:  # noqa: PLR2004
         child1 = create_new_region(curr_region, child0, child1)
     region.end = child1
     next_r = child1.children[0] if len(child1.children) > 0 else None
@@ -201,7 +201,7 @@ def process_if_else_statement_region(curr_region):
     child0 = curr_region.children[0]
     child1 = curr_region.children[1]
     region.end = child0.children[0]
-    if len(region.end.parent) > 2:
+    if len(region.end.parent) > 2:  # noqa: PLR2004
         region.end = create_new_region(child0, child1, child0.children[0])
     before_r = curr_region.parent[0]
     next_r = None if region.end.children == [] else region.end.children[0]
@@ -333,7 +333,7 @@ def process_control_structures_in_loop(region_start, region_end):
                 return
             if (
                 curr_region.type == RegionType.BASIC
-                and len(curr_region.children) == 2
+                and len(curr_region.children) == 2  # noqa: PLR2004
                 and (after_region_end in {curr_region.children[0], curr_region.children[1]})
             ):
                 curr_region.type = RegionType.BREAK_REGION  # надо отдельно написать на return и обрезание на break

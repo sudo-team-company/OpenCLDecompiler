@@ -34,7 +34,7 @@ class ExecCondition:
 
     @staticmethod
     def make_not(cond: str) -> str:
-        if len(cond) >= 3 and cond[:2] == "!(" and cond[-1] == ")":
+        if len(cond) >= 3 and cond[:2] == "!(" and cond[-1] == ")":  # noqa: PLR2004
             return cond[2:-1:]
         return "!(" + cond + ")"
 

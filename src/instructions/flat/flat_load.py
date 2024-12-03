@@ -36,7 +36,7 @@ class FlatLoad(BaseInstruction):
         super().__init__(node, suffix)
         self.vdst = self.instruction[1]
         self.vaddr = self.instruction[2]
-        self.inst_offset = self.instruction[3] if len(self.instruction) > 3 else "0"
+        self.inst_offset = self.instruction[3] if len(self.instruction) > 3 else "0"  # noqa: PLR2004
 
         self.start_to_registers, self.end_to_registers = check_and_split_regs(self.vdst)
         self.from_registers, _ = check_and_split_regs(self.vaddr)

@@ -62,7 +62,7 @@ def process_unrolled_loops():  # pylint: disable=R0914
             cur = cur.children[0]
             vertices.append(Vertex(len(vertices), cur))
             idx = len(vertices) - 1
-            if len(cur.instruction) > 2:
+            if len(cur.instruction) > 2:  # noqa: PLR2004
                 for arg in cur.instruction[2:]:
                     if arg[0] not in "sv":
                         continue

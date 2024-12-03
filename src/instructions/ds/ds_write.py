@@ -7,7 +7,7 @@ class DsWrite(BaseInstruction):
         super().__init__(node, suffix)
         self.addr = self.instruction[1]
         self.vdata0 = self.instruction[2]
-        self.offset = int(self.instruction[3][7:]) if len(self.instruction) == 4 else 0
+        self.offset = int(self.instruction[3][7:]) if len(self.instruction) == 4 else 0  # noqa: PLR2004
         self.decompiler_data.check_lds_vars(self.offset, suffix)
 
     def to_print_unresolved(self):

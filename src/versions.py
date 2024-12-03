@@ -83,7 +83,7 @@ def check_for_use_new_version():
 
 def update_value_for_reg(first_reg, curr_node):
     for child in curr_node.children:
-        if len(child.parent) < 2 and curr_node.state[first_reg].version == child.state[first_reg].version:
+        if len(child.parent) < 2 and curr_node.state[first_reg].version == child.state[first_reg].version:  # noqa: PLR2004
             child.state[first_reg] = copy.deepcopy(curr_node.state[first_reg])
             update_value_for_reg(first_reg, child)
 
@@ -220,7 +220,7 @@ def change_values():
         curr_node = queue.popleft()
         if curr_node not in visited:
             visited.append(curr_node)
-            if len(curr_node.parent) < 2:
+            if len(curr_node.parent) < 2:  # noqa: PLR2004
                 instruction = curr_node.instruction
                 if (instruction != "c_branch" or curr_node in decompiler_data.back_edges) and len(instruction) > 1:
                     change_values_for_one_instruction(curr_node, changes)

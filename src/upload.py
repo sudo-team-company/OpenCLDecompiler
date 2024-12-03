@@ -83,13 +83,13 @@ def upload_kernel_param(state, offset, to_registers):
             #   2. If we want to load four DWORDs we will load three args and some trash into last DWORD
             # This last argument isn't there since it's aligned.
             break
-        if content.get_size() <= 4:
+        if content.get_size() <= 4:  # noqa: PLR2004
             decompiler_data.set_reg_make_version(
                 state, f"s{start}", Register(integrity=Integrity.ENTIRE, register_content=content)
             )
             start += 1
             offset += 4
-        elif content.get_size() == 8:
+        elif content.get_size() == 8:  # noqa: PLR2004
             if start + 1 > end:
                 decompiler_data.set_reg_make_version(
                     state, f"s{start}", Register(integrity=Integrity.ENTIRE, register_content=content)

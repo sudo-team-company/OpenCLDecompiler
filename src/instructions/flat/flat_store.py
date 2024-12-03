@@ -68,7 +68,7 @@ class FlatStore(BaseInstruction):
         super().__init__(node, suffix)
         self.vaddr = self.instruction[1]
         self.vdata = self.instruction[2]
-        self.inst_offset = "0" if len(self.instruction) < 4 else self.instruction[3]
+        self.inst_offset = "0" if len(self.instruction) < 4 else self.instruction[3]  # noqa: PLR2004
 
         self.to_registers, _ = check_and_split_regs(self.vaddr)
         self.from_registers, self.from_registers_1 = check_and_split_regs(self.vdata)

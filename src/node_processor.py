@@ -19,7 +19,7 @@ def decode_instruction(node, flag_of_status):
     prefix = parts_of_operation[0]
     suffix = ""
     root = parts_of_operation[1]
-    if len(parts_of_operation) >= 3:
+    if len(parts_of_operation) >= 3:  # noqa: PLR2004
         for part in parts_of_operation[2:]:
             if part in {
                 "b8",
