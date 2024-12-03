@@ -88,7 +88,7 @@ def update_value_for_reg(first_reg, curr_node):
             update_value_for_reg(first_reg, child)
 
 
-def update_val_from_changes(curr_node, register, changes, check_version, num_of_reg, first_reg):
+def update_val_from_changes(curr_node, register, changes, check_version, num_of_reg, first_reg):  # noqa: PLR0913
     instruction = curr_node.instruction
     if (
         register in curr_node.state

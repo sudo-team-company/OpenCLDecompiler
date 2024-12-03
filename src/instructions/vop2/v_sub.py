@@ -4,7 +4,7 @@ from src.register import is_reg
 from src.register_type import RegisterType
 
 
-def v_sub_fill_node(node, src0, src1, vdst, new_value, suffix):
+def v_sub_fill_node(node, src0, src1, vdst, new_value, suffix):  # noqa: PLR0913
     reg_type = RegisterType.INT32
     if is_reg(src0):
         reg_type = node.state[src0].integrity

@@ -23,7 +23,7 @@ from src.utils import Singleton
 from .model import ConfigData
 
 
-def set_reg_value(  # pylint: disable=R0913
+def set_reg_value(  # pylint: disable=R0913  # noqa: PLR0913
     node,
     new_value,
     to_reg,
@@ -169,7 +169,7 @@ def make_new_type_without_modifier(node, register):
     return new_from_reg_type
 
 
-def compare_values(node: Node, to_reg: str, from_reg0: str, from_reg1: str, operation: str, suffix: str) -> Node:
+def compare_values(node: Node, to_reg: str, from_reg0: str, from_reg1: str, operation: str, suffix: str) -> Node:  # noqa: PLR0913
     datatype = make_opencl_type(suffix)
     datatype = f"({datatype})" if datatype != "unknown type" else ""
     new_value = make_op(node, from_reg0, from_reg1, operation, datatype, datatype, suffix=suffix)
@@ -397,7 +397,7 @@ def change_vals_for_make_op(node, register, reg_type, operation, suffix):
     return new_val
 
 
-def make_op(node, register0, register1, operation, type0="", type1="", suffix=""):
+def make_op(node, register0, register1, operation, type0="", type1="", suffix=""):  # noqa: PLR0913
     new_val0 = change_vals_for_make_op(node, register0, type0, operation, suffix)
     new_val1 = change_vals_for_make_op(node, register1, type1, operation, suffix)
     return f"{new_val0} {operation} {new_val1}"
