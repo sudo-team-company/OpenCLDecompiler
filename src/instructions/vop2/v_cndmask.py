@@ -68,7 +68,7 @@ class VCndmask(BaseInstruction):
             if vdst and vdst.val == "0":
                 return ""
             if "?" in ssrc2.val:
-                ssrc2.register_content._value = f"({ssrc2.val})"  # pylint: disable=W0212
+                ssrc2.register_content._value = f"({ssrc2.val})"
             if "s" in self.src1 or "v" in self.src1:
                 src1_parent_val = self.node.parent[0].state[self.src1].val
             else:

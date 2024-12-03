@@ -58,7 +58,7 @@ class Register:
         )
 
     def cast_to(self, data_type: str):
-        self.register_content._data_type = data_type  # pylint: disable=W0212
+        self.register_content._data_type = data_type
 
     def get_value(self) -> object:
         return self.register_content.get_value()
@@ -175,7 +175,7 @@ class Register:
                 size=self.get_size(),
             )
         elif isinstance(other, int):
-            from src.decompiler_data import DecompilerData  # pylint: disable=C0415
+            from src.decompiler_data import DecompilerData
 
             _mul_simplify_combinations = [
                 *[
@@ -231,8 +231,8 @@ class Register:
         return result_register
 
     def copy_version_from(self, other: "Register"):
-        self._version_name = other._version_name  # pylint: disable=W0212
-        self._version_num = other._version_num  # pylint: disable=W0212
+        self._version_name = other._version_name
+        self._version_num = other._version_num
 
     def add_version(self, name_version, num_version):
         self._version_name = name_version

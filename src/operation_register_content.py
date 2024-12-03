@@ -1,5 +1,3 @@
-# pylint: disable=R0401
-
 import copy
 import enum
 import itertools
@@ -265,11 +263,11 @@ class OperationRegisterContent(RegisterContent):
                 operation=copy.deepcopy(self._operation),
                 register_contents=[],
             )
-            new_operation_register_content._value = new_value  # pylint: disable=W0212
-            new_operation_register_content._type = new_type  # pylint: disable=W0212
-            new_operation_register_content._size = new_size  # pylint: disable=W0212
-            new_operation_register_content._data_type = new_data_type  # pylint: disable=W0212
-            new_operation_register_content._sign = new_sign  # pylint: disable=W0212
+            new_operation_register_content._value = new_value
+            new_operation_register_content._type = new_type
+            new_operation_register_content._size = new_size
+            new_operation_register_content._data_type = new_data_type
+            new_operation_register_content._sign = new_sign
 
             return new_operation_register_content
 
@@ -305,11 +303,11 @@ class OperationRegisterContent(RegisterContent):
                     if maybe_pos_list is not None:
                         new_register_content = create_content_without_specified_pos(maybe_pos_list)
                         simplified_value, simplified_type, simplified_sign = simplification
-                        new_register_content._value.append(simplified_value)  # pylint: disable=W0212
-                        new_register_content._type.append(simplified_type)  # pylint: disable=W0212
-                        new_register_content._sign.append(simplified_sign)  # pylint: disable=W0212
-                        new_register_content._size.append(DEFAULT_REGISTER_SIZE)  # pylint: disable=W0212
-                        new_register_content._data_type.append(None)  # pylint: disable=W0212
+                        new_register_content._value.append(simplified_value)
+                        new_register_content._type.append(simplified_type)
+                        new_register_content._sign.append(simplified_sign)
+                        new_register_content._size.append(DEFAULT_REGISTER_SIZE)
+                        new_register_content._data_type.append(None)
 
                         recursive_new_register_content = new_register_content.maybe_simplify()
 

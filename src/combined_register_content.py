@@ -109,7 +109,7 @@ class CombinedRegisterContent(RegisterContent):
             if isinstance(other, int):
                 hex_int = int(other, 16)
 
-            bit_str = f"{hex_int:b}"  # pylint: disable=C0209
+            bit_str = f"{hex_int:b}"
 
             if hex_int == 0:
                 return RegisterContent(
