@@ -28,7 +28,7 @@ class VAddNc(BaseInstruction):
             return self.node
         return super().to_print_unresolved()
 
-    def to_fill_node(self):
+    def to_fill_node(self):  # noqa: PLR0911
         if self.suffix in {"u16", "u32"}:
             if self.decompiler_data.is_rdna3:
                 try:

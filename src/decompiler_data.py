@@ -288,7 +288,7 @@ def is_type_float(t) -> bool:
     return re.fullmatch(r"f\d+", t) is not None
 
 
-def check_value_needs_cast(value, from_type, to_type) -> bool:
+def check_value_needs_cast(value, from_type, to_type) -> bool:  # noqa: PLR0911
     if from_type == to_type:
         return False
     if not from_type or not to_type:

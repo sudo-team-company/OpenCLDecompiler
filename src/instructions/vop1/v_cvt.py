@@ -14,7 +14,7 @@ class VCvt(BaseInstruction):
         self.to_registers, _ = check_and_split_regs(self.vdst)
         self.from_registers, _ = check_and_split_regs(self.src0)
 
-    def to_print_unresolved(self):
+    def to_print_unresolved(self):  # noqa: PLR0911
         tab = "    "
         if self.suffix == "f32_u32":
             self.decompiler_data.write(f"{self.vdst} = (float){self.src0} // {self.name}\n")
