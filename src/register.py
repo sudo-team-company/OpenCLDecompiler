@@ -83,7 +83,7 @@ class Register:
 
     def __and__(self, other):
         if not isinstance(other, str):
-            raise NotImplementedError()
+            raise NotImplementedError
 
         result_register = Register(
             integrity=self.integrity,
@@ -113,11 +113,11 @@ class Register:
             result_register.try_simplify()
             return result_register
 
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __rshift__(self, other):
         if not isinstance(other, int):
-            raise NotImplementedError()
+            raise NotImplementedError
 
         result_register = Register(
             integrity=self.integrity,
@@ -130,7 +130,7 @@ class Register:
 
     def __lshift__(self, other):
         if not isinstance(other, int):
-            raise NotImplementedError()
+            raise NotImplementedError
 
         result_register = Register(
             integrity=self.integrity,
@@ -143,7 +143,7 @@ class Register:
 
     def __add__(self, other):
         if not isinstance(other, Register):
-            raise NotImplementedError()
+            raise NotImplementedError
 
         result_register = Register(
             integrity=self.integrity,
@@ -156,7 +156,7 @@ class Register:
 
     def __sub__(self, other):
         if not isinstance(other, Register):
-            raise NotImplementedError()
+            raise NotImplementedError
 
         result_register = Register(
             integrity=self.integrity,
@@ -224,7 +224,7 @@ class Register:
                 size=self.get_size(),
             )
         else:
-            raise NotImplementedError()
+            raise NotImplementedError
 
         result_register.try_simplify()
 

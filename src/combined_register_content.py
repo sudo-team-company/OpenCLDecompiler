@@ -149,7 +149,7 @@ class CombinedRegisterContent(RegisterContent):
 
             return self._maybe_acquire_content(begin, end)
 
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __rshift__(self, other):
         if isinstance(other, int):
@@ -205,4 +205,4 @@ class CombinedRegisterContent(RegisterContent):
                 register_contents=register_contents,
             )
 
-        raise NotImplementedError()
+        raise NotImplementedError

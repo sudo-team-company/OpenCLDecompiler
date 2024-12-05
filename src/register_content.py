@@ -16,7 +16,7 @@ class RegisterSignType(enum.Enum):
         elif self.value == 1:
             return RegisterSignType.POSITIVE
         else:
-            raise ValueError()
+            raise ValueError
 
 
 # Data for known register values
@@ -120,7 +120,7 @@ class RegisterContent:
             if bit_str.count("0") == 0 and len(bit_str) == self.get_size():
                 return copy.deepcopy(self)
 
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __or__(self, other):
         if isinstance(other, RegisterContent):
@@ -134,7 +134,7 @@ class RegisterContent:
                 ],
             )
 
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __rshift__(self, other):
         if isinstance(other, RegisterContent):
@@ -148,7 +148,7 @@ class RegisterContent:
                 ],
             )
 
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __lshift__(self, other):
         if isinstance(other, int):
@@ -167,7 +167,7 @@ class RegisterContent:
                 ],
             )
 
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __add__(self, other):
         if isinstance(other, RegisterContent):
@@ -181,7 +181,7 @@ class RegisterContent:
                 ],
             )
 
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __sub__(self, other):
         if isinstance(other, RegisterContent):
@@ -195,7 +195,7 @@ class RegisterContent:
                 ],
             )
 
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __mul__(self, other):
         from src.operation_register_content import OperationRegisterContent, OperationType
@@ -222,7 +222,7 @@ class RegisterContent:
                 ],
             )
         else:
-            raise NotImplementedError()
+            raise NotImplementedError
 
 
 class EmptyRegisterContent(RegisterContent):

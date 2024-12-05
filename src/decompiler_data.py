@@ -114,7 +114,7 @@ def set_reg_value(  # noqa: PLR0913
                 ),
             )
     else:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     node.state[to_reg].try_simplify()
     decompiler_data.make_version(node.state, to_reg)
