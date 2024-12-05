@@ -13,10 +13,9 @@ class RegisterSignType(enum.Enum):
     def __invert__(self):
         if self.value == 0:
             return RegisterSignType.NEGATIVE
-        elif self.value == 1:
+        if self.value == 1:
             return RegisterSignType.POSITIVE
-        else:
-            raise ValueError
+        raise ValueError
 
 
 # Data for known register values
@@ -208,7 +207,7 @@ class RegisterContent:
                     copy.deepcopy(other),
                 ],
             )
-        elif isinstance(other, int):
+        if isinstance(other, int):
             return OperationRegisterContent(
                 operation=OperationType.PRODUCT,
                 register_contents=[
@@ -221,8 +220,7 @@ class RegisterContent:
                     ),
                 ],
             )
-        else:
-            raise NotImplementedError
+        raise NotImplementedError
 
 
 class EmptyRegisterContent(RegisterContent):
