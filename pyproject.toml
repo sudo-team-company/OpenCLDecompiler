@@ -11,6 +11,7 @@ select = [
     "F", # Pyflakes
     "E", # pycodestyle (Error)
     "W", # pycodestyle (Warning)
+    "C90", # mccabe
     "I", # isort
     "N", # pep8-naming
     "UP", # pyupgrade
@@ -67,6 +68,9 @@ ignore = [
     "TC001", # typing-only-first-party-import # Move application import {} into a type-checking block
     "RUF003", # ambiguous-unicode-character-comment # Comment contains ambiguous {}. Did you mean {}?
 ]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15
 
 [tool.ruff.format]
 quote-style = "double"
