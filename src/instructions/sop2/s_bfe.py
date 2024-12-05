@@ -93,9 +93,7 @@ class SBfe(BaseInstruction):
                 new_value = self.decompiler_data.bfe_offsets[self.node.state[self.ssrc0].val, self.ssrc1]
                 reg_type = RegisterType.KERNEL_ARGUMENT_VALUE
             else:
-                print("Unknown pattern in s_bfe")
-
-                raise NotImplementedError
+                raise NotImplementedError("Unknown pattern in s_bfe")
             return set_reg_value(self.node, new_value, self.sdst, [], self.suffix, reg_type=reg_type)
         if self.suffix == "i32":
             if self.decompiler_data.bfe_offsets.get((self.node.state[self.ssrc0].val, self.ssrc1)):

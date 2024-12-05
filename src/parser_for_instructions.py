@@ -73,7 +73,7 @@ def start_point():
             Usage:
               'python parser_for_instructions.py --input <input_file.asm> --output <output_file.cl>'
               'python parser_for_instructions.py -i <input_file.asm> -o <output_file.cl>'
-            """)
+            """)  # noqa: T201
     else:
         main(namespace.input, namespace.output, namespace.flag, namespace.cfg, namespace.unrolling_limit)
 
