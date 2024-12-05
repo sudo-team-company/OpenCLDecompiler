@@ -9,7 +9,7 @@ class Label(BaseInstruction):
         self.decompiler_data.set_to_node(label, self.node)
         if self.decompiler_data.from_node.get(label) is not None:
             for from_node in self.decompiler_data.from_node[label]:
-                if 'scc1' not in from_node.instruction[0]:
+                if "scc1" not in from_node.instruction[0]:
                     from_node.add_child(self.node)
                 else:
                     from_node.add_first_child(self.node)

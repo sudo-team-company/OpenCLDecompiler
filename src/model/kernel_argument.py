@@ -13,7 +13,7 @@ class KernelArgument:
         return f"{self.type_name} {self.name}"
 
     def is_vector(self) -> bool:
-        return len(self.type_name) > 0 and self.type_name[-1].isdigit() and self.name[0] != '*'
+        return len(self.type_name) > 0 and self.type_name[-1].isdigit() and self.name[0] != "*"
 
     def basic_size(self) -> int:
         return self.size if not self.is_vector() else self.size // int(self.type_name[-1])
@@ -21,4 +21,4 @@ class KernelArgument:
     def get_vector_element_by_offset(self, offset: int) -> str:
         assert self.is_vector()
         shift = offset - self.offset
-        return self.name + f'___s{shift // self.basic_size()}'
+        return self.name + f"___s{shift // self.basic_size()}"

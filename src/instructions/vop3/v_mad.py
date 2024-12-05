@@ -3,7 +3,7 @@ import copy
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg
 from src.integrity import Integrity
-from src.register import check_and_split_regs, is_reg, is_range
+from src.register import check_and_split_regs, is_range, is_reg
 
 
 class VMad(BaseInstruction):

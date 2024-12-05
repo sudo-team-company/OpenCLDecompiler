@@ -12,7 +12,8 @@ class KernelState:
         return self._registers[key]
 
     def __setitem__(self, key: str, value: Register):
-        assert isinstance(key, str) and isinstance(value, Register)
+        assert isinstance(key, str)
+        assert isinstance(value, Register)
         self._registers[key] = value
 
     def __iter__(self):

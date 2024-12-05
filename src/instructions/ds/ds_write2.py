@@ -12,14 +12,14 @@ class DsWrite2(BaseInstruction):
 
     def to_print_unresolved(self):
         if self.suffix == "b64":
-            v0 = "V0" + str(self.decompiler_data.number_of_v0)
-            v1 = "V1" + str(self.decompiler_data.number_of_v1)
-            self.decompiler_data.write("ulong* " + v0 + " = (ulong*)(ds + (" + self.addr + " + "
-                                       + self.offset0 + " * 8) & ~7) // ds_write2_b64\n")
-            self.decompiler_data.write("ulong* " + v1 + " = (ulong*)(ds + (" + self.addr + " + "
-                                       + self.offset1 + " * 8) & ~7)\n")
-            self.decompiler_data.write("*" + v0 + " = " + self.vdata0 + "\n")
-            self.decompiler_data.write("*" + v1 + " = " + self.vdata1 + "\n")
+            v0 = f"V0{self.decompiler_data.number_of_v0}"
+            v1 = f"V1{self.decompiler_data.number_of_v1}"
+            self.decompiler_data.write(
+                f"ulong* {v0} = (ulong*)(ds + ({self.addr} + {self.offset0} * 8) & ~7) // {self.name}\n"
+            )
+            self.decompiler_data.write(f"ulong* {v1} = (ulong*)(ds + ({self.addr} + {self.offset1} * 8) & ~7)\n")
+            self.decompiler_data.write(f"*{v0} = {self.vdata0}\n")
+            self.decompiler_data.write(f"*{v1} = {self.vdata1}\n")
             self.decompiler_data.number_of_v0 += 1
             self.decompiler_data.number_of_v1 += 1
             return self.node
