@@ -167,8 +167,6 @@ class OperationRegisterContent(RegisterContent):
                     signs.append(register_content.get_sign())
 
         data_types = set(data_types)
-        # if len(data_types) != 1:
-        #     raise Exception(f"{OperationRegisterContent.__class__} must consists of elements with same data type")
         data_type = None if len(data_types) != 1 else data_types.pop()
 
         super().__init__(

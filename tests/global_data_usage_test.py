@@ -1,3 +1,5 @@
+# ruff: noqa: ERA001
+
 import pytest
 
 from .conftest import template
