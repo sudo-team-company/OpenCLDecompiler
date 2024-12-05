@@ -45,7 +45,7 @@ class VAshrrev(BaseInstruction):
                 reg_type=reg_type,
                 integrity=Integrity.LOW_PART,
             )
-            node = set_reg_value(
+            return set_reg_value(
                 node,
                 new_value,
                 end_to_register,
@@ -54,5 +54,4 @@ class VAshrrev(BaseInstruction):
                 reg_type=reg_type,
                 integrity=Integrity.HIGH_PART,
             )
-            return node
         return super().to_fill_node()

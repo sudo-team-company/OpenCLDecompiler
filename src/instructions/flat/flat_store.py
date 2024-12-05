@@ -22,8 +22,7 @@ def get_vector_name(vector_element):
 
 def get_vector_element_number(vector_element):
     separator = vector_element.find("__")
-    vector_element_number = int(vector_element[separator + 4 :])
-    return vector_element_number
+    return int(vector_element[separator + 4 :])
 
 
 def is_same_name(src_registers):

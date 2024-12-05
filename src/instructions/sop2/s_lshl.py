@@ -56,10 +56,9 @@ class SLshl(BaseInstruction):
                 data_type,
                 reg_type=reg_type0,
             )
-            node = set_reg_value(
+            return set_reg_value(
                 node, new_value1, end_to_register, [end_from_register, self.ssrc1], data_type, reg_type=reg_type1
             )
-            return node
 
         if self.decompiler_data.is_rdna3:
             new_reg = self.node.state[self.ssrc0] * pow(2, int(self.ssrc1))

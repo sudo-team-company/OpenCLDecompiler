@@ -154,8 +154,7 @@ def make_elem_from_addr(var):
     separator_pos = var.find(" + ")
     param_name = var[:separator_pos]
     index = var[separator_pos + 3 :]
-    var = param_name + "[" + index + "]"
-    return var
+    return param_name + "[" + index + "]"
 
 
 # TODO: Проанализировать, может ли не быть "g" (или другого модификатора)

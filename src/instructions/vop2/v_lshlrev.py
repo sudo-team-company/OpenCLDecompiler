@@ -68,7 +68,7 @@ class VLshlrev(BaseInstruction):
                 reg_type=reg_type,
                 integrity=reg_entire0,
             )
-            node = set_reg_value(
+            return set_reg_value(
                 node,
                 new_value1,
                 end_to_register,
@@ -77,5 +77,4 @@ class VLshlrev(BaseInstruction):
                 reg_type=reg_type,
                 integrity=reg_entire1,
             )
-            return node
         return super().to_fill_node()
