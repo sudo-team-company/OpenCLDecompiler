@@ -34,7 +34,7 @@ class ClrxDisasm(Disasm):
 
     def invoke(self):
         with Path(self.path_to_asm).open("w", encoding="utf-8") as file:
-            subprocess.run([self.get_disasm_path(), self.path_to_bin, "-dCfs"], stdout=file, check=True)
+            subprocess.run([self.get_disasm_path(), self.path_to_bin, "-dCfs"], stdout=file, check=True)  # noqa: S603
         with Path(self.path_to_asm).open(encoding="utf-8") as file:
             text: list[str] = file.readlines()
         parts = text[0].split("'")
@@ -48,7 +48,7 @@ class AmdGpuDisasm(Disasm):
     NAME = "amdgpu-dis"
 
     def invoke(self):
-        subprocess.run([self.get_disasm_path(), self.path_to_bin, "-o", self.path_to_asm], check=True)
+        subprocess.run([self.get_disasm_path(), self.path_to_bin, "-o", self.path_to_asm], check=True)  # noqa: S603
 
 
 DISASMS = {
