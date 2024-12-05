@@ -66,18 +66,15 @@ class VAdd3(BaseInstruction):
     def to_fill_node(self):
         if self.suffix == "u32":
             if self.decompiler_data.is_rdna3:
-                try:
-                    new_reg = self.node.state[self.src0] + self.node.state[self.src1]
-                    new_reg = new_reg + self.node.state[self.src2]
-                    new_reg.cast_to(self.suffix)
-                    return set_reg(
-                        node=self.node,
-                        to_reg=self.vdst,
-                        from_regs=[self.src0, self.src1, self.src2],
-                        reg=new_reg,
-                    )
-                except Exception:
-                    pass
+                new_reg = self.node.state[self.src0] + self.node.state[self.src1]
+                new_reg = new_reg + self.node.state[self.src2]
+                new_reg.cast_to(self.suffix)
+                return set_reg(
+                    node=self.node,
+                    to_reg=self.vdst,
+                    from_regs=[self.src0, self.src1, self.src2],
+                    reg=new_reg,
+                )
 
             new_value = make_op(self.node, self.src0, self.src1, "+", "(ulong)", "(ulong)", suffix=self.suffix)
             new_value = make_op(self.node, new_value, self.src2, "+", "", "(ulong)", suffix=self.suffix)

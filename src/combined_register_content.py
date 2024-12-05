@@ -22,16 +22,13 @@ class CombinedRegisterContent(RegisterContent):
         self._sign.append(register_content.get_sign())
 
     def maybe_get_by_idx(self, idx: int) -> RegisterContent | None:
-        try:
-            return RegisterContent(
-                value=self._value[idx],
-                type_=self._type[idx],
-                size=self._size[idx],
-                data_type=self._data_type[idx],
-                sign=self._sign[idx],
-            )
-        except Exception:
-            return None
+        return RegisterContent(
+            value=self._value[idx],
+            type_=self._type[idx],
+            size=self._size[idx],
+            data_type=self._data_type[idx],
+            sign=self._sign[idx],
+        )
 
     def get_count(self) -> int:
         return len(self._value)

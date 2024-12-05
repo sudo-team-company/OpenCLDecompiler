@@ -31,16 +31,13 @@ class VAddNc(BaseInstruction):
     def to_fill_node(self):  # noqa: PLR0911
         if self.suffix in {"u16", "u32"}:
             if self.decompiler_data.is_rdna3:
-                try:
-                    new_reg = self.node.state[self.src0] + self.node.state[self.src1]
-                    return set_reg(
-                        node=self.node,
-                        to_reg=self.vdst,
-                        from_regs=[self.src0, self.src1],
-                        reg=new_reg,
-                    )
-                except Exception:
-                    pass
+                new_reg = self.node.state[self.src0] + self.node.state[self.src1]
+                return set_reg(
+                    node=self.node,
+                    to_reg=self.vdst,
+                    from_regs=[self.src0, self.src1],
+                    reg=new_reg,
+                )
 
             if self.src1 in self.node.state and self.node.state[self.src1].type == RegisterType.DIVISION_PT5:
                 new_value = self.node.state[self.src1].val

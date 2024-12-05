@@ -64,17 +64,14 @@ class VAdd(BaseInstruction):
                         operation=OperationType.PLUS,
                     )
 
-                try:
-                    new_reg = self.node.state[self.src0] + self.node.state[self.src1]
-                    new_reg.cast_to(self.suffix)
-                    return set_reg(
-                        node=self.node,
-                        to_reg=self.vdst,
-                        from_regs=[self.src0, self.src1],
-                        reg=new_reg,
-                    )
-                except Exception:
-                    pass
+                new_reg = self.node.state[self.src0] + self.node.state[self.src1]
+                new_reg.cast_to(self.suffix)
+                return set_reg(
+                    node=self.node,
+                    to_reg=self.vdst,
+                    from_regs=[self.src0, self.src1],
+                    reg=new_reg,
+                )
 
             new_value = make_op(self.node, self.src0, self.src1, "+", "(ulong)", "(ulong)", suffix=self.suffix)
             src0_reg = is_reg(self.src0)

@@ -62,16 +62,13 @@ class SLshl(BaseInstruction):
             return node
 
         if self.decompiler_data.is_rdna3:
-            try:
-                new_reg = self.node.state[self.ssrc0] * pow(2, int(self.ssrc1))
-                new_reg.cast_to(self.suffix)
-                return set_reg(
-                    node=self.node,
-                    to_reg=self.sdst,
-                    from_regs=[self.ssrc0],
-                    reg=new_reg,
-                )
-            except Exception:
-                pass
+            new_reg = self.node.state[self.ssrc0] * pow(2, int(self.ssrc1))
+            new_reg.cast_to(self.suffix)
+            return set_reg(
+                node=self.node,
+                to_reg=self.sdst,
+                from_regs=[self.ssrc0],
+                reg=new_reg,
+            )
 
         return super().to_fill_node()
