@@ -43,7 +43,7 @@ class VAdd(BaseInstruction):
                 ):
                     reg_type = self.node.state[self.src1].type
                     data_type = self.node.state[self.src0].data_type
-                    data_size, _ = evaluate_size(data_type, True)
+                    data_size, _ = evaluate_size(data_type, only_size=True)
                     new_value = make_op(self.node, self.src1, str(data_size), "/", suffix=self.suffix)
 
                     return set_reg_value(
@@ -122,7 +122,7 @@ class VAdd(BaseInstruction):
                         data_type = make_asm_type(self.decompiler_data.type_params[f"*{argument}"])
                     else:
                         data_type = self.node.state[self.src0].data_type
-                    data_size, _ = evaluate_size(data_type, True)
+                    data_size, _ = evaluate_size(data_type, only_size=True)
                     new_value = make_op(self.node, self.src1, str(data_size), "/", suffix=self.suffix)
                     new_value = make_op(self.node, argument, new_value, "+", suffix=self.suffix)
                 elif self.node.state[self.src0].type == RegisterType.GLOBAL_DATA_POINTER:
@@ -170,7 +170,7 @@ class VAdd(BaseInstruction):
                     if self.node.state[self.src0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT:
                         reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT
                         data_type = self.node.state[self.src0].data_type
-                        data_size, _ = evaluate_size(data_type, True)
+                        data_size, _ = evaluate_size(data_type, only_size=True)
                         new_value = make_op(self.node, self.src1, str(data_size), "/", suffix=self.suffix)
                         new_value = make_op(self.node, self.src0, new_value, "+", suffix=self.suffix)
                 if src1_reg:

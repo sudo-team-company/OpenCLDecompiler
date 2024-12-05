@@ -14,7 +14,7 @@ def get_output_for_different_vector_types(output, var_type, data_type):
         size_type_part = element_number[second_term_separator + 3 :]
         dividend_separator = size_type_part.find("/")
         size_elements = size_type_part[:dividend_separator]
-        one_element_size, _ = evaluate_size(make_asm_type(data_type[:-1]), True)
+        one_element_size, _ = evaluate_size(make_asm_type(data_type[:-1]), only_size=True)
         curr_element = int(int(size_elements) / one_element_size)
         output = output[: output.find(" + ")] + "]"
     else:

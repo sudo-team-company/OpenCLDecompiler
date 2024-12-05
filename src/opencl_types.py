@@ -91,7 +91,7 @@ def make_asm_type(opencl_type):
 
 
 # get size and priority
-def evaluate_size(asm_type, only_size=False):
+def evaluate_size(asm_type, *, only_size=False):
     if asm_type in {"gu32", "u32", "gi32", "i32", "gf32", "f32", "b32", "dword"}:
         information = (4, 1) if asm_type == "f32:" else (4, 0)
     elif asm_type in {"gu64", "u64", "gi64", "i64", "f64", "gf64", "uint2", "int2", "b64", "dword2"}:
