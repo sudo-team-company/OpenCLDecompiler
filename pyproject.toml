@@ -15,12 +15,24 @@ select = [
     "N", # pep8-naming
     "UP", # pyupgrade
     "YTT", # flake8-2020
+    "ASYNC", # flake8-async
+    "S", # flake8-bandit
+    "BLE", # flake8-blind-except
+    "FBT", # flake8-boolean-trap
     "B", # flake8-bugbear
     "A", # flake8-builtins
     "C4", # flake8-comprehensions
     "DTZ", # flake8-datetimez
+    "EXE", # flake8-executable
+    "FA", # flake8-future-annotations
+    "ISC", # flake8-implicit-str-concat
+    "ICN", # flake8-import-conventions
+    "LOG", # flake8-logging
+    "G", # flake8-logging-format
+    "INP", # flake8-no-pep420
     "PIE", # flake8-pie
     "PYI", # flake8-pyi
+    "PT", # flake8-pytest-style
     "Q", # flake8-quotes
     "SIM", # flake8-simplify
     "INT", # flake8-gettext
@@ -37,6 +49,8 @@ select = [
     "RUF", # Ruff-specific rules
 ]
 ignore = [
+    "S101", # assert # Use of assert detected
+    "ISC001", # single-line-implicit-string-concatenation # Implicitly concatenated string literals on one line
     "RUF003", # ambiguous-unicode-character-comment # Comment contains ambiguous {}. Did you mean {}?
 ]
 
