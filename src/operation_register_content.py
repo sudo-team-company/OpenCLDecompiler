@@ -203,7 +203,7 @@ class OperationRegisterContent(RegisterContent):
     def get_sign(self) -> RegisterSignType:
         return None
 
-    def maybe_simplify(self) -> RegisterContent | None:  # noqa: PLR0915
+    def maybe_simplify(self) -> RegisterContent | None:  # noqa: C901, PLR0915
         def maybe_find_opposite_pos() -> tuple[int, int] | None:
             for i, (val_i, type_i, sign_i) in enumerate(zip(self._value, self._type, self._sign, strict=False)):
                 for j, (val_j, type_j, sign_j) in enumerate(zip(self._value, self._type, self._sign, strict=False)):

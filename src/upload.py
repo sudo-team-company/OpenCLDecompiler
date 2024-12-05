@@ -127,7 +127,7 @@ def upload_global_data_pointer(state, to_registers, from_registers):
     )
 
 
-def upload_by_offset(  # noqa: PLR0912
+def upload_by_offset(
     state,
     to_registers: str,
     offset: str,
@@ -144,14 +144,7 @@ def upload_by_offset(  # noqa: PLR0912
     )
 
     while True:
-        if bits != -1:
-            if written_bits > bits:
-                break
-
-            if written_bits == bits:
-                break
-
-        if offset not in decompiler_data.config_data.offset_to_content:
+        if (bits != -1 and written_bits >= bits) or offset not in decompiler_data.config_data.offset_to_content:
             break
 
         register_content = decompiler_data.config_data.offset_to_content[offset]

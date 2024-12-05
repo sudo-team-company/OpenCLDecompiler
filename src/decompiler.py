@@ -41,7 +41,7 @@ def process_src_with_unresolved_instruction(set_of_instructions):
             decompiler_data.write(row + "\n")
 
 
-def process_src(  # noqa: PLR0912, PLR0915
+def process_src(  # noqa: C901, PLR0912, PLR0915
     name_of_program: str,
     config_data: ConfigData,
     set_of_instructions: list[str],

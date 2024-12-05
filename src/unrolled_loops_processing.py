@@ -45,7 +45,7 @@ def to_int(x: str) -> int | None:
             return None
 
 
-def process_unrolled_loops():  # noqa: PLR0912, PLR0915
+def process_unrolled_loops():  # noqa: C901, PLR0912, PLR0915
     decompiler_data = DecompilerData()
     unrolling_limit = decompiler_data.unrolling_limit
     region: Region = decompiler_data.improve_cfg
@@ -55,9 +55,7 @@ def process_unrolled_loops():  # noqa: PLR0912, PLR0915
         cur: Node = region.start
         edge_ends = {}
         while cur != region.end:
-            if len(cur.children) != 1:
-                return
-            if not isinstance(cur, Node):
+            if len(cur.children) != 1 or not isinstance(cur, Node):
                 return
             cur = cur.children[0]
             vertices.append(Vertex(len(vertices), cur))

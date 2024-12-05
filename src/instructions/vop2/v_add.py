@@ -33,7 +33,7 @@ class VAdd(BaseInstruction):
             return self.node
         return super().to_print_unresolved()
 
-    def to_fill_node(self):  # noqa: PLR0912, PLR0915
+    def to_fill_node(self):  # noqa: C901, PLR0912, PLR0915
         if self.suffix == "u32":
             if self.decompiler_data.is_rdna3:
                 if self.node.state[
