@@ -70,13 +70,11 @@ class RegisterContent:
             self._type = type_
             self._value, self._size, self._data_type, self._sign = CONSTANT_VALUES[type_]
             # TODO: remove deviation check
-            assert (
-                (self._value == value or value is None)
-                and (self._type == type_ or type_ is None)
-                and (self._size == size or size is None)
-                and (self._data_type == data_type or data_type is None)
-                and (self._sign == sign or sign is None)
-            )
+            assert self._value == value or value is None
+            assert self._type == type_ or type_ is None
+            assert self._size == size or size is None
+            assert self._data_type == data_type or data_type is None
+            assert self._sign == sign or sign is None
             return
         self._value = value
         self._type = type_
