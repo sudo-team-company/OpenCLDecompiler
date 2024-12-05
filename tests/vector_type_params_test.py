@@ -5,7 +5,7 @@ from .conftest import template
 
 class TestVectorTypeParams:
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -19,7 +19,7 @@ class TestVectorTypeParams:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -33,7 +33,7 @@ class TestVectorTypeParams:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -47,7 +47,7 @@ class TestVectorTypeParams:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -61,7 +61,7 @@ class TestVectorTypeParams:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -75,7 +75,7 @@ class TestVectorTypeParams:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -89,7 +89,7 @@ class TestVectorTypeParams:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -103,7 +103,7 @@ class TestVectorTypeParams:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -117,7 +117,7 @@ class TestVectorTypeParams:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -131,7 +131,7 @@ class TestVectorTypeParams:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -145,7 +145,7 @@ class TestVectorTypeParams:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -159,7 +159,7 @@ class TestVectorTypeParams:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -173,7 +173,7 @@ class TestVectorTypeParams:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],

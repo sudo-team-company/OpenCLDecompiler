@@ -5,7 +5,7 @@ from .conftest import template
 
 class TestRealKernels:
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -19,7 +19,7 @@ class TestRealKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -33,7 +33,7 @@ class TestRealKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],

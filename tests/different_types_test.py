@@ -5,7 +5,7 @@ from .conftest import template
 
 class TestDifferentTypes:
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -19,7 +19,7 @@ class TestDifferentTypes:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -33,7 +33,7 @@ class TestDifferentTypes:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -47,7 +47,7 @@ class TestDifferentTypes:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -61,7 +61,7 @@ class TestDifferentTypes:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],

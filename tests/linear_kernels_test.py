@@ -5,7 +5,7 @@ from .conftest import template
 
 class TestLinearKernels:
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -22,7 +22,7 @@ class TestLinearKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -39,7 +39,7 @@ class TestLinearKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -56,7 +56,7 @@ class TestLinearKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -73,7 +73,7 @@ class TestLinearKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -90,7 +90,7 @@ class TestLinearKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -107,7 +107,7 @@ class TestLinearKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -124,7 +124,7 @@ class TestLinearKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -141,7 +141,7 @@ class TestLinearKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -158,7 +158,7 @@ class TestLinearKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -175,7 +175,7 @@ class TestLinearKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -192,7 +192,7 @@ class TestLinearKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -209,7 +209,7 @@ class TestLinearKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),

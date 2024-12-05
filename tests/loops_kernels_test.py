@@ -5,7 +5,7 @@ from .conftest import template
 
 class TestLoopsKernels:
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -21,7 +21,7 @@ class TestLoopsKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -35,7 +35,7 @@ class TestLoopsKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("gfx1010", "clrxdisasm"),
             ("gfx1030", "clrxdisasm"),
@@ -50,7 +50,7 @@ class TestLoopsKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("gfx1010", "clrxdisasm"),
             ("gfx1030", "clrxdisasm"),
@@ -65,7 +65,7 @@ class TestLoopsKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("gfx1010", "clrxdisasm"),
             ("gfx1030", "clrxdisasm"),
@@ -80,7 +80,7 @@ class TestLoopsKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("gfx1010", "clrxdisasm"),
             ("gfx1030", "clrxdisasm"),
@@ -95,7 +95,7 @@ class TestLoopsKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("gfx1010", "clrxdisasm"),
             ("gfx1030", "clrxdisasm"),
@@ -110,7 +110,7 @@ class TestLoopsKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("gfx1010", "clrxdisasm"),
             ("gfx1030", "clrxdisasm"),

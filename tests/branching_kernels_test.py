@@ -5,7 +5,7 @@ from .conftest import template
 
 class TestBranchingKernels:
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -21,7 +21,7 @@ class TestBranchingKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -37,7 +37,7 @@ class TestBranchingKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -53,7 +53,7 @@ class TestBranchingKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -69,7 +69,7 @@ class TestBranchingKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -85,7 +85,7 @@ class TestBranchingKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -101,7 +101,7 @@ class TestBranchingKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -117,7 +117,7 @@ class TestBranchingKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -133,7 +133,7 @@ class TestBranchingKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -147,7 +147,7 @@ class TestBranchingKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("gfx1010", "clrxdisasm"),
             ("gfx1030", "clrxdisasm"),
@@ -162,7 +162,7 @@ class TestBranchingKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -178,7 +178,7 @@ class TestBranchingKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -192,7 +192,7 @@ class TestBranchingKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("gfx1010", "clrxdisasm"),
             ("gfx1030", "clrxdisasm"),
@@ -207,7 +207,7 @@ class TestBranchingKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -221,7 +221,7 @@ class TestBranchingKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("gfx1010", "clrxdisasm"),
             ("gfx1030", "clrxdisasm"),
@@ -236,7 +236,7 @@ class TestBranchingKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
         ],
@@ -250,7 +250,7 @@ class TestBranchingKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("gfx1010", "clrxdisasm"),
             ("gfx1030", "clrxdisasm"),
@@ -265,7 +265,7 @@ class TestBranchingKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
             ("gfx1010", "clrxdisasm"),
@@ -281,7 +281,7 @@ class TestBranchingKernels:
         )
 
     @pytest.mark.parametrize(
-        ["mcpu", "disasm"],
+        ("mcpu", "disasm"),
         [
             ("gfx1010", "clrxdisasm"),
             ("gfx1030", "clrxdisasm"),
