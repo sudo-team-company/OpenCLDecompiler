@@ -154,11 +154,11 @@ class OperationRegisterContent(RegisterContent):
                     data_types.append(register_content.get_data_type())
                     signs.append(register_content.get_sign())
                 elif is_same_operation:
-                    values.extend(register_content._value)
-                    types.extend(register_content._type)
-                    sizes.extend(itertools.repeat(register_content._size, len(register_content._value)))
-                    data_types.extend(itertools.repeat(register_content._data_type, len(register_content._value)))
-                    signs.extend(register_content._sign)
+                    values.extend(register_content._value)  # noqa: SLF001
+                    types.extend(register_content._type)  # noqa: SLF001
+                    sizes.extend(itertools.repeat(register_content._size, len(register_content._value)))  # noqa: SLF001
+                    data_types.extend(itertools.repeat(register_content._data_type, len(register_content._value)))  # noqa: SLF001
+                    signs.extend(register_content._sign)  # noqa: SLF001
                 else:
                     values.append(f"({register_content.get_value()})")
                     types.append(register_content.get_type())
@@ -261,11 +261,11 @@ class OperationRegisterContent(RegisterContent):
                 operation=copy.deepcopy(self._operation),
                 register_contents=[],
             )
-            new_operation_register_content._value = new_value
-            new_operation_register_content._type = new_type
-            new_operation_register_content._size = new_size
-            new_operation_register_content._data_type = new_data_type
-            new_operation_register_content._sign = new_sign
+            new_operation_register_content._value = new_value  # noqa: SLF001
+            new_operation_register_content._type = new_type  # noqa: SLF001
+            new_operation_register_content._size = new_size  # noqa: SLF001
+            new_operation_register_content._data_type = new_data_type  # noqa: SLF001
+            new_operation_register_content._sign = new_sign  # noqa: SLF001
 
             return new_operation_register_content
 
@@ -301,11 +301,11 @@ class OperationRegisterContent(RegisterContent):
                     if maybe_pos_list is not None:
                         new_register_content = create_content_without_specified_pos(maybe_pos_list)
                         simplified_value, simplified_type, simplified_sign = simplification
-                        new_register_content._value.append(simplified_value)
-                        new_register_content._type.append(simplified_type)
-                        new_register_content._sign.append(simplified_sign)
-                        new_register_content._size.append(DEFAULT_REGISTER_SIZE)
-                        new_register_content._data_type.append(None)
+                        new_register_content._value.append(simplified_value)  # noqa: SLF001
+                        new_register_content._type.append(simplified_type)  # noqa: SLF001
+                        new_register_content._sign.append(simplified_sign)  # noqa: SLF001
+                        new_register_content._size.append(DEFAULT_REGISTER_SIZE)  # noqa: SLF001
+                        new_register_content._data_type.append(None)  # noqa: SLF001
 
                         recursive_new_register_content = new_register_content.maybe_simplify()
 

@@ -58,7 +58,7 @@ class Register:
         )
 
     def cast_to(self, data_type: str):
-        self.register_content._data_type = data_type
+        self.register_content._data_type = data_type  # noqa: SLF001
 
     def get_value(self) -> object:
         return self.register_content.get_value()
@@ -231,8 +231,8 @@ class Register:
         return result_register
 
     def copy_version_from(self, other: "Register"):
-        self._version_name = other._version_name
-        self._version_num = other._version_num
+        self._version_name = other._version_name  # noqa: SLF001
+        self._version_num = other._version_num  # noqa: SLF001
 
     def add_version(self, name_version, num_version):
         self._version_name = name_version

@@ -170,5 +170,5 @@ def process_unrolled_loops():  # noqa: PLR0912, PLR0915
                 child: Node = cur.children[0]
                 cur.children = child.children
 
-            cur.children[0].state[dst].register_content._value = "acc"
+            cur.children[0].state[dst].register_content._value = "acc"  # noqa: SLF001
             cur.add_first_child(Region(RegionType.UNROLLED_LOOP, (before, first, last, diff, inside)))

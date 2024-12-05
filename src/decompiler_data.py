@@ -132,21 +132,21 @@ def set_reg(
 ):
     return set_reg_value(
         node=node,
-        new_value=reg.register_content._value,
+        new_value=reg.register_content._value,  # noqa: SLF001
         to_reg=to_reg,
         from_regs=from_regs,
-        data_type=reg.register_content._data_type,
-        reg_type=reg.register_content._type,
+        data_type=reg.register_content._data_type,  # noqa: SLF001
+        reg_type=reg.register_content._type,  # noqa: SLF001
         integrity=reg.integrity,
-        sign=reg.register_content._sign,
+        sign=reg.register_content._sign,  # noqa: SLF001
         register_content_type=type(reg.register_content),
-        operation=reg.register_content._operation
+        operation=reg.register_content._operation  # noqa: SLF001
         if isinstance(
             reg.register_content,
             OperationRegisterContent,
         )
         else None,
-        size=reg.register_content._size,
+        size=reg.register_content._size,  # noqa: SLF001
     )
 
 
