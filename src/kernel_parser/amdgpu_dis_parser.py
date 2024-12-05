@@ -107,7 +107,7 @@ def _convert_args_to_offset_to_content(args: list) -> dict[str, RegisterContent]
 
 
 def _parse_amdgpu_pal_metadata(amdgpu_pal_metadata: list[str]) -> dict[str, ConfigData]:
-    metadata: dict = yaml.load("\n".join(amdgpu_pal_metadata), Loader=yaml.CLoader)
+    metadata: dict = yaml.safe_load("\n".join(amdgpu_pal_metadata))
     DecompilerData().gpu = metadata["amdhsa.target"].split("-")[-1]
     result: dict[str, ConfigData] = {}
     for km in metadata["amdhsa.kernels"]:
