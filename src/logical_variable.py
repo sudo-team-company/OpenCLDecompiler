@@ -42,7 +42,7 @@ class ExecCondition:
         return " && ".join("(" + x + ")" for x in self.and_chain)
 
     @staticmethod
-    def default():
+    def default() -> "ExecCondition":
         return ExecCondition([ExecCondition.DEFAULT])
 
     @staticmethod
