@@ -554,7 +554,7 @@ class DecompilerData(metaclass=Singleton):
         state[reg] = value
         self.make_version(state, reg)
 
-    def init_work_group(self, dim, g_id_dim, is_rdna3: bool):
+    def init_work_group(self, dim, g_id_dim):
         self.set_reg_make_version(
             self.initial_state,
             g_id_dim,
@@ -569,7 +569,7 @@ class DecompilerData(metaclass=Singleton):
             ),
         )
 
-        if is_rdna3:
+        if self.is_rdna3:
             v_dim = "v0"
             register_content = CombinedRegisterContent(
                 register_contents=[
@@ -617,7 +617,7 @@ class DecompilerData(metaclass=Singleton):
             g_id_shift = 6
         dimensions = max(self.config_data.dimensions.split(","), key=len)
         for dim in range(len(dimensions)):
-            self.init_work_group(dim, f"s{g_id_shift + dim}", self.is_rdna3)
+            self.init_work_group(dim, f"s{g_id_shift + dim}")
         self.init_exec()
 
     def process_initial_state(self):
