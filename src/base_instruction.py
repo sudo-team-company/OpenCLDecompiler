@@ -7,7 +7,7 @@ class BaseInstruction:
     def __init__(self, node: Node, suffix: str):
         self.node: Node = node
         self.suffix: str = suffix
-        self.output_string: str = ''
+        self.output_string: str = ""
         self.decompiler_data = DecompilerData()
 
     @property

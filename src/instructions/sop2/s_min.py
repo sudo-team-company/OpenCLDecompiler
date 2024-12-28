@@ -10,15 +10,14 @@ class SMin(BaseInstruction):
         self.ssrc1 = self.instruction[3]
 
     def to_print_unresolved(self):
-        if self.suffix == 'i32':
-            self.decompiler_data.write(self.sdst + " = min((int)" + self.ssrc0 +
-                                       ", (int)" + self.ssrc1 + ") // s_min_i32\n")
-            self.decompiler_data.write("scc = (int)" + self.ssrc0 + " < (int)" + self.ssrc1 + "\n")
+        if self.suffix == "i32":
+            self.decompiler_data.write(f"{self.sdst} = min((int){self.ssrc0}, (int){self.ssrc1}) // {self.name}\n")
+            self.decompiler_data.write(f"scc = (int){self.ssrc0} < (int){self.ssrc1}\n")
             return self.node
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        if self.suffix == 'i32':
+        if self.suffix == "i32":
             new_value = "min("
             if self.node.state[self.ssrc0].data_type != self.suffix:
                 new_value += "(int)"

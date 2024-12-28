@@ -1,2 +1,6 @@
-from .common import Graph
-from .common import GraphType
+from .common import Graph, GraphType
+
+__all__ = [
+    "Graph",
+    "GraphType",
+]

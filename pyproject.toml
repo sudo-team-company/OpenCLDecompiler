@@ -1,0 +1,77 @@
+[project]
+name = "OpenCLDecompiler"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+
+[tool.ruff.lint]
+select = [
+    "F", # Pyflakes
+    "E", # pycodestyle (Error)
+    "W", # pycodestyle (Warning)
+    "C90", # mccabe
+    "I", # isort
+    "N", # pep8-naming
+    "UP", # pyupgrade
+    "YTT", # flake8-2020
+    "ASYNC", # flake8-async
+    "S", # flake8-bandit
+    "BLE", # flake8-blind-except
+    "FBT", # flake8-boolean-trap
+    "B", # flake8-bugbear
+    "A", # flake8-builtins
+    "COM", # flake8-commas
+    "C4", # flake8-comprehensions
+    "DTZ", # flake8-datetimez
+    "T10", # flake8-debugger
+    "EXE", # flake8-executable
+    "FA", # flake8-future-annotations
+    "ISC", # flake8-implicit-str-concat
+    "ICN", # flake8-import-conventions
+    "LOG", # flake8-logging
+    "G", # flake8-logging-format
+    "INP", # flake8-no-pep420
+    "PIE", # flake8-pie
+    "T20", # flake8-print
+    "PYI", # flake8-pyi
+    "PT", # flake8-pytest-style
+    "Q", # flake8-quotes
+    "RSE", # flake8-raise
+    "RET", # flake8-return
+    "SLF", # flake8-self
+    "SLOT", # flake8-slots
+    "SIM", # flake8-simplify
+    "TID", # flake8-tidy-imports
+    "TC", # flake8-type-checking
+    "INT", # flake8-gettext
+    "ARG", # flake8-unused-arguments
+    "PTH", # flake8-use-pathlib
+    "ERA", # eradicate
+    "PGH", # pygrep-hooks
+    "PLC", # Pylint (Convention)
+    "PLE", # Pylint (Error)
+    "PLR", # Pylint (Refactor)
+    "PLW", # Pylint (Warning)
+    "TRY", # tryceratops
+    "FLY", # flynt
+    "PERF", # Perflint
+    "FURB", # refurb
+    "RUF", # Ruff-specific rules
+]
+ignore = [
+    "S101", # assert # Use of assert detected
+    "COM812", # missing-trailing-comma # Trailing comma missing
+    "ISC001", # single-line-implicit-string-concatenation # Implicitly concatenated string literals on one line
+    "TID252", # relative-imports # Prefer absolute imports over relative imports from parent modules
+    "TC001", # typing-only-first-party-import # Move application import {} into a type-checking block
+    "RUF003", # ambiguous-unicode-character-comment # Comment contains ambiguous {}. Did you mean {}?
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
