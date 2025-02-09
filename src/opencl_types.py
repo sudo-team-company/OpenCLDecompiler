@@ -1,3 +1,210 @@
+from enum import Enum
+
+class UnknownTypeException(Exception):
+    pass
+
+class BaseType:
+    def __init__(self, size_bytes = 1, is_signed = True, is_integer = True, number_of_components = 1, is_global = False):
+        self.size_bytes = size_bytes
+        self.is_signed = is_signed
+        self.is_integer = is_integer
+        self.number_of_components = number_of_components
+        self.is_global = is_global
+
+    def getSize(self):
+        return int(self.size_bytes) * int(self.number_of_components)
+    
+class BaseASMType(BaseType):
+    def __init__(self, size_bytes = 1, is_signed = True, is_integer = True, number_of_components = 1, is_global = False):
+        super.__init__(size_bytes, is_signed, is_integer, number_of_components, is_global)
+
+    def getTypeString(self):
+        if self.is_integer:
+            if self.size_bytes == 8:
+                return "64"
+            elif self.size_bytes == 4:
+                return "32"
+            elif self.size_bytes == 2:
+                return "16"
+            elif self.size_bytes == 1:
+                return "8"
+            else:
+                raise UnknownTypeException
+        else:
+            if self.size_bytes == 8:
+                return "64"
+            elif self.size_bytes == 4:
+                return "32"
+            elif self.size_bytes == 2:
+                return "16"
+            else:
+                raise UnknownTypeException
+
+    def __str__(self):
+        global_prefix = "g" if self.is_global else ""
+        signed_prefix = "u" if self.is_integer and not self.is_signed else ""
+        type_prefix = self.getTypeString()
+        number_of_components_prefix = "" if self.number_of_components == 1 else str(self.number_of_components)
+
+        return global_prefix + signed_prefix + type_prefix + number_of_components_prefix
+
+class BaseOpenCLType(BaseType):
+    def __init__(self, size_bytes = 1, is_signed = True, is_integer = True, number_of_components = 1, is_global = False):
+        super.__init__(size_bytes, is_signed, is_integer, number_of_components, is_global)
+
+    def getTypeString(self):
+        if self.is_integer:
+            if self.size_bytes == 8:
+                return "long"
+            elif self.size_bytes == 4:
+                return "int"
+            elif self.size_bytes == 2:
+                return "short"
+            elif self.size_bytes == 1:
+                return "char"
+            else:
+                raise UnknownTypeException
+        else:
+            if self.size_bytes == 8:
+                return "double"
+            elif self.size_bytes == 4:
+                return "float"
+            elif self.size_bytes == 2:
+                return "half"
+            else:
+                raise UnknownTypeException
+
+    def __str__(self):
+        global_prefix = "__global " if self.is_global else ""
+        signed_prefix = "u" if self.is_integer and not self.is_signed else ""
+        type_prefix = self.getTypeString()
+        number_of_components_prefix = "" if self.number_of_components == 1 else str(self.number_of_components)
+
+        return global_prefix + signed_prefix + type_prefix + number_of_components_prefix
+    
+class UnknownOpenCLType(BaseOpenCLType):
+    def __init__(self):
+        super().__init__(0, False, False, 0, False)
+
+    def __str__(self):
+        return "UNKNOWN TYPE"
+
+class OpenCLType(Enum):
+    def __str__(self):
+        return str(self.value)
+    
+    def fromString(s) -> BaseOpenCLType:
+        for e in OpenCLType:
+            if str(e) == s:
+                return e.value
+        return OpenCLType.UNKNOWN.value
+    
+    UNKNOWN = UnknownOpenCLType()
+
+    # Base Types
+    CHAR = BaseOpenCLType()
+    UCHAR = BaseOpenCLType(is_signed=False)
+
+    SHORT = BaseOpenCLType(size_bytes=2)
+    USHORT = BaseOpenCLType(size_bytes=2, is_signed=False)
+
+    INT = BaseOpenCLType(size_bytes=4)
+    UINT = BaseOpenCLType(size_bytes=4, is_signed=False)
+
+    LONG = BaseOpenCLType(size_bytes=8)
+    ULONG = BaseOpenCLType(size_bytes=8, is_signed=False)
+
+    HALF = BaseOpenCLType(size_bytes=2, is_integer=False)
+    FLOAT = BaseOpenCLType(size_bytes=4, is_integer=False)
+
+    # Vector Types
+    CHAR2 = BaseOpenCLType(number_of_components=2)
+    CHAR4 = BaseOpenCLType(number_of_components=4)
+    CHAR8 = BaseOpenCLType(number_of_components=8)
+    UCHAR2 = BaseOpenCLType(number_of_components=2, is_signed=False)
+    UCHAR4 = BaseOpenCLType(number_of_components=4, is_signed=False)
+    UCHAR8 = BaseOpenCLType(number_of_components=8, is_signed=False)
+
+    SHORT2 = BaseOpenCLType(size_bytes=2, number_of_components=2)
+    SHORT4 = BaseOpenCLType(size_bytes=2, number_of_components=4)
+    SHORT8 = BaseOpenCLType(size_bytes=2, number_of_components=8)
+    USHORT2 = BaseOpenCLType(size_bytes=2, number_of_components=2, is_signed=False)
+    USHORT4 = BaseOpenCLType(size_bytes=2, number_of_components=4, is_signed=False)
+    USHORT8 = BaseOpenCLType(size_bytes=2, number_of_components=8, is_signed=False)
+
+    INT2 = BaseOpenCLType(size_bytes=4, number_of_components=2)
+    INT4 = BaseOpenCLType(size_bytes=4, number_of_components=4)
+    INT8 = BaseOpenCLType(size_bytes=4, number_of_components=8)
+    UINT2 = BaseOpenCLType(size_bytes=4, number_of_components=2, is_signed=False)
+    UINT4 = BaseOpenCLType(size_bytes=4, number_of_components=4, is_signed=False)
+    UINT8 = BaseOpenCLType(size_bytes=4, number_of_components=8, is_signed=False)
+
+    LONG2 = BaseOpenCLType(size_bytes=8, number_of_components=2)
+    LONG4 = BaseOpenCLType(size_bytes=8, number_of_components=4)
+    LONG8 = BaseOpenCLType(size_bytes=8, number_of_components=8)
+    ULONG2 = BaseOpenCLType(size_bytes=8, number_of_components=2, is_signed=False)
+    ULONG4 = BaseOpenCLType(size_bytes=8, number_of_components=4, is_signed=False)
+    ULONG8 = BaseOpenCLType(size_bytes=8, number_of_components=8, is_signed=False)
+    
+    HALF2 = BaseOpenCLType(size_bytes=2, is_integer=False, number_of_components=2)
+    HALF4 = BaseOpenCLType(size_bytes=2, is_integer=False, number_of_components=4)
+    HALF8 = BaseOpenCLType(size_bytes=2, is_integer=False, number_of_components=8)
+
+    FLOAT2 = BaseOpenCLType(size_bytes=4, is_integer=False, number_of_components=2)
+    FLOAT4 = BaseOpenCLType(size_bytes=4, is_integer=False, number_of_components=4)
+    FLOAT8 = BaseOpenCLType(size_bytes=4, is_integer=False, number_of_components=8)
+
+    # Global Types
+    GLOBAL_CHAR = BaseOpenCLType(is_global=True)
+    GLOBAL_UCHAR = BaseOpenCLType(is_signed=False, is_global=True)
+    GLOBAL_SHORT = BaseOpenCLType(size_bytes=2, is_global=True)
+    GLOBAL_USHORT = BaseOpenCLType(size_bytes=2, is_signed=False, is_global=True)
+    GLOBAL_INT = BaseOpenCLType(size_bytes=4, is_global=True)
+    GLOBAL_UINT = BaseOpenCLType(size_bytes=4, is_signed=False, is_global=True)
+    GLOBAL_LONG = BaseOpenCLType(size_bytes=8, is_global=True)
+    GLOBAL_ULONG = BaseOpenCLType(size_bytes=8, is_signed=False, is_global=True)
+    GLOBAL_HALF = BaseOpenCLType(size_bytes=2, is_integer=False, is_global=True)
+    GLOBAL_FLOAT = BaseOpenCLType(size_bytes=4, is_integer=False, is_global=True)
+    GLOBAL_CHAR2 = BaseOpenCLType(number_of_components=2, is_global=True)
+    GLOBAL_CHAR4 = BaseOpenCLType(number_of_components=4, is_global=True)
+    GLOBAL_CHAR8 = BaseOpenCLType(number_of_components=8, is_global=True)
+    GLOBAL_UCHAR2 = BaseOpenCLType(number_of_components=2, is_signed=False, is_global=True)
+    GLOBAL_UCHAR4 = BaseOpenCLType(number_of_components=4, is_signed=False, is_global=True)
+    GLOBAL_UCHAR8 = BaseOpenCLType(number_of_components=8, is_signed=False, is_global=True)
+    GLOBAL_SHORT2 = BaseOpenCLType(size_bytes=2, number_of_components=2, is_global=True)
+    GLOBAL_SHORT4 = BaseOpenCLType(size_bytes=2, number_of_components=4, is_global=True)
+    GLOBAL_SHORT8 = BaseOpenCLType(size_bytes=2, number_of_components=8, is_global=True)
+    GLOBAL_USHORT2 = BaseOpenCLType(size_bytes=2, number_of_components=2, is_signed=False, is_global=True)
+    GLOBAL_USHORT4 = BaseOpenCLType(size_bytes=2, number_of_components=4, is_signed=False, is_global=True)
+    GLOBAL_USHORT8 = BaseOpenCLType(size_bytes=2, number_of_components=8, is_signed=False, is_global=True)
+    GLOBAL_INT2 = BaseOpenCLType(size_bytes=4, number_of_components=2, is_global=True)
+    GLOBAL_INT4 = BaseOpenCLType(size_bytes=4, number_of_components=4, is_global=True)
+    GLOBAL_INT8 = BaseOpenCLType(size_bytes=4, number_of_components=8, is_global=True)
+    GLOBAL_UINT2 = BaseOpenCLType(size_bytes=4, number_of_components=2, is_signed=False, is_global=True)
+    GLOBAL_UINT4 = BaseOpenCLType(size_bytes=4, number_of_components=4, is_signed=False, is_global=True)
+    GLOBAL_UINT8 = BaseOpenCLType(size_bytes=4, number_of_components=8, is_signed=False, is_global=True)
+    GLOBAL_LONG2 = BaseOpenCLType(size_bytes=8, number_of_components=2, is_global=True)
+    GLOBAL_LONG4 = BaseOpenCLType(size_bytes=8, number_of_components=4, is_global=True)
+    GLOBAL_LONG8 = BaseOpenCLType(size_bytes=8, number_of_components=8, is_global=True)
+    GLOBAL_ULONG2 = BaseOpenCLType(size_bytes=8, number_of_components=2, is_signed=False, is_global=True)
+    GLOBAL_ULONG4 = BaseOpenCLType(size_bytes=8, number_of_components=4, is_signed=False, is_global=True)
+    GLOBAL_ULONG8 = BaseOpenCLType(size_bytes=8, number_of_components=8, is_signed=False, is_global=True)
+    GLOBAL_HALF2 = BaseOpenCLType(size_bytes=2, is_integer=False, number_of_components=2, is_global=True)
+    GLOBAL_HALF4 = BaseOpenCLType(size_bytes=2, is_integer=False, number_of_components=4, is_global=True)
+    GLOBAL_HALF8 = BaseOpenCLType(size_bytes=2, is_integer=False, number_of_components=8, is_global=True)
+    GLOBAL_FLOAT2 = BaseOpenCLType(size_bytes=4, is_integer=False, number_of_components=2, is_global=True)
+    GLOBAL_FLOAT4 = BaseOpenCLType(size_bytes=4, is_integer=False, number_of_components=4, is_global=True)
+    GLOBAL_FLOAT8 = BaseOpenCLType(size_bytes=4, is_integer=False, number_of_components=8, is_global=True)
+
+# print(OpenCLType.CHAR2)
+# print(OpenCLType.HALF)
+# print(OpenCLType.FLOAT)
+# print(OpenCLType.FLOAT4)
+# print(OpenCLType.FLOAT8)
+# print(OpenCLType.GLOBAL_FLOAT8)
+# print(OpenCLType.fromString("__global half2"))
+# print(OpenCLType.fromString("asdasdas"))
+
 vector_type_dict = {
     "char2": "char2",
     "char4": "char4",
