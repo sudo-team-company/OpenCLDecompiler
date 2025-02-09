@@ -1,15 +1,61 @@
+import pytest
+
 from .conftest import template
 
 
 class TestUnusedParams:
-    def test_one_unused_param(self):
-        template('unused_params', 'one_unused_param')
+    @pytest.mark.parametrize(
+        ("mcpu", "disasm"),
+        [
+            ("amd_gcn", "clrxdisasm"),
+        ],
+    )
+    def test_one_unused_param(self, mcpu, disasm):
+        template(
+            path_to_dir="unused_params",
+            dir_name="one_unused_param",
+            mcpu=mcpu,
+            disasm=disasm,
+        )
 
-    def test_two_unused_params(self):
-        template('unused_params', 'two_unused_params')
+    @pytest.mark.parametrize(
+        ("mcpu", "disasm"),
+        [
+            ("amd_gcn", "clrxdisasm"),
+        ],
+    )
+    def test_two_unused_params(self, mcpu, disasm):
+        template(
+            path_to_dir="unused_params",
+            dir_name="two_unused_params",
+            mcpu=mcpu,
+            disasm=disasm,
+        )
 
-    def test_three_unused_params(self):
-        template('unused_params', 'three_unused_params')
+    @pytest.mark.parametrize(
+        ("mcpu", "disasm"),
+        [
+            ("amd_gcn", "clrxdisasm"),
+        ],
+    )
+    def test_three_unused_params(self, mcpu, disasm):
+        template(
+            path_to_dir="unused_params",
+            dir_name="three_unused_params",
+            mcpu=mcpu,
+            disasm=disasm,
+        )
 
-    def test_four_unused_params(self):
-        template('unused_params', 'four_unused_params')
+    @pytest.mark.parametrize(
+        ("mcpu", "disasm"),
+        [
+            ("amd_gcn", "clrxdisasm"),
+        ],
+    )
+    def test_four_unused_params(self, mcpu, disasm):
+        template(
+            path_to_dir="unused_params",
+            dir_name="four_unused_params",
+            mcpu=mcpu,
+            disasm=disasm,
+        )

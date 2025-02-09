@@ -16,25 +16,15 @@ class Disasm(abc.ABC):
         pass
 
     def _get_windown_disasm_path(self) -> str:
-        return str(
-            Path(
-                f"./bin/{self.NAME}/{self.NAME}.exe"
-            ).absolute()
-        )
+        return str(Path(f"./bin/{self.NAME}/{self.NAME}.exe").absolute())
 
     def _get_unix_disasm_path(self) -> str:
-        return str(
-            Path(
-                f"./bin/{self.NAME}/{self.NAME}"
-            ).absolute()
-        )
+        return str(Path(f"./bin/{self.NAME}/{self.NAME}").absolute())
 
     def get_disasm_path(self) -> str:
         return str(
             Path(
-                self._get_windown_disasm_path()
-                if platform.system() == "Windows"
-                else self._get_unix_disasm_path()
+                self._get_windown_disasm_path() if platform.system() == "Windows" else self._get_unix_disasm_path()
             ).absolute()
         )
 
@@ -43,22 +33,14 @@ class ClrxDisasm(Disasm):
     NAME = "clrxdisasm"
 
     def invoke(self):
-        with open(self.path_to_asm, "w", encoding="utf-8") as file:
-            subprocess.run(
-                [
-                    self.get_disasm_path(),
-                    self.path_to_bin,
-                    "-dCfs"
-                ],
-                stdout=file,
-                check=True
-            )
-        with open(self.path_to_asm, "r", encoding="utf-8") as file:
+        with Path(self.path_to_asm).open("w", encoding="utf-8") as file:
+            subprocess.run([self.get_disasm_path(), self.path_to_bin, "-dCfs"], stdout=file, check=True)  # noqa: S603
+        with Path(self.path_to_asm).open(encoding="utf-8") as file:
             text: list[str] = file.readlines()
         parts = text[0].split("'")
         parts[1] = parts[1].replace("/", "\\")
         text[0] = "'".join(parts)
-        with open(self.path_to_asm, "w", encoding="utf-8") as file:
+        with Path(self.path_to_asm).open("w", encoding="utf-8") as file:
             file.writelines(text)
 
 
@@ -66,15 +48,7 @@ class AmdGpuDisasm(Disasm):
     NAME = "amdgpu-dis"
 
     def invoke(self):
-        subprocess.run(
-            [
-                self.get_disasm_path(),
-                self.path_to_bin,
-                "-o",
-                self.path_to_asm
-            ],
-            check=True
-        )
+        subprocess.run([self.get_disasm_path(), self.path_to_bin, "-o", self.path_to_asm], check=True)  # noqa: S603
 
 
 DISASMS = {

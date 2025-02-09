@@ -3,7 +3,7 @@ import copy
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg
 from src.integrity import Integrity
-from src.register import check_and_split_regs, is_reg, is_range
+from src.register import check_and_split_regs, is_range, is_reg
 
 
 class VMad(BaseInstruction):
@@ -25,9 +25,9 @@ class VMad(BaseInstruction):
         self.vdst_from, self.vdst_to = check_and_split_regs(self.vdst)
 
     def to_fill_node(self):
-        src0 = self.node.state.registers[self.src0] if is_reg(self.src0) else int(self.src0)
-        src1 = self.node.state.registers[self.src1] if is_reg(self.src1) else int(self.src1)
-        src2 = self.node.state.registers[self.src2] if is_reg(self.src2) else int(self.src2)
+        src0 = self.node.state[self.src0] if is_reg(self.src0) else int(self.src0)
+        src1 = self.node.state[self.src1] if is_reg(self.src1) else int(self.src1)
+        src2 = self.node.state[self.src2] if is_reg(self.src2) else int(self.src2)
 
         new_reg = src0 * src1
         if src2 != 0:

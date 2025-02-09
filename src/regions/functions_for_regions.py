@@ -1,10 +1,10 @@
 import re
 from collections import deque
 
-from src.register_type import RegisterType
 from src.decompiler_data import DecompilerData
 from src.region_type import RegionType
 from src.regions.region import Region
+from src.register_type import RegisterType
 
 
 def add_parent_and_child(before_r, next_r, region, prev_child, prev_parent):
@@ -19,23 +19,38 @@ def add_parent_and_child(before_r, next_r, region, prev_child, prev_parent):
 
 
 def check_if(curr_region):
-    return curr_region.type == RegionType.BASIC and len(curr_region.children) == 2 \
-    and (len(curr_region.children[0].children) > 0
-         and curr_region.children[0].children[0] == curr_region.children[1]
-         or len(curr_region.children[1].children) > 0
-         and curr_region.children[1].children[0] == curr_region.children[0])
+    return (
+        curr_region.type == RegionType.BASIC
+        and len(curr_region.children) == 2  # noqa: PLR2004
+        and (
+            (
+                len(curr_region.children[0].children) > 0
+                and curr_region.children[0].children[0] == curr_region.children[1]
+            )
+            or (
+                len(curr_region.children[1].children) > 0
+                and curr_region.children[1].children[0] == curr_region.children[0]
+            )
+        )
+    )
 
 
 def check_if_else(curr_region):
-    return curr_region.type == RegionType.BASIC and len(curr_region.children) == 2 \
-    and len(curr_region.children[0].children) > 0 \
-    and len(curr_region.children[1].children) > 0 \
-    and curr_region.children[0].children[0] == curr_region.children[1].children[0]
+    return (
+        curr_region.type == RegionType.BASIC
+        and len(curr_region.children) == 2  # noqa: PLR2004
+        and len(curr_region.children[0].children) > 0
+        and len(curr_region.children[1].children) > 0
+        and curr_region.children[0].children[0] == curr_region.children[1].children[0]
+    )
 
 
 def check_loop(region_start, region_end):
-    return len(region_start.children) == 1 and len(region_start.children[0].children) == 1 \
-    and region_start.children[0].children[0] == region_end
+    return (
+        len(region_start.children) == 1
+        and len(region_start.children[0].children) == 1
+        and region_start.children[0].children[0] == region_end
+    )
 
 
 def create_new_region(prev_reg_1, prev_reg_2, next_reg):
@@ -100,7 +115,7 @@ def join_regions(before_region, curr_region, next_region):
     return result
 
 
-def make_region_graph_from_cfg():
+def make_region_graph_from_cfg():  # noqa: C901, PLR0912, PLR0915
     decompiler_data = DecompilerData()
     curr_node = decompiler_data.cfg
     region = Region(RegionType.LINEAR, curr_node)
@@ -170,12 +185,10 @@ def make_region_graph_from_cfg():
 
 def process_if_statement_region(curr_region):
     region = Region(RegionType.IF_STATEMENT, curr_region)
-    child0 = curr_region.children[0] if len(curr_region.children[0].parent) == 1 else \
-        curr_region.children[1]
-    child1 = curr_region.children[1] if len(curr_region.children[1].parent) > 1 else \
-        curr_region.children[0]
+    child0 = curr_region.children[0] if len(curr_region.children[0].parent) == 1 else curr_region.children[1]
+    child1 = curr_region.children[1] if len(curr_region.children[1].parent) > 1 else curr_region.children[0]
     before_r = curr_region.parent[0]
-    if len(child1.parent) > 2:
+    if len(child1.parent) > 2:  # noqa: PLR2004
         child1 = create_new_region(curr_region, child0, child1)
     region.end = child1
     next_r = child1.children[0] if len(child1.children) > 0 else None
@@ -188,7 +201,7 @@ def process_if_else_statement_region(curr_region):
     child0 = curr_region.children[0]
     child1 = curr_region.children[1]
     region.end = child0.children[0]
-    if len(region.end.parent) > 2:
+    if len(region.end.parent) > 2:  # noqa: PLR2004
         region.end = create_new_region(child0, child1, child0.children[0])
     before_r = curr_region.parent[0]
     next_r = None if region.end.children == [] else region.end.children[0]
@@ -203,34 +216,34 @@ def make_var_for_loop(curr_node, register, version, prev_version):
     else:
         variable = "var" + str(decompiler_data.num_of_var)
         decompiler_data.num_of_var += 1
-    data_type = curr_node.state.registers[register].data_type
+    data_type = curr_node.state[register].data_type
     decompiler_data.checked_variables[prev_version] = variable
     decompiler_data.loops_variables[version] = variable
     decompiler_data.loops_nodes_for_variables[curr_node] = version
     decompiler_data.names_of_vars[variable] = data_type
     decompiler_data.variables[prev_version] = variable
-    if curr_node.state.registers[register].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
+    if curr_node.state[register].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
         decompiler_data.address_params.add(variable)
 
 
 def check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_version_node):
-    register_version = curr_node.state.registers[register].version
+    register_version = curr_node.state[register].version
     instruction = curr_node.instruction[0]
     if reg_versions_in_instruction.get(register_version):
         change_node = reg_version_node[register_version]
         instruction_version_list = reg_versions_in_instruction[register_version]
         for version in instruction_version_list:
-            instruction_register = version[:version.find("_")]
-            instruction_register_version = curr_node.state.registers[instruction_register].version
+            instruction_register = version[: version.find("_")]
+            instruction_register_version = curr_node.state[instruction_register].version
             if version != instruction_register_version:
                 if re.match(r"(flat|global)_store", instruction) or "cmp" in instruction:
                     prev_register_version = register_version
                 else:
-                    prev_register_version = curr_node.parent[0].state.registers[register].version
+                    prev_register_version = curr_node.parent[0].state[register].version
                 make_var_for_loop(change_node, instruction_register, register_version, prev_register_version)
 
 
-def process_loop(region_start, region_end):
+def process_loop(region_start, region_end):  # noqa: PLR0912
     region = Region(RegionType.LOOP, region_start)
     region.end = region_end
     before_r = region_start.parent[0]
@@ -244,48 +257,56 @@ def process_loop(region_start, region_end):
     first_reg_version = None
     while curr_node != region_end.start:
         list_of_reg_nums = list(range(1, len(curr_node.instruction))[1:])
-        list_of_reg_nums = list_of_reg_nums if len(curr_node.instruction) == 1 else list_of_reg_nums + [1]
+        list_of_reg_nums = list_of_reg_nums if len(curr_node.instruction) == 1 else [*list_of_reg_nums, 1]
         if len(list_of_reg_nums) > 0:
             first_reg = curr_node.instruction[1]
             if len(first_reg) > 1 and first_reg[1] == "[":
-                first_reg = first_reg[0] + first_reg[2: first_reg.find(":")]
-            if "cmp" not in curr_node.instruction[0] \
-                    and not re.match(r"(flat|global)_store", curr_node.instruction[0]) \
-                    and curr_node.state.registers.get(first_reg):
-                first_reg_version = curr_node.state.registers[first_reg].version
+                first_reg = first_reg[0] + first_reg[2 : first_reg.find(":")]
+            if (
+                "cmp" not in curr_node.instruction[0]
+                and not re.match(r"(flat|global)_store", curr_node.instruction[0])
+                and first_reg in curr_node.state
+            ):
+                first_reg_version = curr_node.state[first_reg].version
                 reg_versions_in_instruction[first_reg_version] = []
                 reg_version_node[first_reg_version] = curr_node
         for num_of_register in list_of_reg_nums:
             register = curr_node.instruction[num_of_register]
             if len(register) > 1 and register[1] == "[":
-                register = register[0] + register[2: register.find(":")]
-            if ("cmp" in curr_node.instruction[0]
+                register = register[0] + register[2 : register.find(":")]
+            if (
+                "cmp" in curr_node.instruction[0]
                 or re.match(r"(flat|global)_store", curr_node.instruction[0])
-                or num_of_register > 1) \
-                    and curr_node.state.registers.get(register):
-                if register == first_reg \
-                        and "cmp" not in curr_node.instruction[0] \
-                        and not re.match(r"(flat|global)_store", curr_node.instruction[0]):
-                    register_version = curr_node.parent[0].state.registers[register].version
+                or num_of_register > 1
+            ) and register in curr_node.state:
+                if (
+                    register == first_reg
+                    and "cmp" not in curr_node.instruction[0]
+                    and not re.match(r"(flat|global)_store", curr_node.instruction[0])
+                ):
+                    register_version = curr_node.parent[0].state[register].version
                 else:
-                    register_version = curr_node.state.registers[register].version
+                    register_version = curr_node.state[register].version
                 used_versions_of_registers.add(register_version)
-            if curr_node.state.registers.get(register):
-                if "cmp" not in curr_node.instruction[0] \
-                        and not re.match(r"(flat|global)_store", curr_node.instruction[0]):
-                    if num_of_register > 1 \
-                            and register != first_reg:
+            if register in curr_node.state:
+                if "cmp" not in curr_node.instruction[0] and not re.match(
+                    r"(flat|global)_store", curr_node.instruction[0]
+                ):
+                    if num_of_register > 1 and register != first_reg:
                         reg_versions_in_instruction[first_reg_version].append(register_version)
                         check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_version_node)
                 else:
                     check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_version_node)
-            if "cmp" not in curr_node.instruction[0] \
-                    and not re.match(r"(flat|global)_store", curr_node.instruction[0]) \
-                    and num_of_register == 1 \
-                    and curr_node.state.registers.get(register):
+            if (
+                "cmp" not in curr_node.instruction[0]
+                and not re.match(r"(flat|global)_store", curr_node.instruction[0])
+                and num_of_register == 1
+                and register in curr_node.state
+            ):
                 separation = first_reg_version.find("_")
-                first_reg_prev_version = first_reg_version[:separation + 1] \
-                                         + str(int(first_reg_version[separation + 1:]) - 1)
+                first_reg_prev_version = first_reg_version[: separation + 1] + str(
+                    int(first_reg_version[separation + 1 :]) - 1
+                )
                 if first_reg_prev_version in used_versions_of_registers:
                     make_var_for_loop(curr_node, register, first_reg_version, first_reg_prev_version)
         curr_node = curr_node.children[0]
@@ -310,11 +331,15 @@ def process_control_structures_in_loop(region_start, region_end):
             if check_loop(region_start, region_end):
                 process_loop(region_start, region_end)
                 return
-            if curr_region.type == RegionType.BASIC and len(curr_region.children) == 2 \
-                    and (after_region_end in [curr_region.children[0], curr_region.children[1]]):
+            if (
+                curr_region.type == RegionType.BASIC
+                and len(curr_region.children) == 2  # noqa: PLR2004
+                and (after_region_end in {curr_region.children[0], curr_region.children[1]})
+            ):
                 curr_region.type = RegionType.BREAK_REGION  # надо отдельно написать на return и обрезание на break
-                next_region = curr_region.children[0] if curr_region.children[1] == after_region_end else \
-                    curr_region.children[1]
+                next_region = (
+                    curr_region.children[0] if curr_region.children[1] == after_region_end else curr_region.children[1]
+                )
                 curr_region, after_region_end = remove_region_connect(curr_region, after_region_end)
                 join_regions(curr_region.parent[0], curr_region, next_region)  # not good enough
                 if curr_region.children:
@@ -369,8 +394,9 @@ def find_loops():
                 else:
                     region_end = curr_region  # вероятно это не так
                     region_start = curr_loop
-                    curr_loop, start_region, q_loops, region_start = \
-                        get_one_loop_region(q_loops, curr_region, start_region, region_start, region_end)
+                    curr_loop, start_region, q_loops, region_start = get_one_loop_region(
+                        q_loops, curr_region, start_region, region_start, region_end
+                    )
             elif curr_region.type == RegionType.START_LOOP:
                 curr_loop = curr_region
                 q_loops.append(curr_region)
@@ -390,16 +416,14 @@ def preprocess_if_and_if_else(curr_region, visited, start_region, q):
             visited, q, start_region = process_if_statement_region(curr_region)
         elif check_if_else(curr_region):
             visited, q, start_region = process_if_else_statement_region(curr_region)
-        else:
-            if curr_region.children:
-                for child in curr_region.children:
-                    if child not in visited:
-                        q.append(child)
-    else:
-        if curr_region.children:
+        elif curr_region.children:
             for child in curr_region.children:
                 if child not in visited:
                     q.append(child)
+    elif curr_region.children:
+        for child in curr_region.children:
+            if child not in visited:
+                q.append(child)
     if not q:
         q = deque()
         q.append(start_region)
@@ -429,5 +453,4 @@ def process_region_graph():
     decompiler_data = DecompilerData()
     if decompiler_data.loops:
         find_loops()
-    decompiler_data.improve_cfg = process_region_graph_dfs(
-        decompiler_data.starts_regions[decompiler_data.cfg], set({}))
+    decompiler_data.improve_cfg = process_region_graph_dfs(decompiler_data.starts_regions[decompiler_data.cfg], set({}))

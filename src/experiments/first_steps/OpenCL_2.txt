@@ -1,2 +1,0 @@
-*(uint*)(data[get_global_id(0)] + 0) = 0xface
-END Program

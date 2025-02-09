@@ -14,6 +14,7 @@ venv.bak/
 
 # PyCharm
 .idea/
+﻿tests/.idea
 
 # Temp (Delete before merge)
 .vscode/
