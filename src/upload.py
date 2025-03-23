@@ -1,3 +1,4 @@
+from src.expression_manager.expression_node import *
 from src.combined_register_content import CombinedRegisterContent
 from src.decompiler_data import DecompilerData, make_elem_from_addr
 from src.integrity import Integrity

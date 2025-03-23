@@ -1,3 +1,5 @@
+from src.types.opencl_types import OpenCLTypes
+from src.expression_manager.expression_node import expression_to_string
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier
 from src.opencl_types import make_opencl_type
@@ -140,6 +142,7 @@ class FlatStore(BaseInstruction):
                 var = f"{var}[get_global_id(0)]"
             elif " + " in var:
                 var = make_elem_from_addr(var)
+                var = expression_to_string(self.node.get_expression_node(self.to_registers))
             elif (
                 var in self.decompiler_data.names_of_vars
                 and self.decompiler_data.names_of_vars[var] != self.node.state[self.to_registers].data_type
@@ -155,8 +158,10 @@ class FlatStore(BaseInstruction):
                         self.from_registers, self.vdata, self.to_registers, self.node
                     )
                 else:
-                    self.output_string = self.node.state[self.from_registers].get_value()
+                    #todo - check other branches
+                    self.output_string = expression_to_string(self.node.state[self.from_registers].register_content._expression_node)
             else:
                 self.output_string = self.decompiler_data.initial_state[self.from_registers].val
             return f"{var} = {self.output_string}"
+
         return super().to_print()

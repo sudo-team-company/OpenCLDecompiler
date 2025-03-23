@@ -6,6 +6,7 @@ import sympy
 
 from src import utils
 from src.combined_register_content import CombinedRegisterContent
+from src.expression_manager.expression_node import ExpressionNode, expression_to_string
 from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
@@ -34,9 +35,13 @@ def set_reg_value(  # noqa: PLR0913
     sign: RegisterSignType | list[RegisterSignType] = RegisterSignType.POSITIVE,
     operation: OperationType | None = None,
     size: list[int] | None = None,
+    expression_node: ExpressionNode = None
 ):
     decompiler_data = DecompilerData()
     if register_content_type == RegisterContent:
+        print("set_reg_value:", to_reg, expression_to_string(expression_node))
+        if to_reg == "v10" or to_reg == "s4":
+            pass
         node.state[to_reg] = Register(
             integrity=integrity,
             register_content=RegisterContent(
@@ -44,6 +49,7 @@ def set_reg_value(  # noqa: PLR0913
                 type_=reg_type,
                 sign=sign,
                 data_type=data_type,
+                expression_node=expression_node
             ),
         )
         node.state[to_reg].try_simplify()
@@ -147,6 +153,7 @@ def set_reg(
         )
         else None,
         size=reg.register_content._size,  # noqa: SLF001
+        expression_node=reg.register_content._expression_node
     )
 
 
@@ -563,12 +570,12 @@ class DecompilerData(metaclass=Singleton):
                     value=f"get_group_id({dim})",
                     type_=[RegisterType.WORK_GROUP_ID_X, RegisterType.WORK_GROUP_ID_Y, RegisterType.WORK_GROUP_ID_Z][
                         dim
-                    ],
+                    ]
                 ),
             ),
         )
 
-        if self.is_rdna3:
+        if self.is_rdna3: #todo: add node here when CombinedRegisterContent is supported
             v_dim = "v0"
             register_content = CombinedRegisterContent(
                 register_contents=[
@@ -586,7 +593,7 @@ class DecompilerData(metaclass=Singleton):
             v_dim = "v" + str(dim)
             register_content = RegisterContent(
                 value=f"get_local_id({dim})",
-                type_=[RegisterType.WORK_ITEM_ID_X, RegisterType.WORK_ITEM_ID_Y, RegisterType.WORK_ITEM_ID_Z][dim],
+                type_=[RegisterType.WORK_ITEM_ID_X, RegisterType.WORK_ITEM_ID_Y, RegisterType.WORK_ITEM_ID_Z][dim]
             )
 
         self.set_reg_make_version(

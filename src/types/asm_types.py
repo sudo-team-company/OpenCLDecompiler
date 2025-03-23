@@ -1,6 +1,6 @@
 from enum import Enum
 
-from src.expression_tree.base_type import BaseType, UnknownTypeException
+from src.types.base_type import *
     
 class ASMType(BaseType):
     def __init__(self, size_bytes = 0, is_signed = True, is_integer = True, number_of_components = 1, is_global = False):
@@ -34,7 +34,7 @@ class ASMType(BaseType):
         if self.size_bytes <= 0:
             return "Unknown ASM Type"
 
-        global_prefix = "g" if self.is_global else ""
+        global_prefix = "g" if TypeModifiers.GLOBAL in self.modifiers else ""
         type_prefix = self.getTypeString()
         number_of_components_prefix = "" if self.number_of_components == 1 else str(self.number_of_components)
 
@@ -51,7 +51,7 @@ class ASMTypes(Enum):
     def __eq__(self, other):
         return self.value == other.value
     
-    def fromString(s) -> ASMType:
+    def from_string(s) -> ASMType:
         for e in ASMTypes:
             if str(e) == s:
                 return e.value
@@ -162,13 +162,3 @@ class ASMTypes(Enum):
     GLOBAL_DOUBLE2 = ASMType(size_bytes=8, is_integer=False, number_of_components=2, is_global=True)
     GLOBAL_DOUBLE4 = ASMType(size_bytes=8, is_integer=False, number_of_components=4, is_global=True)
     GLOBAL_DOUBLE8 = ASMType(size_bytes=8, is_integer=False, number_of_components=8, is_global=True)
-
-# print(ASMTypes.CHAR2)
-# print(ASMTypes.HALF)
-# print(ASMTypes.FLOAT)
-# print(ASMTypes.DOUBLE)
-# print(ASMTypes.FLOAT4)
-# print(ASMTypes.FLOAT8)
-# print(ASMTypes.GLOBAL_FLOAT8)
-# print(ASMTypes.fromString("f64"))
-# print(ASMTypes.fromString("gf64"))

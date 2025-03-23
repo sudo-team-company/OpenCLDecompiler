@@ -1,6 +1,7 @@
 from enum import Enum
 
-from src.types.base_type import BaseType, UnknownTypeException
+from src.types.asm_types import ASMTypes
+from src.types.base_type import BaseType, TypeModifiers, UnknownTypeException
 
 class OpenCLType(BaseType):
     def __init__(self, size_bytes = 0, is_signed = True, is_integer = True, number_of_components = 1, is_global = False):
@@ -32,7 +33,7 @@ class OpenCLType(BaseType):
         if self.size_bytes <= 0:
             return "Unknown OpenCL Type"
 
-        global_prefix = "__global " if self.is_global else ""
+        global_prefix = "__global " if TypeModifiers.GLOBAL in self.modifiers else ""
         signed_prefix = "u" if self.is_integer and not self.is_signed else ""
         type_prefix = self.getTypeString()
         number_of_components_prefix = "" if self.number_of_components == 1 else str(self.number_of_components)
@@ -43,6 +44,7 @@ class UnknownOpenCLType(OpenCLType):
     def __init__(self):
         super().__init__(0)
 
+#todo: add ptr, local and const
 class OpenCLTypes(Enum):
     def __str__(self):
         return str(self.value)
@@ -50,11 +52,11 @@ class OpenCLTypes(Enum):
     def __eq__(self, other):
         return self.value == other.value
     
-    def fromString(s) -> OpenCLType:
+    def from_string(s):
         for e in OpenCLTypes:
             if str(e) == s:
-                return e.value
-        return OpenCLTypes.UNKNOWN.value
+                return e
+        return OpenCLTypes.UNKNOWN
     
     UNKNOWN = UnknownOpenCLType()
 
@@ -162,23 +164,23 @@ class OpenCLTypes(Enum):
     GLOBAL_DOUBLE4 = OpenCLType(size_bytes=8, is_integer=False, number_of_components=4, is_global=True)
     GLOBAL_DOUBLE8 = OpenCLType(size_bytes=8, is_integer=False, number_of_components=8, is_global=True)
 
-# print(OpenCLTypes.CHAR2)
-# print(OpenCLTypes.HALF)
-# print(OpenCLTypes.FLOAT)
-# print(OpenCLTypes.FLOAT4)
-# print(OpenCLTypes.FLOAT8)
-# print(OpenCLTypes.GLOBAL_FLOAT8)
-# print(OpenCLTypes.fromString("__global half2"))
-# print(OpenCLTypes.fromString("asdasdas half2"))
+def make_opencl_type_from_asm_type(asm_type : ASMTypes) -> OpenCLTypes:
+    for t in OpenCLTypes:
+        if t.value == asm_type.value:
+            return t
+    return OpenCLTypes.UNKNOWN
 
+def make_opencl_type(type_hint) -> OpenCLTypes:
+    if isinstance(type_hint, OpenCLTypes):
+        return type_hint
+    
+    if not isinstance(type_hint, str):
+        return OpenCLTypes.UNKNOWN
+    
+    opencl_type = OpenCLTypes.from_string(type_hint)
+    if opencl_type == OpenCLTypes.UNKNOWN:
+        asm_type = ASMTypes.from_string(type_hint)
+        if asm_type != ASMTypes.UNKNOWN:
+            opencl_type = make_opencl_type_from_asm_type(asm_type)
 
-# def make_opencl_type_test(asm_type : ASMType) -> OpenCLType:
-#     for t in OpenCLTypes:
-#         if t.value == asm_type:
-#             return t.value
-#     return OpenCLTypes.UNKNOWN
-
-# print(ASMTypes.CHAR, OpenCLTypes.CHAR, OpenCLTypes.CHAR == ASMTypes.CHAR)
-# print(ASMTypes.CHAR, ASMTypes.CHAR, ASMTypes.CHAR == OpenCLTypes.CHAR)
-# print(OpenCLTypes.UNKNOWN, ASMTypes.UNKNOWN, ASMTypes.UNKNOWN == OpenCLTypes.UNKNOWN)
-# print(make_opencl_type_test(ASMTypes.CHAR.value))
+    return opencl_type

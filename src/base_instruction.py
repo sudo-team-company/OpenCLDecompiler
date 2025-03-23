@@ -1,3 +1,4 @@
+from src.expression_manager.expression_manager import ExpressionManager
 from .decompiler_data import DecompilerData
 from .node import Node
 from .operation_status import OperationStatus
@@ -9,6 +10,7 @@ class BaseInstruction:
         self.suffix: str = suffix
         self.output_string: str = ""
         self.decompiler_data = DecompilerData()
+        self.expression_manager = ExpressionManager()
 
     @property
     def instruction(self) -> list[str]:

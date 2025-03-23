@@ -1,5 +1,15 @@
+from dataclasses import dataclass
+from enum import Enum, auto
+
+
 class UnknownTypeException(Exception):
     pass
+
+class TypeModifiers(Enum):
+    GLOBAL = auto()
+    LOCAL = auto()
+    CONST = auto()
+    PRIVATE = auto()
 
 class BaseType:
     def __init__(self, size_bytes = 0, is_signed = True, is_integer = True, number_of_components = 0, is_global = False):
@@ -7,7 +17,9 @@ class BaseType:
         self.is_signed = is_signed
         self.is_integer = is_integer
         self.number_of_components = number_of_components
-        self.is_global = is_global
+        self.modifiers: set[TypeModifiers] = set()
+        if is_global:
+            self.modifiers.add(TypeModifiers.GLOBAL)
 
     def getSize(self):
         return int(self.size_bytes) * int(self.number_of_components)
@@ -17,9 +29,7 @@ class BaseType:
         self.is_signed == other.is_signed and\
         self.is_integer == other.is_integer and\
         self.number_of_components == other.number_of_components and\
-        self.is_global == other.is_global
-
-
+        self.modifiers == other.modifiers
 
 class UnknownType(BaseType):
     def __init__(self):

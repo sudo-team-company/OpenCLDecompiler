@@ -2,6 +2,7 @@ import copy
 import enum
 from typing import Optional
 
+from src.expression_manager.expression_node import ExpressionNode
 from src.constants import DEFAULT_REGISTER_SIZE
 from src.register_type import RegisterType
 
@@ -64,6 +65,7 @@ class RegisterContent:
         size: list | int = DEFAULT_REGISTER_SIZE,
         data_type: list | str | None = None,
         sign: list | RegisterSignType = RegisterSignType.POSITIVE,
+        expression_node: ExpressionNode = None
     ):
         if type_ is RegisterType and type_ in CONSTANT_VALUES:
             self._type = type_
@@ -80,6 +82,7 @@ class RegisterContent:
         self._size = size
         self._data_type = data_type
         self._sign = sign
+        self._expression_node = expression_node
 
     def get_value(self) -> object:
         return self._value

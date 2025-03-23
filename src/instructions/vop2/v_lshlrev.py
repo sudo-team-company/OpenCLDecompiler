@@ -1,3 +1,5 @@
+from src.expression_manager.expression_node import ExpressionOperationType
+from src.types.opencl_types import OpenCLTypes
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
 from src.integrity import Integrity
@@ -39,6 +41,15 @@ class VLshlrev(BaseInstruction):
             src0_flag = is_reg(self.src0)
             reg_entire0 = Integrity.LOW_PART
             reg_entire1 = Integrity.HIGH_PART
+
+            ### todo
+            const_node = self.expression_manager.add_const_node(pow(2, int(self.src0)), OpenCLTypes.UINT)
+            start_from_register_node = self.node.get_expression_node(start_from_register)
+            end_from_register_node = self.node.get_expression_node(end_from_register)
+            new_value0_node = self.expression_manager.add_operation(start_from_register_node, const_node, ExpressionOperationType.MUL, OpenCLTypes.UINT)
+            new_value1_node = self.expression_manager.add_operation(end_from_register_node, const_node, ExpressionOperationType.MUL, OpenCLTypes.UINT)
+            ###
+
             if src0_flag and src1_flag:
                 reg_type = self.node.state[start_from_register].type
                 if not (
@@ -46,6 +57,7 @@ class VLshlrev(BaseInstruction):
                     in {RegisterType.GLOBAL_ID_X, RegisterType.GLOBAL_ID_Y, RegisterType.GLOBAL_ID_Z}
                     and self.node.state[end_from_register].val == "0"
                 ):
+                    #todo doublecheck?
                     new_value0 = self.node.state[start_from_register]
                     new_value1 = self.node.state[end_from_register]
             else:
@@ -67,6 +79,7 @@ class VLshlrev(BaseInstruction):
                 data_type,
                 reg_type=reg_type,
                 integrity=reg_entire0,
+                expression_node=new_value0_node
             )
             return set_reg_value(
                 node,
@@ -76,5 +89,6 @@ class VLshlrev(BaseInstruction):
                 data_type,
                 reg_type=reg_type,
                 integrity=reg_entire1,
+                expression_node=new_value1_node
             )
         return super().to_fill_node()
