@@ -107,6 +107,7 @@ class SAdd(BaseInstruction):
                 else:
                     reg_type = RegisterType.UNKNOWN
             else:
+                assert(False)
                 reg_type = RegisterType.INT32
                 if ssrc0_reg:
                     reg_type = self.node.state[self.ssrc0].type
@@ -122,6 +123,8 @@ class SAdd(BaseInstruction):
                     data_type = self.node.parent[0].state[self.ssrc0].data_type
                 else:
                     data_type = self.node.state[self.ssrc0].data_type
+            
+            assert(expr_node is not None)
             return set_reg_value(
                 self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], data_type, reg_type=reg_type, expression_node=expr_node
             )

@@ -54,10 +54,7 @@ def expression_to_string_helper(expression_node: ExpressionNode, need_cast: bool
             return f"({expression_to_string_helper(expression_node.left, check_nodes_need_cast_to(expression_node.left, expression_node))} {str(expression_node.value.value)} {expression_to_string_helper(expression_node.right, check_nodes_need_cast_to(expression_node.right, expression_node))})"
         case _:
             if need_cast:
-                if expression_node.value == "x":
-                    pass
-                print("this needs cast:", f"{expression_node.value}", check_nodes_need_cast_to(expression_node, expression_node.parent))
-                return f"({expression_node.value_type_hint}){expression_node.value}"
+                return f"({expression_node.parent.value_type_hint}){expression_node.value}"
             else:
                 return f"{expression_node.value}"
 

@@ -154,11 +154,13 @@ class FlatStore(BaseInstruction):
                 if self.node.state[self.from_registers].val == "0" and self.node.state.get(self.from_registers_1):
                     self.output_string = self.node.state[self.from_registers_1].val
                 elif is_vector_type(self.node.state[self.to_registers].data_type):
+                    assert(False)
                     self.output_string = prepare_vector_type_output(
                         self.from_registers, self.vdata, self.to_registers, self.node
                     )
                 else:
                     #todo - check other branches
+                    self.output_string = self.node.state[self.from_registers].val
                     self.output_string = expression_to_string(self.node.state[self.from_registers].register_content._expression_node)
             else:
                 self.output_string = self.decompiler_data.initial_state[self.from_registers].val

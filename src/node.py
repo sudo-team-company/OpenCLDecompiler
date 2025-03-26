@@ -1,5 +1,7 @@
+from src.types.opencl_types import OpenCLTypes
 from src.expression_manager.expression_manager import ExpressionManager
 from src import utils
+from src.register import is_reg
 from src.register_content import CONSTANT_VALUES
 from src.register_type import RegisterType
 
@@ -24,8 +26,11 @@ class Node:
 
     #todo - maybe this needs to be moved somewhere else
     def get_expression_node(self, reg):
-        register_content = self.state[reg].register_content
-        if register_content._expression_node is not None:
-            return register_content._expression_node
+        if is_reg(reg):
+            register_content = self.state[reg].register_content
+            if register_content._expression_node is not None:
+                return register_content._expression_node
+            else:
+                return ExpressionManager().add_register_node(register_content._type, register_content._value)
         else:
-            return ExpressionManager().add_register_node(register_content._type, register_content._value)
+            return ExpressionManager().add_const_node(reg, OpenCLTypes.UINT)

@@ -40,8 +40,6 @@ def set_reg_value(  # noqa: PLR0913
     decompiler_data = DecompilerData()
     if register_content_type == RegisterContent:
         print("set_reg_value:", to_reg, expression_to_string(expression_node))
-        if to_reg == "v10" or to_reg == "s4":
-            pass
         node.state[to_reg] = Register(
             integrity=integrity,
             register_content=RegisterContent(
