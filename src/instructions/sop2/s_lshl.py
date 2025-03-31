@@ -51,6 +51,17 @@ class SLshl(BaseInstruction):
             new_value1 = make_op(self.node, end_from_register, str(pow(2, int(self.ssrc1))), "*", suffix=self.suffix)
             reg_type0 = self.node.state[start_from_register].type
             reg_type1 = self.node.state[end_from_register].type
+
+            op_node0 = self.expression_manager.add_operation(self.node.get_expression_node(start_from_register),
+                                                        self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.UINT),
+                                                        ExpressionOperationType.MUL,
+                                                        OpenCLTypes.UINT)
+
+            op_node1 = self.expression_manager.add_operation(self.node.get_expression_node(end_from_register),
+                                                        self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.UINT),
+                                                        ExpressionOperationType.MUL,
+                                                        OpenCLTypes.UINT)
+            
             data_type = self.suffix
             if self.ssrc1 == "3":
                 data_type = "8 bytes"
@@ -63,9 +74,10 @@ class SLshl(BaseInstruction):
                 [start_from_register, self.ssrc1],
                 data_type,
                 reg_type=reg_type0,
+                expression_node=op_node0,
             )
             return set_reg_value(
-                node, new_value1, end_to_register, [end_from_register, self.ssrc1], data_type, reg_type=reg_type1
+                node, new_value1, end_to_register, [end_from_register, self.ssrc1], data_type, reg_type=reg_type1,expression_node=op_node1,
             )
 
         if self.decompiler_data.is_rdna3:
