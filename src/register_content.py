@@ -44,8 +44,8 @@ CONSTANT_VALUES: dict[RegisterType, (str, int, str, RegisterSignType)] = {
     RegisterType.WORK_GROUP_ID_Y: ("get_group_id(1)", 32, "u32", RegisterSignType.POSITIVE),
     RegisterType.WORK_GROUP_ID_Z: ("get_group_id(2)", 32, "u32", RegisterSignType.POSITIVE),
     RegisterType.GLOBAL_OFFSET_X: ("get_global_offset(0)", 32, "u32", RegisterSignType.POSITIVE),
-    RegisterType.GLOBAL_OFFSET_Y: ("get_global_offset(0)", 32, "u32", RegisterSignType.POSITIVE),
-    RegisterType.GLOBAL_OFFSET_Z: ("get_global_offset(0)", 32, "u32", RegisterSignType.POSITIVE),
+    RegisterType.GLOBAL_OFFSET_Y: ("get_global_offset(1)", 32, "u32", RegisterSignType.POSITIVE),
+    RegisterType.GLOBAL_OFFSET_Z: ("get_global_offset(2)", 32, "u32", RegisterSignType.POSITIVE),
     # u32 get_global_linear_id()
     # u32 get_local_linear_id()
     # u32 get_sub_group_size()

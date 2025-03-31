@@ -21,6 +21,15 @@ class ExpressionManager(metaclass=Singleton):
         print("add_node:", expression_to_string(node))
         self._nodes.append(node)
 
+    #todo: rename
+    def add_offset_thingy_node(self, s0: ExpressionNode, s1: ExpressionNode, data_size: int):
+        data_size_node = self.add_const_node(data_size, OpenCLTypes.UINT)
+        div_node = self.add_operation(s1, data_size_node, ExpressionOperationType.DIV, OpenCLTypes.UINT)
+        expr_node = self.add_operation(s0, div_node, ExpressionOperationType.PLUS, OpenCLTypes.UINT)
+        
+        print("added offset thingy node:", expression_to_string(expr_node))
+        return expr_node
+
     def add_operation(self, s0: ExpressionNode, s1: ExpressionNode, op: ExpressionOperationType, value_type_hint: OpenCLTypes):        
         assert(s0 is not None and s1 is not None)
         operation_node = ExpressionNode(ExpressionType.OP, op, value_type_hint)
@@ -36,6 +45,12 @@ class ExpressionManager(metaclass=Singleton):
     
     def add_kernel_argument(self, arg: KernelArgument) -> ExpressionNode:
         if arg.hidden:
+            for reg_type in CONSTANT_VALUES:
+                reg_type_name = CONSTANT_VALUES[reg_type][0]
+                if arg.name == reg_type_name:
+                    return self.add_register_node(reg_type, arg.name)
+
+            #most likely other stuff is some hidden buffers like e.g. printfbuffer, but need to check that
             return None
         
         return self.add_variable_node(arg.name, make_opencl_type(arg.type_name))

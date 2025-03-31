@@ -159,13 +159,9 @@ class VAdd(BaseInstruction):
                     new_value1 = make_op(self.node, self.src1, str(data_size), "/", suffix=self.suffix)
                     new_value = make_op(self.node, argument, new_value1, "+", suffix=self.suffix)
 
-                    data_size_node = self.expression_manager.add_const_node(data_size, OpenCLTypes.UINT)
-                    #todo or rather get register node? needs checking
                     src0_node = self.node.get_expression_node(self.src0)
                     src1_node = self.node.get_expression_node(self.src1)
-
-                    div_node = self.expression_manager.add_operation(src1_node, data_size_node, ExpressionOperationType.DIV, OpenCLTypes.UINT)
-                    expr_node = self.expression_manager.add_operation(src0_node, div_node, ExpressionOperationType.PLUS, OpenCLTypes.UINT)
+                    expr_node = self.expression_manager.add_offset_thingy_node(src0_node, src1_node, data_size)
                 elif self.node.state[self.src0].type == RegisterType.GLOBAL_DATA_POINTER:
                     #todo
                     assert(False)

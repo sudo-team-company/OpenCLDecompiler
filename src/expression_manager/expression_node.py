@@ -44,19 +44,25 @@ class ExpressionNode:
 
 def expression_to_string_helper(expression_node: ExpressionNode, need_cast: bool = False) -> str:
     if expression_node is None:
-        return ""
+        return "BROOO"
     
     match expression_node.type:
         case ExpressionType.OP:
             # special case for: data_ptr + smth => data_ptr[smth]
             if expression_node.value == ExpressionOperationType.PLUS and expression_node.left.type == ExpressionType.VAR_PTR:
                 return f"{str(expression_node.left.value)}[{expression_to_string_helper(expression_node.right, False)}]"
-            return f"({expression_to_string_helper(expression_node.left, check_nodes_need_cast_to(expression_node.left, expression_node))} {str(expression_node.value.value)} {expression_to_string_helper(expression_node.right, check_nodes_need_cast_to(expression_node.right, expression_node))})"
+            left_value = expression_to_string_helper(expression_node.left, check_nodes_need_cast_to(expression_node.left, expression_node))
+            operator = str(expression_node.value.value)
+            right_value = expression_to_string_helper(expression_node.right, check_nodes_need_cast_to(expression_node.right, expression_node))
+            return f"{left_value} {operator} {right_value}"
         case _:
+            ret_str = str(expression_node.value)
+            if "-" in ret_str or "+" in ret_str or "*" in ret_str or "/" in ret_str:
+                ret_str = f"({ret_str})"
             if need_cast:
-                return f"({expression_node.parent.value_type_hint}){expression_node.value}"
+                return f"({expression_node.parent.value_type_hint}){ret_str}"
             else:
-                return f"{expression_node.value}"
+                return f"{ret_str}"
 
 def expression_to_string(expression_node: ExpressionNode) -> str:
     return expression_to_string_helper(expression_node)

@@ -18,6 +18,8 @@ class SMov(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in {"b32", "b64"}:
+            expr_node = self.node.get_expression_node(self.ssrc0)
+
             if self.sdst == "exec":
                 new_exec_condition = (
                     self.decompiler_data.exec_registers["exec"] | self.decompiler_data.exec_registers[self.ssrc0]
@@ -42,5 +44,5 @@ class SMov(BaseInstruction):
                     new_value = self.ssrc0
                     reg_type = RegisterType.INT32
                 data_type = self.suffix
-            return set_reg_value(self.node, new_value, self.sdst, [], data_type, reg_type=reg_type)
+            return set_reg_value(self.node, new_value, self.sdst, [], data_type, reg_type=reg_type, expression_node=expr_node)
         return super().to_fill_node()
