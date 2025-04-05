@@ -2,6 +2,8 @@ from itertools import starmap
 
 import yaml
 
+from src.expression_manager.expression_manager import ExpressionManager
+
 from ..decompiler_data import DecompilerData
 from ..model import ConfigData, KernelArgument
 from ..opencl_types import make_asm_type
@@ -93,12 +95,14 @@ def _convert_args_to_offset_to_content(args: list) -> dict[str, RegisterContent]
 
             if type_name.endswith("*"):
                 data_type = make_asm_type(type_name[:-1])
-
+        
+        assert(False and "rdna3 not supported yet")
         register_content = RegisterContent(
             value=value,
             type_=_ARG_KIND_TO_REGISTER_TYPE[value_kind],
             size=size,
             data_type=data_type,
+            expression_node=ExpressionManager().add_kernel_argument(KernelArgument(data_type, f"*{value}" if type_name.endswith("*") else value, offset, size, hidden=arg[".value_kind"].startswith("hidden_"))) if type_name is not None else None,
         )
 
         offset_to_content[offset] = register_content

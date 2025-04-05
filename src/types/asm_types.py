@@ -51,11 +51,11 @@ class ASMTypes(Enum):
     def __eq__(self, other):
         return self.value == other.value
     
-    def from_string(s) -> ASMType:
+    def from_string(s):
         for e in ASMTypes:
             if str(e) == s:
-                return e.value
-        return ASMTypes.UNKNOWN.value
+                return e
+        return ASMTypes.UNKNOWN
     
     UNKNOWN = UnknownASMType()
 

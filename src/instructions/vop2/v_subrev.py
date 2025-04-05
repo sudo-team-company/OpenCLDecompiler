@@ -1,5 +1,7 @@
+from src.types.opencl_types import OpenCLTypes
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
+from src.expression_manager.expression_node import ExpressionOperationType
 
 
 class VSubrev(BaseInstruction):
@@ -27,8 +29,13 @@ class VSubrev(BaseInstruction):
     def to_fill_node(self):
         if self.suffix == "u32":
             new_value = make_op(self.node, self.src1, self.src0, "-", "(ulong)", "(ulong)", suffix=self.suffix)
+
+            src0_node = self.node.get_expression_node(self.src0)
+            src1_node = self.node.get_expression_node(self.src1)
+            expr_node = self.expression_manager.add_operation(src1_node, src0_node, ExpressionOperationType.MINUS, OpenCLTypes.ULONG)
+
             reg_entire = self.node.state[self.src1].integrity
             return set_reg_value(
-                self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix, integrity=reg_entire
+                self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix, integrity=reg_entire, expression_node=expr_node
             )
         return super().to_fill_node()

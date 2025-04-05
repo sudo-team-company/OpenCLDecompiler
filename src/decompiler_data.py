@@ -4,8 +4,10 @@ import struct
 
 import sympy
 
+from src.types.opencl_types import OpenCLTypes
 from src import utils
 from src.combined_register_content import CombinedRegisterContent
+from src.expression_manager.expression_manager import ExpressionManager
 from src.expression_manager.expression_node import ExpressionNode, expression_to_string
 from src.flag_type import FlagType
 from src.integrity import Integrity
@@ -38,6 +40,8 @@ def set_reg_value(  # noqa: PLR0913
     expression_node: ExpressionNode = None
 ):
     decompiler_data = DecompilerData()
+    if decompiler_data.name_of_program == "add_get_work_dim_x" and to_reg == "s4":
+        pass
     if register_content_type == RegisterContent:
         if to_reg == "s1":
             pass
@@ -557,6 +561,8 @@ class DecompilerData(metaclass=Singleton):
         self.versions[reg] += 1
 
     def set_reg_make_version(self, state, reg, value):
+        if DecompilerData().name_of_program == "add_get_work_dim_x" and reg == "s4":
+            pass
         state[reg] = value
         self.make_version(state, reg)
 
@@ -638,6 +644,7 @@ class DecompilerData(metaclass=Singleton):
                 register_content=RegisterContent(
                     value="0",
                     type_=RegisterType.ARGUMENTS_POINTER,
+                    expression_node=ExpressionManager().add_const_node(0, OpenCLTypes.USHORT),
                 ),
             ),
         )
@@ -649,6 +656,7 @@ class DecompilerData(metaclass=Singleton):
                 register_content=RegisterContent(
                     value="0",
                     type_=RegisterType.ARGUMENTS_POINTER,
+                    expression_node=ExpressionManager().add_const_node(0, OpenCLTypes.USHORT),
                 ),
             ),
         )
@@ -661,6 +669,7 @@ class DecompilerData(metaclass=Singleton):
                     register_content=RegisterContent(
                         value="0",
                         type_=RegisterType.DISPATCH_POINTER,
+                        expression_node=ExpressionManager().add_const_node(0, OpenCLTypes.USHORT),
                     ),
                 ),
             )
@@ -672,6 +681,7 @@ class DecompilerData(metaclass=Singleton):
                     register_content=RegisterContent(
                         value="0",
                         type_=RegisterType.DISPATCH_POINTER,
+                        expression_node=ExpressionManager().add_const_node(0, OpenCLTypes.USHORT),
                     ),
                 ),
             )
