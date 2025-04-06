@@ -56,20 +56,19 @@ class VLshlOr(BaseInstruction):
             )
             if src_types in self._instruction_internal_mapping_by_types:
                 new_value, reg_type, reg_sign = self._instruction_internal_mapping_by_types[src_types]
-
-                #todo - rewrite this
+                
+                # #todo - rewrite this
                 reg_values = new_value.split(" - ")
                 reg_types = []
-                for reg_value in reg_values:
-                    for reg_type in CONSTANT_VALUES:
-                        if reg_value == CONSTANT_VALUES[reg_type][0]:
-                            reg_types.append(reg_type)
+                for v in reg_values:
+                    for t in CONSTANT_VALUES:
+                        if v == CONSTANT_VALUES[t][0]:
+                            reg_types.append(t)
                             break
                 
                 assert(len(reg_values) == len(reg_types))
 
-                left_node, right_node = map(lambda reg_type: self.expression_manager.add_register_node(reg_type, str(CONSTANT_VALUES[reg_type][0])), reg_types)
-
+                left_node, right_node = map(lambda t: self.expression_manager.add_register_node(t, str(CONSTANT_VALUES[t][0])), reg_types)
                 expr_node = self.expression_manager.add_operation(left_node, right_node, ExpressionOperationType.MINUS, OpenCLTypes.UINT)
 
                 if self.decompiler_data.is_rdna3:

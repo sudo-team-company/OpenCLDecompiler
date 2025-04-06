@@ -16,6 +16,14 @@ class ExpressionType(Enum):
     VAR_PTR = auto()
 
 class ExpressionOperationType(Enum):
+    def fromString(s: str):
+        for expr_op_type in ExpressionOperationType:
+            if s == expr_op_type.value:
+                return expr_op_type
+            
+        assert(False)
+        return ExpressionOperationType.UNKNOWN
+    
     UNKNOWN = auto()
 
     PLUS = "+" # +
@@ -24,7 +32,7 @@ class ExpressionOperationType(Enum):
     DIV = "/"
     REM = "%"
 
-    EQ = auto() # ==
+    EQ = "==" # ==
     NE = auto() # !=
     LT = auto() # <
     LE = auto() # <=

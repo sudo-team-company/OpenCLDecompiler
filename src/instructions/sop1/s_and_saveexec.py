@@ -1,5 +1,7 @@
+from src.types.opencl_types import OpenCLTypes
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
+from src.expression_manager.expression_node import ExpressionOperationType, expression_to_string
 
 
 class SAndSaveexec(BaseInstruction):
@@ -22,10 +24,13 @@ class SAndSaveexec(BaseInstruction):
             old_exec_condition = self.decompiler_data.exec_registers["exec"]
             new_cond = self.node.state[self.ssrc0].val
 
+            #todo double check?
             self.decompiler_data.exec_registers[self.sdst] = old_exec_condition
             set_reg_value(
-                self.node, old_exec_condition.top(), self.sdst, ["exec"], None, exec_condition=old_exec_condition
+                self.node, old_exec_condition.top(), self.sdst, ["exec"], None, exec_condition=old_exec_condition, expression_node=self.node.get_expression_node("exec")
             )
+
+            expr_node = self.node.get_expression_node(self.ssrc0)
 
             new_exec_condition = old_exec_condition & new_cond
             self.decompiler_data.exec_registers["exec"] = new_exec_condition
@@ -36,9 +41,11 @@ class SAndSaveexec(BaseInstruction):
                 ["exec", self.ssrc0],
                 None,
                 exec_condition=new_exec_condition,
+                expression_node=expr_node
             )
         return super().to_fill_node()
 
     def to_print(self):
         self.output_string = self.node.state["exec"].val
+        self.output_string = expression_to_string(self.node.state["exec"].register_content._expression_node)
         return self.output_string

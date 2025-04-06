@@ -8,7 +8,8 @@ from src.types.opencl_types import OpenCLTypes
 from src import utils
 from src.combined_register_content import CombinedRegisterContent
 from src.expression_manager.expression_manager import ExpressionManager
-from src.expression_manager.expression_node import ExpressionNode, expression_to_string
+from src.expression_manager.expression_node import ExpressionNode, ExpressionOperationType, expression_to_string
+from src.types.opencl_types import make_opencl_type as make_opencl_type_new
 from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
@@ -182,12 +183,18 @@ def compare_values(node: Node, to_reg: str, from_reg0: str, from_reg1: str, oper
     datatype = f"({datatype})" if datatype != "unknown type" else ""
     new_value = make_op(node, from_reg0, from_reg1, operation, datatype, datatype, suffix=suffix)
     from_regs = [from_reg0, from_reg1]
+
+    src0_node = node.get_expression_node(from_reg0)
+    src1_node = node.get_expression_node(from_reg1)
+    expr_node = ExpressionManager().add_operation(src0_node, src1_node, ExpressionOperationType.fromString(operation), make_opencl_type_new(suffix))
+    
     if is_range(to_reg):
+        #todo fix with range
         low, high = split_range(to_reg)
-        set_reg_value(node, new_value, low, from_regs, suffix, integrity=Integrity.LOW_PART)
-        set_reg_value(node, new_value, high, from_regs, suffix, integrity=Integrity.HIGH_PART)
+        set_reg_value(node, new_value, low, from_regs, suffix, integrity=Integrity.LOW_PART, expression_node=expr_node)
+        set_reg_value(node, new_value, high, from_regs, suffix, integrity=Integrity.HIGH_PART, expression_node=expr_node)
     else:
-        set_reg_value(node, new_value, to_reg, from_regs, suffix)
+        set_reg_value(node, new_value, to_reg, from_regs, suffix, expression_node=expr_node)
     return node
 
 
