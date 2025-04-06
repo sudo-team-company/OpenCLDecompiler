@@ -2,7 +2,9 @@ import copy
 import re
 from collections import deque
 
+from src.types.opencl_types import OpenCLTypes
 from src.decompiler_data import DecompilerData
+from src.expression_manager.expression_manager import ExpressionManager
 from src.register_type import RegisterType
 
 
@@ -34,6 +36,8 @@ def update_reg_version(reg, curr_node, max_version, prev_versions_of_reg):
             decompiler_data.checked_variables[prev] = variable
             decompiler_data.variables = {k: v.replace(old_var, variable) for k, v in decompiler_data.variables.items()}
     curr_node.state[reg].register_content._value = variable  # noqa: SLF001
+    #todo do we need additional checks?
+    curr_node.state[reg].register_content._expression_node = ExpressionManager().add_variable_node(variable, OpenCLTypes.UINT)
     if curr_node.state[reg].type in {
         RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT,
         RegisterType.ADDRESS_KERNEL_ARGUMENT,

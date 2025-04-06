@@ -41,10 +41,8 @@ def set_reg_value(  # noqa: PLR0913
     expression_node: ExpressionNode = None
 ):
     decompiler_data = DecompilerData()
-    if decompiler_data.name_of_program == "add_get_work_dim_x" and to_reg == "s4":
-        pass
     if register_content_type == RegisterContent:
-        if to_reg == "s1":
+        if to_reg == "v0":
             pass
         print("set_reg_value:", to_reg, expression_to_string(expression_node))
         node.state[to_reg] = Register(
