@@ -215,9 +215,6 @@ class VAdd(BaseInstruction):
                 else:
                     data_type = self.node.state[self.src1].data_type
             else:
-                #todo
-                expr_node = self.expression_manager.add_const_node(333, OpenCLTypes.UINT)
-                print("v_add: implement me")
                 reg_type = RegisterType.INT32
                 if src0_reg:
                     reg_type = self.node.state[self.src0].type
@@ -227,6 +224,10 @@ class VAdd(BaseInstruction):
                         data_size, _ = evaluate_size(data_type, only_size=True)
                         new_value = make_op(self.node, self.src1, str(data_size), "/", suffix=self.suffix)
                         new_value = make_op(self.node, self.src0, new_value, "+", suffix=self.suffix)
+
+                        src0_node = self.node.get_expression_node(self.src0)
+                        src1_node = self.node.get_expression_node(self.src1)
+                        expr_node = self.expression_manager.add_offset_thingy_node(src0_node, src1_node, data_size)
                 if src1_reg:
                     reg_type = self.node.state[self.src1].type
 

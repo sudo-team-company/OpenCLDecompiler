@@ -1,4 +1,5 @@
 from src.decompiler_data import DecompilerData, evaluate_from_hex
+from src.expression_manager.expression_node import expression_to_string
 from src.node import Node
 from src.node_processor import to_opencl
 from src.opencl_types import make_opencl_type
@@ -116,7 +117,8 @@ def make_output_for_linear_region(region, indent):
                         or (decompiler_data.gpu and decompiler_data.gpu.startswith("gfx"))
                     )
                 ):  # версия поменялась по сравнению с предком
-                    decompiler_data.write(indent + var + " = " + curr_node.state[reg].val + ";\n")
+                    # decompiler_data.write(indent + var + " = " + curr_node.state[reg].val + ";\n")
+                    decompiler_data.write(indent + var + " = " + expression_to_string(curr_node.state[reg].register_content._expression_node) + ";\n")
             if curr_node == region.end:
                 break
             child = curr_node.children[0]

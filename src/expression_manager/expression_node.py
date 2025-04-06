@@ -24,7 +24,7 @@ class ExpressionOperationType(Enum):
         assert(False)
         return ExpressionOperationType.UNKNOWN
     
-    UNKNOWN = auto()
+    UNKNOWN = "UNKNOWN"
 
     PLUS = "+" # +
     MINUS = "-"
@@ -33,11 +33,11 @@ class ExpressionOperationType(Enum):
     REM = "%"
 
     EQ = "==" # ==
-    NE = auto() # !=
-    LT = auto() # <
-    LE = auto() # <=
-    GT = auto() # >
-    GE = auto() # >=
+    NE = "!=" # !=
+    LT = "<" # <
+    LE = "<=" # <=
+    GT = ">" # >
+    GE = ">=" # >=
 
     # other logical operator, see https://registry.khronos.org/OpenCL/specs/3.0-unified/html/OpenCL_C.html
 
@@ -75,6 +75,103 @@ def expression_to_string_helper(expression_node: ExpressionNode, need_cast: bool
 def expression_to_string(expression_node: ExpressionNode) -> str:
     return expression_to_string_helper(expression_node)
 
+
+# def update_types(expression_node: ExpressionNode):
+#     if expression_node is None:
+#         return
+    
+#     match expression_node.type:
+#         case ExpressionType.OP:
+#             update_types(expression_node.left)
+#             update_types(expression_node.right)
+#             expression_node.value_type_hint = get_common_type(expression_node.left.value_type_hint, expression_node.right.value_type_hint)
+#             return
+
+# def check_op_node_needs_cast(op_node: ExpressionNode) -> tuple[bool, bool]:
+#     assert(op_node.type == ExpressionType.OP)
+
+#     to_type = op_node.value_type_hint
+#     left_node: ExpressionNode = op_node.left
+
+#     match left_node.type:
+#         case ExpressionType.OP:
+#             left_child_needs_cast = check_op_node_needs_cast(left_node)
+#         case _:
+
+#     right_node: ExpressionNode = op_node.right
+
+#     left_node_needs_cast = True
+#     if left_node.type == ExpressionType.OP:
+#         left_node_needs_cast = check_nodes_need_cast_to(left_node)
+
+
+
+#     right_node_needs_cast = True
+
+#     return (check_nodes_need_cast_to(left_node, to_type), check_nodes_need_cast_to(right_node, to_type))
+
+#todo check with C99 standard
+def get_common_type(first: OpenCLTypes, second: OpenCLTypes) -> OpenCLTypes:
+    if first == OpenCLTypes.UNKNOWN or second == OpenCLTypes.UNKNOWN:
+        return OpenCLTypes.UNKNOWN
+        
+    first_type: OpenCLType = first.value
+    second_type: OpenCLType = second.value
+
+    assert(first_type.modifiers == second_type.modifiers)
+
+    # integer/float or float/integer
+    if (first_type.is_integer and not second_type.is_integer) or \
+        (not first_type.is_integer and second_type.is_integer):
+        int_type = first_type if first_type.is_integer else second_type
+        float_type = second_type if first_type.is_integer else first_type
+
+        if int_type.getSize() == float_type.getSize():
+            return float_type
+        
+        float_type.number_of_components = max(float_type.number_of_components, int_type.number_of_components)
+        float_type.size_bytes = max(float_type.size_bytes, int_type.size_bytes)
+
+        return OpenCLTypes.from_string(str(float_type))
+    
+    # interger/integer
+
+    if first_type.is_signed == second_type.is_signed:
+        first_type.number_of_components = max(first_type.number_of_components, second_type.number_of_components)
+        first_type.size_bytes = max(first_type.size_bytes, second_type.size_bytes)
+
+        return OpenCLTypes.from_string(str(first_type))
+
+    if (first_type.is_signed and not second_type.is_signed) or \
+        (not first_type.is_signed and second_type.is_signed):
+        signed_type = first_type if first_type.is_signed else second_type
+        unsigned_type = second_type if first_type.is_signed else first_type
+
+        signed_type.number_of_components = max(signed_type.number_of_components, unsigned_type.number_of_components)
+        unsigned_type.number_of_components = signed_type.number_of_components
+        if unsigned_type.size_bytes >= signed_type.size_bytes:
+            return OpenCLTypes.from_string(str(unsigned_type))
+        else:
+            max_signed_value = pow(2, signed_type.size_bytes * 8) - 1
+            max_unsigned_value = pow(2, unsigned_type.size_bytes * 8) - 1
+
+            if max_signed_value >= max_unsigned_value:
+                return OpenCLTypes.from_string(str(signed_type))
+            else:
+                signed_type.is_signed = False
+                return OpenCLTypes.from_string(str(signed_type))
+    
+    return OpenCLTypes.UNKNOWN
+
+
+def get_expresion_type(expression_node: ExpressionNode) -> OpenCLTypes:
+    match expression_node.type:
+        case ExpressionType.OP:
+            left_type = get_expresion_type(expression_node.left)
+            right_type = get_expresion_type(expression_node.right)
+            return get_common_type(left_type, right_type)
+        case _:
+            return expression_node.value_type_hint
 
 def check_nodes_need_cast_to(expression_node: ExpressionNode, op_node: ExpressionNode) -> bool:
     if expression_node is None or expression_node.value_type_hint == OpenCLTypes.UNKNOWN or op_node is None or op_node.value_type_hint == OpenCLTypes.UNKNOWN:

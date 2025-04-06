@@ -147,6 +147,7 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
                 curr_node.state[first_reg].register_content._value = curr_node.state[first_reg].val.replace(  # noqa: SLF001
                     val_reg, decompiler_data.checked_variables[check_version]
                 )
+                #TODO somewhere here change var??
             elif re.match(r"(flat|global)_(store|load)", instruction[0]):
                 curr_node.state[register].register_content._value = curr_node.state[register].val.replace(  # noqa: SLF001
                     val_reg, decompiler_data.checked_variables[check_version]

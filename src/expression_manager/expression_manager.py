@@ -42,8 +42,8 @@ class ExpressionManager(metaclass=Singleton):
         self.add_node(operation_node)
         print("added operation:", expression_to_string(operation_node))
         return operation_node
-    
-    def add_kernel_argument(self, arg: KernelArgument) -> ExpressionNode:
+
+    def add_kernel_argument(self, arg: KernelArgument, offset: int) -> ExpressionNode:
         if arg.hidden:
             for reg_type in CONSTANT_VALUES:
                 reg_type_name = CONSTANT_VALUES[reg_type][0]
@@ -53,7 +53,9 @@ class ExpressionManager(metaclass=Singleton):
             #most likely other stuff is some hidden buffers like e.g. printfbuffer, but need to check that
             return None
         
-        return self.add_variable_node(arg.name, make_opencl_type(arg.type_name))
+
+        name = arg.name if not arg.is_vector() else arg.get_vector_element_by_offset(offset)        
+        return self.add_variable_node(name, make_opencl_type(arg.type_name))
 
     def add_register_node(self, reg_type: RegisterType, value):
         if reg_type == RegisterType.UNKNOWN:

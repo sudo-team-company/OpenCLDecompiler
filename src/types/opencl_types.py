@@ -7,6 +7,9 @@ class OpenCLType(BaseType):
     def __init__(self, size_bytes = 0, is_signed = True, is_integer = True, number_of_components = 1, is_global = False):
         super().__init__(size_bytes, is_signed, is_integer, number_of_components, is_global)
 
+    def is_global(self):
+        return TypeModifiers.GLOBAL in self.modifiers
+    
     def getTypeString(self):
         if self.is_integer:
             if self.size_bytes == 8:
@@ -57,7 +60,7 @@ class OpenCLTypes(Enum):
             if str(e) == s:
                 return e
         return OpenCLTypes.UNKNOWN
-    
+
     UNKNOWN = UnknownOpenCLType()
 
     # Base Types
