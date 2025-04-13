@@ -60,6 +60,9 @@ class OpenCLTypes(Enum):
             if str(e) == s:
                 return e
         return OpenCLTypes.UNKNOWN
+    
+    def equal_without_modifiers(self, other: "OpenCLTypes") -> bool:
+        return self.value.equal_without_modifiers(other.value)
 
     UNKNOWN = UnknownOpenCLType()
 
@@ -133,12 +136,12 @@ class OpenCLTypes(Enum):
     GLOBAL_HALF = OpenCLType(size_bytes=2, is_integer=False, is_global=True)
     GLOBAL_FLOAT = OpenCLType(size_bytes=4, is_integer=False, is_global=True)
     GLOBAL_DOUBLE = OpenCLType(size_bytes=8, is_integer=False, is_global=True)
-    GLOBAL_CHAR2 = OpenCLType(number_of_components=2, is_global=True)
-    GLOBAL_CHAR4 = OpenCLType(number_of_components=4, is_global=True)
-    GLOBAL_CHAR8 = OpenCLType(number_of_components=8, is_global=True)
-    GLOBAL_UCHAR2 = OpenCLType(number_of_components=2, is_signed=False, is_global=True)
-    GLOBAL_UCHAR4 = OpenCLType(number_of_components=4, is_signed=False, is_global=True)
-    GLOBAL_UCHAR8 = OpenCLType(number_of_components=8, is_signed=False, is_global=True)
+    GLOBAL_CHAR2 = OpenCLType(size_bytes=1, number_of_components=2, is_global=True)
+    GLOBAL_CHAR4 = OpenCLType(size_bytes=1, number_of_components=4, is_global=True)
+    GLOBAL_CHAR8 = OpenCLType(size_bytes=1, number_of_components=8, is_global=True)
+    GLOBAL_UCHAR2 = OpenCLType(size_bytes=1, number_of_components=2, is_signed=False, is_global=True)
+    GLOBAL_UCHAR4 = OpenCLType(size_bytes=1, number_of_components=4, is_signed=False, is_global=True)
+    GLOBAL_UCHAR8 = OpenCLType(size_bytes=1, number_of_components=8, is_signed=False, is_global=True)
     GLOBAL_SHORT2 = OpenCLType(size_bytes=2, number_of_components=2, is_global=True)
     GLOBAL_SHORT4 = OpenCLType(size_bytes=2, number_of_components=4, is_global=True)
     GLOBAL_SHORT8 = OpenCLType(size_bytes=2, number_of_components=8, is_global=True)

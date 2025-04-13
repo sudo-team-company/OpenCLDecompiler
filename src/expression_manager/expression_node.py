@@ -1,3 +1,4 @@
+import copy
 from dataclasses import dataclass, field
 from enum import Enum, auto
 import re
@@ -16,6 +17,7 @@ class ExpressionType(Enum):
     CONST = auto()
     VAR = auto()
     VAR_PTR = auto()
+    PERMUTE = auto()
 
 class ExpressionOperationType(Enum):
     def fromString(s: str):
@@ -80,12 +82,15 @@ def expression_to_string_helper(expression_node: ExpressionNode, need_cast: bool
             operator = str(expression_node.value.value)
             right_value = expression_to_string_helper(expression_node.right, check_nodes_need_cast_to(expression_node.right, expression_node))
             #todo brackets rule
-            if f"{left_value} {operator} {right_value}" == "(uint)var0___s1 * 8":
-                pass
             if expression_node.parent is None:
                 return f"{left_value} {operator} {right_value}"
             else:
                 return f"({left_value} {operator} {right_value})"
+        case ExpressionType.PERMUTE:
+            #todo
+            left_value = expression_to_string_helper(expression_node.left, False)
+            right_value = expression_to_string_helper(expression_node.right, False)
+            return f"{left_value}, {right_value}"
         case _:
             ret_str = str(expression_node.value)
             if ("-" in ret_str or "+" in ret_str or "*" in ret_str or "/" in ret_str\
@@ -142,9 +147,12 @@ def expression_to_string(expression_node: ExpressionNode) -> str:
 def get_common_type(first: OpenCLTypes, second: OpenCLTypes) -> OpenCLTypes:
     if first == OpenCLTypes.UNKNOWN or second == OpenCLTypes.UNKNOWN:
         return OpenCLTypes.UNKNOWN
-        
-    first_type: OpenCLType = first.value
-    second_type: OpenCLType = second.value
+    
+    if first == second:
+        return first
+    
+    first_type: OpenCLType = copy.deepcopy(first.value)
+    second_type: OpenCLType = copy.deepcopy(second.value)
 
     assert(first_type.modifiers == second_type.modifiers)
 

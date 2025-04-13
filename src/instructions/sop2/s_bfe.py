@@ -83,18 +83,22 @@ class SBfe(BaseInstruction):
             return self.node
 
         if self.suffix == "u32":
+            expr_node = None
             if self.ssrc1 == "0x20010":
                 new_value = "get_work_dim()"
                 reg_type = RegisterType.WORK_DIM
+                expr_node = self.expression_manager.add_register_node(RegisterType.WORK_DIM, new_value)
             elif self.ssrc1 == "0x100010":
                 new_value = "get_local_size(1)"
                 reg_type = RegisterType.LOCAL_SIZE_Y
+                expr_node = self.expression_manager.add_register_node(RegisterType.LOCAL_SIZE_Y, new_value)
             elif self.decompiler_data.bfe_offsets.get((self.node.state[self.ssrc0].val, self.ssrc1)):
                 new_value = self.decompiler_data.bfe_offsets[self.node.state[self.ssrc0].val, self.ssrc1]
                 reg_type = RegisterType.KERNEL_ARGUMENT_VALUE
+                expr_node=self.expression_manager._variables[new_value]
             else:
                 raise NotImplementedError("Unknown pattern in s_bfe")
-            return set_reg_value(self.node, new_value, self.sdst, [], self.suffix, reg_type=reg_type)
+            return set_reg_value(self.node, new_value, self.sdst, [], self.suffix, reg_type=reg_type, expression_node=expr_node)
         if self.suffix == "i32":
             if self.decompiler_data.bfe_offsets.get((self.node.state[self.ssrc0].val, self.ssrc1)):
                 new_value = self.decompiler_data.bfe_offsets[self.node.state[self.ssrc0].val, self.ssrc1]

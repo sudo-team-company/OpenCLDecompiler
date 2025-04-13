@@ -14,9 +14,17 @@ class ExpressionManager(metaclass=Singleton):
         self._variables: dict[str, ExpressionNode] = {}
         self._variables_value: dict[str, ExpressionNode] = {}
 
+    def reset(self):
+        self._nodes = []
+        self._variables: dict[str, ExpressionNode] = {}
+        self._variables_value: dict[str, ExpressionNode] = {}
+
     def add_node(self, node: ExpressionNode):
         if node is None:
             return
+        
+        if node.value == "edges1":
+            pass
         
         print("add_node:", expression_to_string(node))
         self._nodes.append(node)
@@ -35,7 +43,12 @@ class ExpressionManager(metaclass=Singleton):
         operation_node = ExpressionNode()
         operation_node.type = ExpressionType.OP
         operation_node.value = op
-        operation_node.value_type_hint = value_type_hint
+        #todo find var_ptrs inside
+        if s0.type == ExpressionType.VAR_PTR or TypeModifiers.GLOBAL in s0.value_type_hint.value.modifiers:
+            #todo limit
+            operation_node.value_type_hint = s0.value_type_hint
+        else:
+            operation_node.value_type_hint = get_common_type(get_common_type(s0.value_type_hint, s1.value_type_hint), value_type_hint)
         operation_node.left = s0
         operation_node.right = s1
 
@@ -102,6 +115,25 @@ class ExpressionManager(metaclass=Singleton):
 
         self.add_node(const_node)
         return const_node
+    
+    def add_permute_node(self, s0: ExpressionNode, s1: ExpressionNode) -> ExpressionNode:
+        assert(s0 and s1 and s0.type == ExpressionType.VAR and s1.type == ExpressionType.VAR)
+        permute_node = ExpressionNode()
+        permute_node.type = ExpressionType.PERMUTE
+        permute_node.left = s0
+        permute_node.right = s1
+
+        s0.parent = permute_node
+        s1.parent = permute_node
+
+        #todo double check that
+        new_value_type_hint = copy.deepcopy(get_common_type(s0.value_type_hint, s1.value_type_hint).value)
+        new_value_type_hint.number_of_components = s0.value_type_hint.value.number_of_components + s1.value_type_hint.value.number_of_components
+        permute_node.value_type_hint = make_opencl_type(str(new_value_type_hint))
+
+        self.add_node(permute_node)
+
+        return permute_node
         
     def add_variable_node(self, name: str, value_type_hint: OpenCLTypes):
         #todo - check could be better, pointer can have its own modifiers e.g.

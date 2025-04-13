@@ -1,3 +1,5 @@
+import copy
+from src.expression_manager.expression_manager import ExpressionManager
 from src.types.opencl_types import OpenCLTypes
 from src.expression_manager.expression_node import expression_to_string
 from src.base_instruction import BaseInstruction
@@ -47,20 +49,33 @@ def is_right_order(src_registers):
 
 
 def prepare_vector_type_output(from_registers, vdata, to_registers, node):
-    new_vector = [node.state[reg].val for reg in check_and_split_regs_range_to_full_list(vdata)]
-    to_type = node.state[to_registers].data_type
-    from_type = node.state[from_registers].data_type
+    new_vector = []
+    for reg in check_and_split_regs_range_to_full_list(vdata):
+        values = expression_to_string(node.state[reg].register_content._expression_node).split(", ")
+        for v in values:
+            new_vector.append(v)
+    to_type = node.state[to_registers].register_content._expression_node.value_type_hint
+    from_type = node.state[from_registers].register_content._expression_node.value_type_hint
+
+    tmp = copy.deepcopy(to_type.value)
+    tmp.number_of_components = 1
+    to_type_single_component = OpenCLTypes.from_string(str(tmp))
+
     if is_same_name(new_vector) and (
-        (not is_vector_type(from_type) and to_type[:-1] == make_opencl_type(from_type))
-        or to_type[:-1] == from_type[:-1]
+        (from_type.value.number_of_components == 1 and to_type_single_component.equal_without_modifiers(from_type))
+        or to_type.equal_without_modifiers(from_type)
     ):
         output_string = get_vector_name(new_vector[0])
-        if not is_right_order(new_vector):
+        if not is_right_order(new_vector) or ExpressionManager()._variables[output_string].value_type_hint.value.number_of_components != to_type.value.number_of_components:
             output_string += ".s"
             for element in new_vector:
                 output_string += str(get_vector_element_number(element))
     else:
-        output_string = f"({node.state[to_registers].data_type})(" + ", ".join(new_vector) + ")"
+        to_type = node.state[to_registers].register_content._expression_node.value_type_hint
+        tmp = copy.deepcopy(to_type.value)
+        tmp.modifiers = ()
+        to_type = OpenCLTypes.from_string(str(tmp))
+        output_string = f"({str(to_type)})(" + ", ".join(new_vector) + ")"
     return output_string
 
 
@@ -154,7 +169,6 @@ class FlatStore(BaseInstruction):
                 if self.node.state[self.from_registers].val == "0" and self.node.state.get(self.from_registers_1):
                     self.output_string = self.node.state[self.from_registers_1].val
                 elif is_vector_type(self.node.state[self.to_registers].data_type):
-                    assert(False)
                     self.output_string = prepare_vector_type_output(
                         self.from_registers, self.vdata, self.to_registers, self.node
                     )

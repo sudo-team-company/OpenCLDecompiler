@@ -4,7 +4,7 @@ void uint2_uint(__global uint2 *edges, __global double *d)
     uint2 var0;
     double var1;
     var0 = edges[get_global_id(0)];
-    if ((uint)var0.s1 > (uint)var0.s0) {
+    if (var0.s1 > var0.s0) {
         var1 = d[var0.s0];
         d[var0.s1] = var1;
     }
