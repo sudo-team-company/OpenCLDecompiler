@@ -60,9 +60,23 @@ class ExpressionManager(metaclass=Singleton):
         name = arg.name if not arg.is_vector() else arg.get_vector_element_by_offset(offset)        
         return self.add_variable_node(name, make_opencl_type(arg.type_name))
 
-    def add_register_node(self, reg_type: RegisterType, value):
+    def add_register_node(self, reg_type: RegisterType, value) -> ExpressionNode:
         if reg_type == RegisterType.UNKNOWN:
             return None
+        
+        # special cases
+        if reg_type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE:
+            left_node = self.add_register_node(RegisterType.WORK_GROUP_ID_X, "")
+            right_node = self.add_register_node(RegisterType.LOCAL_SIZE_X, "")
+            return self.add_operation(left_node, right_node, ExpressionOperationType.MUL, OpenCLTypes.UINT)
+        elif reg_type == RegisterType.WORK_GROUP_ID_Y_LOCAL_SIZE:
+            left_node = self.add_register_node(RegisterType.WORK_GROUP_ID_Y, "")
+            right_node = self.add_register_node(RegisterType.LOCAL_SIZE_Y, "")
+            return self.add_operation(left_node, right_node, ExpressionOperationType.MUL, OpenCLTypes.UINT)
+        elif reg_type == RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE:
+            left_node = self.add_register_node(RegisterType.WORK_GROUP_ID_Z, "")
+            right_node = self.add_register_node(RegisterType.LOCAL_SIZE_Z, "")
+            return self.add_operation(left_node, right_node, ExpressionOperationType.MUL, OpenCLTypes.UINT)
         
         assert(reg_type in CONSTANT_VALUES or reg_type == RegisterType.INT32)
         

@@ -88,6 +88,8 @@ def _convert_args_to_offset_to_content(args: list) -> dict[str, RegisterContent]
 
         data_type = None
 
+        expr_node = None
+
         if type_name is not None:
             type_name = type_name.strip("'")
             value = f"arg{idx}"
@@ -95,16 +97,26 @@ def _convert_args_to_offset_to_content(args: list) -> dict[str, RegisterContent]
 
             if type_name.endswith("*"):
                 data_type = make_asm_type(type_name[:-1])
+
+            int_offset = int(offset, base=16)
+            kernel_argument = KernelArgument(type_name, 
+                                        f"*{value}" if type_name.endswith("*") else value, 
+                                        int_offset,
+                                        size, 
+                                        hidden=arg[".value_kind"].startswith("hidden_"))
+            expr_node = ExpressionManager().add_kernel_argument(kernel_argument, int_offset)
+        elif _ARG_KIND_TO_REGISTER_TYPE.get(value_kind) is not None:
+            reg_type = _ARG_KIND_TO_REGISTER_TYPE[value_kind]
+            expr_node = ExpressionManager().add_register_node(reg_type, _ARG_KIND_TO_VALUE[value_kind])
         
-        assert(False and "rdna3 not supported yet")
         register_content = RegisterContent(
             value=value,
             type_=_ARG_KIND_TO_REGISTER_TYPE[value_kind],
             size=size,
             data_type=data_type,
-            expression_node=ExpressionManager().add_kernel_argument(KernelArgument(data_type, f"*{value}" if type_name.endswith("*") else value, offset, size, hidden=arg[".value_kind"].startswith("hidden_"))) if type_name is not None else None,
+            expression_node=expr_node,
         )
-
+        
         offset_to_content[offset] = register_content
 
     return offset_to_content
