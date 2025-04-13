@@ -1,3 +1,5 @@
+from src.expression_manager.expression_node import ExpressionOperationType
+from src.types.opencl_types import OpenCLTypes
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg, set_reg_value
 from src.register import is_reg
@@ -31,24 +33,33 @@ class SLshr(BaseInstruction):
 
         if self.suffix == "b32":
             reg_type = self.node.state[self.ssrc0].type
+            expr_node = None
             if (
                 self.node.state[self.ssrc0].type == RegisterType.GLOBAL_SIZE_X
                 and pow(2, int(self.ssrc1)) == self.decompiler_data.config_data.size_of_work_groups[0]
             ):
                 new_value = "get_num_groups(0)"
+                expr_node = self.expression_manager.add_register_node(RegisterType.NUM_GROUPS_X, "get_num_groups(0)")
             elif (
                 self.node.state[self.ssrc0].type == RegisterType.GLOBAL_SIZE_Y
                 and pow(2, int(self.ssrc1)) == self.decompiler_data.config_data.size_of_work_groups[1]
             ):
                 new_value = "get_num_groups(1)"
+                expr_node = self.expression_manager.add_register_node(RegisterType.NUM_GROUPS_Y, "get_num_groups(1)")
             elif (
                 self.node.state[self.ssrc0].type == RegisterType.GLOBAL_SIZE_Z
                 and pow(2, int(self.ssrc1)) == self.decompiler_data.config_data.size_of_work_groups[2]
             ):
                 new_value = "get_num_groups(2)"
+                expr_node = self.expression_manager.add_register_node(RegisterType.NUM_GROUPS_Z, "get_num_groups(2)")
             else:
                 new_value = make_op(self.node, self.ssrc0, str(pow(2, int(self.ssrc1))), "/", suffix=self.suffix)
+
+                src0_node = self.node.get_expression_node(self.ssrc0)
+                src1_node = self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.UINT)
+                expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.DIV, OpenCLTypes.UINT)
+                
             return set_reg_value(
-                self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix, reg_type=reg_type
+                self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix, reg_type=reg_type, expression_node=expr_node
             )
         return super().to_fill_node()

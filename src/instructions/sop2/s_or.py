@@ -48,7 +48,7 @@ class SOr(BaseInstruction):
             src0_node = self.node.get_expression_node(self.ssrc0)
             src1_node = self.node.get_expression_node(self.ssrc1)
             #todo type????
-            expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.OR, OpenCLTypes.UINT)
+            expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.OR, OpenCLTypes.UINT if self.suffix == "b32" else OpenCLTypes.ULONG)
 
             if self.ssrc1 not in self.node.state:
                 return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix, expression_node=expr_node)

@@ -53,6 +53,7 @@ class GlobalLoad(FlatLoad):
                 from_regs=[],
                 data_type=self.suffix,
                 reg_type=RegisterType.WORK_DIM,
+                expression_node=self.expression_manager.add_register_node(RegisterType.WORK_DIM, "get_work_dim()")
             )
 
         if (
