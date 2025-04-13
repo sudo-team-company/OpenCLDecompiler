@@ -24,8 +24,9 @@ class VAshrrev(BaseInstruction):
         if self.suffix == "i32":
             new_value = self.node.state[self.src1].val
             reg_type = self.node.state[self.src1].type
+            expr_node = self.node.get_expression_node(self.src1)
             return set_reg_value(
-                self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix, reg_type=reg_type
+                self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix, reg_type=reg_type, expression_node=expr_node
             )
         if self.suffix == "i64":
             start_to_register, end_to_register = check_and_split_regs(self.vdst)

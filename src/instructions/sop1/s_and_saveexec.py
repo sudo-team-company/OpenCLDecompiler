@@ -30,6 +30,7 @@ class SAndSaveexec(BaseInstruction):
                 self.node, old_exec_condition.top(), self.sdst, ["exec"], None, exec_condition=old_exec_condition, expression_node=self.node.get_expression_node("exec")
             )
 
+            #todo do i need && here?
             expr_node = self.node.get_expression_node(self.ssrc0)
 
             new_exec_condition = old_exec_condition & new_cond

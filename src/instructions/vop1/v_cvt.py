@@ -1,5 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
+from src.expression_manager.expression_node import ExpressionType
+from src.types.opencl_types import make_opencl_type as make_opencl_type_new
 from src.opencl_types import make_opencl_type
 from src.register import check_and_split_regs
 from src.register_type import RegisterType
@@ -54,9 +56,14 @@ class VCvt(BaseInstruction):
                     self.node, new_value, self.vdst, [self.src0], self.suffix, reg_type=RegisterType.DIVISION_PT3
                 )
 
+            var_node = self.node.get_expression_node(self.from_registers)
+            assert(var_node.type == ExpressionType.VAR or var_node.type == ExpressionType.VAR_PTR)
+            #todo make cast to
+            var_node.value_type_hint = make_opencl_type_new(self.suffix[:3])
+
             asm_type = self.suffix[4:]
             self.decompiler_data.names_of_vars[self.node.state[self.from_registers].val] = asm_type
             new_value = f"({make_opencl_type(self.suffix[:3])}){self.node.state[self.from_registers].val}"
             reg_type = self.node.state[self.from_registers].type
-            return set_reg_value(self.node, new_value, self.to_registers, [], asm_type, reg_type=reg_type)
+            return set_reg_value(self.node, new_value, self.to_registers, [], asm_type, reg_type=reg_type, expression_node=var_node)
         return super().to_fill_node()

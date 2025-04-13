@@ -251,12 +251,19 @@ class VAdd(BaseInstruction):
                 self.node.state[start_from_src0].data_type, self.node.state[start_from_src1].data_type
             )
             reg_type = self.node.state[start_from_src1].type
+
+            src0_node = self.node.get_expression_node(start_from_src0)
+            src1_node = self.node.get_expression_node(start_from_src1)
+            expr_node = None
+
             if self.node.state[start_from_src1].val == self.node.state[start_from_src0].val:
                 new_value = self.node.state[start_from_src1].val
+                expr_node = src1_node
             else:
                 new_value = make_op(
                     self.node, start_from_src0, start_from_src1, "+", "(double)", "(double)", suffix=self.suffix
                 )
+                expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.DOUBLE)
             return set_reg_value(
                 self.node,
                 new_value,
@@ -264,5 +271,6 @@ class VAdd(BaseInstruction):
                 [start_from_src0, start_from_src1],
                 data_type,
                 reg_type=reg_type,
+                expression_node=expr_node
             )
         return super().to_fill_node()

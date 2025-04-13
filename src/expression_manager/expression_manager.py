@@ -1,3 +1,4 @@
+import copy
 from src.model.kernel_argument import KernelArgument
 from src.utils.singleton import Singleton
 from src.expression_manager.expression_node import *
@@ -17,8 +18,6 @@ class ExpressionManager(metaclass=Singleton):
         if node is None:
             return
         
-        if node.value == 4:
-            pass
         print("add_node:", expression_to_string(node))
         self._nodes.append(node)
 
@@ -101,7 +100,18 @@ class ExpressionManager(metaclass=Singleton):
 
         if self._variables.get(var_node_name) is not None:
             return self._variables[var_node_name]
-        
+        # "{var}__s{idx}" case
+        if name.find("___") != -1 and value_type_hint.value.number_of_components > 1:
+            # just to be sure "full" variable is there
+            base_name = name[:name.find("___")]
+            if self._variables.get(base_name) is None:
+                self.add_variable_node(base_name, value_type_hint)
+
+            new_value_type_hint = copy.deepcopy(value_type_hint.value)
+            new_value_type_hint.number_of_components = 1
+            value_type_hint = make_opencl_type(str(new_value_type_hint))
+
+
         var_node = ExpressionNode()
         var_node.type = var_node_type
         var_node.value = var_node_name

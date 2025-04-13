@@ -1,5 +1,7 @@
+from src.types.opencl_types import OpenCLTypes
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
+from src.expression_manager.expression_node import ExpressionOperationType, expression_to_string
 from src.register import check_and_split_regs
 
 
@@ -25,6 +27,8 @@ class SAnd(BaseInstruction):
                 old_exec_condition = self.decompiler_data.exec_registers[self.ssrc0]
                 new_cond = self.node.state[self.ssrc1].val
 
+                new_condition_node = self.node.get_expression_node(self.ssrc1)
+
                 new_exec_condition = old_exec_condition & new_cond
                 self.decompiler_data.exec_registers[self.ssrc0] = new_exec_condition
                 return set_reg_value(
@@ -34,6 +38,7 @@ class SAnd(BaseInstruction):
                     [self.ssrc0, self.ssrc1],
                     None,
                     exec_condition=new_exec_condition,
+                    expression_node=new_condition_node
                 )
             if self.ssrc0 in self.node.state and self.ssrc1 in self.node.state:
                 ssrc0 = self.node.state[self.ssrc0]
@@ -65,4 +70,5 @@ class SAnd(BaseInstruction):
     def to_print(self):
         if self.sdst == "exec":
             self.output_string = self.node.state["exec"].val
+            self.output_string = expression_to_string(self.node.state["exec"].register_content._expression_node)
         return self.output_string

@@ -68,6 +68,7 @@ class ExpressionNode:
 
 def expression_to_string_helper(expression_node: ExpressionNode, need_cast: bool = False) -> str:
     if expression_node is None:
+        assert(False)
         return "BROOO"
     
     match expression_node.type:
@@ -78,10 +79,18 @@ def expression_to_string_helper(expression_node: ExpressionNode, need_cast: bool
             left_value = expression_to_string_helper(expression_node.left, check_nodes_need_cast_to(expression_node.left, expression_node))
             operator = str(expression_node.value.value)
             right_value = expression_to_string_helper(expression_node.right, check_nodes_need_cast_to(expression_node.right, expression_node))
-            return f"{left_value} {operator} {right_value}"
+            #todo brackets rule
+            if f"{left_value} {operator} {right_value}" == "(uint)var0___s1 * 8":
+                pass
+            if expression_node.parent is None:
+                return f"{left_value} {operator} {right_value}"
+            else:
+                return f"({left_value} {operator} {right_value})"
         case _:
             ret_str = str(expression_node.value)
-            if "-" in ret_str or "+" in ret_str or "*" in ret_str or "/" in ret_str:
+            if ("-" in ret_str or "+" in ret_str or "*" in ret_str or "/" in ret_str\
+                or "==" in ret_str or "!=" in ret_str or ">" in ret_str or ">=" in ret_str or "<" in ret_str\
+                or "<=" in ret_str or "&&" in ret_str or "!!" in ret_str):
                 ret_str = f"({ret_str})"
             if need_cast:
                 if expression_node.parent is None:
@@ -234,6 +243,9 @@ def check_nodes_need_cast_to(expression_node: ExpressionNode, op_node: Expressio
         or (not from_type.is_integer and not to_type.is_integer)
     ):
         needs_casting = (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
+        
+    #todo float/intergers and combinations separately!!!
+
     # from unsigned type to signed or from signed type to unsigned
     if (not from_type.is_signed and to_type.is_signed) or (
         from_type.is_signed and not to_type.is_signed

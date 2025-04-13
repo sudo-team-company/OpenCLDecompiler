@@ -202,7 +202,7 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
             curr_node.state[register].register_content._expression_node = ExpressionManager().replace_given_node_in_node(curr_node.state[register].register_content._expression_node, expr_node, tmp_var_node)
 
         copy_val_last = curr_node.state[first_reg].val
-        copy_expr_node_last = curr_node.state[first_reg].register_content._expression_node
+        copy_expr_node_last = copy.deepcopy(curr_node.state[first_reg].register_content._expression_node)
         if copy_val_prev != copy_val_last:
             assert(copy_expr_node_last != copy_expr_node_prev)
             changes[curr_node.state[first_reg].version] = [copy_val_last, copy_val_prev]

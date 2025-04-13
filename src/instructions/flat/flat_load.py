@@ -82,7 +82,8 @@ class FlatLoad(BaseInstruction):
 
                     vector_position += 1
                 #todo fix
-                self.node = set_reg_value(self.node, reg_val, to_now, [], data_type, reg_type=register_type, expression_node=self.expression_manager.add_variable_node(reg_val, make_opencl_type_new(data_type)))
+                expr_node = self.expression_manager.add_variable_node(reg_val, make_opencl_type_new(data_type))
+                self.node = set_reg_value(self.node, reg_val, to_now, [], data_type, reg_type=register_type, expression_node=expr_node)
                 if to_now == self.end_to_registers:
                     break
                 to_now = get_next_reg(to_now)
