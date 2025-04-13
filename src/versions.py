@@ -2,6 +2,7 @@ import copy
 import re
 from collections import deque
 
+from src.expression_manager.expression_node import expression_to_string
 from src.types.opencl_types import OpenCLTypes
 from src.decompiler_data import DecompilerData
 from src.expression_manager.expression_manager import ExpressionManager
@@ -113,15 +114,34 @@ def update_val_from_changes(curr_node, register, changes, check_version, num_of_
                 node_state[register].register_content._value = node_state[register].val.replace(  # noqa: SLF001
                     changes[check_version][1], changes[check_version][0]
                 )
+
+                node_state[register].register_content._expression_node = ExpressionManager().replace_given_node_in_node(node_state[register].register_content._expression_node,
+                    changes[check_version + "_expr_node"][1], changes[check_version + "_expr_node"][0]) # noqa: SLF001
+                
         copy_val_prev = node_state[first_reg].val
+        copy_expr_node_prev = copy.deepcopy(node_state[first_reg].register_content._expression_node)
         node_state[first_reg].register_content._value = node_state[first_reg].val.replace(  # noqa: SLF001
             changes[check_version][1], changes[check_version][0]
         )
+
+        node_state[first_reg].register_content._expression_node = ExpressionManager().replace_given_node_in_node(node_state[first_reg].register_content._expression_node,
+                    changes[check_version + "_expr_node"][1], changes[check_version + "_expr_node"][0]) # noqa: SLF001
+        
         copy_val_last = node_state[first_reg].val
+        copy_expr_node_last = node_state[first_reg].register_content._expression_node
+
         if copy_val_prev != copy_val_last:
+            print(expression_to_string(copy_expr_node_prev), expression_to_string(copy_expr_node_last))
+            assert(copy_expr_node_prev != copy_expr_node_last)
+
             if changes.get(node_state[first_reg].version) is not None:
                 copy_val_prev = changes[node_state[first_reg].version][1]
+
+            if changes.get(node_state[first_reg].version + "_expr_node") is not None:
+                copy_expr_node_prev = changes[node_state[first_reg].version + "_expr_node"][1]
+
             changes[node_state[first_reg].version] = [copy_val_last, copy_val_prev]
+            changes[node_state[first_reg].version + "_expr_node"] = [copy_expr_node_last, copy_expr_node_prev]
             update_value_for_reg(first_reg, curr_node)
     return changes
 
@@ -135,19 +155,32 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
         and curr_node.state[register].data_type is not None
         and (register != "vcc" or "and_saveexec" in instruction[0])
     ):
+        if curr_node.instruction[0] == "flat_store_dword":
+            pass
         val_reg = curr_node.state[register].val
+        expr_node = curr_node.state[register].register_content._expression_node
         if register == first_reg:
             if changes.get(curr_node.parent[0].state[first_reg].version) is None:
                 val_reg = curr_node.parent[0].state[first_reg].val
+                expr_node = curr_node.parent[0].state[first_reg].register_content._expression_node
             else:
                 val_reg = changes[curr_node.parent[0].state[first_reg].version][0]
+                expr_node = changes[curr_node.parent[0].state[first_reg].version + "_expr_node"][0] #todo store expr node in changes
         copy_val_prev = curr_node.state[first_reg].val
+        copy_expr_node_prev = copy.deepcopy(curr_node.state[first_reg].register_content._expression_node)
         if decompiler_data.checked_variables.get(check_version) is not None:
+
+            #todo move that to checked_variables...
+            tmp_var_node = ExpressionManager().add_variable_node(decompiler_data.checked_variables[check_version], OpenCLTypes.UINT)
+            if re.match(r"(flat|global)_(store|load)", instruction[0]):
+                curr_node.state[register].register_content._expression_node = ExpressionManager().replace_given_node_in_node(curr_node.state[register].register_content._expression_node, expr_node, tmp_var_node)
+            else:
+                curr_node.state[first_reg].register_content._expression_node = ExpressionManager().replace_given_node_in_node(curr_node.state[first_reg].register_content._expression_node, expr_node, tmp_var_node)
+
             if curr_node.state[first_reg].val.find(val_reg) != -1:
                 curr_node.state[first_reg].register_content._value = curr_node.state[first_reg].val.replace(  # noqa: SLF001
                     val_reg, decompiler_data.checked_variables[check_version]
                 )
-                #TODO somewhere here change var??
             elif re.match(r"(flat|global)_(store|load)", instruction[0]):
                 curr_node.state[register].register_content._value = curr_node.state[register].val.replace(  # noqa: SLF001
                     val_reg, decompiler_data.checked_variables[check_version]
@@ -157,13 +190,23 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
             curr_node.state[first_reg].register_content._value = curr_node.state[first_reg].val.replace(  # noqa: SLF001
                 val_reg, decompiler_data.variables[check_version]
             )
+
+            tmp_var_node = ExpressionManager().add_variable_node(decompiler_data.variables[check_version], OpenCLTypes.UINT)
+            curr_node.state[first_reg].register_content._expression_node = ExpressionManager().replace_given_node_in_node(curr_node.state[first_reg].register_content._expression_node, expr_node, tmp_var_node)
         elif re.match(r"(flat|global)_store", instruction[0]):
             curr_node.state[register].register_content._value = curr_node.state[register].val.replace(  # noqa: SLF001
                 val_reg, decompiler_data.variables[check_version]
             )
+            #todo need it here?
+            tmp_var_node = ExpressionManager().add_variable_node(decompiler_data.variables[check_version], OpenCLTypes.UINT)
+            curr_node.state[register].register_content._expression_node = ExpressionManager().replace_given_node_in_node(curr_node.state[register].register_content._expression_node, expr_node, tmp_var_node)
+
         copy_val_last = curr_node.state[first_reg].val
+        copy_expr_node_last = curr_node.state[first_reg].register_content._expression_node
         if copy_val_prev != copy_val_last:
+            assert(copy_expr_node_last != copy_expr_node_prev)
             changes[curr_node.state[first_reg].version] = [copy_val_last, copy_val_prev]
+            changes[curr_node.state[first_reg].version + "_expr_node"] = [copy_expr_node_last, copy_expr_node_prev]
             update_value_for_reg(first_reg, curr_node)
 
 
@@ -185,24 +228,30 @@ def change_values_for_one_instruction(curr_node, changes):
                 and "s_and" not in curr_node.instruction[0]
             ):
                 register = register[0] + register[2 : register.find(":")]
+            
             first_reg = curr_node.instruction[1]
+
             if "s_cmp" in curr_node.instruction[0]:
                 first_reg = "scc"
+
             if (
                 first_reg[1] == "["
                 and "s_or" not in curr_node.instruction[0]
                 and "s_and" not in curr_node.instruction[0]
             ):
                 first_reg = first_reg[0] + first_reg[2 : first_reg.find(":")]
+
             if register in curr_node.state:
                 check_version = curr_node.state[register].version
             else:
                 continue
+
             if register == first_reg:
                 if register in curr_node.parent[0].state:
                     check_version = curr_node.parent[0].state[register].version
                 else:
                     continue
+
             changes = update_val_from_changes(curr_node, register, changes, check_version, num_of_reg, first_reg)
             update_val_from_checked_variables(curr_node, register, check_version, first_reg, changes)
     if "select" in curr_node.instruction[0]:

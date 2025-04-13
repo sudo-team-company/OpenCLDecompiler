@@ -11,6 +11,7 @@ class ExpressionManager(metaclass=Singleton):
     def __init__(self):
         self._nodes = []
         self._variables: dict[str, ExpressionNode] = {}
+        self._variables_value: dict[str, ExpressionNode] = {}
 
     def add_node(self, node: ExpressionNode):
         if node is None:
@@ -32,7 +33,10 @@ class ExpressionManager(metaclass=Singleton):
 
     def add_operation(self, s0: ExpressionNode, s1: ExpressionNode, op: ExpressionOperationType, value_type_hint: OpenCLTypes):        
         assert(s0 is not None and s1 is not None)
-        operation_node = ExpressionNode(ExpressionType.OP, op, value_type_hint)
+        operation_node = ExpressionNode()
+        operation_node.type = ExpressionType.OP
+        operation_node.value = op
+        operation_node.value_type_hint = value_type_hint
         operation_node.left = s0
         operation_node.right = s1
 
@@ -78,7 +82,10 @@ class ExpressionManager(metaclass=Singleton):
     
     def add_const_node(self, value, value_type_hint : OpenCLTypes):
         #todo: narrow down range?
-        const_node = ExpressionNode(ExpressionType.CONST, value, value_type_hint)
+        const_node = ExpressionNode()
+        const_node.type = ExpressionType.CONST
+        const_node.value = value
+        const_node.value_type_hint = value_type_hint
 
         self.add_node(const_node)
         return const_node
@@ -91,10 +98,54 @@ class ExpressionManager(metaclass=Singleton):
         else:
             var_node_type = ExpressionType.VAR
             var_node_name = name
+
+        if self._variables.get(var_node_name) is not None:
+            return self._variables[var_node_name]
         
-        var_node = ExpressionNode(var_node_type, var_node_name, value_type_hint)
+        var_node = ExpressionNode()
+        var_node.type = var_node_type
+        var_node.value = var_node_name
+        var_node.value_type_hint = value_type_hint
 
         self._variables[var_node_name] = var_node
         self.add_node(var_node)
 
         return var_node
+    
+    def replace_given_node_in_node(self, node: ExpressionNode, from_node: ExpressionNode, to_node: ExpressionNode) -> ExpressionNode:
+        assert(node is not None and from_node is not None and to_node is not None)
+        print("node:", expression_to_string(node))
+        print("from_node:", expression_to_string(from_node))
+        print("to_node:", expression_to_string(to_node))
+        match node.type:
+            case ExpressionType.OP:
+                if node == from_node:
+                    if node.parent is not None:
+                        if node == node.parent.left:
+                            node.parent.left = to_node
+                        elif node == node.parent.right:
+                            node.parent.right = to_node
+                        else:
+                            #todo delete it
+                            assert(False)
+                    
+                    to_node.parent = node.parent
+                    node = to_node
+                else:                    
+                    node.left = self.replace_given_node_in_node(node.left, from_node, to_node)
+                    node.right = self.replace_given_node_in_node(node.right, from_node, to_node)
+            case _:
+                if node == from_node:
+                    if node.parent is not None:
+                        if node == node.parent.left:
+                            node.parent.left = to_node
+                        elif node == node.parent.right:
+                            node.parent.right = to_node
+                        else:
+                            #todo delete it
+                            assert(False)
+                    
+                    to_node.parent = node.parent
+                    node = to_node
+
+        return node

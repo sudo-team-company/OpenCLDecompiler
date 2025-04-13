@@ -42,7 +42,7 @@ def set_reg_value(  # noqa: PLR0913
 ):
     decompiler_data = DecompilerData()
     if register_content_type == RegisterContent:
-        if to_reg == "v0":
+        if to_reg == "s[0:1]":
             pass
         print("set_reg_value:", to_reg, expression_to_string(expression_node))
         node.state[to_reg] = Register(

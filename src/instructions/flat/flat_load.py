@@ -1,3 +1,4 @@
+from src.types.opencl_types import make_opencl_type as make_opencl_type_new
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier, set_reg_value
 from src.opencl_types import evaluate_size, make_asm_type, make_opencl_type
@@ -80,7 +81,8 @@ class FlatLoad(BaseInstruction):
                         data_type = make_asm_type(data_type)
 
                     vector_position += 1
-                self.node = set_reg_value(self.node, reg_val, to_now, [], data_type, reg_type=register_type)
+                #todo fix
+                self.node = set_reg_value(self.node, reg_val, to_now, [], data_type, reg_type=register_type, expression_node=self.expression_manager.add_variable_node(reg_val, make_opencl_type_new(data_type)))
                 if to_now == self.end_to_registers:
                     break
                 to_now = get_next_reg(to_now)

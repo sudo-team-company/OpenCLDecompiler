@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
 from enum import Enum, auto
 import re
+import uuid
 
+from src import utils
 from src.types.opencl_types import *
 from src.types.asm_types import *
 
@@ -39,16 +41,30 @@ class ExpressionOperationType(Enum):
     GT = ">" # >
     GE = ">=" # >=
 
+    AND = "&&"
+    OR = "||"
+
     # other logical operator, see https://registry.khronos.org/OpenCL/specs/3.0-unified/html/OpenCL_C.html
 
 @dataclass
 class ExpressionNode:
+    id : uuid.UUID = field(default_factory=lambda: uuid.uuid4())
     left = None
     right = None
     parent = None
-    type: ExpressionType = ExpressionType.UNKNOWN
-    value: ExpressionOperationType | int | str = None
-    value_type_hint : OpenCLTypes = field(default_factory=OpenCLTypes.UNKNOWN)
+    type : ExpressionType = ExpressionType.UNKNOWN
+    value : ExpressionOperationType | int | str = None
+    value_type_hint : OpenCLTypes = field(default_factory=lambda: OpenCLTypes.UNKNOWN)
+
+    def __eq__(self, other : "ExpressionNode"):
+        #todo mb id is enough
+        return self.id == other.id and \
+            self.left == other.left and \
+            self.right == other.right and \
+            self.type == other.type and \
+            self.value == other.value and \
+            self.value_type_hint == other.value_type_hint
+
 
 def expression_to_string_helper(expression_node: ExpressionNode, need_cast: bool = False) -> str:
     if expression_node is None:
@@ -68,7 +84,10 @@ def expression_to_string_helper(expression_node: ExpressionNode, need_cast: bool
             if "-" in ret_str or "+" in ret_str or "*" in ret_str or "/" in ret_str:
                 ret_str = f"({ret_str})"
             if need_cast:
-                return f"({expression_node.parent.value_type_hint}){ret_str}"
+                if expression_node.parent is None:
+                    return f"({OpenCLTypes.UNKNOWN}){ret_str}"
+                else:
+                    return f"({expression_node.parent.value_type_hint}){ret_str}"
             else:
                 return f"{ret_str}"
 
@@ -175,6 +194,10 @@ def get_expresion_type(expression_node: ExpressionNode) -> OpenCLTypes:
 
 def check_nodes_need_cast_to(expression_node: ExpressionNode, op_node: ExpressionNode) -> bool:
     if expression_node is None or expression_node.value_type_hint == OpenCLTypes.UNKNOWN or op_node is None or op_node.value_type_hint == OpenCLTypes.UNKNOWN:
+        return True
+    
+    if expression_node.type == ExpressionType.OP:
+        #todo fix that
         return True
     
     from_type: OpenCLType = expression_node.value_type_hint.value

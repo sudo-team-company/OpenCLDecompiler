@@ -164,6 +164,7 @@ class FlatStore(BaseInstruction):
                     self.output_string = expression_to_string(self.node.state[self.from_registers].register_content._expression_node)
             else:
                 self.output_string = self.decompiler_data.initial_state[self.from_registers].val
-            return f"{var} = {self.output_string}"
+            #todo delete debug output
+            return f"{var} = {self.output_string} # correct: ({make_elem_from_addr(self.node.state[self.to_registers].get_value())} = {self.node.state[self.from_registers].val})"
 
         return super().to_print()

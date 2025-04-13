@@ -1,5 +1,7 @@
+from src.types.opencl_types import OpenCLTypes
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
+from src.expression_manager.expression_node import ExpressionOperationType
 
 
 class SOr(BaseInstruction):
@@ -42,10 +44,16 @@ class SOr(BaseInstruction):
                     exec_condition=new_exec_condition,
                 )
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, "||", suffix=self.suffix)
+
+            src0_node = self.node.get_expression_node(self.ssrc0)
+            src1_node = self.node.get_expression_node(self.ssrc1)
+            #todo type????
+            expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.OR, OpenCLTypes.UINT)
+
             if self.ssrc1 not in self.node.state:
-                return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix)
+                return set_reg_value(self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix, expression_node=expr_node)
             reg_entire = self.node.state[self.ssrc1].integrity
             return set_reg_value(
-                self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix, integrity=reg_entire
+                self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix, integrity=reg_entire, expression_node=expr_node
             )
         return super().to_fill_node()
