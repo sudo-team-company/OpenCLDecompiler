@@ -40,6 +40,29 @@ class ExpressionManager(metaclass=Singleton):
 
     def add_operation(self, s0: ExpressionNode, s1: ExpressionNode, op: ExpressionOperationType, value_type_hint: OpenCLTypes):        
         assert(s0 is not None and s1 is not None)
+
+        if op == ExpressionOperationType.XOR:
+            if s0.type == ExpressionType.UNKNOWN:
+                operation_node = ExpressionNode()
+                operation_node.type = ExpressionType.OP
+                operation_node.value = ExpressionOperationType.NOT
+                #todo bool?
+                operation_node.value_type_hint = s1.value_type_hint
+                operation_node.left = s1
+                self.add_node(operation_node)
+                return operation_node
+            elif s1.type == ExpressionType.UNKNOWN:
+                operation_node = ExpressionNode()
+                operation_node.type = ExpressionType.OP
+                operation_node.value = ExpressionOperationType.NOT
+                #todo bool?
+                operation_node.value_type_hint = s0.value_type_hint
+                operation_node.left = s0
+                self.add_node(operation_node)
+                return operation_node
+
+
+
         operation_node = ExpressionNode()
         operation_node.type = ExpressionType.OP
         operation_node.value = op
@@ -195,9 +218,11 @@ class ExpressionManager(metaclass=Singleton):
                     
                     to_node.parent = node.parent
                     node = to_node
-                else:                    
-                    node.left = self.replace_given_node_in_node(node.left, from_node, to_node)
-                    node.right = self.replace_given_node_in_node(node.right, from_node, to_node)
+                else:   
+                    if node.left is not None:                 
+                        node.left = self.replace_given_node_in_node(node.left, from_node, to_node)
+                    if node.right is not None:
+                        node.right = self.replace_given_node_in_node(node.right, from_node, to_node)
             case _:
                 if node == from_node:
                     if node.parent is not None:

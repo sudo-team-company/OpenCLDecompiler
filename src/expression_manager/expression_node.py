@@ -43,6 +43,7 @@ class ExpressionOperationType(Enum):
     GT = ">" # >
     GE = ">=" # >=
 
+    NOT = "!"
     AND = "&&"
     OR = "||"
     XOR = "^"
@@ -74,6 +75,8 @@ def expression_to_string_helper(expression_node: ExpressionNode, need_cast: bool
     
     match expression_node.type:
         case ExpressionType.OP:
+            if expression_node.value == ExpressionOperationType.NOT:
+                return f"!({expression_to_string_helper(expression_node.left, check_nodes_need_cast_to(expression_node.left, expression_node))})"
             # special case for: data_ptr + smth => data_ptr[smth]
             if expression_node.value == ExpressionOperationType.PLUS and expression_node.left.type == ExpressionType.VAR_PTR:
                 return f"{str(expression_node.left.value)}[{expression_to_string_helper(expression_node.right, False)}]"

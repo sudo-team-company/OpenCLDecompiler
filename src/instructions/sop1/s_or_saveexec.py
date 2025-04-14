@@ -1,5 +1,7 @@
+from src.types.opencl_types import OpenCLTypes
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
+from src.expression_manager.expression_node import ExpressionOperationType, ExpressionType
 
 
 class SOrSaveexec(BaseInstruction):
@@ -22,10 +24,19 @@ class SOrSaveexec(BaseInstruction):
             old_exec_condition = self.decompiler_data.exec_registers["exec"]
             another = self.decompiler_data.exec_registers[self.ssrc0]
 
+            prev_exec_cond_node = self.node.get_expression_node("exec")
+
             self.decompiler_data.exec_registers[self.sdst] = old_exec_condition
             set_reg_value(
-                self.node, old_exec_condition.top(), self.sdst, ["exec"], None, exec_condition=old_exec_condition
+                self.node, old_exec_condition.top(), self.sdst, ["exec"], None, exec_condition=old_exec_condition, expression_node=prev_exec_cond_node
             )
+
+            new_exec_cond_node = self.node.get_expression_node(self.ssrc0)
+
+            if prev_exec_cond_node.type == ExpressionType.UNKNOWN:
+                expr_node = new_exec_cond_node
+            else:
+                expr_node = self.expression_manager.add_operation(prev_exec_cond_node, new_exec_cond_node, ExpressionOperationType.OR, OpenCLTypes.UINT if self.suffix == "b32" else OpenCLTypes.ULONG)
 
             new_exec_condition = old_exec_condition | another
             self.decompiler_data.exec_registers["exec"] = new_exec_condition
@@ -36,5 +47,6 @@ class SOrSaveexec(BaseInstruction):
                 ["exec", self.ssrc0],
                 None,
                 exec_condition=new_exec_condition,
+                expression_node=expr_node
             )
         return self.to_fill_node()
