@@ -1,3 +1,5 @@
+from src.expression_manager.expression_node import ExpressionNode
+from src.register_type import RegisterType
 from src.types.opencl_types import OpenCLTypes
 from src.expression_manager.expression_manager import ExpressionManager
 from src import utils
@@ -29,13 +31,16 @@ class Node:
 
     #todo - maybe this needs to be moved somewhere else
     def get_expression_node(self, reg):
-        if is_reg(reg) or is_range(reg):
+        if is_reg(reg) or is_range(reg) or reg == "exec":
             if reg in self.state:
                 register_content = self.state[reg].register_content
                 if register_content._expression_node is not None:
                     return register_content._expression_node
                 else:
-                    return ExpressionManager().add_register_node(register_content._type, register_content._value)
+                    if register_content._type != RegisterType.UNKNOWN:
+                        return ExpressionManager().add_register_node(register_content._type, register_content._value)
+                    else:
+                        return ExpressionManager().get_empty_node()
             elif is_range(reg):
                 start_register, end_register = check_and_split_regs(reg)
                 flag_big_value, value = check_big_values_new(self, start_register, end_register)
@@ -48,5 +53,5 @@ class Node:
                     return register_content._expression_node
                 else:
                     return ExpressionManager().add_register_node(register_content._type, register_content._value)
-        else:
-            return ExpressionManager().add_const_node(reg, OpenCLTypes.UINT)
+        
+        return ExpressionManager().add_const_node(reg, OpenCLTypes.UINT)

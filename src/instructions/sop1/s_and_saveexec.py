@@ -1,7 +1,7 @@
 from src.types.opencl_types import OpenCLTypes
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
-from src.expression_manager.expression_node import ExpressionOperationType, expression_to_string
+from src.expression_manager.expression_node import ExpressionOperationType, ExpressionType, expression_to_string
 
 
 class SAndSaveexec(BaseInstruction):
@@ -24,17 +24,24 @@ class SAndSaveexec(BaseInstruction):
             old_exec_condition = self.decompiler_data.exec_registers["exec"]
             new_cond = self.node.state[self.ssrc0].val
 
+            prev_exec_cond_node = self.node.get_expression_node("exec")
+
             #todo double check?
             self.decompiler_data.exec_registers[self.sdst] = old_exec_condition
             set_reg_value(
-                self.node, old_exec_condition.top(), self.sdst, ["exec"], None, exec_condition=old_exec_condition, expression_node=self.node.get_expression_node("exec")
+                self.node, old_exec_condition.top(), self.sdst, ["exec"], None, exec_condition=old_exec_condition, expression_node=prev_exec_cond_node
             )
-
-            #todo do i need && here?
-            expr_node = self.node.get_expression_node(self.ssrc0)
 
             new_exec_condition = old_exec_condition & new_cond
             self.decompiler_data.exec_registers["exec"] = new_exec_condition
+
+            new_exec_cond_node = self.node.get_expression_node(self.ssrc0)
+
+            if prev_exec_cond_node.type == ExpressionType.UNKNOWN:
+                expr_node = new_exec_cond_node
+            else:
+                expr_node = self.expression_manager.add_operation(prev_exec_cond_node, new_exec_cond_node, ExpressionOperationType.AND, OpenCLTypes.UINT if self.suffix == "b32" else OpenCLTypes.ULONG)
+
             return set_reg_value(
                 self.node,
                 new_exec_condition.top(),
@@ -48,5 +55,5 @@ class SAndSaveexec(BaseInstruction):
 
     def to_print(self):
         self.output_string = self.node.state["exec"].val
-        self.output_string = expression_to_string(self.node.state["exec"].register_content._expression_node)
+        self.output_string = expression_to_string(self.node.get_expression_node("exec"))
         return self.output_string

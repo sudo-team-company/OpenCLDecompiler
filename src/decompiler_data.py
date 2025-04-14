@@ -42,9 +42,9 @@ def set_reg_value(  # noqa: PLR0913
 ):
     decompiler_data = DecompilerData()
     if register_content_type == RegisterContent:
-        if to_reg == "s[0:1]":
+        if to_reg == "s6":
             pass
-        if expression_to_string(expression_node) == "smth2___s1":
+        if expression_to_string(expression_node) == "data[((0 * 4) / (long)4)]":
             pass
         print("set_reg_value:", to_reg, expression_to_string(expression_node))
         node.state[to_reg] = Register(
@@ -560,8 +560,6 @@ class DecompilerData(metaclass=Singleton):
             output = simplify_opencl_statement(output)
             output = output.replace("___", ".")
         self.output_file.write(output)
-        if output.find("uint var0;") != -1 or output.find("var0 = get_global_id(0);") != -1:
-            pass
         self.output_file.flush()
 
     def make_version(self, state, reg):
@@ -586,7 +584,10 @@ class DecompilerData(metaclass=Singleton):
                     value=f"get_group_id({dim})",
                     type_=[RegisterType.WORK_GROUP_ID_X, RegisterType.WORK_GROUP_ID_Y, RegisterType.WORK_GROUP_ID_Z][
                         dim
-                    ]
+                    ],
+                    expression_node=ExpressionManager().add_register_node([RegisterType.WORK_GROUP_ID_X, RegisterType.WORK_GROUP_ID_Y, RegisterType.WORK_GROUP_ID_Z][
+                        dim
+                    ], f"get_group_id({dim})")
                 ),
             ),
         )
@@ -609,7 +610,10 @@ class DecompilerData(metaclass=Singleton):
             v_dim = "v" + str(dim)
             register_content = RegisterContent(
                 value=f"get_local_id({dim})",
-                type_=[RegisterType.WORK_ITEM_ID_X, RegisterType.WORK_ITEM_ID_Y, RegisterType.WORK_ITEM_ID_Z][dim]
+                type_=[RegisterType.WORK_ITEM_ID_X, RegisterType.WORK_ITEM_ID_Y, RegisterType.WORK_ITEM_ID_Z][dim],
+                expression_node=ExpressionManager().add_register_node([RegisterType.WORK_ITEM_ID_X, RegisterType.WORK_ITEM_ID_Y, RegisterType.WORK_ITEM_ID_Z][
+                        dim
+                    ], f"get_local_id({dim})")
             )
 
         self.set_reg_make_version(

@@ -1,3 +1,4 @@
+from src.expression_manager.expression_manager import ExpressionManager
 from src.expression_manager.expression_node import *
 from src.combined_register_content import CombinedRegisterContent
 from src.decompiler_data import DecompilerData, make_elem_from_addr
@@ -20,6 +21,8 @@ usesetup_dict = {
         register_content=RegisterContent(
             value="get_local_size(0)",
             type_=RegisterType.LOCAL_SIZE_X,
+            #todo ???
+            expression_node=ExpressionManager().get_empty_node()
         ),
     ),
     "0x8": Register(
@@ -27,6 +30,7 @@ usesetup_dict = {
         register_content=RegisterContent(
             value="get_local_size(2)",
             type_=RegisterType.LOCAL_SIZE_Z,
+            expression_node=ExpressionManager().add_register_node(RegisterType.LOCAL_SIZE_Z, "get_local_size(2)")
         ),
     ),
     "0xc": Register(
@@ -34,6 +38,7 @@ usesetup_dict = {
         register_content=RegisterContent(
             value="get_global_size(0)",
             type_=RegisterType.GLOBAL_SIZE_X,
+            expression_node=ExpressionManager().add_register_node(RegisterType.GLOBAL_SIZE_X, "get_global_size(0)")
         ),
     ),
     "0x10": Register(
@@ -41,6 +46,7 @@ usesetup_dict = {
         register_content=RegisterContent(
             value="get_global_size(1)",
             type_=RegisterType.GLOBAL_SIZE_Y,
+            expression_node=ExpressionManager().add_register_node(RegisterType.GLOBAL_SIZE_Y, "get_global_size(1)")
         ),
     ),
     "0x14": Register(
@@ -48,6 +54,7 @@ usesetup_dict = {
         register_content=RegisterContent(
             value="get_global_size(2)",
             type_=RegisterType.GLOBAL_SIZE_Z,
+            expression_node=ExpressionManager().add_register_node(RegisterType.GLOBAL_SIZE_Z, "get_global_size(2)")
         ),
     ),
     "0x18": Register(
@@ -55,6 +62,7 @@ usesetup_dict = {
         register_content=RegisterContent(
             value="",
             type_=RegisterType.UNKNOWN,
+            expression_node=ExpressionManager().get_empty_node()
         ),
     ),
 }

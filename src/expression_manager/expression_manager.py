@@ -43,6 +43,9 @@ class ExpressionManager(metaclass=Singleton):
         operation_node = ExpressionNode()
         operation_node.type = ExpressionType.OP
         operation_node.value = op
+
+        #todo optimize if one is empty
+
         #todo find var_ptrs inside
         if s0.type == ExpressionType.VAR_PTR or TypeModifiers.GLOBAL in s0.value_type_hint.value.modifiers:
             #todo limit
@@ -72,6 +75,11 @@ class ExpressionManager(metaclass=Singleton):
 
         name = arg.name if not arg.is_vector() else arg.get_vector_element_by_offset(offset)        
         return self.add_variable_node(name, make_opencl_type(arg.type_name))
+    
+    def get_empty_node(self):
+        empty_node = ExpressionNode()
+        empty_node.value = "UNKNOWN VALUE"
+        return empty_node
 
     def add_register_node(self, reg_type: RegisterType, value) -> ExpressionNode:
         if reg_type == RegisterType.UNKNOWN:

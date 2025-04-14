@@ -45,6 +45,7 @@ class ExpressionOperationType(Enum):
 
     AND = "&&"
     OR = "||"
+    XOR = "^"
 
     # other logical operator, see https://registry.khronos.org/OpenCL/specs/3.0-unified/html/OpenCL_C.html
 
@@ -69,9 +70,7 @@ class ExpressionNode:
 
 
 def expression_to_string_helper(expression_node: ExpressionNode, need_cast: bool = False) -> str:
-    if expression_node is None:
-        assert(False)
-        return "BROOO"
+    assert(expression_node is not None)
     
     match expression_node.type:
         case ExpressionType.OP:
@@ -145,8 +144,12 @@ def expression_to_string(expression_node: ExpressionNode) -> str:
 
 #todo check with C99 standard
 def get_common_type(first: OpenCLTypes, second: OpenCLTypes) -> OpenCLTypes:
-    if first == OpenCLTypes.UNKNOWN or second == OpenCLTypes.UNKNOWN:
+    if first == OpenCLTypes.UNKNOWN and second == OpenCLTypes.UNKNOWN:
         return OpenCLTypes.UNKNOWN
+    elif first == OpenCLTypes.UNKNOWN:
+        return second
+    elif second == OpenCLTypes.UNKNOWN:
+        return first
     
     if first == second:
         return first
@@ -238,7 +241,7 @@ def check_nodes_need_cast_to(expression_node: ExpressionNode, op_node: Expressio
     to_type_component_count = to_type.number_of_components
     is_global_to_type = TypeModifiers.GLOBAL in to_type.modifiers
 
-    value = expression_node.value
+    value = str(expression_node.value)
 
     # strange case, but still
     if (is_global_from_type and not is_global_to_type) or (not is_global_from_type and is_global_to_type):

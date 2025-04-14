@@ -1,3 +1,5 @@
+from src.expression_manager.expression_node import ExpressionOperationType
+from src.types.opencl_types import OpenCLTypes
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
 from src.integrity import Integrity
@@ -33,6 +35,13 @@ class VAshrrev(BaseInstruction):
             start_from_register, end_from_register = check_and_split_regs(self.src1)
             if self.node.state[start_from_register].val == "0":
                 self.node.state[start_from_register].register_content._value = self.node.state[end_from_register].val  # noqa: SLF001
+
+            start_from_register_node = self.node.get_expression_node(start_from_register)
+            if str(start_from_register_node.value) == "0":
+                start_from_register_node = self.node.get_expression_node(end_from_register)
+            power_node = self.expression_manager.add_const_node(pow(2, 32 - int(self.src0)), OpenCLTypes.LONG)
+            expr_node = self.expression_manager.add_operation(start_from_register_node, power_node, ExpressionOperationType.MUL, OpenCLTypes.LONG)
+
             new_value = make_op(
                 self.node, start_from_register, str(pow(2, 32 - int(self.src0))), "*", "", "(long)", suffix=self.suffix
             )
@@ -45,6 +54,7 @@ class VAshrrev(BaseInstruction):
                 self.suffix,
                 reg_type=reg_type,
                 integrity=Integrity.LOW_PART,
+                expression_node=expr_node
             )
             return set_reg_value(
                 node,
@@ -54,5 +64,6 @@ class VAshrrev(BaseInstruction):
                 self.suffix,
                 reg_type=reg_type,
                 integrity=Integrity.HIGH_PART,
+                expression_node=expr_node
             )
         return super().to_fill_node()
