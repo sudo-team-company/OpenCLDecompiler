@@ -86,7 +86,7 @@ def make_output_for_loop_vars(curr_node, indent):
     key = decompiler_data.loops_nodes_for_variables[curr_node]
     reg = key[: key.find("_")]
     loop_variable = decompiler_data.loops_variables[key]
-    decompiler_data.write(indent + loop_variable + " = " + curr_node.state[reg].val + ";\n")
+    decompiler_data.write(indent + loop_variable + " = " + expression_to_string(curr_node.state[reg].register_content._expression_node) + ";\n")
 
 
 def make_output_for_linear_region(region, indent):
@@ -95,6 +95,9 @@ def make_output_for_linear_region(region, indent):
         curr_node = decompiler_data.cfg.children[0] if region.start == decompiler_data.cfg else region.start
         while True:
             new_output = to_opencl(curr_node, OperationStatus.TO_PRINT)
+            if "var0" in new_output:
+                new_output2 = to_opencl(curr_node, OperationStatus.TO_PRINT)
+                print(new_output2)
             if decompiler_data.loops_nodes_for_variables.get(curr_node):
                 make_output_for_loop_vars(curr_node, indent)
             elif new_output:

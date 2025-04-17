@@ -131,6 +131,7 @@ def upload_global_data_pointer(state, to_registers, from_registers):
                 value=new_val,
                 type_=RegisterType.GLOBAL_DATA_POINTER,
                 data_type=data_type,
+                expression_node=state[start_from_register].register_content._expression_node
             ),
         ),
     )

@@ -1,6 +1,10 @@
+import copy
 import operator
 
+from src.expression_manager.expression_node import expression_to_string
+from src.types.opencl_types import OpenCLTypes
 from src.decompiler_data import DecompilerData
+from src.expression_manager.expression_manager import ExpressionManager
 from src.node import Node
 from src.region_type import RegionType
 from src.regions.region import Region
@@ -159,9 +163,16 @@ def process_unrolled_loops():  # noqa: C901, PLR0912, PLR0915
             end = decompiler_data.improve_cfg.end
             while cur != end and not cur.children[0].exclude_unrolled:
                 cur = cur.children[0]
-            before = cur.state[dst].val
-            inside: str = vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].val
-            inside = inside.replace(f"({before})", "acc").replace(f"{before}", "acc")
+            
+            acc_node = ExpressionManager().add_variable_node("acc", OpenCLTypes.UINT)
+
+            # before = cur.state[dst].val
+            before = expression_to_string(cur.state[dst].register_content._expression_node)
+
+            # inside: str = vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].val
+            vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].register_content._expression_node = ExpressionManager().replace_given_node_in_node(vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].register_content._expression_node, cur.state[dst].register_content._expression_node, acc_node)
+            inside: str = expression_to_string(vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].register_content._expression_node)
+            # inside = inside.replace(f"({before})", "acc").replace(f"{before}", "acc")
             if len(progressions) != 0:
                 inside = inside.replace(str(progressions[0][0]), "i")
             while cur != end and cur.children[0].exclude_unrolled:
@@ -169,4 +180,6 @@ def process_unrolled_loops():  # noqa: C901, PLR0912, PLR0915
                 cur.children = child.children
 
             cur.children[0].state[dst].register_content._value = "acc"  # noqa: SLF001
+            #todo checK???
+            cur.children[0].state[dst].register_content._expression_node = acc_node
             cur.add_first_child(Region(RegionType.UNROLLED_LOOP, (before, first, last, diff, inside)))

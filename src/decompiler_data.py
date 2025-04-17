@@ -44,7 +44,7 @@ def set_reg_value(  # noqa: PLR0913
     if register_content_type == RegisterContent:
         if to_reg == "s6":
             pass
-        if expression_to_string(expression_node) == "data[((0 * 4) / (long)4)]":
+        if expression_to_string(expression_node) == ".gdata&0xffffffff":
             pass
         print("set_reg_value:", to_reg, expression_to_string(expression_node))
         node.state[to_reg] = Register(
@@ -215,7 +215,10 @@ def simplify_opencl_statement(opencl_line):
         for data_type in current_type_conversion.values():
             substring = substring.replace(data_type, "")
         if substring:
-            substring = sympy.simplify(substring)
+            try:
+                substring = sympy.simplify(substring)
+            except:
+                substring = f"{substring} # !!! could not simplify it !!!"
             substring = sympy.sstr(substring)
         # doesn't recover type (int)A in case (int)(A + B) - B
         for key, data_type in current_type_conversion.items():

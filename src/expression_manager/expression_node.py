@@ -18,6 +18,7 @@ class ExpressionType(Enum):
     VAR = auto()
     VAR_PTR = auto()
     PERMUTE = auto()
+    IF_TERNARY = auto()
 
 class ExpressionOperationType(Enum):
     def fromString(s: str):
@@ -71,6 +72,7 @@ class ExpressionNode:
 
 
 def expression_to_string_helper(expression_node: ExpressionNode, need_cast: bool = False) -> str:
+    # return "TEST"
     assert(expression_node is not None)
     
     match expression_node.type:
@@ -93,6 +95,12 @@ def expression_to_string_helper(expression_node: ExpressionNode, need_cast: bool
             left_value = expression_to_string_helper(expression_node.left, False)
             right_value = expression_to_string_helper(expression_node.right, False)
             return f"{left_value}, {right_value}"
+        case ExpressionType.IF_TERNARY:
+            #todo
+            cond_value = expression_to_string_helper(expression_node.value)
+            left_value = expression_to_string_helper(expression_node.left)
+            right_value = expression_to_string_helper(expression_node.right)
+            return f"({cond_value}) ? ({left_value}) : ({right_value})"
         case _:
             ret_str = str(expression_node.value)
             if ("-" in ret_str or "+" in ret_str or "*" in ret_str or "/" in ret_str\

@@ -163,8 +163,6 @@ class VAdd(BaseInstruction):
                     src1_node = self.node.get_expression_node(self.src1)
                     expr_node = self.expression_manager.add_offset_thingy_node(src0_node, src1_node, data_size)
                 elif self.node.state[self.src0].type == RegisterType.GLOBAL_DATA_POINTER:
-                    #todo
-                    assert(False)
                     data_type = self.node.state[self.src1].data_type
                     name = self.node.state[self.src0].val
                     reg_entire = Integrity.ENTIRE
@@ -174,6 +172,10 @@ class VAdd(BaseInstruction):
                         new_value = make_op(self.node, self.src1, value, "/", suffix=self.suffix)
                         new_value = make_op(self.node, name, new_value, "+", suffix=self.suffix)
                         reg_type = RegisterType.GLOBAL_DATA_POINTER
+
+                        src0_node = self.expression_manager.add_variable_node(f"*name", OpenCLTypes.GLOBAL_UINT)
+                        src1_node = self.node.get_expression_node(self.src1)
+                        expr_node = self.expression_manager.add_offset_thingy_node(src0_node, src1_node, value)
                 elif (
                     self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE
                     and self.node.state[self.src1].type == RegisterType.WORK_ITEM_ID_X

@@ -20,11 +20,11 @@ class ExpressionManager(metaclass=Singleton):
         self._variables_value: dict[str, ExpressionNode] = {}
 
     def add_node(self, node: ExpressionNode):
-        if node is None:
-            return
+        assert(node is not None)
         
-        if node.value == "edges1":
+        if expression_to_string(node) == ".gdata&0xffffffff + (((uint)i * 4) / 4)":
             pass
+        assert(node.value_type_hint != OpenCLTypes.UNKNOWN)
         
         print("add_node:", expression_to_string(node))
         self._nodes.append(node)
@@ -73,8 +73,13 @@ class ExpressionManager(metaclass=Singleton):
         if s0.type == ExpressionType.VAR_PTR or TypeModifiers.GLOBAL in s0.value_type_hint.value.modifiers:
             #todo limit
             operation_node.value_type_hint = s0.value_type_hint
+        elif (op == ExpressionOperationType.PLUS or op == ExpressionOperationType.MINUS) and (s0.value == "0" or s1.value == "0"):
+            if s0.value == "0":
+                operation_node.value_type_hint = s1.value_type_hint
+            elif s1.value == "0":
+                operation_node.value_type_hint = s0.value_type_hint
         else:
-            operation_node.value_type_hint = get_common_type(get_common_type(s0.value_type_hint, s1.value_type_hint), value_type_hint)
+            operation_node.value_type_hint = value_type_hint# get_common_type(get_common_type(s0.value_type_hint, s1.value_type_hint), value_type_hint)
         operation_node.left = s0
         operation_node.right = s1
 
@@ -147,6 +152,21 @@ class ExpressionManager(metaclass=Singleton):
         self.add_node(const_node)
         return const_node
     
+    def add_if_ternary_node(self, cond: ExpressionNode, s0: ExpressionNode, s1: ExpressionNode):
+        if_ternary_node = ExpressionNode()
+        if_ternary_node.type = ExpressionType.IF_TERNARY
+        if_ternary_node.value = cond
+        if_ternary_node.left = s0
+        if_ternary_node.right = s1
+        if_ternary_node.value_type_hint = get_common_type(s0.value_type_hint, s1.value_type_hint)
+
+        s0.parent = if_ternary_node
+        s1.parent = if_ternary_node
+
+        self.add_node(if_ternary_node)
+
+        return if_ternary_node
+
     def add_permute_node(self, s0: ExpressionNode, s1: ExpressionNode) -> ExpressionNode:
         assert(s0 and s1 and s0.type == ExpressionType.VAR and s1.type == ExpressionType.VAR)
         permute_node = ExpressionNode()
@@ -219,6 +239,26 @@ class ExpressionManager(metaclass=Singleton):
                     to_node.parent = node.parent
                     node = to_node
                 else:   
+                    if node.left is not None:                 
+                        node.left = self.replace_given_node_in_node(node.left, from_node, to_node)
+                    if node.right is not None:
+                        node.right = self.replace_given_node_in_node(node.right, from_node, to_node)
+            case ExpressionType.IF_TERNARY:
+                if node == from_node:
+                    if node.parent is not None:
+                        if node == node.parent.left:
+                            node.parent.left = to_node
+                        elif node == node.parent.right:
+                            node.parent.right = to_node
+                        else:
+                            #todo delete it
+                            assert(False)
+                    
+                    to_node.parent = node.parent
+                    node = to_node
+                else:
+                    if node.value is not None:
+                        node.value = self.replace_given_node_in_node(node.value, from_node, to_node)
                     if node.left is not None:                 
                         node.left = self.replace_given_node_in_node(node.left, from_node, to_node)
                     if node.right is not None:

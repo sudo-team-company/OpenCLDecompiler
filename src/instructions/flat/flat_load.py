@@ -1,3 +1,4 @@
+from src.expression_manager.expression_node import expression_to_string
 from src.types.opencl_types import make_opencl_type as make_opencl_type_new
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier, set_reg_value
@@ -82,7 +83,8 @@ class FlatLoad(BaseInstruction):
 
                     vector_position += 1
                 #todo fix
-                expr_node = self.expression_manager.add_variable_node(reg_val, make_opencl_type_new(data_type))
+                node_type_hint = self.node.state[self.from_registers].register_content._expression_node.value_type_hint
+                expr_node = self.expression_manager.add_variable_node(reg_val, node_type_hint)
                 self.node = set_reg_value(self.node, reg_val, to_now, [], data_type, reg_type=register_type, expression_node=expr_node)
                 if to_now == self.end_to_registers:
                     break
@@ -98,18 +100,25 @@ class FlatLoad(BaseInstruction):
     def to_print(self):
         if self.suffix in {"dword", "dwordx2", "dwordx4"}:
             if self.start_to_registers == self.from_registers:
-                output = self.node.parent[0].state[self.from_registers].val
+                output_just_for_if = self.node.parent[0].state[self.from_registers].val
+                output = expression_to_string(self.node.parent[0].state[self.from_registers].register_content._expression_node)
                 data_type = self.node.parent[0].state[self.from_registers].data_type
             else:
-                output = self.node.state[self.from_registers].val
+                output_just_for_if = self.node.state[self.from_registers].val
+                output = expression_to_string(self.node.state[self.from_registers].register_content._expression_node)
                 data_type = self.node.state[self.from_registers].data_type
-            if " + " in output:
-                output = make_elem_from_addr(output)
+            #todo fix me
+            if " + " in output_just_for_if:
+                print("bro, everything is fine")
+                # output = make_elem_from_addr(output)
             elif self.node.state[self.start_to_registers].data_type != self.decompiler_data.names_of_vars[output][1:]:
+                assert(False)
                 output = f"*({make_opencl_type(self.decompiler_data.names_of_vars[output])}*)({output})"
             else:
+                #todo make this inside expression_to_string
                 output = f"*{output}"
             var_name = self.node.state[self.start_to_registers].val
+            var_name = expression_to_string(self.node.state[self.start_to_registers].register_content._expression_node)
             if is_vector_type(data_type):
                 if var_name[-2] == "s" and var_name[-1].isdigit():
                     var_name = var_name[:-5]
