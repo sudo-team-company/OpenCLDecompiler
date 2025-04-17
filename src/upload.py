@@ -182,6 +182,7 @@ def upload_by_offset(
                         value=register_content.get_value(),
                         type_=register_content.get_type(),
                         data_type=register_content.get_data_type(),
+                        expression_node=register_content._expression_node
                     ),
                 )
             else:
@@ -216,6 +217,7 @@ def upload_by_offset(
                             value=register_content.get_value(),
                             type_=register_content.get_type(),
                             data_type=register_content.get_data_type(),
+                            expression_node=register_content._expression_node
                         ),
                     ),
                 )
@@ -233,6 +235,7 @@ def upload_by_offset(
                             value=register_content.get_value(),
                             type_=register_content.get_type(),
                             data_type=register_content.get_data_type(),
+                            expression_node=register_content._expression_node
                         ),
                     ),
                 )

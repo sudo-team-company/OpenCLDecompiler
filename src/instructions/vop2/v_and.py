@@ -72,8 +72,6 @@ class VAnd(BaseInstruction):
                 and isinstance(self.src0, str)
                 and self.src0.startswith("0x")
             ):
-                #todo
-                assert(False)
                 maybe_new_reg: Register | None = self.node.state[self.src1] & self.src0
                 if maybe_new_reg is None:
                     new_value, reg_type, expr_node = default_behaviour()

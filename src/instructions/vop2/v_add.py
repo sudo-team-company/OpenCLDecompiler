@@ -49,6 +49,12 @@ class VAdd(BaseInstruction):
                     data_size, _ = evaluate_size(data_type, only_size=True)
                     new_value = make_op(self.node, self.src1, str(data_size), "/", suffix=self.suffix)
 
+                    self.node.state[self.src1].register_content._expression_node = \
+                        self.expression_manager.add_operation(
+                            self.node.state[self.src1].register_content._expression_node,
+                            self.expression_manager.add_const_node(data_size, OpenCLTypes.UINT),
+                            ExpressionOperationType.DIV, OpenCLTypes.UINT)
+                    
                     return set_reg_value(
                         self.node,
                         [

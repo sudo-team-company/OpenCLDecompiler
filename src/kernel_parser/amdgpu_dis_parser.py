@@ -99,7 +99,7 @@ def _convert_args_to_offset_to_content(args: list) -> dict[str, RegisterContent]
                 data_type = make_asm_type(type_name[:-1])
 
             int_offset = int(offset, base=16)
-            kernel_argument = KernelArgument(type_name, 
+            kernel_argument = KernelArgument(data_type, 
                                         f"*{value}" if type_name.endswith("*") else value, 
                                         int_offset,
                                         size, 

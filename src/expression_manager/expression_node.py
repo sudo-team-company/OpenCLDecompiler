@@ -4,7 +4,6 @@ from enum import Enum, auto
 import re
 import uuid
 
-from src import utils
 from src.types.opencl_types import *
 from src.types.asm_types import *
 
@@ -21,13 +20,27 @@ class ExpressionType(Enum):
     IF_TERNARY = auto()
 
 class ExpressionOperationType(Enum):
-    def fromString(s: str):
+    def from_string(s: str):
         for expr_op_type in ExpressionOperationType:
             if s == expr_op_type.value:
                 return expr_op_type
             
         assert(False)
         return ExpressionOperationType.UNKNOWN
+    
+    def is_compare_operator(self):
+        return self == ExpressionOperationType.EQ or \
+            self == ExpressionOperationType.NE or \
+            self == ExpressionOperationType.LT or \
+            self == ExpressionOperationType.LE or \
+            self == ExpressionOperationType.GT or \
+            self == ExpressionOperationType.GE
+    
+    def is_logical_operator(self):
+        return self == ExpressionOperationType.NOT or \
+            self == ExpressionOperationType.AND or \
+            self == ExpressionOperationType.OR or \
+            self == ExpressionOperationType.XOR
     
     UNKNOWN = "UNKNOWN"
 
@@ -61,6 +74,9 @@ class ExpressionNode:
     value : ExpressionOperationType | int | str = None
     value_type_hint : OpenCLTypes = field(default_factory=lambda: OpenCLTypes.UNKNOWN)
 
+    def __str__(self):
+        return expression_to_string(self)
+    
     def __eq__(self, other : "ExpressionNode"):
         #todo mb id is enough
         return self.id == other.id and \
@@ -69,6 +85,19 @@ class ExpressionNode:
             self.type == other.type and \
             self.value == other.value and \
             self.value_type_hint == other.value_type_hint
+    
+    def __add__(self, other : "ExpressionNode"):
+        op_node = ExpressionNode()
+        op_node.type = ExpressionType.OP
+        op_node.value = ExpressionOperationType.PLUS
+        op_node.value_type_hint = get_common_type(self.value_type_hint, other.value_type_hint)
+        op_node.left = self
+        op_node.right = other
+
+        self.parent = op_node
+        other.parent = op_node
+
+        return op_node
 
 
 def expression_to_string_helper(expression_node: ExpressionNode, need_cast: bool = False) -> str:

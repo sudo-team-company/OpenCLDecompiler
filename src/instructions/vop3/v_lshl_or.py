@@ -58,7 +58,7 @@ class VLshlOr(BaseInstruction):
                 new_value, reg_type, reg_sign = self._instruction_internal_mapping_by_types[src_types]
                 
                 # #todo - rewrite this
-                reg_values = new_value.split(" - ")
+                reg_values = new_value.split(" - ") if self.decompiler_data.is_rdna3 == False else new_value
                 reg_types = []
                 for v in reg_values:
                     for t in CONSTANT_VALUES:

@@ -1,8 +1,7 @@
 import copy
-from src.model.kernel_argument import KernelArgument
 from src.utils.singleton import Singleton
 from src.expression_manager.expression_node import *
-from src.register_content import RegisterType, CONSTANT_VALUES
+from src.register_type import RegisterType, CONSTANT_VALUES
 
 class PointerInfo:
     def __init__(self):
@@ -73,12 +72,14 @@ class ExpressionManager(metaclass=Singleton):
         if s0.type == ExpressionType.VAR_PTR or TypeModifiers.GLOBAL in s0.value_type_hint.value.modifiers:
             #todo limit
             operation_node.value_type_hint = s0.value_type_hint
-        elif (op == ExpressionOperationType.PLUS or op == ExpressionOperationType.MINUS) and (s0.value == "0" or s1.value == "0"):
-            if s0.value == "0":
+        elif (op == ExpressionOperationType.PLUS or op == ExpressionOperationType.MINUS) and (str(s0.value) == "0" or str(s1.value) == "0"):
+            if str(s0.value) == "0":
                 operation_node.value_type_hint = s1.value_type_hint
-            elif s1.value == "0":
+            elif str(s1.value) == "0":
                 operation_node.value_type_hint = s0.value_type_hint
         else:
+            if value_type_hint == OpenCLTypes.UNKNOWN:
+                value_type_hint = get_common_type(s0.value_type_hint, s1.value_type_hint)
             operation_node.value_type_hint = value_type_hint# get_common_type(get_common_type(s0.value_type_hint, s1.value_type_hint), value_type_hint)
         operation_node.left = s0
         operation_node.right = s1
@@ -89,8 +90,24 @@ class ExpressionManager(metaclass=Singleton):
         self.add_node(operation_node)
         print("added operation:", expression_to_string(operation_node))
         return operation_node
+    
+    def invert_node(self, node: ExpressionNode) -> ExpressionNode:
+        print("INVERTING NODE")
+        if node.type == ExpressionType.OP and node.value.is_compare_operator():
+            tmp = ExpressionNode()
+            tmp.type = ExpressionType.OP
+            tmp.value = ExpressionOperationType.NOT
+            #todo bool?
+            tmp.value_type_hint = node.value_type_hint
+            tmp.left = node
+            self.add_node(tmp)
+            return tmp
+        else:
+            tmp = self.add_const_node(-1, OpenCLTypes.INT)
+            return self.add_operation(tmp, node, ExpressionOperationType.MUL, node.value_type_hint)
 
-    def add_kernel_argument(self, arg: KernelArgument, offset: int) -> ExpressionNode:
+    def add_kernel_argument(self, arg, offset: int) -> ExpressionNode:
+        from src.model.kernel_argument import KernelArgument
         if arg.hidden:
             for reg_type in CONSTANT_VALUES:
                 reg_type_name = CONSTANT_VALUES[reg_type][0]
@@ -185,6 +202,15 @@ class ExpressionManager(metaclass=Singleton):
         self.add_node(permute_node)
 
         return permute_node
+    
+    #todo rename??
+    def add_operations(self, nodes: list[ExpressionNode], op: ExpressionOperationType):
+        assert(len(nodes) >= 2)
+        prev_node = nodes[0]
+        for cur_node in nodes[1:]:
+            prev_node = self.add_operation(prev_node, cur_node, op, OpenCLTypes.UNKNOWN)
+        
+        return prev_node
         
     def add_variable_node(self, name: str, value_type_hint: OpenCLTypes):
         #todo - check could be better, pointer can have its own modifiers e.g.

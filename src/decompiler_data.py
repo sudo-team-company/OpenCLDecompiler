@@ -77,6 +77,7 @@ def set_reg_value(  # noqa: PLR0913
             ),
         )
     elif register_content_type == OperationRegisterContent:
+        expr_nodes = [node.state[from_reg].register_content.get_expression_node() for from_reg in from_regs]
         if not isinstance(sign, list):
             node.state[to_reg] = Register(
                 integrity=integrity,
@@ -87,8 +88,9 @@ def set_reg_value(  # noqa: PLR0913
                             value=value,
                             type_=type_,
                             data_type=data_type,
+                            expression_node=expr_node
                         )
-                        for value, type_ in zip(new_value, reg_type, strict=False)
+                        for value, type_, expr_node in zip(new_value, reg_type, expr_nodes, strict=False)
                     ],
                 ),
             )
@@ -103,8 +105,9 @@ def set_reg_value(  # noqa: PLR0913
                             type_=type_,
                             sign=sign_,
                             data_type=data_type_,
+                            expression_node=expr_node
                         )
-                        for value, type_, sign_, data_type_ in zip(new_value, reg_type, sign, data_type, strict=False)
+                        for value, type_, sign_, data_type_, expr_node in zip(new_value, reg_type, sign, data_type, expr_nodes, strict=False)
                     ],
                 ),
             )
@@ -119,8 +122,9 @@ def set_reg_value(  # noqa: PLR0913
                             type_=type_,
                             sign=sign_,
                             data_type=data_type,
+                            expression_node=expr_node
                         )
-                        for value, type_, sign_ in zip(new_value, reg_type, sign, strict=False)
+                        for value, type_, sign_, expr_node in zip(new_value, reg_type, sign, expr_nodes, strict=False)
                     ],
                 ),
             )
@@ -158,7 +162,7 @@ def set_reg(
         )
         else None,
         size=reg.register_content._size,  # noqa: SLF001
-        expression_node=reg.register_content._expression_node
+        expression_node=reg.register_content.get_expression_node()
     )
 
 
@@ -186,7 +190,7 @@ def compare_values(node: Node, to_reg: str, from_reg0: str, from_reg1: str, oper
 
     src0_node = node.get_expression_node(from_reg0)
     src1_node = node.get_expression_node(from_reg1)
-    expr_node = ExpressionManager().add_operation(src0_node, src1_node, ExpressionOperationType.fromString(operation), make_opencl_type_new(suffix))
+    expr_node = ExpressionManager().add_operation(src0_node, src1_node, ExpressionOperationType.from_string(operation), make_opencl_type_new(suffix))
     
     if is_range(to_reg):
         #todo fix with range
@@ -603,6 +607,7 @@ class DecompilerData(metaclass=Singleton):
                         value=f"get_local_id({i})",
                         type_=t,
                         size=10,
+                        expression_node=ExpressionManager().add_register_node(t, f"get_local_id({i})")
                     )
                     for i, t in enumerate(
                         [RegisterType.WORK_ITEM_ID_X, RegisterType.WORK_ITEM_ID_Y, RegisterType.WORK_ITEM_ID_Z]
