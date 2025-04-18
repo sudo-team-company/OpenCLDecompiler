@@ -35,6 +35,7 @@ class SAdd(BaseInstruction):
     def to_fill_node(self):  # noqa: C901, PLR0912, PLR0915
         if self.suffix in {"u32", "i32"}:
             if self.decompiler_data.is_rdna3 and self.ssrc0 in self.node.state and self.ssrc1 in self.node.state:
+                assert(self.node.state[self.ssrc0].register_content.get_expression_node() is not None and self.node.state[self.ssrc1].register_content.get_expression_node() is not None)
                 new_reg = self.node.state[self.ssrc0] + self.node.state[self.ssrc1]
                 new_reg.cast_to(self.suffix)
                 return set_reg(

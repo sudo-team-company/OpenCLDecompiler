@@ -121,6 +121,7 @@ class RegisterContent:
                         type_=RegisterType.UNKNOWN,
                         size=0,
                         data_type=None,
+                        expression_node=ExpressionManager().add_const_node(other, OpenCLTypes.UINT)
                     ),
                 ],
             )
@@ -176,6 +177,7 @@ class RegisterContent:
                         type_=RegisterType.INT32,
                         size=0,
                         data_type=None,
+                        expression_node=ExpressionManager().add_const_node(other, OpenCLTypes.INT)
                     ),
                 ],
             )

@@ -56,6 +56,7 @@ class SBfe(BaseInstruction):
             and is_reg(self.ssrc0)
             and isinstance(self.node.state[self.ssrc0].register_content, CombinedRegisterContent)
         ):
+            assert(False)
             shift_by = int(self.ssrc1, 16) & ((1 << 4) - 1)
             and_by = hex((1 << ((int(self.ssrc1, 16) >> 16) & ((1 << 6) - 1))) - 1)
 

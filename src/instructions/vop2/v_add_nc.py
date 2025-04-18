@@ -33,6 +33,7 @@ class VAddNc(BaseInstruction):
     def to_fill_node(self):  # noqa: PLR0911
         if self.suffix in {"u16", "u32"}:
             if self.decompiler_data.is_rdna3:
+                assert(self.node.state[self.src0].register_content.get_expression_node() is not None and self.node.state[self.src1].register_content.get_expression_node() is not None)
                 new_reg = self.node.state[self.src0] + self.node.state[self.src1]
                 return set_reg(
                     node=self.node,

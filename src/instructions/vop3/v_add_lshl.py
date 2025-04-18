@@ -62,11 +62,14 @@ class VAddLshl(BaseInstruction):
 
                 if not isinstance(new_reg.register_content, OperationRegisterContent):
                     new_value = make_op(self.node, new_reg.val, str(pow(2, int(self.src2))), "*", suffix=self.suffix)
+                    src1_node = self.expression_manager.add_const_node(pow(2, int(self.src2)), OpenCLTypes.UINT)
+                    expr_node = self.expression_manager.add_operation(new_reg.register_content.get_expression_node(), src1_node, ExpressionOperationType.MUL, OpenCLTypes.UINT)
                     return set_reg_value(
                         node=self.node,
                         new_value=new_value,
                         to_reg=self.vdst,
                         from_regs=[self.src0, self.src1, self.src2],
                         data_type=self.suffix,
+                        expression_node=expr_node
                     )
         return super().to_fill_node()

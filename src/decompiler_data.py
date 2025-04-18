@@ -8,7 +8,7 @@ from src.types.opencl_types import OpenCLTypes
 from src import utils
 from src.combined_register_content import CombinedRegisterContent
 from src.expression_manager.expression_manager import ExpressionManager
-from src.expression_manager.expression_node import ExpressionNode, ExpressionOperationType, expression_to_string
+from src.expression_manager.expression_node import ExpressionNode, ExpressionOperationType, ExpressionType, expression_to_string
 from src.types.opencl_types import make_opencl_type as make_opencl_type_new
 from src.flag_type import FlagType
 from src.integrity import Integrity
@@ -59,6 +59,7 @@ def set_reg_value(  # noqa: PLR0913
         )
         node.state[to_reg].try_simplify()
     elif register_content_type == CombinedRegisterContent:
+        assert(False)
         node.state[to_reg] = Register(
             integrity=integrity,
             register_content=CombinedRegisterContent(
@@ -77,7 +78,12 @@ def set_reg_value(  # noqa: PLR0913
             ),
         )
     elif register_content_type == OperationRegisterContent:
-        expr_nodes = [node.state[from_reg].register_content.get_expression_node() for from_reg in from_regs]
+        assert(expression_node is not None)
+        expr_nodes = [None for _ in new_value]
+        # if expression_node is None and len(expr_nodes) == 1 and len(new_value) == 2:
+        #     assert(expr_nodes[0].type == ExpressionType.OP and str(expr_nodes[0].value.value) == str(operation.value))
+        #     expr_nodes = [expr_nodes[0].left, expr_nodes[0].right]
+
         if not isinstance(sign, list):
             node.state[to_reg] = Register(
                 integrity=integrity,
@@ -92,6 +98,7 @@ def set_reg_value(  # noqa: PLR0913
                         )
                         for value, type_, expr_node in zip(new_value, reg_type, expr_nodes, strict=False)
                     ],
+                    expression_node=expression_node
                 ),
             )
         elif isinstance(data_type, list):
@@ -109,6 +116,7 @@ def set_reg_value(  # noqa: PLR0913
                         )
                         for value, type_, sign_, data_type_, expr_node in zip(new_value, reg_type, sign, data_type, expr_nodes, strict=False)
                     ],
+                    expression_node=expression_node
                 ),
             )
         else:
@@ -126,6 +134,7 @@ def set_reg_value(  # noqa: PLR0913
                         )
                         for value, type_, sign_, expr_node in zip(new_value, reg_type, sign, expr_nodes, strict=False)
                     ],
+                    expression_node=expression_node
                 ),
             )
     else:

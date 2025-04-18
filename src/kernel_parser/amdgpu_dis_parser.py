@@ -3,6 +3,7 @@ from itertools import starmap
 import yaml
 
 from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.expression_node import expression_to_string
 
 from ..decompiler_data import DecompilerData
 from ..model import ConfigData, KernelArgument
@@ -99,12 +100,8 @@ def _convert_args_to_offset_to_content(args: list) -> dict[str, RegisterContent]
                 data_type = make_asm_type(type_name[:-1])
 
             int_offset = int(offset, base=16)
-            kernel_argument = KernelArgument(data_type, 
-                                        f"*{value}" if type_name.endswith("*") else value, 
-                                        int_offset,
-                                        size, 
-                                        hidden=arg[".value_kind"].startswith("hidden_"))
-            expr_node = ExpressionManager().add_kernel_argument(kernel_argument, int_offset)
+            
+            expr_node = ExpressionManager().add_kernel_argument(_make_argument(idx, arg), int_offset, True)
         elif _ARG_KIND_TO_REGISTER_TYPE.get(value_kind) is not None:
             reg_type = _ARG_KIND_TO_REGISTER_TYPE[value_kind]
             expr_node = ExpressionManager().add_register_node(reg_type, _ARG_KIND_TO_VALUE[value_kind])

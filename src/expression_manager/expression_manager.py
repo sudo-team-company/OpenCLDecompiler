@@ -21,7 +21,7 @@ class ExpressionManager(metaclass=Singleton):
     def add_node(self, node: ExpressionNode):
         assert(node is not None)
         
-        if expression_to_string(node) == ".gdata&0xffffffff + (((uint)i * 4) / 4)":
+        if expression_to_string(node) == "get_global_offset(0) + (uint)arg0___s0":
             pass
         assert(node.value_type_hint != OpenCLTypes.UNKNOWN)
         
@@ -36,6 +36,12 @@ class ExpressionManager(metaclass=Singleton):
         
         print("added offset thingy node:", expression_to_string(expr_node))
         return expr_node
+    
+    def get_empty_op_node(self, op: ExpressionOperationType) -> ExpressionNode:
+        node = ExpressionNode()
+        node.type = ExpressionType.OP
+        node.value = op
+        return node
 
     def add_operation(self, s0: ExpressionNode, s1: ExpressionNode, op: ExpressionOperationType, value_type_hint: OpenCLTypes):        
         assert(s0 is not None and s1 is not None)
@@ -72,6 +78,9 @@ class ExpressionManager(metaclass=Singleton):
         if s0.type == ExpressionType.VAR_PTR or TypeModifiers.GLOBAL in s0.value_type_hint.value.modifiers:
             #todo limit
             operation_node.value_type_hint = s0.value_type_hint
+        elif s1.type == ExpressionType.VAR_PTR or TypeModifiers.GLOBAL in s1.value_type_hint.value.modifiers:
+            #todo limit
+            operation_node.value_type_hint = s1.value_type_hint
         elif (op == ExpressionOperationType.PLUS or op == ExpressionOperationType.MINUS) and (str(s0.value) == "0" or str(s1.value) == "0"):
             if str(s0.value) == "0":
                 operation_node.value_type_hint = s1.value_type_hint
@@ -106,8 +115,9 @@ class ExpressionManager(metaclass=Singleton):
             tmp = self.add_const_node(-1, OpenCLTypes.INT)
             return self.add_operation(tmp, node, ExpressionOperationType.MUL, node.value_type_hint)
 
-    def add_kernel_argument(self, arg, offset: int) -> ExpressionNode:
+    def add_kernel_argument(self, arg, offset: int, ignore_duplicate: bool = False) -> ExpressionNode:
         from src.model.kernel_argument import KernelArgument
+        arg: KernelArgument = arg
         if arg.hidden:
             for reg_type in CONSTANT_VALUES:
                 reg_type_name = CONSTANT_VALUES[reg_type][0]
@@ -118,15 +128,15 @@ class ExpressionManager(metaclass=Singleton):
             return None
         
 
-        name = arg.name if not arg.is_vector() else arg.get_vector_element_by_offset(offset)        
-        return self.add_variable_node(name, make_opencl_type(arg.type_name))
+        name = arg.name if not arg.is_vector() else arg.get_vector_element_by_offset(offset)
+        return self.add_variable_node(name, make_opencl_type(arg.type_name), ignore_duplicate)
     
     def get_empty_node(self):
         empty_node = ExpressionNode()
         empty_node.value = "UNKNOWN VALUE"
         return empty_node
 
-    def add_register_node(self, reg_type: RegisterType, value) -> ExpressionNode:
+    def add_register_node(self, reg_type: RegisterType, value=None) -> ExpressionNode:
         if reg_type == RegisterType.UNKNOWN:
             return None
         
@@ -154,11 +164,12 @@ class ExpressionManager(metaclass=Singleton):
             new_node = self.add_const_node(reg_type_name, OpenCLTypes.UINT)
             # new_node = ExpressionNode(ExpressionType.FUNC, reg_type_name, OpenCLTypes.UINT)
         else:
+            assert(value is not None)
             new_node = self.add_const_node(value, OpenCLTypes.INT)
         
         print("add_register_node:", reg_type, value, "node:", new_node.type, new_node.value_type_hint)
         return new_node
-    
+
     def add_const_node(self, value, value_type_hint : OpenCLTypes):
         #todo: narrow down range?
         const_node = ExpressionNode()
@@ -205,14 +216,18 @@ class ExpressionManager(metaclass=Singleton):
     
     #todo rename??
     def add_operations(self, nodes: list[ExpressionNode], op: ExpressionOperationType):
-        assert(len(nodes) >= 2)
+        assert(len(nodes) > 0)
+
+        if len(nodes) == 1:
+            return nodes[0]
+            
         prev_node = nodes[0]
         for cur_node in nodes[1:]:
             prev_node = self.add_operation(prev_node, cur_node, op, OpenCLTypes.UNKNOWN)
         
         return prev_node
         
-    def add_variable_node(self, name: str, value_type_hint: OpenCLTypes):
+    def add_variable_node(self, name: str, value_type_hint: OpenCLTypes, ignore_duplicate: bool = False):
         #todo - check could be better, pointer can have its own modifiers e.g.
         if name[0] == "*":
             var_node_type = ExpressionType.VAR_PTR
@@ -221,19 +236,18 @@ class ExpressionManager(metaclass=Singleton):
             var_node_type = ExpressionType.VAR
             var_node_name = name
 
-        if self._variables.get(var_node_name) is not None:
+        if self._variables.get(var_node_name) is not None and not ignore_duplicate:
             return self._variables[var_node_name]
         # "{var}__s{idx}" case
         if name.find("___") != -1 and value_type_hint.value.number_of_components > 1:
             # just to be sure "full" variable is there
             base_name = name[:name.find("___")]
-            if self._variables.get(base_name) is None:
+            if self._variables.get(base_name) is None and not ignore_duplicate:
                 self.add_variable_node(base_name, value_type_hint)
 
             new_value_type_hint = copy.deepcopy(value_type_hint.value)
             new_value_type_hint.number_of_components = 1
             value_type_hint = make_opencl_type(str(new_value_type_hint))
-
 
         var_node = ExpressionNode()
         var_node.type = var_node_type

@@ -20,6 +20,7 @@ class SOr(BaseInstruction):
 
     def to_fill_node(self):
         if self.decompiler_data.is_rdna3 and self.suffix.endswith("32"):
+            assert(False)
             new_val = make_op(self.node, self.ssrc0, self.ssrc1, "|", suffix=self.suffix)
             return set_reg_value(
                 node=self.node,

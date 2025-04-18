@@ -17,6 +17,7 @@ class SMulk(BaseInstruction):
 
     def to_fill_node(self):
         if self.decompiler_data.is_rdna3:
+            assert(False)
             simm16 = self.unmodified_simm16
             if str(simm16).startswith("0x"):
                 simm16 = str(int(simm16, 16))

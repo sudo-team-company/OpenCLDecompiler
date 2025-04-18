@@ -2,6 +2,8 @@ import copy
 import itertools
 import re
 
+from src.expression_manager.expression_manager import ExpressionManager
+from src.types.opencl_types import OpenCLTypes
 from src.constants import DEFAULT_REGISTER_SIZE
 from src.integrity import Integrity
 from src.opencl_types import vector_type_dict
@@ -59,6 +61,7 @@ class Register:
 
     def cast_to(self, data_type: str):
         self.register_content._data_type = data_type  # noqa: SLF001
+        self.register_content._expression_node.cast_to(OpenCLTypes.from_string(data_type))
 
     def get_value(self) -> object:
         return self.register_content.get_value()
@@ -212,6 +215,7 @@ class Register:
                                 size=self.get_size(),
                                 sign=simplified_sign,
                                 data_type=self.get_data_type(),
+                                expression_node=ExpressionManager().add_register_node(simplified_type)
                             ),
                             size=self.get_size(),
                         )

@@ -49,12 +49,8 @@ class VAdd(BaseInstruction):
                     data_size, _ = evaluate_size(data_type, only_size=True)
                     new_value = make_op(self.node, self.src1, str(data_size), "/", suffix=self.suffix)
 
-                    self.node.state[self.src1].register_content._expression_node = \
-                        self.expression_manager.add_operation(
-                            self.node.state[self.src1].register_content._expression_node,
-                            self.expression_manager.add_const_node(data_size, OpenCLTypes.UINT),
-                            ExpressionOperationType.DIV, OpenCLTypes.UINT)
-                    
+                    expr_node = self.expression_manager.add_offset_thingy_node(self.node.get_expression_node(self.src0), self.node.get_expression_node(self.src1), data_size)
+
                     return set_reg_value(
                         self.node,
                         [
@@ -71,6 +67,7 @@ class VAdd(BaseInstruction):
                         integrity=Integrity.ENTIRE,
                         register_content_type=OperationRegisterContent,
                         operation=OperationType.PLUS,
+                        expression_node=expr_node
                     )
 
                 new_reg = self.node.state[self.src0] + self.node.state[self.src1]

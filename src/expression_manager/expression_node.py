@@ -34,13 +34,22 @@ class ExpressionOperationType(Enum):
             self == ExpressionOperationType.LT or \
             self == ExpressionOperationType.LE or \
             self == ExpressionOperationType.GT or \
-            self == ExpressionOperationType.GE
+            self == ExpressionOperationType.GE or \
+            self == ExpressionOperationType.LG
     
     def is_logical_operator(self):
         return self == ExpressionOperationType.NOT or \
             self == ExpressionOperationType.AND or \
             self == ExpressionOperationType.OR or \
             self == ExpressionOperationType.XOR
+    
+    def is_bitshift_operator(self):
+        return self == ExpressionOperationType.LSHIFT or \
+            self == ExpressionOperationType.RSHIFT
+    
+    def is_bitwise_operator(self):
+        return self == ExpressionOperationType.BITWISE_AND or \
+            self == ExpressionOperationType.BITWISE_OR
     
     UNKNOWN = "UNKNOWN"
 
@@ -50,17 +59,24 @@ class ExpressionOperationType(Enum):
     DIV = "/"
     REM = "%"
 
+    LSHIFT = "<<"
+    RSHIFT = ">>"
+
     EQ = "==" # ==
     NE = "!=" # !=
     LT = "<" # <
     LE = "<=" # <=
     GT = ">" # >
     GE = ">=" # >=
+    LG = "<>" # <>
 
     NOT = "!"
     AND = "&&"
     OR = "||"
     XOR = "^"
+
+    BITWISE_AND = "&"
+    BITWISE_OR = "|"
 
     # other logical operator, see https://registry.khronos.org/OpenCL/specs/3.0-unified/html/OpenCL_C.html
 
@@ -98,10 +114,12 @@ class ExpressionNode:
         other.parent = op_node
 
         return op_node
+    
+    def cast_to(self, to_type: OpenCLTypes):
+        return self
 
 
 def expression_to_string_helper(expression_node: ExpressionNode, need_cast: bool = False) -> str:
-    # return "TEST"
     assert(expression_node is not None)
     
     match expression_node.type:

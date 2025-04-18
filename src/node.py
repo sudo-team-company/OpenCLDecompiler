@@ -34,8 +34,9 @@ class Node:
         # if is_reg(reg) or is_range(reg) or reg == "exec":
         if reg in self.state:
             register_content = self.state[reg].register_content
-            if register_content._expression_node is not None:
-                return register_content._expression_node
+            expr_node = register_content.get_expression_node()
+            if expr_node is not None:
+                return expr_node
             else:
                 if register_content._type != RegisterType.UNKNOWN:
                     return ExpressionManager().add_register_node(register_content._type, register_content._value)
@@ -49,8 +50,9 @@ class Node:
                 return ExpressionManager().add_const_node(value, OpenCLTypes.ULONG)
             
             register_content = self.state[start_register].register_content
-            if register_content._expression_node is not None:
-                return register_content._expression_node
+            expr_node = register_content.get_expression_node()
+            if expr_node is not None:
+                return expr_node
             else:
                 return ExpressionManager().add_register_node(register_content._type, register_content._value)
         

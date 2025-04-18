@@ -1,7 +1,7 @@
 import copy
 from src.expression_manager.expression_manager import ExpressionManager
 from src.types.opencl_types import OpenCLTypes
-from src.expression_manager.expression_node import expression_to_string
+from src.expression_manager.expression_node import ExpressionOperationType, expression_to_string
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier
 from src.opencl_types import make_opencl_type
@@ -148,16 +148,20 @@ class FlatStore(BaseInstruction):
     def to_print(self):
         if self.suffix in {"dword", "dwordx2", "dwordx4", "byte", "short", "b32", "b64", "b8"}:
             var = self.node.state[self.to_registers].get_value()
+            var_node = self.node.get_expression_node(self.to_registers)
             if is_sgpr_range(self.inst_offset):
                 offset_reg, _ = check_and_split_regs(self.inst_offset)
                 if self.node.state[offset_reg].get_type() == RegisterType.ADDRESS_KERNEL_ARGUMENT:
+                    var_node = self.expression_manager.add_operation(self.node.get_expression_node(offset_reg), var_node, ExpressionOperationType.PLUS, OpenCLTypes.UNKNOWN)
                     var = f"{self.node.state[offset_reg].get_value()} + {var}"
 
             if self.inst_offset == "inst_offset:4":
                 var = f"{var}[get_global_id(0)]"
             elif " + " in var:
+                if self.decompiler_data.name_of_program == "add_char_x_x":
+                    pass
                 var = make_elem_from_addr(var)
-                var = expression_to_string(self.node.get_expression_node(self.to_registers))
+                var = expression_to_string(var_node)
             elif (
                 var in self.decompiler_data.names_of_vars
                 and self.decompiler_data.names_of_vars[var] != self.node.state[self.to_registers].data_type

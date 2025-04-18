@@ -101,7 +101,7 @@ _SUM_SIMPLIFY_COMBINATIONS = [
 
 
 class OperationRegisterContent(RegisterContent):
-    def __init__(self, operation: OperationType, register_contents: list[RegisterContent]):  # noqa: PLR0912
+    def __init__(self, operation: OperationType, register_contents: list[RegisterContent], expression_node: ExpressionNode = None):  # noqa: PLR0912
         if len(register_contents) == 0:
             self._operation = operation
             super().__init__(
@@ -173,7 +173,8 @@ class OperationRegisterContent(RegisterContent):
         data_type = None if len(data_types) != 1 else data_types.pop()
 
         #todo - seems like we dont care about this "contains_operation_register_content" or "same_operation" stuff from above, but lets double check
-        expression_node = ExpressionManager().add_operations([content.get_expression_node() for content in register_contents], ExpressionOperationType.from_string(operation.value))
+        if expression_node is None:
+            expression_node = ExpressionManager().add_operations([content.get_expression_node() for content in register_contents], ExpressionOperationType.from_string(operation.value))
 
         super().__init__(
             value=values,
