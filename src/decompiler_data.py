@@ -8,7 +8,7 @@ from src.types.opencl_types import OpenCLTypes
 from src import utils
 from src.combined_register_content import CombinedRegisterContent
 from src.expression_manager.expression_manager import ExpressionManager
-from src.expression_manager.expression_node import ExpressionNode, ExpressionOperationType, ExpressionType, expression_to_string
+from src.expression_manager.expression_node import ExpressionNode, ExpressionOperationType, expression_to_string
 from src.types.opencl_types import make_opencl_type as make_opencl_type_new
 from src.flag_type import FlagType
 from src.integrity import Integrity
@@ -59,7 +59,7 @@ def set_reg_value(  # noqa: PLR0913
         )
         node.state[to_reg].try_simplify()
     elif register_content_type == CombinedRegisterContent:
-        assert(False)
+        assert(expression_node is not None)
         node.state[to_reg] = Register(
             integrity=integrity,
             register_content=CombinedRegisterContent(
@@ -74,7 +74,8 @@ def set_reg_value(  # noqa: PLR0913
                     for value, type_, sign_, data_type_, size_ in zip(
                         new_value, reg_type, sign, data_type, size, strict=False
                     )
-                ]
+                ],
+                expression_node=expression_node
             ),
         )
     elif register_content_type == OperationRegisterContent:
@@ -171,7 +172,7 @@ def set_reg(
         )
         else None,
         size=reg.register_content._size,  # noqa: SLF001
-        expression_node=reg.register_content.get_expression_node()
+        expression_node=reg.register_content._expression_node
     )
 
 

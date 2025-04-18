@@ -28,7 +28,7 @@ class VMov(BaseInstruction):
                     node=self.node,
                     to_reg=self.vdst,
                     from_regs=[self.src0],
-                    reg=new_reg,
+                    reg=new_reg
                 )
 
             data_type = self.suffix

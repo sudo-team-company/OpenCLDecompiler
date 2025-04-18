@@ -1,19 +1,23 @@
 from collections.abc import Iterable
 
+from src.types.opencl_types import OpenCLTypes
+from src.expression_manager.expression_manager import ExpressionManager
 from src.expression_manager.expression_node import ExpressionNode
 from src.register_content import EmptyRegisterContent, RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 
 
 class CombinedRegisterContent(RegisterContent):
-    def __init__(self, register_contents: Iterable[RegisterContent]):
+    def __init__(self, register_contents: Iterable[RegisterContent], expression_node: Iterable[ExpressionNode] = None):
+        if expression_node is not None:
+            assert(len(expression_node) == len(register_contents))
         super().__init__(
             value=[content.get_value() for content in register_contents],
             type_=[content.get_type() for content in register_contents],
             size=[content.get_size() for content in register_contents],
             data_type=[content.get_data_type() for content in register_contents],
             sign=[content.get_sign() for content in register_contents],
-            expression_node=[content.get_expression_node() for content in register_contents]
+            expression_node=expression_node if expression_node is not None else [content.get_expression_node() for content in register_contents]
         )
 
     def append_content(self, register_content: RegisterContent):
@@ -126,6 +130,7 @@ class CombinedRegisterContent(RegisterContent):
                     type_=RegisterType.UNKNOWN,
                     size=0,
                     data_type=None,
+                    expression_node=ExpressionManager().add_const_node(0, OpenCLTypes.UINT)
                 )
 
             begin = None
