@@ -117,6 +117,43 @@ class ExpressionNode:
     
     def cast_to(self, to_type: OpenCLTypes):
         return self
+    
+    def replace(self, from_node: "ExpressionNode", to_node: "ExpressionNode") -> "ExpressionNode":
+        assert(from_node is not None and to_node is not None)
+
+        print("self:", self)
+        print("from_node:", from_node)
+        print("to_node:", to_node)
+
+        if self == to_node:
+            return self
+
+        if self == from_node:
+            parent: "ExpressionNode" = self.parent
+            if parent is not None:
+                if self == parent.left:
+                    parent.left = to_node
+                else:
+                    parent.right = to_node
+            
+            to_node.parent = parent
+            self = to_node
+            return self
+
+        if self.type == ExpressionType.OP:
+            if self.left is not None:                 
+                self.left = self.left.replace(from_node, to_node)
+            if self.right is not None:
+                self.right = self.right.replace(from_node, to_node)
+        elif self.type == ExpressionType.IF_TERNARY:
+            if self.value is not None:
+                self.value = self.value.replace(from_node, to_node)
+            if self.left is not None:                 
+                self.left = self.left.replace(from_node, to_node)
+            if self.right is not None:
+                self.right = self.right.replace(from_node, to_node)
+
+        return self
 
 
 def expression_to_string_helper(expression_node: ExpressionNode, need_cast: bool = False) -> str:
@@ -164,7 +201,6 @@ def expression_to_string_helper(expression_node: ExpressionNode, need_cast: bool
 
 def expression_to_string(expression_node: ExpressionNode) -> str:
     return expression_to_string_helper(expression_node)
-
 
 # def update_types(expression_node: ExpressionNode):
 #     if expression_node is None:

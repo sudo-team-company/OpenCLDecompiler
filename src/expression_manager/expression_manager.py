@@ -3,20 +3,55 @@ from src.utils.singleton import Singleton
 from src.expression_manager.expression_node import *
 from src.register_type import RegisterType, CONSTANT_VALUES
 
-class PointerInfo:
-    def __init__(self):
-        pass
+
+class VariableTypeModifiers(Enum):
+    GLOBAL = "__global"
+    LOCAL = "__local"
+    PRIVATE = "__private"
+    CONST = "const"
+    RESTRICT = "restrict"
+
+@dataclass
+class VariableInfo:
+    name: str = ""
+    var_node: ExpressionNode = None
+    value_node: ExpressionNode = None
+    modifiers: set[VariableTypeModifiers] = field(default_factory=lambda: set())
 
 class ExpressionManager(metaclass=Singleton):
     def __init__(self):
         self._nodes = []
-        self._variables: dict[str, ExpressionNode] = {}
-        self._variables_value: dict[str, ExpressionNode] = {}
+        self._variables: dict[str, VariableInfo] = {}
 
     def reset(self):
         self._nodes = []
-        self._variables: dict[str, ExpressionNode] = {}
-        self._variables_value: dict[str, ExpressionNode] = {}
+        self._variables: dict[str, VariableInfo] = {}
+
+    def create_const_node(self, value, value_type_hint: OpenCLTypes) -> ExpressionNode:
+        const_node = ExpressionNode()
+        const_node.type = ExpressionType.CONST
+        const_node.value = value
+        const_node.value_type_hint = value_type_hint
+        return const_node
+
+    def create_op_node(self, op: ExpressionOperationType, left: ExpressionNode, right: ExpressionNode, value_type_hint: OpenCLTypes) -> ExpressionNode:
+        op_node = ExpressionNode()
+        op_node.type = ExpressionType.OP
+        op_node.value = op
+        op_node.value_type_hint = value_type_hint
+        op_node.left = left
+        op_node.right = right
+        left.parent = op_node
+        right.parent = op_node
+        return op_node
+
+    def create_var_node(self, var_name: str, var_type: ExpressionType, var_type_hint: OpenCLTypes) -> ExpressionNode:
+        assert(var_type == ExpressionType.VAR or var_type == ExpressionType.VAR_PTR)
+        var_node = ExpressionNode()
+        var_node.type = var_type
+        var_node.value = var_name
+        var_node.value_type_hint = var_type_hint
+        return var_node
 
     def add_node(self, node: ExpressionNode):
         assert(node is not None)
@@ -36,12 +71,6 @@ class ExpressionManager(metaclass=Singleton):
         
         print("added offset thingy node:", expression_to_string(expr_node))
         return expr_node
-    
-    def get_empty_op_node(self, op: ExpressionOperationType) -> ExpressionNode:
-        node = ExpressionNode()
-        node.type = ExpressionType.OP
-        node.value = op
-        return node
 
     def add_operation(self, s0: ExpressionNode, s1: ExpressionNode, op: ExpressionOperationType, value_type_hint: OpenCLTypes):        
         assert(s0 is not None and s1 is not None)
@@ -66,35 +95,26 @@ class ExpressionManager(metaclass=Singleton):
                 self.add_node(operation_node)
                 return operation_node
 
-
-
-        operation_node = ExpressionNode()
-        operation_node.type = ExpressionType.OP
-        operation_node.value = op
-
         #todo optimize if one is empty
 
         #todo find var_ptrs inside
         if s0.type == ExpressionType.VAR_PTR or TypeModifiers.GLOBAL in s0.value_type_hint.value.modifiers:
             #todo limit
-            operation_node.value_type_hint = s0.value_type_hint
+            op_value_type_hint = s0.value_type_hint
         elif s1.type == ExpressionType.VAR_PTR or TypeModifiers.GLOBAL in s1.value_type_hint.value.modifiers:
             #todo limit
-            operation_node.value_type_hint = s1.value_type_hint
+            op_value_type_hint = s1.value_type_hint
         elif (op == ExpressionOperationType.PLUS or op == ExpressionOperationType.MINUS) and (str(s0.value) == "0" or str(s1.value) == "0"):
             if str(s0.value) == "0":
-                operation_node.value_type_hint = s1.value_type_hint
+                op_value_type_hint = s1.value_type_hint
             elif str(s1.value) == "0":
-                operation_node.value_type_hint = s0.value_type_hint
+                op_value_type_hint = s0.value_type_hint
         else:
             if value_type_hint == OpenCLTypes.UNKNOWN:
-                value_type_hint = get_common_type(s0.value_type_hint, s1.value_type_hint)
-            operation_node.value_type_hint = value_type_hint# get_common_type(get_common_type(s0.value_type_hint, s1.value_type_hint), value_type_hint)
-        operation_node.left = s0
-        operation_node.right = s1
-
-        s0.parent = operation_node
-        s1.parent = operation_node
+                op_value_type_hint = get_common_type(s0.value_type_hint, s1.value_type_hint)
+            op_value_type_hint = value_type_hint# get_common_type(get_common_type(s0.value_type_hint, s1.value_type_hint), value_type_hint)
+        
+        operation_node = self.create_op_node(op, s0, s1, op_value_type_hint)
 
         self.add_node(operation_node)
         print("added operation:", expression_to_string(operation_node))
@@ -115,7 +135,7 @@ class ExpressionManager(metaclass=Singleton):
             tmp = self.add_const_node(-1, OpenCLTypes.INT)
             return self.add_operation(tmp, node, ExpressionOperationType.MUL, node.value_type_hint)
 
-    def add_kernel_argument(self, arg, offset: int, ignore_duplicate: bool = False) -> ExpressionNode:
+    def add_kernel_argument(self, arg, offset: int, check_duplicate: bool = True) -> ExpressionNode:
         from src.model.kernel_argument import KernelArgument
         arg: KernelArgument = arg
         if arg.hidden:
@@ -124,12 +144,18 @@ class ExpressionManager(metaclass=Singleton):
                 if arg.name == reg_type_name:
                     return self.add_register_node(reg_type, arg.name)
 
-            #most likely other stuff is some hidden buffers like e.g. printfbuffer, but need to check that
+            # don't add other hidden data like _.printf_buffer, _.vqueue_pointer, _.aqlwrap_pointer and so on
             return None
         
-
         name = arg.name if not arg.is_vector() else arg.get_vector_element_by_offset(offset)
-        return self.add_variable_node(name, make_opencl_type(arg.type_name), ignore_duplicate)
+        value_type_hint = make_opencl_type(arg.type_name)
+        modifiers = set()
+        if value_type_hint.value.is_global():
+            modifiers.add(VariableTypeModifiers.GLOBAL)
+        if arg.const:
+            modifiers.add(VariableTypeModifiers.CONST)
+        
+        return self.add_variable_node(name, value_type_hint, modifiers, check_duplicate)
     
     def get_empty_node(self):
         empty_node = ExpressionNode()
@@ -171,12 +197,8 @@ class ExpressionManager(metaclass=Singleton):
         return new_node
 
     def add_const_node(self, value, value_type_hint : OpenCLTypes):
-        #todo: narrow down range?
-        const_node = ExpressionNode()
-        const_node.type = ExpressionType.CONST
-        const_node.value = value
-        const_node.value_type_hint = value_type_hint
-
+        const_node = self.create_const_node(value, value_type_hint)
+        
         self.add_node(const_node)
         return const_node
     
@@ -226,95 +248,40 @@ class ExpressionManager(metaclass=Singleton):
             prev_node = self.add_operation(prev_node, cur_node, op, OpenCLTypes.UNKNOWN)
         
         return prev_node
-        
-    def add_variable_node(self, name: str, value_type_hint: OpenCLTypes, ignore_duplicate: bool = False):
-        #todo - check could be better, pointer can have its own modifiers e.g.
-        if name[0] == "*":
+
+    def parse_variable_name(self, var_name: str) -> tuple[str, ExpressionType]:
+        if var_name[0] == "*":
             var_node_type = ExpressionType.VAR_PTR
-            var_node_name = name[1:]
+            var_node_name = var_name[1:]
         else:
             var_node_type = ExpressionType.VAR
-            var_node_name = name
+            var_node_name = var_name
+        return (var_node_name, var_node_type)
+    
+    def add_variable_node(self, name: str, value_type_hint: OpenCLTypes, modifiers: set[VariableTypeModifiers] = set(), check_duplicate: bool = True):
+        var_name, var_node_type = self.parse_variable_name(name)
 
-        if self._variables.get(var_node_name) is not None and not ignore_duplicate:
-            return self._variables[var_node_name]
-        # "{var}__s{idx}" case
-        if name.find("___") != -1 and value_type_hint.value.number_of_components > 1:
-            # just to be sure "full" variable is there
-            base_name = name[:name.find("___")]
-            if self._variables.get(base_name) is None and not ignore_duplicate:
-                self.add_variable_node(base_name, value_type_hint)
+        if check_duplicate and self._variables.get(var_name) is not None:
+            return self._variables[var_name].var_node
+        
+        # "{var}___s{idx}" case, make sure full variable is there too
+        vector_element_symbol_pos = var_name.find("___")
+        is_vector_element = vector_element_symbol_pos != -1
+        if is_vector_element and value_type_hint.value.number_of_components > 1:
+            base_var_name = name[:vector_element_symbol_pos]
+            if check_duplicate and self._variables.get(base_var_name) is None:
+                self.add_variable_node(base_var_name, value_type_hint, modifiers, check_duplicate)
+            value_type_hint = value_type_hint.set_number_of_components(1)
+        
+        var_node = self.create_var_node(var_name, var_node_type, value_type_hint)
 
-            new_value_type_hint = copy.deepcopy(value_type_hint.value)
-            new_value_type_hint.number_of_components = 1
-            value_type_hint = make_opencl_type(str(new_value_type_hint))
+        self._variables[var_name] = VariableInfo(
+            var_name,
+            var_node,
+            None,
+            modifiers
+        )
 
-        var_node = ExpressionNode()
-        var_node.type = var_node_type
-        var_node.value = var_node_name
-        var_node.value_type_hint = value_type_hint
-
-        self._variables[var_node_name] = var_node
         self.add_node(var_node)
 
         return var_node
-    
-    def replace_given_node_in_node(self, node: ExpressionNode, from_node: ExpressionNode, to_node: ExpressionNode) -> ExpressionNode:
-        assert(node is not None and from_node is not None and to_node is not None)
-        print("node:", expression_to_string(node))
-        print("from_node:", expression_to_string(from_node))
-        print("to_node:", expression_to_string(to_node))
-        match node.type:
-            case ExpressionType.OP:
-                if node == from_node:
-                    if node.parent is not None:
-                        if node == node.parent.left:
-                            node.parent.left = to_node
-                        elif node == node.parent.right:
-                            node.parent.right = to_node
-                        else:
-                            #todo delete it
-                            assert(False)
-                    
-                    to_node.parent = node.parent
-                    node = to_node
-                else:   
-                    if node.left is not None:                 
-                        node.left = self.replace_given_node_in_node(node.left, from_node, to_node)
-                    if node.right is not None:
-                        node.right = self.replace_given_node_in_node(node.right, from_node, to_node)
-            case ExpressionType.IF_TERNARY:
-                if node == from_node:
-                    if node.parent is not None:
-                        if node == node.parent.left:
-                            node.parent.left = to_node
-                        elif node == node.parent.right:
-                            node.parent.right = to_node
-                        else:
-                            #todo delete it
-                            assert(False)
-                    
-                    to_node.parent = node.parent
-                    node = to_node
-                else:
-                    if node.value is not None:
-                        node.value = self.replace_given_node_in_node(node.value, from_node, to_node)
-                    if node.left is not None:                 
-                        node.left = self.replace_given_node_in_node(node.left, from_node, to_node)
-                    if node.right is not None:
-                        node.right = self.replace_given_node_in_node(node.right, from_node, to_node)
-            case _:
-                if node == from_node:
-                    if node.parent is not None:
-                        if node == node.parent.left:
-                            node.parent.left = to_node
-                        elif node == node.parent.right:
-                            node.parent.right = to_node
-                        else:
-                            #todo delete it
-                            assert(False)
-                    
-                    to_node.parent = node.parent
-                    node = to_node
-
-        return node

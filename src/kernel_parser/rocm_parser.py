@@ -33,6 +33,7 @@ def get_params(set_of_config: list[str]) -> list[KernelArgument]:
         type_name = type_name[1:-1]
         if "global" in other:
             type_name = "__global " + type_name
+        const = row.find("const ") != -1
         if type_name.endswith("*"):
             type_name = type_name[:-1]
             name = "*" + name
@@ -53,6 +54,7 @@ def get_params(set_of_config: list[str]) -> list[KernelArgument]:
                 offset=offset,
                 size=size,
                 hidden=hidden,
+                const=const
             )
         )
         offset += size

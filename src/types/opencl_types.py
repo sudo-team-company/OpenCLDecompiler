@@ -1,3 +1,4 @@
+import copy
 from enum import Enum
 
 from src.types.asm_types import ASMTypes
@@ -63,6 +64,11 @@ class OpenCLTypes(Enum):
     
     def equal_without_modifiers(self, other: "OpenCLTypes") -> bool:
         return self.value.equal_without_modifiers(other.value)
+    
+    def set_number_of_components(self, number_of_components) -> "OpenCLTypes":
+        new_type_value = copy.deepcopy(self.value)
+        new_type_value.number_of_components = number_of_components
+        return make_opencl_type(str(new_type_value))
 
     UNKNOWN = UnknownOpenCLType()
 

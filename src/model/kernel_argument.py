@@ -8,6 +8,7 @@ class KernelArgument:
     offset: int
     size: int
     hidden: bool = False
+    const: bool = False
 
     def __str__(self):
         return f"{self.type_name} {self.name}"

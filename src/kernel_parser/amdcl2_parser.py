@@ -24,6 +24,7 @@ def process_params(set_of_config: list[str]) -> list[KernelArgument]:
         name, _, type_name, *other = row.split(", ")
         if len(other) > 0:
             type_name = "__" + other[0] + " " + type_name
+        const = row.find("const ") != -1
         hidden = name.startswith("_.")
         if type_name[-1] == "*":
             type_name = type_name[:-1]
@@ -41,6 +42,7 @@ def process_params(set_of_config: list[str]) -> list[KernelArgument]:
                 offset=offset,
                 size=size,
                 hidden=hidden,
+                const=const
             )
         )
         offset += size

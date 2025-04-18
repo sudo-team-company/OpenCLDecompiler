@@ -170,7 +170,7 @@ def process_unrolled_loops():  # noqa: C901, PLR0912, PLR0915
             before = expression_to_string(cur.state[dst].register_content._expression_node)
 
             # inside: str = vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].val
-            vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].register_content._expression_node = ExpressionManager().replace_given_node_in_node(vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].register_content._expression_node, cur.state[dst].register_content._expression_node, acc_node)
+            vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].register_content._expression_node = vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].register_content._expression_node.replace(cur.state[dst].register_content._expression_node, acc_node)
             inside: str = expression_to_string(vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].register_content._expression_node)
             # inside = inside.replace(f"({before})", "acc").replace(f"{before}", "acc")
             if len(progressions) != 0:
