@@ -1,4 +1,4 @@
-from opencl_types import OpenCLTypes
+from src.types.opencl_types import OpenCLTypes
 from src.base_instruction import BaseInstruction
 from src.combined_register_content import CombinedRegisterContent
 from src.decompiler_data import set_reg, set_reg_value
