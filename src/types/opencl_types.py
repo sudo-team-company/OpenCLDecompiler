@@ -183,6 +183,9 @@ def make_opencl_type(type_hint) -> OpenCLTypes:
     if not isinstance(type_hint, str):
         return OpenCLTypes.UNKNOWN
     
+    if "b32" in type_hint or "b64" in type_hint:
+        type_hint[0] = "u"
+    
     opencl_type = OpenCLTypes.from_string(type_hint)
     if opencl_type == OpenCLTypes.UNKNOWN:
         asm_type = ASMTypes.from_string(type_hint)

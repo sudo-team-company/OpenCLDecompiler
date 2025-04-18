@@ -1,3 +1,4 @@
+from opencl_types import OpenCLTypes
 from src.base_instruction import BaseInstruction
 from src.combined_register_content import CombinedRegisterContent
 from src.decompiler_data import set_reg, set_reg_value
@@ -56,7 +57,6 @@ class SBfe(BaseInstruction):
             and is_reg(self.ssrc0)
             and isinstance(self.node.state[self.ssrc0].register_content, CombinedRegisterContent)
         ):
-            assert(False)
             shift_by = int(self.ssrc1, 16) & ((1 << 4) - 1)
             and_by = hex((1 << ((int(self.ssrc1, 16) >> 16) & ((1 << 6) - 1))) - 1)
 
@@ -79,6 +79,7 @@ class SBfe(BaseInstruction):
                 to_reg="scc",
                 from_regs=[self.sdst],
                 data_type=self.suffix,
+                expression_node=self.expression_manager.add_const_node(int(not is_zero), OpenCLTypes.UINT)
             )
 
             return self.node

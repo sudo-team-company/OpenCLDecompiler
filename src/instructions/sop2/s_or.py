@@ -1,4 +1,4 @@
-from src.types.opencl_types import OpenCLTypes
+from src.types.opencl_types import OpenCLTypes, make_opencl_type as make_opencl_type_new
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
 from src.expression_manager.expression_node import ExpressionOperationType
@@ -20,14 +20,15 @@ class SOr(BaseInstruction):
 
     def to_fill_node(self):
         if self.decompiler_data.is_rdna3 and self.suffix.endswith("32"):
-            assert(False)
             new_val = make_op(self.node, self.ssrc0, self.ssrc1, "|", suffix=self.suffix)
+            expr_node = self.expression_manager.add_operation(self.node.get_expression_node(self.ssrc0, self.ssrc1, ExpressionOperationType.BITWISE_OR, make_opencl_type_new(self.suffix)))
             return set_reg_value(
                 node=self.node,
                 new_value=new_val,
                 to_reg=self.sdst,
                 from_regs=[self.ssrc0, self.ssrc1],
                 data_type=self.suffix,
+                expression_node=expr_node
             )
 
         if self.suffix in {"b32", "b64"}:
