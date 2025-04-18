@@ -3,7 +3,6 @@ from itertools import starmap
 import yaml
 
 from src.expression_manager.expression_manager import ExpressionManager
-from src.expression_manager.expression_node import expression_to_string
 
 from ..decompiler_data import DecompilerData
 from ..model import ConfigData, KernelArgument

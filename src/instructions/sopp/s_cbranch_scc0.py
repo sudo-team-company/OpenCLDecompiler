@@ -1,4 +1,4 @@
-from src.expression_manager.expression_node import expression_to_string
+from src.expression_manager.expression_manager import ExpressionManager
 from src.instructions.sopp.s_cbranch import SCbranch
 
 
@@ -10,5 +10,5 @@ class SCbranchScc0(SCbranch):
 
     def to_print(self):
         self.output_string = self.node.state["scc"].val
-        self.output_string = expression_to_string(self.node.get_expression_node("scc"))
+        self.output_string = ExpressionManager().expression_to_string(self.node.get_expression_node("scc"))
         return self.output_string

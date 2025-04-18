@@ -2,11 +2,10 @@ import copy
 import re
 from collections import deque
 
-from src.expression_manager.expression_node import expression_to_string
-from src.types.opencl_types import OpenCLTypes
 from src.decompiler_data import DecompilerData
 from src.expression_manager.expression_manager import ExpressionManager
 from src.register_type import RegisterType
+from src.types.opencl_types import OpenCLTypes
 
 
 def find_max_and_prev_versions(curr_node):
@@ -131,7 +130,6 @@ def update_val_from_changes(curr_node, register, changes, check_version, num_of_
         copy_expr_node_last = node_state[first_reg].register_content._expression_node
 
         if copy_val_prev != copy_val_last:
-            print(expression_to_string(copy_expr_node_prev), expression_to_string(copy_expr_node_last))
             assert(copy_expr_node_prev != copy_expr_node_last)
 
             if changes.get(node_state[first_reg].version) is not None:

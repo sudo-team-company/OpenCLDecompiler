@@ -174,7 +174,7 @@ class OperationRegisterContent(RegisterContent):
 
         #todo - seems like we dont care about this "contains_operation_register_content" or "same_operation" stuff from above, but lets double check
         if expression_node is None:
-            expression_node = ExpressionManager().add_operations([content.get_expression_node() for content in register_contents], ExpressionOperationType.from_string(operation.value))
+            expression_node = ExpressionManager().apply_operation_to_nodes([content.get_expression_node() for content in register_contents], ExpressionOperationType.from_string(operation.value))
 
         super().__init__(
             value=values,

@@ -1,13 +1,11 @@
-import copy
 import operator
 
-from src.expression_manager.expression_node import expression_to_string
-from src.types.opencl_types import OpenCLTypes
 from src.decompiler_data import DecompilerData
 from src.expression_manager.expression_manager import ExpressionManager
 from src.node import Node
 from src.region_type import RegionType
 from src.regions.region import Region
+from src.types.opencl_types import OpenCLTypes
 
 
 class Vertex:
@@ -51,6 +49,7 @@ def to_int(x: str) -> int | None:
 
 def process_unrolled_loops():  # noqa: C901, PLR0912, PLR0915
     decompiler_data = DecompilerData()
+    expression_manager = ExpressionManager()
     unrolling_limit = decompiler_data.unrolling_limit
     region: Region = decompiler_data.improve_cfg
     if region.type == RegionType.LINEAR:
@@ -164,14 +163,15 @@ def process_unrolled_loops():  # noqa: C901, PLR0912, PLR0915
             while cur != end and not cur.children[0].exclude_unrolled:
                 cur = cur.children[0]
             
-            acc_node = ExpressionManager().add_variable_node("acc", OpenCLTypes.UINT)
+            acc_node = expression_manager.add_variable_node("acc", OpenCLTypes.UINT)
 
             # before = cur.state[dst].val
-            before = expression_to_string(cur.state[dst].register_content._expression_node)
+            before = expression_manager.expression_to_string(cur.state[dst].get_expression_node())
 
             # inside: str = vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].val
             vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].register_content._expression_node = vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].register_content._expression_node.replace(cur.state[dst].register_content._expression_node, acc_node)
-            inside: str = expression_to_string(vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].register_content._expression_node)
+            inside: str = expression_manager.expression_to_string(
+                vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].get_expression_node())
             # inside = inside.replace(f"({before})", "acc").replace(f"{before}", "acc")
             if len(progressions) != 0:
                 inside = inside.replace(str(progressions[0][0]), "i")

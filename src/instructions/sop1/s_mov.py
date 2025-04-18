@@ -1,9 +1,9 @@
-from src.expression_manager.expression_node import ExpressionOperationType
-from src.types.opencl_types import OpenCLTypes
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
+from src.expression_manager.expression_node import ExpressionOperationType
 from src.global_data import get_gdata_offset
 from src.register_type import RegisterType
+from src.types.opencl_types import OpenCLTypes
 
 
 class SMov(BaseInstruction):

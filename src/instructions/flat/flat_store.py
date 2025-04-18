@@ -1,9 +1,9 @@
 import copy
-from src.expression_manager.expression_manager import ExpressionManager
-from src.types.opencl_types import OpenCLTypes
-from src.expression_manager.expression_node import ExpressionOperationType, expression_to_string
+
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier
+from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.expression_node import ExpressionOperationType
 from src.opencl_types import make_opencl_type
 from src.register import (
     check_and_split_regs,
@@ -13,6 +13,7 @@ from src.register import (
     is_vgpr,
 )
 from src.register_type import RegisterType
+from src.types.opencl_types import OpenCLTypes
 
 
 def get_vector_name(vector_element):
@@ -51,11 +52,11 @@ def is_right_order(src_registers):
 def prepare_vector_type_output(from_registers, vdata, to_registers, node):
     new_vector = []
     for reg in check_and_split_regs_range_to_full_list(vdata):
-        values = expression_to_string(node.state[reg].register_content._expression_node).split(", ")
+        values = ExpressionManager().expression_to_string(node.state[reg].get_expression_node()).split(", ")
         for v in values:
             new_vector.append(v)
-    to_type = node.state[to_registers].register_content._expression_node.value_type_hint
-    from_type = node.state[from_registers].register_content._expression_node.value_type_hint
+    to_type = node.state[to_registers].get_expression_node().value_type_hint
+    from_type = node.state[from_registers].get_expression_node().value_type_hint
 
     tmp = copy.deepcopy(to_type.value)
     tmp.number_of_components = 1
@@ -71,11 +72,11 @@ def prepare_vector_type_output(from_registers, vdata, to_registers, node):
             for element in new_vector:
                 output_string += str(get_vector_element_number(element))
     else:
-        to_type = node.state[to_registers].register_content._expression_node.value_type_hint
+        to_type = node.state[to_registers].get_expression_node().value_type_hint
         tmp = copy.deepcopy(to_type.value)
         tmp.modifiers = ()
         to_type = OpenCLTypes.from_string(str(tmp))
-        output_string = f"({str(to_type)})(" + ", ".join(new_vector) + ")"
+        output_string = f"({to_type!s})(" + ", ".join(new_vector) + ")"
     return output_string
 
 
@@ -161,7 +162,7 @@ class FlatStore(BaseInstruction):
                 if self.decompiler_data.name_of_program == "add_char_x_x":
                     pass
                 var = make_elem_from_addr(var)
-                var = expression_to_string(var_node)
+                var = ExpressionManager().expression_to_string(var_node)
             elif (
                 var in self.decompiler_data.names_of_vars
                 and self.decompiler_data.names_of_vars[var] != self.node.state[self.to_registers].data_type
@@ -179,7 +180,7 @@ class FlatStore(BaseInstruction):
                 else:
                     #todo - check other branches
                     self.output_string = self.node.state[self.from_registers].val
-                    self.output_string = expression_to_string(self.node.state[self.from_registers].register_content._expression_node)
+                    self.output_string = ExpressionManager().expression_to_string(self.node.state[self.from_registers].get_expression_node())
             else:
                 self.output_string = self.decompiler_data.initial_state[self.from_registers].val
             #todo delete debug output

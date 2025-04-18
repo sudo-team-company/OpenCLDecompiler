@@ -1,8 +1,8 @@
-from src.expression_manager.expression_node import expression_to_string
-from src.types.opencl_types import OpenCLTypes
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value, try_get_reg
+from src.expression_manager.expression_manager import ExpressionManager
 from src.register_type import RegisterType
+from src.types.opencl_types import OpenCLTypes
 
 
 class VCndmask(BaseInstruction):
@@ -69,7 +69,7 @@ class VCndmask(BaseInstruction):
                 return ""
             if ssrc2 and ssrc2.type == RegisterType.DIVISION_PASS:
                 return ""
-            if vdst and vdst.register_content._expression_node.value == "0":
+            if vdst and vdst.get_expression_node().value == "0":
                 return ""
             if "?" in ssrc2.val:
                 ssrc2.register_content._value = f"({ssrc2.val})"  # noqa: SLF001
@@ -77,15 +77,15 @@ class VCndmask(BaseInstruction):
 
             if "s" in self.src1 or "v" in self.src1:
                 src1_parent_val = self.node.parent[0].state[self.src1].val
-                src1_parent_val = expression_to_string(self.node.parent[0].get_expression_node(self.src1))
+                src1_parent_val = ExpressionManager().expression_to_string(self.node.parent[0].get_expression_node(self.src1))
             else:
                 src1_parent_val = self.src1
             if "s" in self.src0 or "v" in self.src0:
                 src0_parent_val = self.node.parent[0].state[self.src0].val
-                src0_parent_val = expression_to_string(self.node.parent[0].get_expression_node(self.src0))
+                src0_parent_val = ExpressionManager().expression_to_string(self.node.parent[0].get_expression_node(self.src0))
             else:
                 src0_parent_val = self.src0
             #todo ssrc2.val??
-            self.output_string = f"{vdst.register_content._expression_node.value} = {ssrc2.val} ? {src1_parent_val} : {src0_parent_val}"
+            self.output_string = f"{vdst.get_register_node().value} = {ssrc2.val} ? {src1_parent_val} : {src0_parent_val}"
             return self.output_string
         return super().to_print()

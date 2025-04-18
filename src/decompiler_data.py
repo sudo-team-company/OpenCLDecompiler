@@ -4,12 +4,10 @@ import struct
 
 import sympy
 
-from src.types.opencl_types import OpenCLTypes
 from src import utils
 from src.combined_register_content import CombinedRegisterContent
 from src.expression_manager.expression_manager import ExpressionManager
-from src.expression_manager.expression_node import ExpressionNode, ExpressionOperationType, expression_to_string
-from src.types.opencl_types import make_opencl_type as make_opencl_type_new
+from src.expression_manager.expression_node import ExpressionNode, ExpressionOperationType
 from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
@@ -20,6 +18,8 @@ from src.register import Register, check_and_split_regs, is_range, is_reg, split
 from src.register_content import RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 from src.state import KernelState
+from src.types.opencl_types import OpenCLTypes
+from src.types.opencl_types import make_opencl_type as make_opencl_type_new
 from src.utils import Singleton
 
 from .model import ConfigData
@@ -42,11 +42,6 @@ def set_reg_value(  # noqa: PLR0913
 ):
     decompiler_data = DecompilerData()
     if register_content_type == RegisterContent:
-        if to_reg == "s6":
-            pass
-        if expression_to_string(expression_node) == ".gdata&0xffffffff":
-            pass
-        print("set_reg_value:", to_reg, expression_to_string(expression_node))
         node.state[to_reg] = Register(
             integrity=integrity,
             register_content=RegisterContent(
@@ -569,6 +564,7 @@ class DecompilerData(metaclass=Singleton):
         self.bfe_offsets = {}
         self.exec_registers = {"exec": ExecCondition.default()}
         self.is_rdna3 = False
+        #todo move reset to somethere else
         ExpressionManager().reset()
 
     def write(self, output):

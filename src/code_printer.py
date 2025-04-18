@@ -1,5 +1,5 @@
 from src.decompiler_data import DecompilerData, evaluate_from_hex
-from src.expression_manager.expression_node import expression_to_string
+from src.expression_manager.expression_manager import ExpressionManager
 from src.node import Node
 from src.node_processor import to_opencl
 from src.opencl_types import make_opencl_type
@@ -83,14 +83,19 @@ def write_global_data():  # noqa: PLR0912
 
 def make_output_for_loop_vars(curr_node, indent):
     decompiler_data = DecompilerData()
+    expression_manager = ExpressionManager()
     key = decompiler_data.loops_nodes_for_variables[curr_node]
     reg = key[: key.find("_")]
     loop_variable = decompiler_data.loops_variables[key]
-    decompiler_data.write(indent + loop_variable + " = " + expression_to_string(curr_node.state[reg].register_content._expression_node) + ";\n")
+    decompiler_data.write(indent
+                          + loop_variable + " = "
+                          + expression_manager.expression_to_string(curr_node.state[reg].get_expression_node())
+                          + ";\n")
 
 
 def make_output_for_linear_region(region, indent):
     decompiler_data = DecompilerData()
+    expression_manager = ExpressionManager()
     if isinstance(region.start, Node):
         curr_node = decompiler_data.cfg.children[0] if region.start == decompiler_data.cfg else region.start
         while True:
@@ -121,7 +126,11 @@ def make_output_for_linear_region(region, indent):
                     )
                 ):  # версия поменялась по сравнению с предком
                     # decompiler_data.write(indent + var + " = " + curr_node.state[reg].val + ";\n")
-                    decompiler_data.write(indent + var + " = " + expression_to_string(curr_node.state[reg].register_content._expression_node) + ";\n")
+                    decompiler_data.write(indent
+                                          + var
+                                          + " = "
+                                          + expression_manager.expression_to_string(curr_node.state[reg].get_expression_node())
+                                          + ";\n")
             if curr_node == region.end:
                 break
             child = curr_node.children[0]

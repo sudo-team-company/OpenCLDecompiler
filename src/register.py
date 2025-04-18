@@ -3,6 +3,7 @@ import itertools
 import re
 
 from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.expression_node import ExpressionNode
 from src.types.opencl_types import OpenCLTypes
 from src.constants import DEFAULT_REGISTER_SIZE
 from src.integrity import Integrity
@@ -72,8 +73,12 @@ class Register:
     def get_data_type(self) -> str:
         return self.register_content.get_data_type()
 
+    def get_expression_node(self) -> ExpressionNode:
+        return self.register_content.get_expression_node()
+    
     def get_size(self) -> int:
         return self._size
+    
 
     def try_simplify(self) -> bool:
         new_content = self.register_content.maybe_simplify()

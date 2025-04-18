@@ -1,8 +1,9 @@
-from src.types.opencl_types import OpenCLTypes
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
-from src.expression_manager.expression_node import ExpressionOperationType, expression_to_string
+from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.expression_node import ExpressionOperationType
 from src.register import check_and_split_regs
+from src.types.opencl_types import OpenCLTypes
 
 
 class SAnd(BaseInstruction):
@@ -45,7 +46,11 @@ class SAnd(BaseInstruction):
 
                 src0_node = self.node.get_expression_node(self.ssrc0)
                 src1_node = self.node.get_expression_node(self.ssrc1)
-                expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.AND, OpenCLTypes.UINT if self.suffix == "b32" else OpenCLTypes.ULONG)
+                expr_node = self.expression_manager.add_operation(
+                    src0_node,
+                    src1_node,
+                    ExpressionOperationType.AND,
+                    OpenCLTypes.UINT if self.suffix == "b32" else OpenCLTypes.ULONG)
 
                 return set_reg_value(
                     node=self.node,
@@ -80,5 +85,5 @@ class SAnd(BaseInstruction):
     def to_print(self):
         if self.sdst == "exec":
             self.output_string = self.node.state["exec"].val
-            self.output_string = expression_to_string(self.node.state["exec"].register_content._expression_node)
+            self.output_string = ExpressionManager().expression_to_string(self.node.state["exec"].get_expression_node())
         return self.output_string

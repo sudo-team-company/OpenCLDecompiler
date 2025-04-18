@@ -1,7 +1,8 @@
-from src.types.opencl_types import OpenCLTypes
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
-from src.expression_manager.expression_node import ExpressionOperationType, ExpressionType, expression_to_string
+from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.expression_node import ExpressionOperationType, ExpressionType
+from src.types.opencl_types import OpenCLTypes
 
 
 class SAndSaveexec(BaseInstruction):
@@ -55,5 +56,5 @@ class SAndSaveexec(BaseInstruction):
 
     def to_print(self):
         self.output_string = self.node.state["exec"].val
-        self.output_string = expression_to_string(self.node.get_expression_node("exec"))
+        self.output_string = ExpressionManager().expression_to_string(self.node.get_expression_node("exec"))
         return self.output_string
