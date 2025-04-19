@@ -55,19 +55,17 @@ def prepare_vector_type_output(from_registers, vdata, to_registers, node):
         values = ExpressionManager().expression_to_string(node.state[reg].get_expression_node()).split(", ")
         for v in values:
             new_vector.append(v)
-    to_type = node.state[to_registers].get_expression_node().value_type_hint
-    from_type = node.state[from_registers].get_expression_node().value_type_hint
+    to_type: OpenCLTypes = node.state[to_registers].get_expression_node().value_type_hint
+    from_type: OpenCLTypes = node.state[from_registers].get_expression_node().value_type_hint
 
-    tmp = copy.deepcopy(to_type.value)
-    tmp.number_of_components = 1
-    to_type_single_component = OpenCLTypes.from_string(str(tmp))
+    to_type_single_component = to_type.set_number_of_components(1)
 
     if is_same_name(new_vector) and (
         (from_type.value.number_of_components == 1 and to_type_single_component.equal_without_modifiers(from_type))
         or to_type.equal_without_modifiers(from_type)
     ):
         output_string = get_vector_name(new_vector[0])
-        if not is_right_order(new_vector) or ExpressionManager()._variables[output_string].value_type_hint.value.number_of_components != to_type.value.number_of_components:
+        if not is_right_order(new_vector) or (ExpressionManager().get_variable_info(output_string) is not None and ExpressionManager().get_variable_info(output_string).var_node.value_type_hint.value.number_of_components != to_type.value.number_of_components):
             output_string += ".s"
             for element in new_vector:
                 output_string += str(get_vector_element_number(element))
@@ -180,7 +178,8 @@ class FlatStore(BaseInstruction):
                 else:
                     #todo - check other branches
                     self.output_string = self.node.state[self.from_registers].val
-                    self.output_string = ExpressionManager().expression_to_string(self.node.state[self.from_registers].get_expression_node(), var_node.value_type_hint)
+                    self.output_string = ExpressionManager().expression_to_string(
+                        self.node.state[self.from_registers].get_expression_node(), var_node.value_type_hint)
             else:
                 self.output_string = self.decompiler_data.initial_state[self.from_registers].val
             #todo delete debug output

@@ -1,8 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
 from src.expression_manager.expression_manager import ExpressionManager
-from src.expression_manager.expression_node import ExpressionOperationType, ExpressionType
-from src.expression_manager.types.opencl_types import OpenCLTypes
 
 
 class SAndSaveexec(BaseInstruction):
@@ -30,7 +28,12 @@ class SAndSaveexec(BaseInstruction):
             #todo double check?
             self.decompiler_data.exec_registers[self.sdst] = old_exec_condition
             set_reg_value(
-                self.node, old_exec_condition.top(), self.sdst, ["exec"], None, exec_condition=old_exec_condition, expression_node=prev_exec_cond_node
+                self.node,
+                old_exec_condition.top(),
+                self.sdst, ["exec"],
+                None,
+                exec_condition=old_exec_condition,
+                expression_node=prev_exec_cond_node
             )
 
             new_exec_condition = old_exec_condition & new_cond
@@ -38,10 +41,10 @@ class SAndSaveexec(BaseInstruction):
 
             new_exec_cond_node = self.node.get_expression_node(self.ssrc0)
 
-            if prev_exec_cond_node.type == ExpressionType.UNKNOWN:
-                expr_node = new_exec_cond_node
-            else:
-                expr_node = self.expression_manager.add_operation(prev_exec_cond_node, new_exec_cond_node, ExpressionOperationType.AND, OpenCLTypes.UINT if self.suffix == "b32" else OpenCLTypes.ULONG)
+            expr_node = new_exec_cond_node
+            # if prev_exec_cond_node.type == ExpressionType.UNKNOWN:
+            # else:
+            #     expr_node = self.expression_manager.add_operation(prev_exec_cond_node, new_exec_cond_node, ExpressionOperationType.AND, OpenCLTypes.UINT if self.suffix == "b32" else OpenCLTypes.ULONG)
 
             return set_reg_value(
                 self.node,

@@ -13,6 +13,7 @@ usesetup_dict = {
         register_content=RegisterContent(
             value="",
             type_=RegisterType.GENERAL_SETUP,
+            expression_node=ExpressionManager().get_empty_node()
         ),
     ),
     #  TODO: Подумать, как лучше вписать, что здесь и LOCAL_SIZE_X, и LOCAL_SIZE_Y

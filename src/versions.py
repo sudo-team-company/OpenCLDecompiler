@@ -35,9 +35,14 @@ def update_reg_version(reg, curr_node, max_version, prev_versions_of_reg):
             old_var = decompiler_data.checked_variables[prev]
             decompiler_data.checked_variables[prev] = variable
             decompiler_data.variables = {k: v.replace(old_var, variable) for k, v in decompiler_data.variables.items()}
-    curr_node.state[reg].register_content._value = variable  # noqa: SLF001
     #todo do we need additional checks?
-    curr_node.state[reg].register_content._expression_node = ExpressionManager().add_variable_node(variable, OpenCLTypes.UINT)
+    print("before", reg, curr_node.state[reg].register_content._value, ExpressionManager().expression_to_string(curr_node.state[reg].register_content._expression_node))
+    curr_node.state[reg].register_content._value = variable  # noqa: SLF001
+    prev_value_type_hint = curr_node.state[reg].get_expression_node().value_type_hint
+    if prev_value_type_hint == OpenCLTypes.UNKNOWN:
+        prev_value_type_hint = OpenCLTypes.UINT
+    curr_node.state[reg].register_content._expression_node = ExpressionManager().add_variable_node(variable, prev_value_type_hint)
+    print("after", reg, curr_node.state[reg].register_content._value, ExpressionManager().expression_to_string(curr_node.state[reg].register_content._expression_node))
     if curr_node.state[reg].type in {
         RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT,
         RegisterType.ADDRESS_KERNEL_ARGUMENT,
@@ -98,6 +103,7 @@ def update_val_from_changes(curr_node, register, changes, check_version, num_of_
         and curr_node.state[register].data_type is not None
         and (register != "vcc" or "and_saveexec" in instruction[0])
     ):
+        print("update_val_from_changes:")
         if re.match(r"(flat|global)_store", instruction[0]):
             if num_of_reg == 1:
                 node_state = curr_node.parent[0].state
@@ -114,7 +120,7 @@ def update_val_from_changes(curr_node, register, changes, check_version, num_of_
                     changes[check_version][1], changes[check_version][0]
                 )
 
-                node_state[register].register_content._expression_node = node_state[register].register_content._expression_node.replace(
+                node_state[register].register_content._expression_node = node_state[register].register_content._expression_node.replace(  # noqa: SLF001
                     changes[check_version + "_expr_node"][1], changes[check_version + "_expr_node"][0]) # noqa: SLF001
                 
         copy_val_prev = node_state[first_reg].val
@@ -130,6 +136,7 @@ def update_val_from_changes(curr_node, register, changes, check_version, num_of_
         copy_expr_node_last = node_state[first_reg].register_content._expression_node
 
         if copy_val_prev != copy_val_last:
+            print("hey:", ExpressionManager().expression_to_string(copy_expr_node_prev), ExpressionManager().expression_to_string(copy_expr_node_last))
             assert(copy_expr_node_prev != copy_expr_node_last)
 
             if changes.get(node_state[first_reg].version) is not None:

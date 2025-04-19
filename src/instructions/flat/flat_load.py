@@ -13,7 +13,7 @@ def get_output_for_different_vector_types(output, var_type, data_type):
         close_square_bracket_position = output.find("]")
         element_number = output[open_square_bracket_position + 1 : close_square_bracket_position]
         second_term_separator = element_number.find(" + ")
-        size_type_part = element_number[second_term_separator + 3 :]
+        size_type_part = element_number[second_term_separator + 4 :-1]
         dividend_separator = size_type_part.find("/")
         size_elements = size_type_part[:dividend_separator]
         one_element_size, _ = evaluate_size(make_asm_type(data_type[:-1]), only_size=True)
@@ -111,7 +111,9 @@ class FlatLoad(BaseInstruction):
             #todo fix me
             if " + " in output_just_for_if:
                 print("bro, everything is fine")
-                # output = make_elem_from_addr(output)
+                print(output)
+                output_orig = make_elem_from_addr(output_just_for_if)
+                print(output_orig)
             elif self.node.state[self.start_to_registers].data_type != self.decompiler_data.names_of_vars[output][1:]:
                 assert(False)
                 output = f"*({make_opencl_type(self.decompiler_data.names_of_vars[output])}*)({output})"

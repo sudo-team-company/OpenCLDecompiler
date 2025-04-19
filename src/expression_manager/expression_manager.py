@@ -1,12 +1,12 @@
 import copy
 from dataclasses import dataclass, field
 from enum import Enum
+import re
 
 from src.expression_manager.expression_node import (
     ExpressionNode,
     ExpressionOperationType,
     ExpressionType,
-    check_nodes_need_cast_to,
     get_common_type,
 )
 from src.expression_manager.types.opencl_types import OpenCLTypes, check_value_needs_cast, make_opencl_type
@@ -48,6 +48,13 @@ class ExpressionManager(metaclass=Singleton):
         self._name_of_program = name_of_program
         self._variables_for_programs = {}
 
+    def create_work_item_function_node(self, reg_type: RegisterType) -> ExpressionNode:
+        work_item_function_node = ExpressionNode()
+        work_item_function_node.type = ExpressionType.WORK_ITEM_FUNCTION
+        work_item_function_node.value = reg_type
+        work_item_function_node.value_type_hint = OpenCLTypes.UINT if CONSTANT_VALUES[reg_type][1] == 32 else OpenCLTypes.ULONG
+        return work_item_function_node
+
     def create_const_node(self, value, value_type_hint: OpenCLTypes) -> ExpressionNode:
         const_node = ExpressionNode()
         const_node.type = ExpressionType.CONST
@@ -78,11 +85,11 @@ class ExpressionManager(metaclass=Singleton):
     def add_node(self, node: ExpressionNode):
         assert node is not None
 
-        if self.expression_to_string(node) == "get_global_offset(0) + (uint)arg0___s0":
+        if self.expression_to_string(node) == "2147483648" and node.value_type_hint == OpenCLTypes.UINT:
             pass
         assert node.value_type_hint != OpenCLTypes.UNKNOWN
-
-        print("add_node:", self.expression_to_string(node))  # noqa: T201
+    
+        print("add_node:", self.expression_to_string(node), node.value_type_hint)  # noqa: T201
         self._nodes.append(node)
 
     # todo: rename  # noqa: ERA001
@@ -143,23 +150,38 @@ class ExpressionManager(metaclass=Singleton):
 
         operation_node = self.create_op_node(op, s0, s1, op_value_type_hint)
 
+        # if (s0.type == ExpressionType.OP
+        #     and s0.value in [ExpressionOperationType.PLUS, ExpressionOperationType.MINUS]
+        #     and s0.left.type == ExpressionType.VAR
+        #     and self.get_variable_info(s0.left.value).is_pointer):
+        #     print("operation_node:", self.expression_to_string(operation_node))  # noqa: T201
+        #     tmp = s0.right
+        #     s0.right.parent = operation_node
+        #     s0.right = operation_node
+        #     operation_node.parent = s0
+        #     operation_node.left = tmp
+        #     operation_node = s0
+        #     operation_node.parent = None
+        #     print("operation_node:", self.expression_to_string(operation_node))  # noqa: T201
+        #     pass
+
         self.add_node(operation_node)
         print("added operation:", self.expression_to_string(operation_node))  # noqa: T201
         return operation_node
 
     def invert_node(self, node: ExpressionNode) -> ExpressionNode:
         print("INVERTING NODE")  # noqa: T201
-        if node.type == ExpressionType.OP and node.value.is_compare_operator():
-            tmp = ExpressionNode()
-            tmp.type = ExpressionType.OP
-            tmp.value = ExpressionOperationType.NOT
-            # todo bool?
-            tmp.value_type_hint = node.value_type_hint
-            tmp.left = node
-            self.add_node(tmp)
-            return tmp
-        tmp = self.add_const_node(-1, OpenCLTypes.INT)
-        return self.add_operation(tmp, node, ExpressionOperationType.MUL, node.value_type_hint)
+        # if node.type == ExpressionType.OP and node.value.is_compare_operator():
+        tmp = ExpressionNode()
+        tmp.type = ExpressionType.OP
+        tmp.value = ExpressionOperationType.NOT
+        # todo bool?
+        tmp.value_type_hint = node.value_type_hint
+        tmp.left = node
+        self.add_node(tmp)
+        return tmp
+        # tmp = self.add_const_node(-1, OpenCLTypes.INT)
+        # return self.add_operation(tmp, node, ExpressionOperationType.MUL, node.value_type_hint)
 
     def get_kernel_argument_type_and_qualifiers(
             self,
@@ -225,10 +247,11 @@ class ExpressionManager(metaclass=Singleton):
         new_node = None
 
         if reg_type in CONSTANT_VALUES:
-            name, type_size_bits = CONSTANT_VALUES[reg_type][:2]
-            # we can deduce OpenCLType here, cause it's constant value, but let's set it to UINT for now
-            new_node = self.add_const_node(name, OpenCLTypes.UINT if type_size_bits == 32 else OpenCLTypes.ULONG)  # noqa: PLR2004
-            # new_node = ExpressionNode(ExpressionType.FUNC, reg_type_name, OpenCLTypes.UINT)  # noqa: ERA001
+            new_node = self.add_work_item_function_node(reg_type)
+            # name, type_size_bits = CONSTANT_VALUES[reg_type][:2]
+            # # we can deduce OpenCLType here, cause it's constant value, but let's set it to UINT for now
+            # new_node = self.add_const_node(reg_type, OpenCLTypes.UINT if type_size_bits == 32 else OpenCLTypes.ULONG)
+            # # new_node = ExpressionNode(ExpressionType.FUNC, reg_type_name, OpenCLTypes.UINT)  # noqa: ERA001
         else:
             assert value is not None
             new_node = self.add_const_node(value, OpenCLTypes.INT)
@@ -236,7 +259,48 @@ class ExpressionManager(metaclass=Singleton):
         print("add_register_node:", reg_type, value, "node:", new_node.type, new_node.value_type_hint)  # noqa: T201
         return new_node
 
+    def add_work_item_function_node(self, reg_type: RegisterType) -> ExpressionNode:
+        work_item_function_node = self.create_work_item_function_node(reg_type)
+
+        self.add_node(work_item_function_node)
+        return work_item_function_node
+
     def add_const_node(self, value, value_type_hint: OpenCLTypes):
+        def get_min_sufficient_type_for_integer(value):
+            signed = (value < 0)
+            types_to_check = ([OpenCLTypes.CHAR, OpenCLTypes.SHORT, OpenCLTypes.INT, OpenCLTypes.LONG] if signed
+                              else [OpenCLTypes.UCHAR, OpenCLTypes.USHORT, OpenCLTypes.UINT, OpenCLTypes.ULONG])
+            for t in types_to_check:
+                abs_max_value = pow(2, t.value.get_size() * 8)
+                if signed:
+                    min_value, max_value = (-1 * abs_max_value / 2, abs_max_value / 2 - 1)
+                else:
+                    min_value, max_value = (0, abs_max_value - 1)
+                if value >= min_value and value <= max_value:
+                    return t
+            return OpenCLTypes.UNKNOWN
+
+
+        # try to deduce type additionally here
+        if isinstance(value, str):
+            if re.fullmatch(r"[\d]+e[\d]+", value) is not None:
+                value_type_hint = OpenCLTypes.DOUBLE
+            else:
+                try:
+                    value = int(value)
+                    value_type_hint = get_min_sufficient_type_for_integer(value)
+                except ValueError:
+                    try:
+                        value = int(value, base=16)
+                        value_type_hint = get_min_sufficient_type_for_integer(value)
+                    except ValueError:
+                        try:
+                            decimals_after_point = len(value) - value.find(".")
+                            value = float(value)
+                            value_type_hint = OpenCLTypes.FLOAT if decimals_after_point <= 7 else OpenCLTypes.DOUBLE  # noqa: PLR2004
+                        except ValueError:
+                            pass
+
         const_node = self.create_const_node(value, value_type_hint)
 
         self.add_node(const_node)
@@ -341,94 +405,100 @@ class ExpressionManager(metaclass=Singleton):
     def expression_to_string(self, node: ExpressionNode, cast_to: OpenCLTypes = OpenCLTypes.UNKNOWN):
         return self._expression_to_string_updated(node, cast_to)
 
+    #todo maybe move it
+    def evaluate_operation(self, left_value, op: ExpressionOperationType, right_value):  # noqa: C901, PLR0912
+        result = None
+        match op:
+            case ExpressionOperationType.PLUS:
+                result = left_value + right_value
+            case ExpressionOperationType.MINUS:
+                result = left_value - right_value
+            case ExpressionOperationType.MUL:
+                result = left_value * right_value
+            case ExpressionOperationType.DIV:
+                result = left_value / right_value
+            case ExpressionOperationType.REM:
+                result = left_value % right_value
+            case ExpressionOperationType.LSHIFT:
+                result = left_value << right_value
+            case ExpressionOperationType.RSHIFT:
+                result = left_value >> right_value
+            case ExpressionOperationType.EQ:
+                result = left_value == right_value
+            case ExpressionOperationType.NE:
+                result = left_value != right_value
+            case ExpressionOperationType.LT:
+                result = left_value < right_value
+            case ExpressionOperationType.LE:
+                result = left_value <= right_value
+            case ExpressionOperationType.GT:
+                result = left_value > right_value
+            case ExpressionOperationType.GE:
+                result = left_value >= right_value
+            case ExpressionOperationType.LG:
+                result = left_value > right_value or left_value < right_value
+            case ExpressionOperationType.NOT:
+                result = not left_value
+            case ExpressionOperationType.AND:
+                result = left_value and right_value
+            case ExpressionOperationType.OR:
+                result = left_value or right_value
+            case ExpressionOperationType.XOR:
+                result = left_value ^ right_value
+            case ExpressionOperationType.BITWISE_AND:
+                result = left_value & right_value
+            case ExpressionOperationType.BITWISE_OR:
+                result = left_value | right_value
+        return result
 
-    def simplify_node(self, node: ExpressionNode):
-        pass
+    # @dataclass
+    # class SimplificationContext:
+    #     operation: # muldiv or plusminus
+    #     nodes: list[ExpressionNode] = []
+
+    #     pass
+
+    # def simplify_node(self, node: ExpressionNode, simplify_context) -> ExpressionNode:
+    #     assert node is not None
+
+    #     if node.type == ExpressionType.VAR:
+    #         var_info = self.get_variable_info(node.value)
+    #         if var_info is not None and var_info.value_node is not None:
+    #             return var_info.value_node
+
+    #     if node.type != ExpressionType.OP:
+    #         return node
+
+    #     operator = node.value
+
+    #     #todo double not
+
+    #     if operator not in [ExpressionOperationType.PLUS,
+    #                         ExpressionOperationType.MINUS,
+    #                         ExpressionOperationType.MUL,
+    #                         ExpressionOperationType.DIV]:
+    #         return node
+
+    #     left_node = node.left
+    #     right_node = node.right
+    #     if left_node.type == ExpressionType.CONST and right_node.type == ExpressionType.CONST:
+    #         simplified_value = self.evaluate_operation(left_node.value, operator, right_node.value)
+    #         simplified_type = get_common_type(left_node.value_type_hint, right_node.value_type_hint)
+    #         return self.add_const_node(simplified_value, simplified_type)
+
+    #     left_node_simplified
+
+    #     simplify_context
+
+    #     return node
+
 
     def get_variable_info(self, var_name: str) -> VariableInfo:
-        if (self._variables_for_programs.get(self._name_of_program) is not None 
+        if (self._variables_for_programs.get(self._name_of_program) is not None
             and self._variables_for_programs[self._name_of_program].get(var_name) is not None):
                 return self._variables_for_programs[self._name_of_program][var_name]
         return None
 
-    def _op_expression_to_string(self, expression_node: ExpressionNode, need_cast: bool) -> str:
-        assert expression_node is not None
-        assert expression_node.type == ExpressionType.OP
-
-        operation = expression_node.value
-        left_node = expression_node.left
-        right_node = expression_node.right
-        parent_node = expression_node.parent
-
-        if operation == ExpressionOperationType.NOT:
-            return f"!({self._expression_to_string(left_node,
-                                                   check_nodes_need_cast_to(left_node, expression_node))})"
-
-        # special case for: data_ptr + smth => data_ptr[smth]
-        if operation == ExpressionOperationType.PLUS and left_node.type == ExpressionType.VAR:
-            variable_info = self.get_variable_info(left_node.value)
-            if variable_info.is_pointer:
-                return f"{left_node.value!s}[{self._expression_to_string(right_node, False)}]"
-
-        left_value = self._expression_to_string(
-            left_node, check_nodes_need_cast_to(left_node, expression_node)
-        )
-        operator = str(operation.value)
-        right_value = self._expression_to_string(
-            right_node, check_nodes_need_cast_to(right_node, expression_node)
-        )
-
-        # todo brackets rule
-        if parent_node is None:
-            return f"{left_value} {operator} {right_value}"
-
-        return f"({left_value} {operator} {right_value})"
-    
-    def _var_expression_to_string(self, var_node: ExpressionNode, need_cast: bool) -> str:
-        assert var_node is not None
-        assert var_node.type == ExpressionType.VAR
-
-        variable_info = self.get_variable_info(var_node.value)
-        address_space_qualifier_str = ""
-        if variable_info.address_space_qualifier != VariableAddressSpaceQualifiers.UNKNOWN:
-            address_space_qualifier_str = f"{variable_info.address_space_qualifier.value} "
-        constness_str = "const " if variable_info.is_const else ""
-        variable_type_str = str(var_node.value_type_hint)
-        ptr_str = "* " if variable_info.is_pointer else " "
-        var_name_str = var_node.value
-
-        return address_space_qualifier_str + constness_str + variable_type_str + ptr_str + var_name_str
-
-    def _expression_to_string(self, expression_node: ExpressionNode, need_cast: bool) -> str:
-        assert expression_node is not None
-
-        match expression_node.type:
-            case ExpressionType.OP:
-                return self._op_expression_to_string(expression_node, need_cast)
-            case ExpressionType.VAR:
-                return self._var_expression_to_string(expression_node, need_cast)
-            case ExpressionType.PERMUTE:
-                # todo check types
-                left_value = self._expression_to_string(expression_node.left, False)
-                right_value = self._expression_to_string(expression_node.right, False)
-                return f"{left_value}, {right_value}"
-            case ExpressionType.IF_TERNARY:
-                # todo
-                cond_value = self._expression_to_string(expression_node.value)
-                left_value = self._expression_to_string(expression_node.left)
-                right_value = self._expression_to_string(expression_node.right)
-                return f"({cond_value}) ? ({left_value}) : ({right_value})"
-            case _:
-                ret_str = str(expression_node.value)
-                ret_str = f"({ret_str})"
-                if need_cast:
-                    if expression_node.parent is None:
-                        return f"({OpenCLTypes.UNKNOWN}){ret_str}"
-                    else:
-                        return f"({expression_node.parent.value_type_hint}){ret_str}"
-                else:
-                    return f"{ret_str}"
-                     
     def _op_expression_to_string_updated(self,
                                      expression_node: ExpressionNode,
                                      cast_to: OpenCLTypes = OpenCLTypes.UNKNOWN) -> str:
@@ -446,7 +516,9 @@ class ExpressionManager(metaclass=Singleton):
         if operation == ExpressionOperationType.PLUS and left_node.type == ExpressionType.VAR:
             variable_info = self.get_variable_info(left_node.value)
             if variable_info.is_pointer:
-                return f"{left_node.value!s}[{self._expression_to_string_updated(right_node, cast_to)}]"
+                if expression_node.parent is None:
+                    return f"{left_node.value!s}[{self._expression_to_string_updated(right_node, cast_to)}]"
+                return f"{left_node.value!s}[{self._expression_to_string_updated(right_node, cast_to)}"
 
         left_value = self._expression_to_string_updated(
             left_node, cast_to
@@ -474,16 +546,18 @@ class ExpressionManager(metaclass=Singleton):
 
         output += f" {operator} "
 
-
         if ((check_needs_brackets(expression_node) and right_node.type in [ExpressionType.OP, ExpressionType.IF_TERNARY]and right_node.value in op_doesnt_need_additional_brackets)
             or check_needs_brackets(right_node)):
             output += f"({right_value})"
         else:
             output += right_value
 
+        if "[" in left_value:
+            output += "]"
+
         return output
-    
-    def _var_expression_to_string_updated(self, 
+
+    def _var_expression_to_string_updated(self,
                                           var_node: ExpressionNode,
                                           cast_to: OpenCLTypes = OpenCLTypes.UNKNOWN) -> str:
         assert var_node is not None
@@ -509,13 +583,13 @@ class ExpressionManager(metaclass=Singleton):
         # if expression_node.type == ExpressionType.VAR:
         #     return self._var_expression_to_string_updated(expression_node, cast_to)
 
-        cast_to = get_common_type(cast_to, expression_node.value_type_hint)
+        # cast_to = get_common_type(cast_to, expression_node.value_type_hint)
 
         output = ""
         if expression_node.type == ExpressionType.PERMUTE:
             # todo need brackets???
-            left_value = self._expression_to_string_updated(expression_node.left, cast_to)
-            right_value = self._expression_to_string_updated(expression_node.right, cast_to)
+            left_value = self._expression_to_string_updated(expression_node.left, expression_node.left.value_type_hint)
+            right_value = self._expression_to_string_updated(expression_node.right, expression_node.right.value_type_hint)
             output = f"{left_value}, {right_value}"
         elif expression_node.type == ExpressionType.IF_TERNARY:
             # todo need brackets?
@@ -524,8 +598,11 @@ class ExpressionManager(metaclass=Singleton):
             right_value = self._expression_to_string_updated(expression_node.right, cast_to)
             output =  f"({cond_value}) ? ({left_value}) : ({right_value})"
         else:
-            output = f"{expression_node.value}"
-            if (cast_to not in (OpenCLTypes.UNKNOWN, expression_node.value_type_hint) 
+            if expression_node.type == ExpressionType.WORK_ITEM_FUNCTION:
+                output = f"{CONSTANT_VALUES[expression_node.value][0]}"
+            else:
+                output = f"{expression_node.value}"
+            if (cast_to not in (OpenCLTypes.UNKNOWN, expression_node.value_type_hint)
                 and check_value_needs_cast(expression_node.value, expression_node.value_type_hint, cast_to)):
                 output = f"({cast_to!s})" + output
         return output

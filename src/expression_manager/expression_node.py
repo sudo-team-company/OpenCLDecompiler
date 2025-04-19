@@ -14,6 +14,7 @@ class ExpressionType(Enum):
     UNKNOWN = auto()
     OP = auto()
     CONST = auto()
+    WORK_ITEM_FUNCTION = auto()
     VAR = auto()
     PERMUTE = auto()
     IF_TERNARY = auto()
@@ -135,12 +136,15 @@ class ExpressionNode:
         return self
 
     def replace(self, from_node: "ExpressionNode", to_node: "ExpressionNode") -> "ExpressionNode":
+        from src.expression_manager.expression_manager import ExpressionManager
         assert from_node is not None
         assert to_node is not None
 
-        # print("self:", expression_to_string_private(self))
-        # print("from_node:", expression_to_string_private(from_node))
-        # print("to_node:", expression_to_string_private(to_node))
+        print("self:", ExpressionManager().expression_to_string(self))
+        print("from_node:", ExpressionManager().expression_to_string(from_node))
+        print("to_node:", ExpressionManager().expression_to_string(to_node))
+        print("equal from", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(from_node), self == from_node)
+        print("equal to", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(to_node), self == to_node)
 
         if self == to_node:
             return self
@@ -154,24 +158,21 @@ class ExpressionNode:
                     parent.right = to_node
 
             to_node.parent = parent
-            self = to_node
-            return self
+            self = to_node  # noqa: PLW0642
+            return self  # noqa: RET504
 
-        left_node: ExpressionNode = self.left
-        right_node: ExpressionNode = self.right
         if self.type == ExpressionType.OP:
-            if left_node is not None:
-                left_node = left_node.replace(from_node, to_node)
-            if right_node is not None:
-                right_node = right_node.replace(from_node, to_node)
-        elif self.type == ExpressionType.IF_TERNARY:
-            cond_node: ExpressionNode = self.value
-            if cond_node is not None:
-                cond_node = cond_node.replace(from_node, to_node)
-            if left_node is not None:
-                left_node = left_node.replace(from_node, to_node)
+            if self.left is not None:
+                self.left = self.left.replace(from_node, to_node)
             if self.right is not None:
-                right_node = right_node.replace(from_node, to_node)
+                self.right = self.right.replace(from_node, to_node)
+        elif self.type == ExpressionType.IF_TERNARY:
+            if self.value is not None:
+                self.value = self.value.replace(from_node, to_node)
+            if self.left is not None:
+                self.left = self.left.replace(from_node, to_node)
+            if self.right is not None:
+                self.right = self.right.replace(from_node, to_node)
 
         return self
 

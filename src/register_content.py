@@ -57,7 +57,6 @@ class RegisterContent:
 
     def __invert__(self):
         self._sign = self._sign.__invert__()
-        self._expression_node = ExpressionManager().invert_node(self.get_expression_node())
 
     def __and__(self, other):
         if isinstance(other, RegisterContent):

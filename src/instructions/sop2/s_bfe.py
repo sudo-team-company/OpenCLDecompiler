@@ -97,7 +97,7 @@ class SBfe(BaseInstruction):
             elif self.decompiler_data.bfe_offsets.get((self.node.state[self.ssrc0].val, self.ssrc1)):
                 new_value = self.decompiler_data.bfe_offsets[self.node.state[self.ssrc0].val, self.ssrc1]
                 reg_type = RegisterType.KERNEL_ARGUMENT_VALUE
-                expr_node=self.expression_manager._variables[new_value]
+                expr_node=self.expression_manager.get_variable_info(new_value).var_node
             else:
                 raise NotImplementedError("Unknown pattern in s_bfe")
             return set_reg_value(self.node, new_value, self.sdst, [], self.suffix, reg_type=reg_type, expression_node=expr_node)
@@ -106,6 +106,6 @@ class SBfe(BaseInstruction):
                 new_value = self.decompiler_data.bfe_offsets[self.node.state[self.ssrc0].val, self.ssrc1]
                 reg_type = RegisterType.KERNEL_ARGUMENT_VALUE
                 #todo doublecheck
-                set_reg_value(self.node, new_value, self.sdst, [], self.suffix, reg_type=reg_type,expression_node=self.expression_manager._variables[new_value])
+                set_reg_value(self.node, new_value, self.sdst, [], self.suffix, reg_type=reg_type,expression_node=self.expression_manager.get_variable_info(new_value).var_node)
             return self.node
         return super().to_fill_node()

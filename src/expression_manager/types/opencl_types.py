@@ -62,7 +62,7 @@ class OpenCLTypes(Enum):
 
     def equal_without_modifiers(self, other: "OpenCLTypes") -> bool:
         return self.value.equal_without_modifiers(other.value)
-
+    
     def set_number_of_components(self, number_of_components) -> "OpenCLTypes":
         new_type_value = copy.deepcopy(self.value)
         new_type_value.number_of_components = number_of_components
@@ -161,6 +161,9 @@ def check_value_needs_cast(value, from_type: OpenCLTypes, to_type: OpenCLTypes) 
 
     if from_type == to_type:
         return False
+    
+    if value == "1.0":
+        pass
 
     from_type: OpenCLType = from_type.value
     to_type: OpenCLType = to_type.value
