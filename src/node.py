@@ -1,9 +1,9 @@
-from src.expression_manager.expression_node import ExpressionNode
-from src.register_type import RegisterType
-from src.types.opencl_types import OpenCLTypes
-from src.expression_manager.expression_manager import ExpressionManager
 from src import utils
-from src.register import check_and_split_regs, is_range, is_reg
+from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.types.opencl_types import OpenCLTypes
+from src.register import check_and_split_regs, is_range
+from src.register_type import RegisterType
+
 
 #todo remove it from other place
 def check_big_values_new(node, start_register, end_register):

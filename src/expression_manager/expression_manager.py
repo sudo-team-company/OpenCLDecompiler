@@ -9,9 +9,9 @@ from src.expression_manager.expression_node import (
     check_nodes_need_cast_to,
     get_common_type,
 )
+from src.expression_manager.types.opencl_types import OpenCLTypes, make_opencl_type
 from src.model.kernel_argument import KernelArgument
 from src.register_type import CONSTANT_VALUES, RegisterType
-from src.types.opencl_types import OpenCLTypes, make_opencl_type
 from src.utils.singleton import Singleton
 
 

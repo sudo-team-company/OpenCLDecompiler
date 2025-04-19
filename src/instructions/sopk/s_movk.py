@@ -1,6 +1,6 @@
-from src.types.opencl_types import OpenCLTypes
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
+from src.expression_manager.types.opencl_types import OpenCLTypes
 
 
 class SMovk(BaseInstruction):

@@ -4,7 +4,7 @@ import uuid
 from dataclasses import dataclass, field
 from enum import Enum, auto
 
-from src.types.opencl_types import OpenCLType, OpenCLTypes
+from src.expression_manager.types.opencl_types import OpenCLType, OpenCLTypes
 
 
 class ExpressionEvaluationExceptionError(Exception):

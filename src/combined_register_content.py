@@ -1,8 +1,8 @@
 from collections.abc import Iterable
 
-from src.types.opencl_types import OpenCLTypes
 from src.expression_manager.expression_manager import ExpressionManager
 from src.expression_manager.expression_node import ExpressionNode
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.register_content import EmptyRegisterContent, RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 

@@ -3,8 +3,8 @@ from typing import Optional
 
 from src.constants import DEFAULT_REGISTER_SIZE
 from src.expression_manager.expression_manager import ExpressionManager, ExpressionNode
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.register_type import CONSTANT_VALUES, RegisterSignType, RegisterType
-from src.types.opencl_types import OpenCLTypes
 
 
 class RegisterContent:

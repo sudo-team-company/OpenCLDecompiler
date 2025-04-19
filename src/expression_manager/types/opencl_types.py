@@ -1,8 +1,8 @@
 import copy
 from enum import Enum
 
-from src.types.asm_types import ASMTypes
-from src.types.base_type import BaseType, UnknownTypeExceptionError
+from src.expression_manager.types.asm_types import ASMTypes
+from src.expression_manager.types.base_type import BaseType, UnknownTypeExceptionError
 
 _byte_size_to_type_integer: dict[int, str] = {
     1 : "char",

@@ -2,10 +2,10 @@ import operator
 
 from src.decompiler_data import DecompilerData
 from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.node import Node
 from src.region_type import RegionType
 from src.regions.region import Region
-from src.types.opencl_types import OpenCLTypes
 
 
 class Vertex:

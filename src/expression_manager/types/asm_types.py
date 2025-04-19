@@ -1,6 +1,6 @@
 from enum import Enum
 
-from src.types.base_type import BaseType, UnknownTypeExceptionError
+from src.expression_manager.types.base_type import BaseType, UnknownTypeExceptionError
 
 
 class ASMType(BaseType):

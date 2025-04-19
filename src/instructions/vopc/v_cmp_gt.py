@@ -1,5 +1,5 @@
-from src.types.opencl_types import OpenCLTypes
 from src.decompiler_data import set_reg_value
+from src.expression_manager.types.opencl_types import OpenCLTypes
 
 from .v_cmp import VCmp
 

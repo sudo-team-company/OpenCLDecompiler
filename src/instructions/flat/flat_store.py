@@ -4,6 +4,7 @@ from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier
 from src.expression_manager.expression_manager import ExpressionManager
 from src.expression_manager.expression_node import ExpressionOperationType
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.opencl_types import make_opencl_type
 from src.register import (
     check_and_split_regs,
@@ -13,7 +14,6 @@ from src.register import (
     is_vgpr,
 )
 from src.register_type import RegisterType
-from src.types.opencl_types import OpenCLTypes
 
 
 def get_vector_name(vector_element):

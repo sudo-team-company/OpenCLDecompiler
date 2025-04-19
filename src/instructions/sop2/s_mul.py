@@ -1,7 +1,7 @@
-from src.types.opencl_types import OpenCLTypes
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
 from src.expression_manager.expression_node import ExpressionOperationType
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.register import is_sgpr
 from src.register_type import RegisterType
 

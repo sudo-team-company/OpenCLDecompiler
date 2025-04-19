@@ -4,8 +4,8 @@ from collections import deque
 
 from src.decompiler_data import DecompilerData
 from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.register_type import RegisterType
-from src.types.opencl_types import OpenCLTypes
 
 
 def find_max_and_prev_versions(curr_node):

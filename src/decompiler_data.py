@@ -8,6 +8,8 @@ from src import utils
 from src.combined_register_content import CombinedRegisterContent
 from src.expression_manager.expression_manager import ExpressionManager, VariableAddressSpaceQualifiers
 from src.expression_manager.expression_node import ExpressionNode, ExpressionOperationType
+from src.expression_manager.types.opencl_types import OpenCLTypes
+from src.expression_manager.types.opencl_types import make_opencl_type as make_opencl_type_new
 from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
@@ -19,8 +21,6 @@ from src.register import Register, check_and_split_regs, is_range, is_reg, split
 from src.register_content import RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 from src.state import KernelState
-from src.types.opencl_types import OpenCLTypes
-from src.types.opencl_types import make_opencl_type as make_opencl_type_new
 from src.utils import Singleton
 
 

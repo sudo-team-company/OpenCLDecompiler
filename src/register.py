@@ -2,10 +2,10 @@ import copy
 import itertools
 import re
 
+from src.constants import DEFAULT_REGISTER_SIZE
 from src.expression_manager.expression_manager import ExpressionManager
 from src.expression_manager.expression_node import ExpressionNode
-from src.types.opencl_types import OpenCLTypes
-from src.constants import DEFAULT_REGISTER_SIZE
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.integrity import Integrity
 from src.opencl_types import vector_type_dict
 from src.register_content import RegisterContent, RegisterSignType

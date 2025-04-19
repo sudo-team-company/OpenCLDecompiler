@@ -1,8 +1,8 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value, try_get_reg
 from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.register_type import RegisterType
-from src.types.opencl_types import OpenCLTypes
 
 
 class VCndmask(BaseInstruction):

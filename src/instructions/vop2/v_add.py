@@ -1,13 +1,13 @@
-from src.expression_manager.expression_manager import VariableAddressSpaceQualifiers
-from src.register_content import CONSTANT_VALUES
-from src.types.opencl_types import OpenCLTypes
-from src.expression_manager.expression_node import ExpressionOperationType
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg, set_reg_value
+from src.expression_manager.expression_manager import VariableAddressSpaceQualifiers
+from src.expression_manager.expression_node import ExpressionOperationType
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.integrity import Integrity
 from src.opencl_types import evaluate_size, make_asm_type, most_common_type
 from src.operation_register_content import OperationRegisterContent, OperationType
 from src.register import check_and_split_regs, is_reg
+from src.register_content import CONSTANT_VALUES
 from src.register_type import RegisterType
 
 
