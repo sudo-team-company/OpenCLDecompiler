@@ -9,7 +9,7 @@ from src.expression_manager.expression_node import (
     check_nodes_need_cast_to,
     get_common_type,
 )
-from src.expression_manager.types.opencl_types import OpenCLTypes, make_opencl_type
+from src.expression_manager.types.opencl_types import OpenCLTypes, check_value_needs_cast, make_opencl_type
 from src.model.kernel_argument import KernelArgument
 from src.register_type import CONSTANT_VALUES, RegisterType
 from src.utils.singleton import Singleton
@@ -37,11 +37,16 @@ class VariableInfo:
 class ExpressionManager(metaclass=Singleton):
     def __init__(self):
         self._nodes = []
-        self._variables: dict[str, VariableInfo] = {}
+        self._variables_for_programs: dict[str, dict[str, VariableInfo]] = {}
+        self._name_of_program = ""
 
-    def reset(self):
+    def set_name_of_program(self, name_of_program: str):
+        self._name_of_program = name_of_program
+
+    def reset(self, name_of_program: str):
         self._nodes = []
-        self._variables: dict[str, VariableInfo] = {}
+        self._name_of_program = name_of_program
+        self._variables_for_programs = {}
 
     def create_const_node(self, value, value_type_hint: OpenCLTypes) -> ExpressionNode:
         const_node = ExpressionNode()
@@ -118,10 +123,10 @@ class ExpressionManager(metaclass=Singleton):
         # todo optimize if one is empty
 
         # todo find vars inside
-        if (s0.type == ExpressionType.VAR and self.get_variable_info(s0).is_pointer) or (s0.type == ExpressionType.VAR and self.get_variable_info(s0).address_space_qualifier == VariableAddressSpaceQualifiers.GLOBAL):
+        if (s0.type == ExpressionType.VAR and self.get_variable_info(s0.value).is_pointer) or (s0.type == ExpressionType.VAR and self.get_variable_info(s0.value).address_space_qualifier == VariableAddressSpaceQualifiers.GLOBAL):
             # todo limit
             op_value_type_hint = s0.value_type_hint
-        elif (s1.type == ExpressionType.VAR and self.get_variable_info(s1).is_pointer) or (s1.type == ExpressionType.VAR and self.get_variable_info(s1).address_space_qualifier == VariableAddressSpaceQualifiers.GLOBAL):
+        elif (s1.type == ExpressionType.VAR and self.get_variable_info(s1.value).is_pointer) or (s1.type == ExpressionType.VAR and self.get_variable_info(s1.value).address_space_qualifier == VariableAddressSpaceQualifiers.GLOBAL):
             # todo limit
             op_value_type_hint = s1.value_type_hint
         elif (op in (ExpressionOperationType.PLUS, ExpressionOperationType.MINUS)) and (
@@ -220,9 +225,9 @@ class ExpressionManager(metaclass=Singleton):
         new_node = None
 
         if reg_type in CONSTANT_VALUES:
-            reg_type_name = CONSTANT_VALUES[reg_type][0]
+            name, type_size_bits = CONSTANT_VALUES[reg_type][:2]
             # we can deduce OpenCLType here, cause it's constant value, but let's set it to UINT for now
-            new_node = self.add_const_node(reg_type_name, OpenCLTypes.UINT)
+            new_node = self.add_const_node(name, OpenCLTypes.UINT if type_size_bits == 32 else OpenCLTypes.ULONG)  # noqa: PLR2004
             # new_node = ExpressionNode(ExpressionType.FUNC, reg_type_name, OpenCLTypes.UINT)  # noqa: ERA001
         else:
             assert value is not None
@@ -299,6 +304,7 @@ class ExpressionManager(metaclass=Singleton):
             is_pointer = False
         return (var_node_name, is_pointer)
 
+
     def add_variable_node(
         self,
         name: str,
@@ -309,37 +315,41 @@ class ExpressionManager(metaclass=Singleton):
     ) -> ExpressionNode:
         var_name, is_pointer = self.parse_variable_name(name)
 
-        if check_duplicate and self._variables.get(var_name) is not None:
-            return self._variables[var_name].var_node
+        if check_duplicate and self.get_variable_info(var_name) is not None:
+            return self.get_variable_info(var_name).var_node
 
         # "{var}___s{idx}" case, make sure full variable is there too
         vector_element_symbol_pos = var_name.find("___")
         is_vector_element = vector_element_symbol_pos != -1
         if is_vector_element and value_type_hint.value.number_of_components > 1:
             base_var_name = name[:vector_element_symbol_pos]
-            if check_duplicate and self._variables.get(base_var_name) is None:
+            if check_duplicate and self.get_variable_info(base_var_name) is None:
                 self.add_variable_node(base_var_name, value_type_hint, qualifier, check_duplicate)
             value_type_hint = value_type_hint.set_number_of_components(1)
 
         var_node = self.create_var_node(var_name, value_type_hint)
 
-        self._variables[var_name] = VariableInfo(var_name, var_node, None, qualifier, is_pointer, is_const)
+        if self._variables_for_programs.get(self._name_of_program) is None:
+            self._variables_for_programs[self._name_of_program] = {}
+        self._variables_for_programs[self._name_of_program][var_name] = VariableInfo(
+            var_name, var_node, None, qualifier, is_pointer, is_const)
 
         self.add_node(var_node)
 
         return var_node
 
-    def expression_to_string(self, node: ExpressionNode):
-        return self._expression_to_string(node, False)
+    def expression_to_string(self, node: ExpressionNode, cast_to: OpenCLTypes = OpenCLTypes.UNKNOWN):
+        return self._expression_to_string_updated(node, cast_to)
 
 
     def simplify_node(self, node: ExpressionNode):
         pass
 
-    def get_variable_info(self, node: ExpressionNode) -> VariableInfo:
-        assert node is not None
-        assert node.type == ExpressionType.VAR
-        return self._variables[node.value]
+    def get_variable_info(self, var_name: str) -> VariableInfo:
+        if (self._variables_for_programs.get(self._name_of_program) is not None 
+            and self._variables_for_programs[self._name_of_program].get(var_name) is not None):
+                return self._variables_for_programs[self._name_of_program][var_name]
+        return None
 
     def _op_expression_to_string(self, expression_node: ExpressionNode, need_cast: bool) -> str:
         assert expression_node is not None
@@ -356,7 +366,7 @@ class ExpressionManager(metaclass=Singleton):
 
         # special case for: data_ptr + smth => data_ptr[smth]
         if operation == ExpressionOperationType.PLUS and left_node.type == ExpressionType.VAR:
-            variable_info = self.get_variable_info(left_node)
+            variable_info = self.get_variable_info(left_node.value)
             if variable_info.is_pointer:
                 return f"{left_node.value!s}[{self._expression_to_string(right_node, False)}]"
 
@@ -378,7 +388,7 @@ class ExpressionManager(metaclass=Singleton):
         assert var_node is not None
         assert var_node.type == ExpressionType.VAR
 
-        variable_info = self.get_variable_info(var_node)
+        variable_info = self.get_variable_info(var_node.value)
         address_space_qualifier_str = ""
         if variable_info.address_space_qualifier != VariableAddressSpaceQualifiers.UNKNOWN:
             address_space_qualifier_str = f"{variable_info.address_space_qualifier.value} "
@@ -418,3 +428,104 @@ class ExpressionManager(metaclass=Singleton):
                         return f"({expression_node.parent.value_type_hint}){ret_str}"
                 else:
                     return f"{ret_str}"
+                     
+    def _op_expression_to_string_updated(self,
+                                     expression_node: ExpressionNode,
+                                     cast_to: OpenCLTypes = OpenCLTypes.UNKNOWN) -> str:
+        assert expression_node is not None
+        assert expression_node.type == ExpressionType.OP
+
+        operation = expression_node.value
+        left_node = expression_node.left
+        right_node = expression_node.right
+
+        if operation == ExpressionOperationType.NOT:
+            return f"!({self._expression_to_string_updated(left_node, OpenCLTypes.UNKNOWN)})"
+
+        # special case for: data_ptr + smth => data_ptr[smth]
+        if operation == ExpressionOperationType.PLUS and left_node.type == ExpressionType.VAR:
+            variable_info = self.get_variable_info(left_node.value)
+            if variable_info.is_pointer:
+                return f"{left_node.value!s}[{self._expression_to_string_updated(right_node, cast_to)}]"
+
+        left_value = self._expression_to_string_updated(
+            left_node, cast_to
+        )
+        operator = str(operation.value)
+        right_value = self._expression_to_string_updated(
+            right_node, cast_to
+        )
+
+        output = ""
+
+        op_needs_additional_brackets = [ExpressionOperationType.DIV, ExpressionOperationType.MUL]
+        op_doesnt_need_additional_brackets = [ExpressionOperationType.PLUS, ExpressionOperationType.MINUS]
+
+        def check_needs_brackets(cur_node) -> bool:
+            return (
+                (cur_node.type == ExpressionType.OP and cur_node.value in op_needs_additional_brackets)
+                or cur_node.type == ExpressionType.IF_TERNARY
+                )
+        if ((check_needs_brackets(expression_node) and left_node.type in [ExpressionType.OP, ExpressionType.IF_TERNARY] and left_node.value in op_doesnt_need_additional_brackets)
+            or check_needs_brackets(left_node)):
+            output += f"({left_value})"
+        else:
+            output += left_value
+
+        output += f" {operator} "
+
+
+        if ((check_needs_brackets(expression_node) and right_node.type in [ExpressionType.OP, ExpressionType.IF_TERNARY]and right_node.value in op_doesnt_need_additional_brackets)
+            or check_needs_brackets(right_node)):
+            output += f"({right_value})"
+        else:
+            output += right_value
+
+        return output
+    
+    def _var_expression_to_string_updated(self, 
+                                          var_node: ExpressionNode,
+                                          cast_to: OpenCLTypes = OpenCLTypes.UNKNOWN) -> str:
+        assert var_node is not None
+        assert var_node.type == ExpressionType.VAR
+
+        variable_info = self.get_variable_info(var_node.value)
+        address_space_qualifier_str = ""
+        if variable_info.address_space_qualifier != VariableAddressSpaceQualifiers.UNKNOWN:
+            address_space_qualifier_str = f"{variable_info.address_space_qualifier.value} "
+        constness_str = "const " if variable_info.is_const else ""
+        variable_type_str = str(var_node.value_type_hint)
+        ptr_str = "* " if variable_info.is_pointer else " "
+        var_name_str = var_node.value
+
+        return address_space_qualifier_str + constness_str + variable_type_str + ptr_str + var_name_str
+
+    def _expression_to_string_updated(self,
+                                      expression_node: ExpressionNode,
+                                      cast_to: OpenCLTypes = OpenCLTypes.UNKNOWN) -> str:
+        assert expression_node is not None
+        if expression_node.type == ExpressionType.OP:
+            return self._op_expression_to_string_updated(expression_node, cast_to)
+        # if expression_node.type == ExpressionType.VAR:
+        #     return self._var_expression_to_string_updated(expression_node, cast_to)
+
+        cast_to = get_common_type(cast_to, expression_node.value_type_hint)
+
+        output = ""
+        if expression_node.type == ExpressionType.PERMUTE:
+            # todo need brackets???
+            left_value = self._expression_to_string_updated(expression_node.left, cast_to)
+            right_value = self._expression_to_string_updated(expression_node.right, cast_to)
+            output = f"{left_value}, {right_value}"
+        elif expression_node.type == ExpressionType.IF_TERNARY:
+            # todo need brackets?
+            cond_value = self._expression_to_string_updated(expression_node.value, cast_to)
+            left_value = self._expression_to_string_updated(expression_node.left, cast_to)
+            right_value = self._expression_to_string_updated(expression_node.right, cast_to)
+            output =  f"({cond_value}) ? ({left_value}) : ({right_value})"
+        else:
+            output = f"{expression_node.value}"
+            if (cast_to not in (OpenCLTypes.UNKNOWN, expression_node.value_type_hint) 
+                and check_value_needs_cast(expression_node.value, expression_node.value_type_hint, cast_to)):
+                output = f"({cast_to!s})" + output
+        return output

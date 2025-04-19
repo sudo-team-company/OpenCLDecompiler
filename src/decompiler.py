@@ -3,6 +3,7 @@ import copy
 from src.cfg import make_cfg_node, make_unresolved_node
 from src.code_printer import create_opencl_body
 from src.decompiler_data import DecompilerData, optimize_names_of_vars
+from src.expression_manager.expression_manager import ExpressionManager
 from src.flag_type import FlagType
 from src.global_data import gdata_type_processing, process_global_data
 from src.graph.control_flow_graph import CONTROL_FLOW_GRAPH_ENABLED_CONTEXT_KEY, ControlFlowGraph
@@ -51,6 +52,14 @@ def process_src(  # noqa: C901, PLR0912, PLR0915
     decompiler_data.reset(name_of_program)
     if decompiler_data.gpu.startswith("gfx11"):
         decompiler_data.is_rdna3 = True
+    if decompiler_data.is_rdna3:
+        # We don't want to reset ExpressionManager between different RDNA3 programs,
+        # because in RDNA3 kernel arguments are parsed at the beggining.
+        # ExpressionManager already contains every kernel argument in _variables_for_program dict
+        # Only specifying name of program to obtain correct arguments here
+        ExpressionManager().set_name_of_program(name_of_program)
+    else:
+        ExpressionManager().reset(name_of_program)
     set_of_instructions = [instr.replace("null", "0x0") for instr in set_of_instructions]
     new_set_of_instructions = []
     for instr in set_of_instructions:

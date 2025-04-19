@@ -124,6 +124,7 @@ def _parse_amdgpu_pal_metadata(amdgpu_pal_metadata: list[str]) -> dict[str, Conf
     DecompilerData().gpu = metadata["amdhsa.target"].split("-")[-1]
     result: dict[str, ConfigData] = {}
     for km in metadata["amdhsa.kernels"]:
+        ExpressionManager().set_name_of_program(km[".name"])
         result[km[".name"]] = ConfigData(
             dimensions="xyz"[: list(filter(lambda x: x[1] != 1, enumerate(km[".reqd_workgroup_size"])))[-1][0] + 1],
             usesetup=False,

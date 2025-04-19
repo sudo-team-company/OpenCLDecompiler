@@ -159,7 +159,7 @@ class FlatStore(BaseInstruction):
             if self.inst_offset == "inst_offset:4":
                 var = f"{var}[get_global_id(0)]"
             elif " + " in var:
-                if self.decompiler_data.name_of_program == "add_char_get_work_dim_8_8":
+                if self.decompiler_data.name_of_program == "add_x_x":
                     pass
                 var = make_elem_from_addr(var)
                 var = ExpressionManager().expression_to_string(var_node)
@@ -180,7 +180,7 @@ class FlatStore(BaseInstruction):
                 else:
                     #todo - check other branches
                     self.output_string = self.node.state[self.from_registers].val
-                    self.output_string = ExpressionManager().expression_to_string(self.node.state[self.from_registers].get_expression_node())
+                    self.output_string = ExpressionManager().expression_to_string(self.node.state[self.from_registers].get_expression_node(), var_node.value_type_hint)
             else:
                 self.output_string = self.decompiler_data.initial_state[self.from_registers].val
             #todo delete debug output

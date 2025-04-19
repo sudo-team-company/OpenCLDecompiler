@@ -1,4 +1,5 @@
 import copy
+import re
 from enum import Enum
 
 from src.expression_manager.types.asm_types import ASMTypes
@@ -153,3 +154,63 @@ def make_opencl_type(type_hint) -> OpenCLTypes:
             opencl_type = make_opencl_type_from_asm_type(asm_type)
 
     return opencl_type
+
+def check_value_needs_cast(value, from_type: OpenCLTypes, to_type: OpenCLTypes) -> bool:
+    if OpenCLTypes.UNKNOWN in (from_type, to_type):
+        return True
+
+    if from_type == to_type:
+        return False
+
+    from_type: OpenCLType = from_type.value
+    to_type: OpenCLType = to_type.value
+
+    from_type_size = from_type.size_bytes
+    from_type_component_count = from_type.number_of_components
+
+    to_type_size = to_type.size_bytes
+    to_type_component_count = to_type.number_of_components
+
+    needs_casting = True
+    is_sizes_different = (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count) 
+    # same type, different size
+    if (
+        (from_type.is_signed and to_type.is_signed)
+        or (not from_type.is_signed and not to_type.is_signed)
+        or (not from_type.is_integer and not to_type.is_integer)
+    ):
+        needs_casting = is_sizes_different
+
+    # todo float/intergers and combinations separately!!!
+
+    # from unsigned type to signed or from signed type to unsigned
+    if (not from_type.is_signed and to_type.is_signed) or (from_type.is_signed and not to_type.is_signed):
+        needs_casting = (
+            (isinstance(value, int) and value < 0)
+            or re.fullmatch(r"\d+", str(value)) is None
+            or re.fullmatch(r"0x[\da-f]+", str(value)) is None
+            or is_sizes_different
+        )
+    # from float to unsigned
+    if not from_type.is_integer and not to_type.is_signed:
+        try:
+            float_value = float(value)
+            needs_casting = (
+                (float_value != int(float_value))
+                or (float_value < 0)
+                or is_sizes_different
+            )
+        except ValueError:
+            return True
+    # from float to signed
+    if not from_type.is_integer and to_type.is_signed:
+        try:
+            float_value = float(value)
+            needs_casting = (
+                (float_value != int(float_value))
+                or (from_type_size > to_type_size)
+                or (from_type_component_count != to_type_component_count)
+            )
+        except ValueError:
+            return True
+    return needs_casting

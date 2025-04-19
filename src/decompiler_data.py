@@ -567,8 +567,6 @@ class DecompilerData(metaclass=Singleton):
         self.bfe_offsets = {}
         self.exec_registers = {"exec": ExecCondition.default()}
         self.is_rdna3 = False
-        #todo move reset to somethere else
-        ExpressionManager().reset()
 
     def write(self, output):
         # noinspection PyUnresolvedReferences

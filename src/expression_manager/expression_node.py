@@ -225,8 +225,6 @@ def get_common_type(first: OpenCLTypes, second: OpenCLTypes) -> OpenCLTypes:
     first_type: OpenCLType = copy.deepcopy(first.value)
     second_type: OpenCLType = copy.deepcopy(second.value)
 
-    assert first_type.modifiers == second_type.modifiers
-
     # integer/float or float/integer
     if (first_type.is_integer and not second_type.is_integer) or (not first_type.is_integer and second_type.is_integer):
         int_type = first_type if first_type.is_integer else second_type
