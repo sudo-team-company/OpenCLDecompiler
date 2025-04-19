@@ -57,7 +57,7 @@ class VCvt(BaseInstruction):
                 )
 
             var_node = self.node.get_expression_node(self.from_registers)
-            assert(var_node.type == ExpressionType.VAR or var_node.type == ExpressionType.VAR_PTR)
+            assert(var_node.type == ExpressionType.VAR)
             #todo make cast to
             var_node.value_type_hint = make_opencl_type_new(self.suffix[:3])
 

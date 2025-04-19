@@ -1,5 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
+from src.expression_manager.expression_manager import VariableAddressSpaceQualifiers
 from src.expression_manager.expression_node import ExpressionOperationType
 from src.global_data import get_gdata_offset
 from src.register_type import RegisterType
@@ -50,7 +51,10 @@ class SMov(BaseInstruction):
                     new_value = f"gdata{get_gdata_offset(self.ssrc0)}"
                     reg_type = RegisterType.GLOBAL_DATA_POINTER
                     #todo fix
-                    expr_node = self.expression_manager.add_variable_node(f"*{new_value}", OpenCLTypes.GLOBAL_UINT if self.suffix == "b32" else OpenCLTypes.GLOBAL_ULONG)
+                    expr_node = self.expression_manager.add_variable_node(
+                        f"*{new_value}",
+                        OpenCLTypes.UINT if self.suffix == "b32" else OpenCLTypes.ULONG,
+                        VariableAddressSpaceQualifiers.GLOBAL)
                 else:
                     new_value = self.ssrc0
                     reg_type = RegisterType.INT32

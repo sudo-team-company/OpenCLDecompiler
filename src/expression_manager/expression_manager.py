@@ -6,20 +6,21 @@ from src.expression_manager.expression_node import (
     ExpressionNode,
     ExpressionOperationType,
     ExpressionType,
-    expression_to_string_private,
+    check_nodes_need_cast_to,
     get_common_type,
 )
+from src.model.kernel_argument import KernelArgument
 from src.register_type import CONSTANT_VALUES, RegisterType
-from src.types.opencl_types import OpenCLTypes, TypeModifiers, make_opencl_type
+from src.types.opencl_types import OpenCLTypes, make_opencl_type
 from src.utils.singleton import Singleton
 
 
-class VariableTypeModifiers(Enum):
+class VariableAddressSpaceQualifiers(Enum):
+    UNKNOWN = ""
     GLOBAL = "__global"
     LOCAL = "__local"
+    CONST = "__constant"
     PRIVATE = "__private"
-    CONST = "const"
-    RESTRICT = "restrict"
 
 
 @dataclass
@@ -27,8 +28,10 @@ class VariableInfo:
     name: str = ""
     var_node: ExpressionNode = None
     value_node: ExpressionNode = None
-    modifiers: set[VariableTypeModifiers] = field(default_factory=lambda: set())
+    address_space_qualifier: VariableAddressSpaceQualifiers = field(default_factory=
+                                                                    lambda: VariableAddressSpaceQualifiers.UNKNOWN)
     is_pointer: bool = False
+    is_const: bool = False
 
 
 class ExpressionManager(metaclass=Singleton):
@@ -60,10 +63,9 @@ class ExpressionManager(metaclass=Singleton):
         right.parent = op_node
         return op_node
 
-    def create_var_node(self, var_name: str, var_type: ExpressionType, var_type_hint: OpenCLTypes) -> ExpressionNode:
-        assert var_type in (ExpressionType.VAR, ExpressionType.VAR_PTR)
+    def create_var_node(self, var_name: str, var_type_hint: OpenCLTypes) -> ExpressionNode:
         var_node = ExpressionNode()
-        var_node.type = var_type
+        var_node.type = ExpressionType.VAR
         var_node.value = var_name
         var_node.value_type_hint = var_type_hint
         return var_node
@@ -115,11 +117,11 @@ class ExpressionManager(metaclass=Singleton):
 
         # todo optimize if one is empty
 
-        # todo find var_ptrs inside
-        if s0.type == ExpressionType.VAR_PTR or TypeModifiers.GLOBAL in s0.value_type_hint.value.modifiers:
+        # todo find vars inside
+        if (s0.type == ExpressionType.VAR and self.get_variable_info(s0).is_pointer) or (s0.type == ExpressionType.VAR and self.get_variable_info(s0).address_space_qualifier == VariableAddressSpaceQualifiers.GLOBAL):
             # todo limit
             op_value_type_hint = s0.value_type_hint
-        elif s1.type == ExpressionType.VAR_PTR or TypeModifiers.GLOBAL in s1.value_type_hint.value.modifiers:
+        elif (s1.type == ExpressionType.VAR and self.get_variable_info(s1).is_pointer) or (s1.type == ExpressionType.VAR and self.get_variable_info(s1).address_space_qualifier == VariableAddressSpaceQualifiers.GLOBAL):
             # todo limit
             op_value_type_hint = s1.value_type_hint
         elif (op in (ExpressionOperationType.PLUS, ExpressionOperationType.MINUS)) and (
@@ -131,7 +133,7 @@ class ExpressionManager(metaclass=Singleton):
                 op_value_type_hint = s0.value_type_hint
         else:
             if value_type_hint == OpenCLTypes.UNKNOWN:
-                op_value_type_hint = get_common_type(s0.value_type_hint, s1.value_type_hint)
+                value_type_hint = get_common_type(s0.value_type_hint, s1.value_type_hint)
             op_value_type_hint = value_type_hint  # get_common_type(get_common_type(s0.value_type_hint, s1.value_type_hint), value_type_hint)  # noqa: E501
 
         operation_node = self.create_op_node(op, s0, s1, op_value_type_hint)
@@ -154,10 +156,29 @@ class ExpressionManager(metaclass=Singleton):
         tmp = self.add_const_node(-1, OpenCLTypes.INT)
         return self.add_operation(tmp, node, ExpressionOperationType.MUL, node.value_type_hint)
 
-    def add_kernel_argument(self, kernel_arg, offset: int, check_duplicate: bool = True) -> ExpressionNode:  # noqa: FBT001, FBT002
-        from src.model.kernel_argument import KernelArgument
+    def get_kernel_argument_type_and_qualifiers(
+            self,
+            arg: KernelArgument) -> tuple[OpenCLTypes, VariableAddressSpaceQualifiers]:
 
-        arg: KernelArgument = kernel_arg
+        qualifier = VariableAddressSpaceQualifiers.UNKNOWN
+        arg_type_str = arg.type_name
+        if arg_type_str.startswith("__global "):
+            arg_type_str = arg_type_str.removeprefix("__global ")
+            qualifier = VariableAddressSpaceQualifiers.GLOBAL
+        elif arg_type_str.startswith("__local "):
+            arg_type_str = arg_type_str.removeprefix("__local ")
+            qualifier = VariableAddressSpaceQualifiers.LOCAL
+        elif arg_type_str.startswith("__private "):
+            arg_type_str = arg_type_str.removeprefix("__private ")
+            qualifier = VariableAddressSpaceQualifiers.PRIVATE
+        elif arg_type_str.startswith("__constant "):
+            arg_type_str = arg_type_str.removeprefix("__constant ")
+            qualifier = VariableAddressSpaceQualifiers.CONST
+        value_type_hint = make_opencl_type(arg_type_str)
+
+        return (value_type_hint, qualifier)
+
+    def add_kernel_argument(self, arg: KernelArgument, offset: int, check_duplicate: bool = True) -> ExpressionNode:  # noqa: FBT001, FBT002
         if arg.hidden:
             for reg_type in CONSTANT_VALUES:
                 reg_type_name = CONSTANT_VALUES[reg_type][0]
@@ -168,14 +189,8 @@ class ExpressionManager(metaclass=Singleton):
             return None
 
         name = arg.name if not arg.is_vector() else arg.get_vector_element_by_offset(offset)
-        value_type_hint = make_opencl_type(arg.type_name)
-        modifiers = set()
-        if value_type_hint.value.is_global():
-            modifiers.add(VariableTypeModifiers.GLOBAL)
-        if arg.const:
-            modifiers.add(VariableTypeModifiers.CONST)
-
-        return self.add_variable_node(name, value_type_hint, modifiers, check_duplicate)
+        value_type_hint, qualifiers = self.get_kernel_argument_type_and_qualifiers(arg)
+        return self.add_variable_node(name, value_type_hint, qualifiers, arg.const, check_duplicate)
 
     def get_empty_node(self):
         empty_node = ExpressionNode()
@@ -277,23 +292,22 @@ class ExpressionManager(metaclass=Singleton):
 
     def parse_variable_name(self, var_name: str) -> tuple[str, ExpressionType]:
         if var_name[0] == "*":
-            var_node_type = ExpressionType.VAR_PTR
             var_node_name = var_name[1:]
+            is_pointer = True
         else:
-            var_node_type = ExpressionType.VAR
             var_node_name = var_name
-        return (var_node_name, var_node_type)
+            is_pointer = False
+        return (var_node_name, is_pointer)
 
     def add_variable_node(
         self,
         name: str,
         value_type_hint: OpenCLTypes,
-        modifiers: set[VariableTypeModifiers] | None = None,
+        qualifier: VariableAddressSpaceQualifiers = VariableAddressSpaceQualifiers.UNKNOWN,
+        is_const: bool = False,
         check_duplicate: bool = True,  # noqa: FBT001, FBT002
     ) -> ExpressionNode:
-        if modifiers is None:
-            modifiers = set()
-        var_name, var_node_type = self.parse_variable_name(name)
+        var_name, is_pointer = self.parse_variable_name(name)
 
         if check_duplicate and self._variables.get(var_name) is not None:
             return self._variables[var_name].var_node
@@ -304,16 +318,103 @@ class ExpressionManager(metaclass=Singleton):
         if is_vector_element and value_type_hint.value.number_of_components > 1:
             base_var_name = name[:vector_element_symbol_pos]
             if check_duplicate and self._variables.get(base_var_name) is None:
-                self.add_variable_node(base_var_name, value_type_hint, modifiers, check_duplicate)
+                self.add_variable_node(base_var_name, value_type_hint, qualifier, check_duplicate)
             value_type_hint = value_type_hint.set_number_of_components(1)
 
-        var_node = self.create_var_node(var_name, var_node_type, value_type_hint)
+        var_node = self.create_var_node(var_name, value_type_hint)
 
-        self._variables[var_name] = VariableInfo(var_name, var_node, None, modifiers)
+        self._variables[var_name] = VariableInfo(var_name, var_node, None, qualifier, is_pointer, is_const)
 
         self.add_node(var_node)
 
         return var_node
 
     def expression_to_string(self, node: ExpressionNode):
-        return expression_to_string_private(node)
+        return self._expression_to_string(node, False)
+
+
+    def simplify_node(self, node: ExpressionNode):
+        pass
+
+    def get_variable_info(self, node: ExpressionNode) -> VariableInfo:
+        assert node is not None
+        assert node.type == ExpressionType.VAR
+        return self._variables[node.value]
+
+    def _op_expression_to_string(self, expression_node: ExpressionNode, need_cast: bool) -> str:
+        assert expression_node is not None
+        assert expression_node.type == ExpressionType.OP
+
+        operation = expression_node.value
+        left_node = expression_node.left
+        right_node = expression_node.right
+        parent_node = expression_node.parent
+
+        if operation == ExpressionOperationType.NOT:
+            return f"!({self._expression_to_string(left_node,
+                                                   check_nodes_need_cast_to(left_node, expression_node))})"
+
+        # special case for: data_ptr + smth => data_ptr[smth]
+        if operation == ExpressionOperationType.PLUS and left_node.type == ExpressionType.VAR:
+            variable_info = self.get_variable_info(left_node)
+            if variable_info.is_pointer:
+                return f"{left_node.value!s}[{self._expression_to_string(right_node, False)}]"
+
+        left_value = self._expression_to_string(
+            left_node, check_nodes_need_cast_to(left_node, expression_node)
+        )
+        operator = str(operation.value)
+        right_value = self._expression_to_string(
+            right_node, check_nodes_need_cast_to(right_node, expression_node)
+        )
+
+        # todo brackets rule
+        if parent_node is None:
+            return f"{left_value} {operator} {right_value}"
+
+        return f"({left_value} {operator} {right_value})"
+    
+    def _var_expression_to_string(self, var_node: ExpressionNode, need_cast: bool) -> str:
+        assert var_node is not None
+        assert var_node.type == ExpressionType.VAR
+
+        variable_info = self.get_variable_info(var_node)
+        address_space_qualifier_str = ""
+        if variable_info.address_space_qualifier != VariableAddressSpaceQualifiers.UNKNOWN:
+            address_space_qualifier_str = f"{variable_info.address_space_qualifier.value} "
+        constness_str = "const " if variable_info.is_const else ""
+        variable_type_str = str(var_node.value_type_hint)
+        ptr_str = "* " if variable_info.is_pointer else " "
+        var_name_str = var_node.value
+
+        return address_space_qualifier_str + constness_str + variable_type_str + ptr_str + var_name_str
+
+    def _expression_to_string(self, expression_node: ExpressionNode, need_cast: bool) -> str:
+        assert expression_node is not None
+
+        match expression_node.type:
+            case ExpressionType.OP:
+                return self._op_expression_to_string(expression_node, need_cast)
+            case ExpressionType.VAR:
+                return self._var_expression_to_string(expression_node, need_cast)
+            case ExpressionType.PERMUTE:
+                # todo check types
+                left_value = self._expression_to_string(expression_node.left, False)
+                right_value = self._expression_to_string(expression_node.right, False)
+                return f"{left_value}, {right_value}"
+            case ExpressionType.IF_TERNARY:
+                # todo
+                cond_value = self._expression_to_string(expression_node.value)
+                left_value = self._expression_to_string(expression_node.left)
+                right_value = self._expression_to_string(expression_node.right)
+                return f"({cond_value}) ? ({left_value}) : ({right_value})"
+            case _:
+                ret_str = str(expression_node.value)
+                ret_str = f"({ret_str})"
+                if need_cast:
+                    if expression_node.parent is None:
+                        return f"({OpenCLTypes.UNKNOWN}){ret_str}"
+                    else:
+                        return f"({expression_node.parent.value_type_hint}){ret_str}"
+                else:
+                    return f"{ret_str}"

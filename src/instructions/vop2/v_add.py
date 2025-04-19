@@ -1,3 +1,4 @@
+from src.expression_manager.expression_manager import VariableAddressSpaceQualifiers
 from src.register_content import CONSTANT_VALUES
 from src.types.opencl_types import OpenCLTypes
 from src.expression_manager.expression_node import ExpressionOperationType
@@ -176,7 +177,9 @@ class VAdd(BaseInstruction):
                         new_value = make_op(self.node, name, new_value, "+", suffix=self.suffix)
                         reg_type = RegisterType.GLOBAL_DATA_POINTER
 
-                        src0_node = self.expression_manager.add_variable_node(f"*name", OpenCLTypes.GLOBAL_UINT)
+                        src0_node = self.expression_manager.add_variable_node(f"*{name}",
+                                                                              OpenCLTypes.UINT,
+                                                                              VariableAddressSpaceQualifiers.GLOBAL)
                         src1_node = self.node.get_expression_node(self.src1)
                         expr_node = self.expression_manager.add_offset_thingy_node(src0_node, src1_node, value)
                 elif (

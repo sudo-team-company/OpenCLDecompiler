@@ -1,5 +1,6 @@
 from src.decompiler_data import DecompilerData, evaluate_from_hex
 from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.expression_node import ExpressionNode
 from src.node import Node
 from src.node_processor import to_opencl
 from src.opencl_types import make_opencl_type
@@ -26,13 +27,14 @@ def create_opencl_body():
     offsets.append(decompiler_data.config_data.local_size)
     offsets.sort()
     for key in range(len(offsets) - 1):
-        size_var = int((offsets[key + 1] - offsets[key]) / (int(decompiler_data.lds_vars[offsets[key]][1][1:]) / 8))
-        type_of_var = make_opencl_type(decompiler_data.lds_vars[offsets[key]][1])
+        lds_var_node: ExpressionNode = decompiler_data.lds_vars[offsets[key]]
+        size_var = int((offsets[key + 1] - offsets[key]) / (lds_var_node.value_type_hint.value.size_bytes))
+        type_of_var = str(lds_var_node.value_type_hint)
         decompiler_data.write(
             "    __local "
             + type_of_var
             + " "
-            + decompiler_data.lds_vars[offsets[key]][0]
+            + lds_var_node.value
             + "["
             + str(size_var)
             + "]"

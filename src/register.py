@@ -160,6 +160,8 @@ class Register:
         )
         result_register.try_simplify()
 
+        print("after simplify regcont", result_register.register_content._value, ExpressionManager().expression_to_string(result_register.register_content._expression_node))
+
         return result_register
 
     def __sub__(self, other):

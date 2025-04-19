@@ -4,7 +4,7 @@ from src.opencl_types import make_asm_type
 from src.register_content import RegisterContent
 from src.register_type import RegisterType
 
-from .model import KernelArgument
+from src.model.config_data import KernelArgument
 
 
 def get_bfe_offset(name_of_param: str, offset: int, arg: KernelArgument):

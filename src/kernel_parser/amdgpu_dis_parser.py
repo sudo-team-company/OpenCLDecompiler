@@ -3,9 +3,10 @@ from itertools import starmap
 import yaml
 
 from src.expression_manager.expression_manager import ExpressionManager
+from src.model.config_data import ConfigData
+from src.model.kernel_argument import KernelArgument
 
 from ..decompiler_data import DecompilerData
-from ..model import ConfigData, KernelArgument
 from ..opencl_types import make_asm_type
 from ..register_content import RegisterContent
 from ..register_type import RegisterType

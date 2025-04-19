@@ -176,6 +176,9 @@ class OperationRegisterContent(RegisterContent):
         if expression_node is None:
             expression_node = ExpressionManager().apply_operation_to_nodes([content.get_expression_node() for content in register_contents], ExpressionOperationType.from_string(operation.value))
 
+        print("op content", values, ExpressionManager().expression_to_string(expression_node))
+        if ExpressionManager().expression_to_string(expression_node) == "get_work_dim() + get_global_offset(1)":
+            pass
         super().__init__(
             value=values,
             type_=types,
@@ -321,7 +324,9 @@ class OperationRegisterContent(RegisterContent):
                         new_register_content._size.append(DEFAULT_REGISTER_SIZE)  # noqa: SLF001
                         new_register_content._data_type.append(None)  # noqa: SLF001
                         #todo add maybe api for all types to not get errors?
-                        new_register_content._expression_node = ExpressionManager().add_register_node(simplified_type, simplified_value)
+                        print("Before change:", ExpressionManager().expression_to_string(new_register_content._expression_node))
+                        # new_register_content._expression_node = ExpressionManager().add_register_node(simplified_type, simplified_value)
+                        print("After change:", ExpressionManager().expression_to_string(new_register_content._expression_node))
 
                         recursive_new_register_content = new_register_content.maybe_simplify()
 

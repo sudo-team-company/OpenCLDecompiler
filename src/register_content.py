@@ -1,12 +1,10 @@
 import copy
-import enum
 from typing import Optional
 
-from src.types.opencl_types import OpenCLTypes
-from src.expression_manager.expression_manager import ExpressionManager, ExpressionNode
 from src.constants import DEFAULT_REGISTER_SIZE
-from src.expression_manager.expression_node import ExpressionOperationType
-from src.register_type import RegisterType, RegisterSignType, CONSTANT_VALUES
+from src.expression_manager.expression_manager import ExpressionManager, ExpressionNode
+from src.register_type import CONSTANT_VALUES, RegisterSignType, RegisterType
+from src.types.opencl_types import OpenCLTypes
 
 
 class RegisterContent:

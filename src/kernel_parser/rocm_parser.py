@@ -1,6 +1,7 @@
 import re
 
-from ..model import ConfigData, KernelArgument
+from src.model.config_data import ConfigData
+from src.model.kernel_argument import KernelArgument
 
 
 def get_dimensions(set_of_config: list[str]) -> str:

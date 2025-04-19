@@ -1,5 +1,5 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_op, set_reg_value
+from src.decompiler_data import set_reg_value
 
 
 class DsWrite(BaseInstruction):
@@ -27,19 +27,25 @@ class DsWrite(BaseInstruction):
             return self.node
         return super().to_print_unresolved()
 
+    def get_lds_var_name_with_offset(self):
+        return self.expression_manager.expression_to_string(self.expression_manager.add_offset_thingy_node(
+            self.decompiler_data.lds_vars[self.offset],
+            self.node.get_expression_node(self.addr),
+            4))
+
     def to_fill_node(self):
         if self.suffix == "b32":
-            new_value = make_op(self.node, self.addr, "4", "/", suffix=self.suffix)
-            name = f"{self.decompiler_data.lds_vars[self.offset][0]}[{new_value}]"
+            name = self.get_lds_var_name_with_offset()
             new_value = self.node.state[self.vdata0].val
             reg_type = self.node.state[self.vdata0].type
-            return set_reg_value(self.node, new_value, name, [], f"u{self.suffix[1:]}", reg_type=reg_type)
+            return set_reg_value(self.node, new_value, name, [], f"u{self.suffix[1:]}", reg_type=reg_type,
+                                 expression_node=self.node.get_expression_node(self.vdata0))
         return super().to_fill_node()
 
     def to_print(self):
         if self.suffix == "b32":
-            new_value = make_op(self.node, self.addr, "4", "/", suffix=self.suffix)
-            name = f"{self.decompiler_data.lds_vars[self.offset][0]}[{new_value}]"
-            self.output_string = f"{name} = {self.node.state[name].val}"
+            name = self.get_lds_var_name_with_offset()
+            self.output_string = f"{name} = {self.expression_manager.expression_to_string(
+                self.node.get_expression_node(name))}"
             return self.output_string
         return super().to_print()

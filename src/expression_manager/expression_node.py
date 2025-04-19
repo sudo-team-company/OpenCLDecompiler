@@ -4,7 +4,7 @@ import uuid
 from dataclasses import dataclass, field
 from enum import Enum, auto
 
-from src.types.opencl_types import OpenCLType, OpenCLTypes, TypeModifiers
+from src.types.opencl_types import OpenCLType, OpenCLTypes
 
 
 class ExpressionEvaluationExceptionError(Exception):
@@ -15,7 +15,6 @@ class ExpressionType(Enum):
     OP = auto()
     CONST = auto()
     VAR = auto()
-    VAR_PTR = auto()
     PERMUTE = auto()
     IF_TERNARY = auto()
 
@@ -139,9 +138,9 @@ class ExpressionNode:
         assert from_node is not None
         assert to_node is not None
 
-        print("self:", expression_to_string_private(self))
-        print("from_node:", expression_to_string_private(from_node))
-        print("to_node:", expression_to_string_private(to_node))
+        # print("self:", expression_to_string_private(self))
+        # print("from_node:", expression_to_string_private(from_node))
+        # print("to_node:", expression_to_string_private(to_node))
 
         if self == to_node:
             return self
@@ -175,72 +174,6 @@ class ExpressionNode:
                 right_node = right_node.replace(from_node, to_node)
 
         return self
-
-
-def expression_to_string_helper(expression_node: ExpressionNode, need_cast: bool = False) -> str:
-    assert expression_node is not None
-
-    match expression_node.type:
-        case ExpressionType.OP:
-            if expression_node.value == ExpressionOperationType.NOT:
-                return f"!({expression_to_string_helper(expression_node.left, check_nodes_need_cast_to(expression_node.left, expression_node))})"
-            # special case for: data_ptr + smth => data_ptr[smth]
-            if (
-                expression_node.value == ExpressionOperationType.PLUS
-                and expression_node.left.type == ExpressionType.VAR_PTR
-            ):
-                return f"{str(expression_node.left.value)}[{expression_to_string_helper(expression_node.right, False)}]"
-            left_value = expression_to_string_helper(
-                expression_node.left, check_nodes_need_cast_to(expression_node.left, expression_node)
-            )
-            operator = str(expression_node.value.value)
-            right_value = expression_to_string_helper(
-                expression_node.right, check_nodes_need_cast_to(expression_node.right, expression_node)
-            )
-            # todo brackets rule
-            if expression_node.parent is None:
-                return f"{left_value} {operator} {right_value}"
-            else:
-                return f"({left_value} {operator} {right_value})"
-        case ExpressionType.PERMUTE:
-            # todo
-            left_value = expression_to_string_helper(expression_node.left, False)
-            right_value = expression_to_string_helper(expression_node.right, False)
-            return f"{left_value}, {right_value}"
-        case ExpressionType.IF_TERNARY:
-            # todo
-            cond_value = expression_to_string_helper(expression_node.value)
-            left_value = expression_to_string_helper(expression_node.left)
-            right_value = expression_to_string_helper(expression_node.right)
-            return f"({cond_value}) ? ({left_value}) : ({right_value})"
-        case _:
-            ret_str = str(expression_node.value)
-            if (
-                "-" in ret_str
-                or "+" in ret_str
-                or "*" in ret_str
-                or "/" in ret_str
-                or "==" in ret_str
-                or "!=" in ret_str
-                or ">" in ret_str
-                or ">=" in ret_str
-                or "<" in ret_str
-                or "<=" in ret_str
-                or "&&" in ret_str
-                or "!!" in ret_str
-            ):
-                ret_str = f"({ret_str})"
-            if need_cast:
-                if expression_node.parent is None:
-                    return f"({OpenCLTypes.UNKNOWN}){ret_str}"
-                else:
-                    return f"({expression_node.parent.value_type_hint}){ret_str}"
-            else:
-                return f"{ret_str}"
-
-
-def expression_to_string_private(expression_node: ExpressionNode) -> str:
-    return expression_to_string_helper(expression_node)
 
 
 # def update_types(expression_node: ExpressionNode):
@@ -299,7 +232,7 @@ def get_common_type(first: OpenCLTypes, second: OpenCLTypes) -> OpenCLTypes:
         int_type = first_type if first_type.is_integer else second_type
         float_type = second_type if first_type.is_integer else first_type
 
-        if int_type.getSize() == float_type.getSize():
+        if int_type.get_size() == float_type.get_size():
             return float_type
 
         float_type.number_of_components = max(float_type.number_of_components, int_type.number_of_components)
@@ -374,11 +307,12 @@ def check_nodes_need_cast_to(expression_node: ExpressionNode, op_node: Expressio
 
     from_type_size = from_type.size_bytes
     from_type_component_count = from_type.number_of_components
-    is_global_from_type = TypeModifiers.GLOBAL in from_type.modifiers
+    #todo check from get_variable_info???
+    is_global_from_type = False #TypeModifiers.GLOBAL in from_type.modifiers
 
     to_type_size = to_type.size_bytes
     to_type_component_count = to_type.number_of_components
-    is_global_to_type = TypeModifiers.GLOBAL in to_type.modifiers
+    is_global_to_type = False #TypeModifiers.GLOBAL in to_type.modifiers
 
     value = str(expression_node.value)
 

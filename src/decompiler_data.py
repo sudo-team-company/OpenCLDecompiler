@@ -6,11 +6,12 @@ import sympy
 
 from src import utils
 from src.combined_register_content import CombinedRegisterContent
-from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.expression_manager import ExpressionManager, VariableAddressSpaceQualifiers
 from src.expression_manager.expression_node import ExpressionNode, ExpressionOperationType
 from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
+from src.model.config_data import ConfigData
 from src.node import Node
 from src.opencl_types import evaluate_size, make_asm_type, make_opencl_type, vector_type_dict
 from src.operation_register_content import OperationRegisterContent, OperationType
@@ -21,8 +22,6 @@ from src.state import KernelState
 from src.types.opencl_types import OpenCLTypes
 from src.types.opencl_types import make_opencl_type as make_opencl_type_new
 from src.utils import Singleton
-
-from .model import ConfigData
 
 
 def set_reg_value(  # noqa: PLR0913
@@ -42,6 +41,10 @@ def set_reg_value(  # noqa: PLR0913
 ):
     decompiler_data = DecompilerData()
     if register_content_type == RegisterContent:
+        assert(expression_node is not None)
+        if decompiler_data.name_of_program == "add_char_get_work_dim_8_8" and to_reg == "v0" and "get_global_id(0)" == ExpressionManager().expression_to_string(expression_node):
+            pass
+        print("set_reg_value:", to_reg, ExpressionManager().expression_to_string(expression_node))
         node.state[to_reg] = Register(
             integrity=integrity,
             register_content=RegisterContent(
@@ -750,7 +753,10 @@ class DecompilerData(metaclass=Singleton):
 
     def check_lds_vars(self, offset, suffix):
         if self.lds_vars.get(offset) is None:
-            self.lds_vars[offset] = ["lds" + str(self.lds_var_number), "u" + suffix[1:]]
+            self.lds_vars[offset] = ExpressionManager().add_variable_node(
+                "*lds" + str(self.lds_var_number),
+                make_opencl_type_new("u" + suffix[1:]),
+                VariableAddressSpaceQualifiers.LOCAL)
             self.lds_var_number += 1
 
     def make_var(self, register_version, variable, data_type):
