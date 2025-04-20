@@ -17,12 +17,14 @@ def create_opencl_body():
     decompiler_data.write("{\n")
     for var in sorted(decompiler_data.names_of_vars.keys()):
         if " " not in var:
-            type_of_var = make_opencl_type(decompiler_data.names_of_vars[var])
-            if var in decompiler_data.address_params:
+            var_info = ExpressionManager().get_variable_info(var)
+            const = "const " if var_info.is_const else ""
+            type_of_var = str(var_info.var_node.value_type_hint)
+            if var_info.is_pointer:
                 var = "*" + var  # noqa: PLW2901
             if "___" in var:
                 var = var[: var.find("___")]  # noqa: PLW2901
-            decompiler_data.write("    " + type_of_var + " " + var + ";\n")
+            decompiler_data.write("    " + const + type_of_var + " " + var + ";\n")
     offsets = list(decompiler_data.lds_vars.keys())
     offsets.append(decompiler_data.config_data.local_size)
     offsets.sort()

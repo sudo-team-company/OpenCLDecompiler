@@ -138,7 +138,8 @@ class ExpressionNode:
     def invert(self) -> "ExpressionNode":
         return self
 
-    def cast_to(self, to_type: OpenCLTypes) -> "ExpressionNode":  # noqa: ARG002
+    def cast_to(self, to_type: OpenCLTypes) -> "ExpressionNode":
+        self.value_type_hint = to_type
         return self
 
     def replace(self, from_node: "ExpressionNode", to_node: "ExpressionNode") -> "ExpressionNode":

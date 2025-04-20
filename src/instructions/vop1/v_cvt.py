@@ -53,15 +53,15 @@ class VCvt(BaseInstruction):
             if self.src0 in self.node.state and self.node.state[self.src0].type == RegisterType.DIVISION_PT2:
                 new_value = self.node.state[self.src0].val
                 return set_reg_value(
-                    self.node, new_value, self.vdst, [self.src0], self.suffix, reg_type=RegisterType.DIVISION_PT3
+                    self.node, new_value, self.vdst, [self.src0], self.suffix, reg_type=RegisterType.DIVISION_PT3,
+                    expression_node=self.node.get_expression_node(self.src0)
                 )
+
+            asm_type = self.suffix[4:]
 
             var_node = self.node.get_expression_node(self.from_registers)
             assert(var_node.type == ExpressionType.VAR)
-            #todo make cast to
-            var_node.value_type_hint = OpenCLTypes.from_string(self.suffix[:3])
-
-            asm_type = self.suffix[4:]
+            var_node = self.expression_manager.cast_node(var_node, OpenCLTypes.from_string(asm_type))
             self.decompiler_data.names_of_vars[self.node.state[self.from_registers].val] = asm_type
             new_value = f"({make_opencl_type(self.suffix[:3])}){self.node.state[self.from_registers].val}"
             reg_type = self.node.state[self.from_registers].type

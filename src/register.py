@@ -62,7 +62,6 @@ class Register:
 
     def cast_to(self, data_type: str):
         self.register_content._data_type = data_type  # noqa: SLF001
-        self.register_content._expression_node.cast_to(OpenCLTypes.from_string(data_type))  # noqa: SLF001
 
     def get_value(self) -> object:
         return self.register_content.get_value()

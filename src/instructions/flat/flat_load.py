@@ -84,7 +84,8 @@ class FlatLoad(BaseInstruction):
                 #todo fix
                 node_type_hint = self.node.state[self.from_registers].get_expression_node().value_type_hint
                 expr_node = self.expression_manager.add_variable_node(reg_val, node_type_hint)
-                self.node = set_reg_value(self.node, reg_val, to_now, [], data_type, reg_type=register_type, expression_node=expr_node)
+                self.node = set_reg_value(
+                    self.node, reg_val, to_now, [], data_type, reg_type=register_type, expression_node=expr_node)
                 if to_now == self.end_to_registers:
                     break
                 to_now = get_next_reg(to_now)

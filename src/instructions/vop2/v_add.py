@@ -183,7 +183,7 @@ class VAdd(BaseInstruction):
                         reg_type = RegisterType.GLOBAL_DATA_POINTER
 
                         src0_node = self.expression_manager.add_variable_node(f"*{name}",
-                                                                              OpenCLTypes.UINT,
+                                                                              OpenCLTypes.from_string(self.suffix),
                                                                               VariableAddressSpaceQualifiers.GLOBAL)
                         src1_node = self.node.get_expression_node(self.src1)
                         expr_node = self.expression_manager.add_offset_div_data_size(
