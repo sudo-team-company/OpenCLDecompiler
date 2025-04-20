@@ -50,6 +50,7 @@ def process_src(  # noqa: C901, PLR0912, PLR0915
 ):
     decompiler_data = DecompilerData()
     expression_manager = ExpressionManager()
+    expression_manager.set_size_of_workgroups(config_data.size_of_work_groups)
     decompiler_data.reset(name_of_program)
     if decompiler_data.gpu.startswith("gfx11"):
         decompiler_data.is_rdna3 = True
@@ -69,7 +70,6 @@ def process_src(  # noqa: C901, PLR0912, PLR0915
     initial_set_of_instructions = copy.deepcopy(set_of_instructions)
     process_global_data(set_of_global_data_instruction, set_of_global_data_bytes)
     decompiler_data.set_config_data(config_data)
-    expression_manager.set_size_of_workgroups(config_data.size_of_work_groups)
     if not decompiler_data.is_rdna3:
         process_kernel_params()
     last_node = Node([""], decompiler_data.initial_state)

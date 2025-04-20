@@ -32,30 +32,27 @@ def parse_node_sum(node: ExpressionNode, positive_sign: bool=True) -> list[NodeP
         if node.value == ExpressionOperationType.MINUS:
             return parse_node_sum(node.left, positive_sign) + parse_node_sum(node.right, not positive_sign)
         if (
+            node.value == ExpressionOperationType.MUL
+            and node.left.type == ExpressionType.WORK_ITEM_FUNCTION
+            and node.right.type == ExpressionType.WORK_ITEM_FUNCTION
+        ) and ((
+                node.left.value in [RegisterType[f"WORK_GROUP_ID_{dim}"] for dim in "XYZ"]
+                and node.right.value in [RegisterType[f"LOCAL_SIZE_{dim}"] for dim in "XYZ"]
+            ) or
             (
-                node.value == ExpressionOperationType.MUL
-                and node.left.type == ExpressionType.WORK_ITEM_FUNCTION
-                and node.right.type == ExpressionType.WORK_ITEM_FUNCTION
-            ) and
-            (
-                (
-                    node.left.value in [RegisterType[f"WORK_GROUP_ID_{dim}"] for dim in "XYZ"]
-                    and node.right.value in [RegisterType[f"LOCAL_SIZE_{dim}"] for dim in "XYZ"]
-                ) or
-                (
-                    node.right.value in [RegisterType[f"WORK_GROUP_ID_{dim}"] for dim in "XYZ"]
-                    and node.left.value in [RegisterType[f"LOCAL_SIZE_{dim}"] for dim in "XYZ"]
-                )
-            )):
-                left_dim = node.left.value.name[-1]
-                right_dim = node.right.value.name[-1]
-                if left_dim == right_dim:
+                node.right.value in [RegisterType[f"WORK_GROUP_ID_{dim}"] for dim in "XYZ"]
+                and node.left.value in [RegisterType[f"LOCAL_SIZE_{dim}"] for dim in "XYZ"]
+            )
+            ):
+            left_dim = node.left.value.name[-1]
+            right_dim = node.right.value.name[-1]
+            if left_dim == right_dim:
 
-                    return [NodeParseInfo(
-                        node,
-                        RegisterType[f"WORK_GROUP_ID_{left_dim}_LOCAL_SIZE"],
-                        ExpressionOperationType.PLUS if positive_sign else ExpressionOperationType.MINUS
-                    )]
+                return [NodeParseInfo(
+                    node,
+                    RegisterType[f"WORK_GROUP_ID_{left_dim}_LOCAL_SIZE"],
+                    ExpressionOperationType.PLUS if positive_sign else ExpressionOperationType.MINUS
+                )]
 
     return [NodeParseInfo(
         node,

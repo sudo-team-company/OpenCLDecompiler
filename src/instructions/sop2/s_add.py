@@ -1,6 +1,7 @@
-from src.expression_manager.expression_manager import *
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg, set_reg_value
+from src.expression_manager.expression_node import ExpressionOperationType
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.register import is_sgpr
 from src.register_type import RegisterType
 
@@ -35,7 +36,6 @@ class SAdd(BaseInstruction):
     def to_fill_node(self):  # noqa: C901, PLR0912, PLR0915
         if self.suffix in {"u32", "i32"}:
             if self.decompiler_data.is_rdna3 and self.ssrc0 in self.node.state and self.ssrc1 in self.node.state:
-                assert(self.node.state[self.ssrc0].register_content.get_expression_node() is not None and self.node.state[self.ssrc1].register_content.get_expression_node() is not None)
                 new_reg = self.node.state[self.ssrc0] + self.node.state[self.ssrc1]
                 new_reg.cast_to(self.suffix)
                 return set_reg(
@@ -46,7 +46,7 @@ class SAdd(BaseInstruction):
                 )
 
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, "+", "(ulong)", "(ulong)", suffix=self.suffix)
-            print("new value", new_value)
+
             ssrc0_reg = is_sgpr(self.ssrc0)
             ssrc1_reg = is_sgpr(self.ssrc1)
             data_type = self.suffix
@@ -54,21 +54,6 @@ class SAdd(BaseInstruction):
             expr_node = None
             src0_node = self.node.get_expression_node(self.ssrc0)
             src1_node = self.node.get_expression_node(self.ssrc1)
-            # if ssrc0_reg and ssrc1_reg:
-            #     assert(self.ssrc0 in self.node.state and self.ssrc1 in self.node.state)
-            #     src0_node = self.node.get_expression_node(self.ssrc0)
-            #     src1_node = self.node.get_expression_node(self.ssrc1)
-            # elif ssrc0_reg:
-            #     assert(self.ssrc0 in self.node.state)
-            #     src0_node = self.node.get_expression_node(self.ssrc0)
-            #     src1_node = self.expression_manager.add_const_node(self.ssrc1, OpenCLTypes.UINT) #todo: optimize type here? or inside func
-            # elif ssrc1_reg:
-            #     assert(self.ssrc1 in self.node.state)
-            #     src0_node = self.expression_manager.add_const_node(self.ssrc0, OpenCLTypes.UINT)
-            #     src1_node = self.node.get_expression_node(self.ssrc1)
-            # else:
-            #     src0_node = self.expression_manager.add_const_node(self.ssrc0, OpenCLTypes.UINT)
-            #     src1_node = self.expression_manager.add_const_node(self.ssrc1, OpenCLTypes.UINT)
 
             if (
                 self.ssrc1.isdigit()
@@ -96,7 +81,8 @@ class SAdd(BaseInstruction):
                         new_value = make_op(self.node, name, new_value, "+", suffix=self.suffix)
                         data_type = "8 bytes"
 
-                    expr_node = self.expression_manager.add_offset_thingy_node(src0_node, src1_node, 4 if self.node.state[self.ssrc1].data_type == "4 bytes" else 8)
+                    expr_node = self.expression_manager.add_offset_thingy_node(
+                        src0_node, src1_node, 4 if self.node.state[self.ssrc1].data_type == "4 bytes" else 8)
                 elif ssrc0_type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
                     reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT
                     if self.node.state[self.ssrc0].data_type in {"u32", "i32", "gi32", "gu32"}:
@@ -126,12 +112,19 @@ class SAdd(BaseInstruction):
                     data_type = self.node.parent[0].state[self.ssrc0].data_type
                 else:
                     data_type = self.node.state[self.ssrc0].data_type
-            
+
             if expr_node is None:
-                expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.UINT)
-            
+                expr_node = self.expression_manager.add_operation(
+                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.UINT)
+
             assert(expr_node is not None)
             return set_reg_value(
-                self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], data_type, reg_type=reg_type, expression_node=expr_node
+                self.node,
+                new_value,
+                self.sdst,
+                [self.ssrc0, self.ssrc1],
+                data_type,
+                reg_type=reg_type,
+                expression_node=expr_node
             )
         return super().to_fill_node()

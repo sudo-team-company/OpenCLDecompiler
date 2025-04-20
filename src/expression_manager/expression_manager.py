@@ -14,6 +14,7 @@ from src.expression_manager.optimizations import (
     const_one_node,
     const_zero_node,
     group_id_node_mul_size_of_work_groups,
+    num_groups_node_plus_work_group_id_local_size_node,
     parse_node_sum,
 )
 from src.expression_manager.types.opencl_types import OpenCLTypes, check_value_needs_cast, make_opencl_type
@@ -113,10 +114,7 @@ class ExpressionManager(metaclass=Singleton):
         return expr_node
 
 
-    #get_ global_offset(0) + get_group_id(0)*get_local_size(0) + get_local_id(0)
-
-    # what if global_offset(0) + get_group_id(0)*get_local_size(0) + get_local_id(0) + arg0
-    def _global_id_optimization(self, left: ExpressionNode, right: ExpressionNode, value_type_hint: OpenCLTypes) -> RegisterType:
+    def _parse_and_optimize_node_sum(self, left: ExpressionNode, right: ExpressionNode, value_type_hint: OpenCLTypes) -> RegisterType:
         nodes_info: list[NodeParseInfo] = parse_node_sum(left) + parse_node_sum(right)
 
         filtered_nodes_info = [n for n in nodes_info if n.sign == ExpressionOperationType.PLUS]
@@ -133,11 +131,19 @@ class ExpressionManager(metaclass=Singleton):
 
         min_worth_checking_node_info = 3
         if len(filtered_nodes_info) >= min_worth_checking_node_info:
+
+            # Change expressions like global_offset({i}) + get_group_id({i}) * get_local_size({i}) + get_local_id({i}) + ...
+            # to get_global_id({i}) + ...
             local_id_reg_types = [RegisterType[f"WORK_ITEM_ID_{dim}"] for dim in "XYZ"]
             global_offset_reg_types = [RegisterType[f"GLOBAL_OFFSET_{dim}"] for dim in "XYZ"]
             work_group_id_mul_local_size_reg_types = [RegisterType[f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"] for dim in "XYZ"]
+            num_groups_reg_types = [RegisterType[f"NUM_GROUPS_{dim}"] for dim in "XYZ"]
 
-            for dim, local_id_dim, global_offset_dim, work_group_id_dim_mul in zip(
+            mul_nodes_info = [n for n in filtered_nodes_info if (n.node.type == ExpressionType.OP
+                                                            and n.node.value == ExpressionOperationType.MUL)]
+
+            for i, dim, local_id_dim, global_offset_dim, work_group_id_dim_mul in zip(
+                [0, 1, 2],
                 "XYZ",
                 local_id_reg_types,
                 global_offset_reg_types,
@@ -160,6 +166,26 @@ class ExpressionManager(metaclass=Singleton):
                     g_array.remove(g_array[0])
                     w_array.remove(w_array[0])
                     result.append(self.add_register_node(RegisterType[f"GLOBAL_ID_{dim}"], ""))
+
+                # Change expressions like get_num_groups({i}) * get_local_size({i}) + get_group_id({i}) * get_local_size({i}) + ...
+                # to get_global_size({i}) + ...
+                num_groups_mul_size_of_wg_nodes = [n for n in mul_nodes_info if (
+                    (n.node.left.type == ExpressionType.WORK_ITEM_FUNCTION
+                    and n.node.left.value == num_groups_reg_types[i]
+                    and n.node.right.type == ExpressionType.CONST
+                    and n.node.right.value == self._size_of_workgroups[i]) or
+                    (n.node.right.type == ExpressionType.WORK_ITEM_FUNCTION
+                    and n.node.right.value == num_groups_reg_types[i]
+                    and n.node.left.type == ExpressionType.CONST
+                    and n.node.left.value == self._size_of_workgroups[i]
+                ))]
+
+                while len(w_array) > 0 and len(num_groups_mul_size_of_wg_nodes) > 0:
+                    result.remove(num_groups_mul_size_of_wg_nodes[0].node)
+                    result.remove(w_array[0].node)
+                    w_array.remove(w_array[0])
+                    num_groups_mul_size_of_wg_nodes.remove(num_groups_mul_size_of_wg_nodes[0])
+                    result.append(self.add_register_node(RegisterType[f"GLOBAL_SIZE_{dim}"]))
 
         if len(result) == 0:
             return None
@@ -185,18 +211,10 @@ class ExpressionManager(metaclass=Singleton):
         if const_zero_node(s1):
             return s0
 
-        plus_node = self._global_id_optimization(s0, s1, value_type_hint)
+        plus_node = self._parse_and_optimize_node_sum(s0, s1, value_type_hint)
+        if plus_node is None:
+            plus_node = self.create_op_node(ExpressionOperationType.PLUS, s0, s1, value_type_hint)
         return plus_node
-        # check_combination_reg_type = num_groups_node_plus_work_group_id_local_size_node(s0, s1)
-        # if check_combination_reg_type != RegisterType.UNKNOWN:
-        #     return self.add_register_node(check_combination_reg_type, "")
-        # check_combination_reg_type = global_offset_node_plus_work_group_id_local_size_node(s0, s1)
-        # if check_combination_reg_type != RegisterType.UNKNOWN:
-        #     return self.add_register_node(check_combination_reg_type, "")
-
-
-
-        return self.create_op_node(ExpressionOperationType.PLUS, s0, s1, value_type_hint)
 
     def _optimized_nodes_sub(self,
                              s0: ExpressionNode,
@@ -230,9 +248,9 @@ class ExpressionManager(metaclass=Singleton):
         if const_one_node(s1):
             return s0
 
-        check_combination_reg_type = group_id_node_mul_size_of_work_groups(s0, s1, self._size_of_workgroups)
-        if check_combination_reg_type != RegisterType.UNKNOWN:
-            return self.add_register_node(check_combination_reg_type, "")
+        # check_combination_reg_type = group_id_node_mul_size_of_work_groups(s0, s1, self._size_of_workgroups)
+        # if check_combination_reg_type != RegisterType.UNKNOWN:
+        #     return self.add_register_node(check_combination_reg_type, "")
 
         return self.create_op_node(ExpressionOperationType.MUL, s0, s1, value_type_hint)
 
