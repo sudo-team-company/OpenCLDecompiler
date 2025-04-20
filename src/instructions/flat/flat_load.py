@@ -1,7 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier, set_reg_value
 from src.expression_manager.expression_manager import ExpressionManager
-from src.expression_manager.types.opencl_types import make_opencl_type as make_opencl_type_new
 from src.opencl_types import evaluate_size, make_asm_type, make_opencl_type
 from src.register import check_and_split_regs, get_next_reg, is_vector_type
 from src.register_type import RegisterType

@@ -9,7 +9,6 @@ from src.combined_register_content import CombinedRegisterContent
 from src.expression_manager.expression_manager import ExpressionManager, VariableAddressSpaceQualifiers
 from src.expression_manager.expression_node import ExpressionNode, ExpressionOperationType
 from src.expression_manager.types.opencl_types import OpenCLTypes
-from src.expression_manager.types.opencl_types import make_opencl_type as make_opencl_type_new
 from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
@@ -41,10 +40,6 @@ def set_reg_value(  # noqa: PLR0913
 ):
     decompiler_data = DecompilerData()
     if register_content_type == RegisterContent:
-        assert(expression_node is not None)
-        if decompiler_data.name_of_program == "add_char_get_work_dim_8_8" and to_reg == "v0" and "get_global_id(0)" == ExpressionManager().expression_to_string(expression_node):
-            pass
-        print("set_reg_value:", to_reg, ExpressionManager().expression_to_string(expression_node))
         node.state[to_reg] = Register(
             integrity=integrity,
             register_content=RegisterContent(
@@ -77,12 +72,6 @@ def set_reg_value(  # noqa: PLR0913
             ),
         )
     elif register_content_type == OperationRegisterContent:
-        assert(expression_node is not None)
-        expr_nodes = [None for _ in new_value]
-        # if expression_node is None and len(expr_nodes) == 1 and len(new_value) == 2:
-        #     assert(expr_nodes[0].type == ExpressionType.OP and str(expr_nodes[0].value.value) == str(operation.value))
-        #     expr_nodes = [expr_nodes[0].left, expr_nodes[0].right]
-
         if not isinstance(sign, list):
             node.state[to_reg] = Register(
                 integrity=integrity,
@@ -93,9 +82,8 @@ def set_reg_value(  # noqa: PLR0913
                             value=value,
                             type_=type_,
                             data_type=data_type,
-                            expression_node=expr_node
                         )
-                        for value, type_, expr_node in zip(new_value, reg_type, expr_nodes, strict=False)
+                        for value, type_ in zip(new_value, reg_type, strict=False)
                     ],
                     expression_node=expression_node
                 ),
@@ -111,9 +99,8 @@ def set_reg_value(  # noqa: PLR0913
                             type_=type_,
                             sign=sign_,
                             data_type=data_type_,
-                            expression_node=expr_node
                         )
-                        for value, type_, sign_, data_type_, expr_node in zip(new_value, reg_type, sign, data_type, expr_nodes, strict=False)
+                        for value, type_, sign_, data_type_ in zip(new_value, reg_type, sign, data_type, strict=False)
                     ],
                     expression_node=expression_node
                 ),
@@ -129,9 +116,8 @@ def set_reg_value(  # noqa: PLR0913
                             type_=type_,
                             sign=sign_,
                             data_type=data_type,
-                            expression_node=expr_node
                         )
-                        for value, type_, sign_, expr_node in zip(new_value, reg_type, sign, expr_nodes, strict=False)
+                        for value, type_, sign_ in zip(new_value, reg_type, sign, strict=False)
                     ],
                     expression_node=expression_node
                 ),
@@ -198,7 +184,7 @@ def compare_values(node: Node, to_reg: str, from_reg0: str, from_reg1: str, oper
 
     src0_node = node.get_expression_node(from_reg0)
     src1_node = node.get_expression_node(from_reg1)
-    expr_node = ExpressionManager().add_operation(src0_node, src1_node, ExpressionOperationType.from_string(operation), make_opencl_type_new(suffix))
+    expr_node = ExpressionManager().add_operation(src0_node, src1_node, ExpressionOperationType.from_string(operation), OpenCLTypes.from_string(suffix))
     
     if is_range(to_reg):
         #todo fix with range
@@ -753,7 +739,7 @@ class DecompilerData(metaclass=Singleton):
         if self.lds_vars.get(offset) is None:
             self.lds_vars[offset] = ExpressionManager().add_variable_node(
                 "*lds" + str(self.lds_var_number),
-                make_opencl_type_new("u" + suffix[1:]),
+                OpenCLTypes.from_string("u" + suffix[1:]),
                 VariableAddressSpaceQualifiers.LOCAL)
             self.lds_var_number += 1
 

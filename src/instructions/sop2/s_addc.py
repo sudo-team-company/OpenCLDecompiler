@@ -66,7 +66,8 @@ class SAddc(BaseInstruction):
                     new_value = make_op(self.node, self.ssrc1, "4", "/", suffix=self.suffix)
                     new_value = make_op(self.node, self.ssrc0, new_value, "+", suffix=self.suffix)
 
-                    expr_node = self.expression_manager.add_offset_thingy_node(src0_node, src1_node, 4)
+                    expr_node = self.expression_manager.add_offset_div_data_size(
+                        src0_node, src1_node, 4, OpenCLTypes.from_string(self.suffix))
                 if self.ssrc0 == self.sdst:
                     data_type = self.node.parent[0].state[self.ssrc0].data_type
                 else:

@@ -29,31 +29,26 @@ class Node:
     def add_parent(self, parent):
         self.parent.append(parent)
 
-    #todo - maybe this needs to be moved somewhere else
-    def get_expression_node(self, reg):
-        # if is_reg(reg) or is_range(reg) or reg == "exec":
+    def get_expression_node(self, reg):  # noqa: PLR0911
         if reg in self.state:
             register_content = self.state[reg].register_content
             expr_node = register_content.get_expression_node()
             if expr_node is not None:
                 return expr_node
-            else:
-                if register_content._type != RegisterType.UNKNOWN:
-                    return ExpressionManager().add_register_node(register_content._type, register_content._value)
-                else:
-                    return ExpressionManager().get_empty_node()
-        elif is_range(reg):
+            if register_content.get_type() != RegisterType.UNKNOWN:
+                return ExpressionManager().add_register_node(register_content.get_type(), register_content.get_value())
+            return ExpressionManager().get_empty_node()
+        if is_range(reg):
             start_register, end_register = check_and_split_regs(reg)
             flag_big_value, value = check_big_values_new(self, start_register, end_register)
             if flag_big_value:
                 #todo check
                 return ExpressionManager().add_const_node(value, OpenCLTypes.ULONG)
-            
+
             register_content = self.state[start_register].register_content
             expr_node = register_content.get_expression_node()
             if expr_node is not None:
                 return expr_node
-            else:
-                return ExpressionManager().add_register_node(register_content._type, register_content._value)
-        
+            return ExpressionManager().add_register_node(register_content.get_type(), register_content.get_value())
+
         return ExpressionManager().add_const_node(reg, OpenCLTypes.UINT)

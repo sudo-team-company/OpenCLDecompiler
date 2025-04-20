@@ -62,7 +62,7 @@ class Register:
 
     def cast_to(self, data_type: str):
         self.register_content._data_type = data_type  # noqa: SLF001
-        self.register_content._expression_node.cast_to(OpenCLTypes.from_string(data_type))
+        self.register_content._expression_node.cast_to(OpenCLTypes.from_string(data_type))  # noqa: SLF001
 
     def get_value(self) -> object:
         return self.register_content.get_value()
@@ -75,10 +75,9 @@ class Register:
 
     def get_expression_node(self) -> ExpressionNode:
         return self.register_content.get_expression_node()
-    
+
     def get_size(self) -> int:
         return self._size
-    
 
     def try_simplify(self) -> bool:
         new_content = self.register_content.maybe_simplify()
@@ -159,8 +158,6 @@ class Register:
             size=self.get_size(),
         )
         result_register.try_simplify()
-
-        print("after simplify regcont", result_register.register_content._value, ExpressionManager().expression_to_string(result_register.register_content._expression_node))
 
         return result_register
 

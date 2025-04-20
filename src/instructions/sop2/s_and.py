@@ -50,7 +50,7 @@ class SAnd(BaseInstruction):
                     src0_node,
                     src1_node,
                     ExpressionOperationType.AND,
-                    OpenCLTypes.UINT if self.suffix == "b32" else OpenCLTypes.ULONG)
+                    OpenCLTypes.from_string(self.suffix))
 
                 return set_reg_value(
                     node=self.node,

@@ -38,6 +38,7 @@ class ASMTypes(Enum):
     def __eq__(self, other):
         return self.value == other.value
 
+    @staticmethod
     def from_string(s):
         for e in ASMTypes:
             if str(e) == s:

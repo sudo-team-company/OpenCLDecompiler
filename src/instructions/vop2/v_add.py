@@ -50,7 +50,11 @@ class VAdd(BaseInstruction):
                     data_size, _ = evaluate_size(data_type, only_size=True)
                     new_value = make_op(self.node, self.src1, str(data_size), "/", suffix=self.suffix)
 
-                    expr_node = self.expression_manager.add_offset_thingy_node(self.node.get_expression_node(self.src0), self.node.get_expression_node(self.src1), data_size)
+                    expr_node = self.expression_manager.add_offset_div_data_size(
+                        self.node.get_expression_node(self.src0),
+                        self.node.get_expression_node(self.src1),
+                        data_size,
+                        OpenCLTypes.from_string(self.suffix))
 
                     return set_reg_value(
                         self.node,
@@ -165,7 +169,8 @@ class VAdd(BaseInstruction):
 
                     src0_node = self.node.get_expression_node(self.src0)
                     src1_node = self.node.get_expression_node(self.src1)
-                    expr_node = self.expression_manager.add_offset_thingy_node(src0_node, src1_node, data_size)
+                    expr_node = self.expression_manager.add_offset_div_data_size(
+                        src0_node, src1_node, data_size, OpenCLTypes.from_string(self.suffix))
                 elif self.node.state[self.src0].type == RegisterType.GLOBAL_DATA_POINTER:
                     data_type = self.node.state[self.src1].data_type
                     name = self.node.state[self.src0].val
@@ -181,7 +186,8 @@ class VAdd(BaseInstruction):
                                                                               OpenCLTypes.UINT,
                                                                               VariableAddressSpaceQualifiers.GLOBAL)
                         src1_node = self.node.get_expression_node(self.src1)
-                        expr_node = self.expression_manager.add_offset_thingy_node(src0_node, src1_node, value)
+                        expr_node = self.expression_manager.add_offset_div_data_size(
+                            src0_node, src1_node, value, OpenCLTypes.from_string(self.suffix))
                 elif (
                     self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE
                     and self.node.state[self.src1].type == RegisterType.WORK_ITEM_ID_X
@@ -235,7 +241,8 @@ class VAdd(BaseInstruction):
 
                         src0_node = self.node.get_expression_node(self.src0)
                         src1_node = self.node.get_expression_node(self.src1)
-                        expr_node = self.expression_manager.add_offset_thingy_node(src0_node, src1_node, data_size)
+                        expr_node = self.expression_manager.add_offset_div_data_size(
+                            src0_node, src1_node, data_size, OpenCLTypes.from_string(self.suffix))
                 if src1_reg:
                     reg_type = self.node.state[self.src1].type
 

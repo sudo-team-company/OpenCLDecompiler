@@ -81,15 +81,17 @@ class SAdd(BaseInstruction):
                         new_value = make_op(self.node, name, new_value, "+", suffix=self.suffix)
                         data_type = "8 bytes"
 
-                    expr_node = self.expression_manager.add_offset_thingy_node(
-                        src0_node, src1_node, 4 if self.node.state[self.ssrc1].data_type == "4 bytes" else 8)
+                    data_size = 4 if self.node.state[self.ssrc1].data_type == "4 bytes" else 8
+                    expr_node = self.expression_manager.add_offset_div_data_size(
+                        src0_node, src1_node, data_size, OpenCLTypes.from_string(self.suffix))
                 elif ssrc0_type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
                     reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT
                     if self.node.state[self.ssrc0].data_type in {"u32", "i32", "gi32", "gu32"}:
                         new_value = make_op(self.node, self.ssrc1, "4", "/", suffix=self.suffix)
                         new_value = make_op(self.node, self.ssrc0, new_value, "+", suffix=self.suffix)
 
-                        expr_node = self.expression_manager.add_offset_thingy_node(src0_node, src1_node, 4)
+                        expr_node = self.expression_manager.add_offset_div_data_size(
+                            src0_node, src1_node, 4, OpenCLTypes.from_string(self.suffix))
                 elif RegisterType.KERNEL_ARGUMENT_VALUE in src_types:
                     reg_type = RegisterType.KERNEL_ARGUMENT_VALUE
                 else:
@@ -106,7 +108,8 @@ class SAdd(BaseInstruction):
                     new_value = make_op(self.node, self.ssrc1, "4", "/", suffix=self.suffix)
                     new_value = make_op(self.node, self.ssrc0, new_value, "+", suffix=self.suffix)
 
-                    expr_node = self.expression_manager.add_offset_thingy_node(src0_node, src1_node, 4)
+                    expr_node = self.expression_manager.add_offset_div_data_size(
+                        src0_node, src1_node, 4, OpenCLTypes.from_string(self.suffix))
             if self.node.state[self.ssrc0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
                 if self.ssrc0 == self.sdst:
                     data_type = self.node.parent[0].state[self.ssrc0].data_type
@@ -115,7 +118,10 @@ class SAdd(BaseInstruction):
 
             if expr_node is None:
                 expr_node = self.expression_manager.add_operation(
-                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.UINT)
+                    src0_node,
+                    src1_node,
+                    ExpressionOperationType.PLUS,
+                    OpenCLTypes.from_string(self.suffix))
 
             assert(expr_node is not None)
             return set_reg_value(

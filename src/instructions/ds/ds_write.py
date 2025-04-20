@@ -1,5 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
+from src.expression_manager.types.opencl_types import OpenCLTypes
 
 
 class DsWrite(BaseInstruction):
@@ -28,10 +29,11 @@ class DsWrite(BaseInstruction):
         return super().to_print_unresolved()
 
     def get_lds_var_name_with_offset(self):
-        return self.expression_manager.expression_to_string(self.expression_manager.add_offset_thingy_node(
+        return self.expression_manager.expression_to_string(self.expression_manager.add_offset_div_data_size(
             self.decompiler_data.lds_vars[self.offset],
             self.node.get_expression_node(self.addr),
-            4))
+            4),
+            OpenCLTypes.from_string(self.suffix))
 
     def to_fill_node(self):
         if self.suffix == "b32":

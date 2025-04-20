@@ -101,7 +101,10 @@ _SUM_SIMPLIFY_COMBINATIONS = [
 
 
 class OperationRegisterContent(RegisterContent):
-    def __init__(self, operation: OperationType, register_contents: list[RegisterContent], expression_node: ExpressionNode = None):  # noqa: PLR0912
+    def __init__(self,  # noqa: PLR0912, PLR0915
+                 operation: OperationType,
+                 register_contents: list[RegisterContent],
+                 expression_node: ExpressionNode = None):
         if len(register_contents) == 0:
             self._operation = operation
             super().__init__(
@@ -172,13 +175,11 @@ class OperationRegisterContent(RegisterContent):
         data_types = set(data_types)
         data_type = None if len(data_types) != 1 else data_types.pop()
 
-        #todo - seems like we dont care about this "contains_operation_register_content" or "same_operation" stuff from above, but lets double check
         if expression_node is None:
-            expression_node = ExpressionManager().apply_operation_to_nodes([content.get_expression_node() for content in register_contents], ExpressionOperationType.from_string(operation.value))
+            expression_node = ExpressionManager().apply_operation_to_nodes(
+                [content.get_expression_node() for content in register_contents],
+                ExpressionOperationType.from_string(operation.value))
 
-        print("op content", values, ExpressionManager().expression_to_string(expression_node))
-        if ExpressionManager().expression_to_string(expression_node) == "get_work_dim() + get_global_offset(1)":
-            pass
         super().__init__(
             value=values,
             type_=types,
@@ -213,7 +214,7 @@ class OperationRegisterContent(RegisterContent):
 
     def get_sign(self) -> RegisterSignType:
         return None
-    
+
     def get_expression_node(self) -> ExpressionNode:
         return self._expression_node
 
@@ -276,11 +277,11 @@ class OperationRegisterContent(RegisterContent):
                 operation=copy.deepcopy(self._operation),
                 register_contents=[],
             )
-            new_operation_register_content._value = new_value  # noqa: SLF001
-            new_operation_register_content._type = new_type  # noqa: SLF001
-            new_operation_register_content._size = new_size  # noqa: SLF001
-            new_operation_register_content._data_type = new_data_type  # noqa: SLF001
-            new_operation_register_content._sign = new_sign  # noqa: SLF001
+            new_operation_register_content._value = new_value
+            new_operation_register_content._type = new_type
+            new_operation_register_content._size = new_size
+            new_operation_register_content._data_type = new_data_type
+            new_operation_register_content._sign = new_sign
             new_operation_register_content._expression_node = new_expression_node
 
             return new_operation_register_content
@@ -323,10 +324,6 @@ class OperationRegisterContent(RegisterContent):
                         new_register_content._sign.append(simplified_sign)  # noqa: SLF001
                         new_register_content._size.append(DEFAULT_REGISTER_SIZE)  # noqa: SLF001
                         new_register_content._data_type.append(None)  # noqa: SLF001
-                        #todo add maybe api for all types to not get errors?
-                        print("Before change:", ExpressionManager().expression_to_string(new_register_content._expression_node))
-                        # new_register_content._expression_node = ExpressionManager().add_register_node(simplified_type, simplified_value)
-                        print("After change:", ExpressionManager().expression_to_string(new_register_content._expression_node))
 
                         recursive_new_register_content = new_register_content.maybe_simplify()
 

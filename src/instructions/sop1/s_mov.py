@@ -31,7 +31,8 @@ class SMov(BaseInstruction):
                 #todo double check
                 exec_node = self.node.get_expression_node("exec")
                 src0_node = self.node.get_expression_node(self.ssrc0)
-                expr_node = self.expression_manager.add_operation(exec_node, src0_node, ExpressionOperationType.OR, OpenCLTypes.UINT if self.suffix == "b32" else OpenCLTypes.ULONG)
+                expr_node = self.expression_manager.add_operation(
+                    exec_node, src0_node, ExpressionOperationType.OR, OpenCLTypes.from_string(self.suffix))
 
                 return set_reg_value(
                     self.node,
@@ -53,7 +54,7 @@ class SMov(BaseInstruction):
                     #todo fix
                     expr_node = self.expression_manager.add_variable_node(
                         f"*{new_value}",
-                        OpenCLTypes.UINT if self.suffix == "b32" else OpenCLTypes.ULONG,
+                        OpenCLTypes.from_string(self.suffix),
                         VariableAddressSpaceQualifiers.GLOBAL)
                 else:
                     new_value = self.ssrc0

@@ -54,19 +54,45 @@ class OpenCLTypes(Enum):
     def __eq__(self, other):
         return self.value == other.value
 
-    def from_string(s):
+    @staticmethod
+    def from_string(type_hint) -> "OpenCLTypes":
+        if isinstance(type_hint, OpenCLTypes):
+            return type_hint
+
+        if not isinstance(type_hint, str):
+            return OpenCLTypes.UNKNOWN
+
+        assert type_hint.startswith("g") is False
+        assert type_hint.startswith("__global ") is False
+
+        if "b32" in type_hint or "b64" in type_hint:
+            type_hint = type_hint.replace("b", "u", 1)
+
+        opencl_type = OpenCLTypes.UNKNOWN
         for e in OpenCLTypes:
-            if str(e) == s:
-                return e
+            if str(e) == type_hint:
+                opencl_type = e
+        if opencl_type == OpenCLTypes.UNKNOWN:
+            asm_type = ASMTypes.from_string(type_hint)
+            if asm_type != ASMTypes.UNKNOWN:
+                opencl_type = OpenCLTypes.from_asm_type(asm_type)
+
+        return opencl_type
+
+    @staticmethod
+    def from_asm_type(asm_type : ASMTypes) -> "OpenCLTypes":
+        for t in OpenCLTypes:
+            if t.value == asm_type.value:
+                return t
         return OpenCLTypes.UNKNOWN
 
     def equal_without_modifiers(self, other: "OpenCLTypes") -> bool:
         return self.value.equal_without_modifiers(other.value)
-    
+
     def set_number_of_components(self, number_of_components) -> "OpenCLTypes":
         new_type_value = copy.deepcopy(self.value)
         new_type_value.number_of_components = number_of_components
-        return make_opencl_type(str(new_type_value))
+        return OpenCLTypes.make_opencl_type(str(new_type_value))
 
     UNKNOWN = UnknownOpenCLType()
 
@@ -128,40 +154,13 @@ class OpenCLTypes(Enum):
     DOUBLE4 = OpenCLType(size_bytes=8, is_integer=False, number_of_components=4)
     DOUBLE8 = OpenCLType(size_bytes=8, is_integer=False, number_of_components=8)
 
-def make_opencl_type_from_asm_type(asm_type : ASMTypes) -> OpenCLTypes:
-    for t in OpenCLTypes:
-        if t.value == asm_type.value:
-            return t
-    return OpenCLTypes.UNKNOWN
-
-def make_opencl_type(type_hint) -> OpenCLTypes:
-    if isinstance(type_hint, OpenCLTypes):
-        return type_hint
-
-    if not isinstance(type_hint, str):
-        return OpenCLTypes.UNKNOWN
-
-    assert type_hint.startswith("g") is False
-    assert type_hint.startswith("__global ") is False
-
-    if "b32" in type_hint or "b64" in type_hint:
-        type_hint[0] = "u"
-
-    opencl_type = OpenCLTypes.from_string(type_hint)
-    if opencl_type == OpenCLTypes.UNKNOWN:
-        asm_type = ASMTypes.from_string(type_hint)
-        if asm_type != ASMTypes.UNKNOWN:
-            opencl_type = make_opencl_type_from_asm_type(asm_type)
-
-    return opencl_type
-
 def check_value_needs_cast(value, from_type: OpenCLTypes, to_type: OpenCLTypes) -> bool:
     if OpenCLTypes.UNKNOWN in (from_type, to_type):
         return True
 
     if from_type == to_type:
         return False
-    
+
     if value == "1.0":
         pass
 
@@ -175,7 +174,7 @@ def check_value_needs_cast(value, from_type: OpenCLTypes, to_type: OpenCLTypes) 
     to_type_component_count = to_type.number_of_components
 
     needs_casting = True
-    is_sizes_different = (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count) 
+    is_sizes_different = (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
     # same type, different size
     if (
         (from_type.is_signed and to_type.is_signed)

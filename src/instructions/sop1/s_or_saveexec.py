@@ -36,7 +36,8 @@ class SOrSaveexec(BaseInstruction):
             if prev_exec_cond_node.type == ExpressionType.UNKNOWN:
                 expr_node = new_exec_cond_node
             else:
-                expr_node = self.expression_manager.add_operation(prev_exec_cond_node, new_exec_cond_node, ExpressionOperationType.OR, OpenCLTypes.UINT if self.suffix == "b32" else OpenCLTypes.ULONG)
+                expr_node = self.expression_manager.add_operation(
+                    prev_exec_cond_node, new_exec_cond_node, ExpressionOperationType.OR, OpenCLTypes.from_string(self.suffix))
 
             new_exec_condition = old_exec_condition | another
             self.decompiler_data.exec_registers["exec"] = new_exec_condition

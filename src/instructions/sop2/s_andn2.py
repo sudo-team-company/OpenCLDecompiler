@@ -31,7 +31,7 @@ class SAndn2(BaseInstruction):
 
                 left_node = self.node.get_expression_node(self.ssrc0)
                 right_node = self.node.get_expression_node(self.ssrc1)
-                expr_node = self.expression_manager.add_operation(left_node, right_node, ExpressionOperationType.XOR, OpenCLTypes.UINT if self.suffix == "b32" else OpenCLTypes.ULONG)
+                expr_node = self.expression_manager.add_operation(left_node, right_node, ExpressionOperationType.XOR, OpenCLTypes.from_string(self.suffix))
 
                 return set_reg_value(
                     self.node,
