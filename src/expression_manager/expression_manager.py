@@ -118,14 +118,16 @@ class ExpressionManager(metaclass=Singleton):
 
         for node_info in nodes_info:
             if node_info.operation == ExpressionOperationType.MINUS:
+                removed = False
                 for n in filtered_nodes_info:
                     if node_info.node.contents_equal(n.node):
                         filtered_nodes_info.remove(n)
+                        removed = True
                         break
-                filtered_nodes_info.append(node_info)
+                if not removed:
+                    filtered_nodes_info.append(node_info)
 
         result = filtered_nodes_info
-
 
         min_worth_checking_node_info = 2
         if len(filtered_nodes_info) >= min_worth_checking_node_info:
@@ -231,8 +233,6 @@ class ExpressionManager(metaclass=Singleton):
         assert s0 is not None
         assert s1 is not None
 
-        if const_zero_node(s0):
-            return s1
         if const_zero_node(s1):
             return s0
 

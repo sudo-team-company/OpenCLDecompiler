@@ -174,24 +174,28 @@ def check_value_needs_cast(value, from_type: OpenCLTypes, to_type: OpenCLTypes) 
     to_type_component_count = to_type.number_of_components
 
     needs_casting = True
-    is_sizes_different = (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
+    to_type_smaller = (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
     # same type, different size
     if (
         (from_type.is_signed and to_type.is_signed)
         or (not from_type.is_signed and not to_type.is_signed)
         or (not from_type.is_integer and not to_type.is_integer)
     ):
-        needs_casting = is_sizes_different
+        needs_casting = to_type_smaller
 
     # todo float/intergers and combinations separately!!!
 
     # from unsigned type to signed or from signed type to unsigned
     if (not from_type.is_signed and to_type.is_signed) or (from_type.is_signed and not to_type.is_signed):
+        if re.fullmatch(r"0x[\da-f]+", str(value)) is not None:
+            return False
+        if isinstance(value, int) and value >= 0:
+            return False
         needs_casting = (
             (isinstance(value, int) and value < 0)
             or re.fullmatch(r"\d+", str(value)) is None
             or re.fullmatch(r"0x[\da-f]+", str(value)) is None
-            or is_sizes_different
+            or to_type_smaller
         )
     # from float to unsigned
     if not from_type.is_integer and not to_type.is_signed:
@@ -200,7 +204,7 @@ def check_value_needs_cast(value, from_type: OpenCLTypes, to_type: OpenCLTypes) 
             needs_casting = (
                 (float_value != int(float_value))
                 or (float_value < 0)
-                or is_sizes_different
+                or to_type_smaller
             )
         except ValueError:
             return True
