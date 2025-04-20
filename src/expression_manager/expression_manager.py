@@ -320,15 +320,15 @@ class ExpressionManager(metaclass=Singleton):
             return self.add_const_node(result, simplified_type)
 
         if op == ExpressionOperationType.PLUS:
-            operation_node = self._optimized_nodes_sum(s0, s1, value_type_hint)
+            operation_node = self._optimized_nodes_sum(s0, s1, op_value_type_hint)
         elif op == ExpressionOperationType.MINUS:
-            operation_node = self._optimized_nodes_sub(s0, s1, value_type_hint)
+            operation_node = self._optimized_nodes_sub(s0, s1, op_value_type_hint)
         elif op == ExpressionOperationType.MUL:
-            operation_node = self._optimized_nodes_mul(s0, s1, value_type_hint)
+            operation_node = self._optimized_nodes_mul(s0, s1, op_value_type_hint)
         elif op == ExpressionOperationType.DIV:
-            operation_node = self._optimized_nodes_div(s0, s1, value_type_hint)
+            operation_node = self._optimized_nodes_div(s0, s1, op_value_type_hint)
         elif op.is_logical_operator():
-            operation_node = self._optimized_nodes_logical_operation(op, s0, s1, value_type_hint)
+            operation_node = self._optimized_nodes_logical_operation(op, s0, s1, op_value_type_hint)
         else:
             operation_node = self.create_op_node(op, s0, s1, op_value_type_hint)
 
@@ -337,8 +337,6 @@ class ExpressionManager(metaclass=Singleton):
 
     def logical_not_node(self, node: ExpressionNode) -> ExpressionNode:
         assert node is not None
-        assert node.type == ExpressionType.OP
-        assert node.value.is_logical_operator()
 
         # double not optimization
         if node.type == ExpressionType.OP and node.value == ExpressionOperationType.NOT:

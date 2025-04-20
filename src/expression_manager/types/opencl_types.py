@@ -92,7 +92,7 @@ class OpenCLTypes(Enum):
     def set_number_of_components(self, number_of_components) -> "OpenCLTypes":
         new_type_value = copy.deepcopy(self.value)
         new_type_value.number_of_components = number_of_components
-        return OpenCLTypes.make_opencl_type(str(new_type_value))
+        return OpenCLTypes.from_string(str(new_type_value))
 
     UNKNOWN = UnknownOpenCLType()
 
