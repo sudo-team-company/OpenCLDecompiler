@@ -147,12 +147,6 @@ class ExpressionNode:
         assert from_node is not None
         assert to_node is not None
 
-        print("self:", ExpressionManager().expression_to_string(self))
-        print("from_node:", ExpressionManager().expression_to_string(from_node))
-        print("to_node:", ExpressionManager().expression_to_string(to_node))
-        print("equal from", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(from_node), self == from_node)
-        print("equal to", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(to_node), self == to_node)
-
         if self == to_node:
             return self
 

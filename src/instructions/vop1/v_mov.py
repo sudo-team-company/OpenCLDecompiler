@@ -23,7 +23,6 @@ class VMov(BaseInstruction):
         if self.suffix == "b32":
             if self.src0 in self.node.state:
                 new_reg = copy.deepcopy(self.node.state[self.src0])
-                assert(self.node.state[self.src0].register_content._expression_node is not None)
                 return set_reg(
                     node=self.node,
                     to_reg=self.vdst,

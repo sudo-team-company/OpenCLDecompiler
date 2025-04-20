@@ -246,7 +246,6 @@ class VAdd(BaseInstruction):
                 if src1_reg:
                     reg_type = self.node.state[self.src1].type
 
-            print("v_add::to_fill_node", "to_reg:", self.vdst, "new_value:", new_value)
             return set_reg_value(
                 self.node,
                 new_value,

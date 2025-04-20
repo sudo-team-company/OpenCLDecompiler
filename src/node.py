@@ -5,12 +5,6 @@ from src.register import check_and_split_regs, is_range
 from src.register_type import RegisterType
 
 
-#todo remove it from other place
-def check_big_values_new(node, start_register, end_register):
-    if node.state[start_register].val == "0xa2000000" and node.state[end_register].val == "0x426d1a94":
-        return True, "1e12"
-    return False, 0
-
 class Node:
     def __init__(self, instruction, state):
         self.id = utils.generate_uuid()
@@ -40,7 +34,8 @@ class Node:
             return ExpressionManager().get_empty_node()
         if is_range(reg):
             start_register, end_register = check_and_split_regs(reg)
-            flag_big_value, value = check_big_values_new(self, start_register, end_register)
+            flag_big_value, value = (True, "1e12") if (self.state[start_register].val == "0xa2000000" 
+                                                       and self.state[end_register].val == "0x426d1a94") else (False, 0)
             if flag_big_value:
                 #todo check
                 return ExpressionManager().add_const_node(value, OpenCLTypes.ULONG)

@@ -27,8 +27,6 @@ class SAddc(BaseInstruction):
 
     def to_fill_node(self):
         if self.decompiler_data.is_rdna3 and is_reg(self.ssrc0) and is_reg(self.ssrc1):
-            assert(self.node.state[self.ssrc0].register_content.get_expression_node() is not None and self.node.state[self.ssrc1].register_content.get_expression_node() is not None)
-
             new_reg = self.node.state[self.ssrc0] + self.node.state[self.ssrc1]
 
             return set_reg(

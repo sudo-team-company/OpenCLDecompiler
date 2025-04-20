@@ -33,7 +33,6 @@ class VAddNc(BaseInstruction):
     def to_fill_node(self):  # noqa: PLR0911
         if self.suffix in {"u16", "u32"}:
             if self.decompiler_data.is_rdna3:
-                assert(self.node.state[self.src0].register_content.get_expression_node() is not None and self.node.state[self.src1].register_content.get_expression_node() is not None)
                 new_reg = self.node.state[self.src0] + self.node.state[self.src1]
                 return set_reg(
                     node=self.node,
@@ -136,7 +135,6 @@ class VAddNc(BaseInstruction):
                     }
                 )
                 if src_types in _instruction_internal_mapping_by_types:
-                    print(new_value)
                     new_value, reg_type = _instruction_internal_mapping_by_types[src_types]
                 if self.node.state[self.src1].val == "0":
                     new_value = self.node.state[self.src0].val
@@ -145,8 +143,9 @@ class VAddNc(BaseInstruction):
                     expr_node = src0_node
 
             if expr_node is None:
-                expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG)
-            
+                expr_node = self.expression_manager.add_operation(
+                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG)
+
             return set_reg_value(
                 node=self.node,
                 new_value=new_value,

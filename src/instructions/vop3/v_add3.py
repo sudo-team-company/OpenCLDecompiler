@@ -68,9 +68,6 @@ class VAdd3(BaseInstruction):
     def to_fill_node(self):
         if self.suffix == "u32":
             if self.decompiler_data.is_rdna3:
-                assert(self.node.state[self.src0].register_content.get_expression_node() is not None and self.node.state[self.src1].register_content.get_expression_node() is not None)
-                assert(self.node.state[self.src2].register_content.get_expression_node() is not None)
-
                 if self.decompiler_data.name_of_program == "add_char_get_work_dim_8_8" and self.vdst == "v0":
                     pass
                 new_reg = self.node.state[self.src0] + self.node.state[self.src1]
