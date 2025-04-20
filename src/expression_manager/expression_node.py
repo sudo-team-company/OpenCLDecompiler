@@ -115,6 +115,13 @@ class ExpressionNode:
             and self.value == other.value
             and self.value_type_hint == other.value_type_hint
         )
+    
+    def contents_equal(self, other: "ExpressionNode"):
+        return (
+            self.type == other.type
+            and self.value == other.value
+            and self.value_type_hint == other.value_type_hint
+        )
 
     def __add__(self, other: "ExpressionNode"):
         op_node = ExpressionNode()
@@ -150,16 +157,7 @@ class ExpressionNode:
             return self
 
         if self == from_node:
-            parent: ExpressionNode = self.parent
-            if parent is not None:
-                if self == parent.left:
-                    parent.left = to_node
-                else:
-                    parent.right = to_node
-
-            to_node.parent = parent
-            self = to_node  # noqa: PLW0642
-            return self  # noqa: RET504
+            return self.from_other(to_node)
 
         if self.type == ExpressionType.OP:
             if self.left is not None:
@@ -175,6 +173,15 @@ class ExpressionNode:
                 self.right = self.right.replace(from_node, to_node)
 
         return self
+    
+    def from_other(self, other: "ExpressionNode"):
+        if self.parent is not None:
+            if self.parent.left == self:
+                self.parent.left = other
+            elif self.parent.right == self:
+                self.parent.right = other
+        other.parent = self.parent
+        self = other
 
 
 # def update_types(expression_node: ExpressionNode):

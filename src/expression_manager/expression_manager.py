@@ -1,13 +1,20 @@
 import copy
+import re
 from dataclasses import dataclass, field
 from enum import Enum
-import re
 
 from src.expression_manager.expression_node import (
     ExpressionNode,
     ExpressionOperationType,
     ExpressionType,
     get_common_type,
+)
+from src.expression_manager.optimizations import (
+    NodeParseInfo,
+    const_one_node,
+    const_zero_node,
+    group_id_node_mul_size_of_work_groups,
+    parse_node_sum,
 )
 from src.expression_manager.types.opencl_types import OpenCLTypes, check_value_needs_cast, make_opencl_type
 from src.model.kernel_argument import KernelArgument
@@ -39,9 +46,13 @@ class ExpressionManager(metaclass=Singleton):
         self._nodes = []
         self._variables_for_programs: dict[str, dict[str, VariableInfo]] = {}
         self._name_of_program = ""
+        self._size_of_workgroups = []
 
     def set_name_of_program(self, name_of_program: str):
         self._name_of_program = name_of_program
+
+    def set_size_of_workgroups(self, new_size_of_workgroups: list[int]):
+        self._size_of_workgroups = new_size_of_workgroups
 
     def reset(self, name_of_program: str):
         self._nodes = []
@@ -88,7 +99,7 @@ class ExpressionManager(metaclass=Singleton):
         if self.expression_to_string(node) == "2147483648" and node.value_type_hint == OpenCLTypes.UINT:
             pass
         assert node.value_type_hint != OpenCLTypes.UNKNOWN
-    
+
         print("add_node:", self.expression_to_string(node), node.value_type_hint)  # noqa: T201
         self._nodes.append(node)
 
@@ -101,72 +112,214 @@ class ExpressionManager(metaclass=Singleton):
         print("added offset thingy node:", self.expression_to_string(expr_node))  # noqa: T201
         return expr_node
 
+
+    #get_ global_offset(0) + get_group_id(0)*get_local_size(0) + get_local_id(0)
+
+    # what if global_offset(0) + get_group_id(0)*get_local_size(0) + get_local_id(0) + arg0
+    def _global_id_optimization(self, left: ExpressionNode, right: ExpressionNode, value_type_hint: OpenCLTypes) -> RegisterType:
+        nodes_info: list[NodeParseInfo] = parse_node_sum(left) + parse_node_sum(right)
+
+        filtered_nodes_info = [n for n in nodes_info if n.sign == ExpressionOperationType.PLUS]
+
+        for node_info in nodes_info:
+            if node_info.sign == ExpressionOperationType.MINUS:
+                for n in filtered_nodes_info:
+                    if node_info.node.contents_equal(n.node):
+                        filtered_nodes_info.remove(n)
+                        break
+
+        result = [n.node for n in filtered_nodes_info]
+
+
+        min_worth_checking_node_info = 3
+        if len(filtered_nodes_info) >= min_worth_checking_node_info:
+            local_id_reg_types = [RegisterType[f"WORK_ITEM_ID_{dim}"] for dim in "XYZ"]
+            global_offset_reg_types = [RegisterType[f"GLOBAL_OFFSET_{dim}"] for dim in "XYZ"]
+            work_group_id_mul_local_size_reg_types = [RegisterType[f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"] for dim in "XYZ"]
+
+            for dim, local_id_dim, global_offset_dim, work_group_id_dim_mul in zip(
+                "XYZ",
+                local_id_reg_types,
+                global_offset_reg_types,
+                work_group_id_mul_local_size_reg_types,
+                strict=False
+            ):
+                l_array = [n for n in filtered_nodes_info if n.reg_type == local_id_dim]
+                g_array = [n for n in filtered_nodes_info if n.reg_type == global_offset_dim]
+                w_array = [n for n in filtered_nodes_info if n.reg_type == work_group_id_dim_mul]
+
+                while (
+                    len(l_array) > 0 and
+                    len(g_array) > 0 and
+                    len(w_array) > 0
+                ):
+                    result.remove(l_array[0].node)
+                    result.remove(g_array[0].node)
+                    result.remove(w_array[0].node)
+                    l_array.remove(l_array[0])
+                    g_array.remove(g_array[0])
+                    w_array.remove(w_array[0])
+                    result.append(self.add_register_node(RegisterType[f"GLOBAL_ID_{dim}"], ""))
+
+        if len(result) == 0:
+            return None
+
+        cur_node = result[0]
+        if len(result) == 1:
+            return cur_node
+
+        for next_node in result[1:]:
+            cur_node = self.create_op_node(ExpressionOperationType.PLUS, cur_node, next_node, value_type_hint)
+        return cur_node
+
+
+    def _optimized_nodes_sum(self,
+                             s0: ExpressionNode,
+                             s1: ExpressionNode,
+                             value_type_hint: OpenCLTypes) -> ExpressionNode:
+        assert s0 is not None
+        assert s1 is not None
+
+        if const_zero_node(s0):
+            return s1
+        if const_zero_node(s1):
+            return s0
+
+        plus_node = self._global_id_optimization(s0, s1, value_type_hint)
+        return plus_node
+        # check_combination_reg_type = num_groups_node_plus_work_group_id_local_size_node(s0, s1)
+        # if check_combination_reg_type != RegisterType.UNKNOWN:
+        #     return self.add_register_node(check_combination_reg_type, "")
+        # check_combination_reg_type = global_offset_node_plus_work_group_id_local_size_node(s0, s1)
+        # if check_combination_reg_type != RegisterType.UNKNOWN:
+        #     return self.add_register_node(check_combination_reg_type, "")
+
+
+
+        return self.create_op_node(ExpressionOperationType.PLUS, s0, s1, value_type_hint)
+
+    def _optimized_nodes_sub(self,
+                             s0: ExpressionNode,
+                             s1: ExpressionNode,
+                             value_type_hint: OpenCLTypes) -> ExpressionNode:
+        assert s0 is not None
+        assert s1 is not None
+
+        if const_zero_node(s0):
+            return s1
+        if const_zero_node(s1):
+            return s0
+
+        return self.create_op_node(ExpressionOperationType.MINUS, s0, s1, value_type_hint)
+
+    def _optimized_nodes_mul(self,
+                             s0: ExpressionNode,
+                             s1: ExpressionNode,
+                             value_type_hint: OpenCLTypes) -> ExpressionNode:
+        assert s0 is not None
+        assert s1 is not None
+
+        # Return 0 if multiplying by 0
+        if const_zero_node(s0):
+            return s0
+        if const_zero_node(s1):
+            return s1
+        # Return other node if multiplying by 1
+        if const_one_node(s0):
+            return s1
+        if const_one_node(s1):
+            return s0
+
+        check_combination_reg_type = group_id_node_mul_size_of_work_groups(s0, s1, self._size_of_workgroups)
+        if check_combination_reg_type != RegisterType.UNKNOWN:
+            return self.add_register_node(check_combination_reg_type, "")
+
+        return self.create_op_node(ExpressionOperationType.MUL, s0, s1, value_type_hint)
+
+    def _optimized_nodes_div(self,
+                             s0: ExpressionNode,
+                             s1: ExpressionNode,
+                             value_type_hint: OpenCLTypes) -> ExpressionNode:
+        assert s0 is not None
+        assert s1 is not None
+
+        assert not const_zero_node(s1)
+
+        if const_one_node(s1):
+            return s0
+
+        return self.create_op_node(ExpressionOperationType.DIV, s0, s1, value_type_hint)
+
+    def _optimized_nodes_logical_operation(self,
+                             op: ExpressionOperationType,
+                             s0: ExpressionNode,
+                             s1: ExpressionNode,
+                             value_type_hint: OpenCLTypes) -> ExpressionNode:
+        assert s0 is not None
+        assert s1 is not None
+        assert op.is_logical_operator()
+
+        if op == ExpressionOperationType.XOR:
+            if s0.type == ExpressionType.UNKNOWN:
+                return self.invert_node(s1)
+            if s1.type == ExpressionType.UNKNOWN:
+                return self.invert_node(s0)
+
+        if ExpressionType.CONST in (s0.type, s1.type):
+            const_node = s0 if s0.type == ExpressionType.CONST else s1
+            const_value = 1 if const_node.value else 0
+            if op == ExpressionOperationType.OR and const_value:
+                return self.create_const_node(1, value_type_hint)
+            if op == ExpressionOperationType.AND and not const_value:
+                return self.create_const_node(0, value_type_hint)
+
+        return self.create_op_node(op, s0, s1, value_type_hint)
+
     def add_operation(
         self, s0: ExpressionNode, s1: ExpressionNode, op: ExpressionOperationType, value_type_hint: OpenCLTypes
     ):
         assert s0 is not None
         assert s1 is not None
 
-        if op == ExpressionOperationType.XOR:
-            if s0.type == ExpressionType.UNKNOWN:
-                operation_node = ExpressionNode()
-                operation_node.type = ExpressionType.OP
-                operation_node.value = ExpressionOperationType.NOT
-                # todo bool?
-                operation_node.value_type_hint = s1.value_type_hint
-                operation_node.left = s1
-                self.add_node(operation_node)
-                return operation_node
-            if s1.type == ExpressionType.UNKNOWN:
-                operation_node = ExpressionNode()
-                operation_node.type = ExpressionType.OP
-                operation_node.value = ExpressionOperationType.NOT
-                # todo bool?
-                operation_node.value_type_hint = s0.value_type_hint
-                operation_node.left = s0
-                self.add_node(operation_node)
-                return operation_node
+        if value_type_hint == OpenCLTypes.UNKNOWN:
+            value_type_hint = get_common_type(s0.value_type_hint, s1.value_type_hint)
 
-        # todo optimize if one is empty
-
-        # todo find vars inside
-        if (s0.type == ExpressionType.VAR and self.get_variable_info(s0.value).is_pointer) or (s0.type == ExpressionType.VAR and self.get_variable_info(s0.value).address_space_qualifier == VariableAddressSpaceQualifiers.GLOBAL):
+        # todo check
+        if ((s0.type == ExpressionType.VAR and self.get_variable_info(s0.value).is_pointer)
+            or (s0.type == ExpressionType.VAR
+                and self.get_variable_info(s0.value).address_space_qualifier == VariableAddressSpaceQualifiers.GLOBAL)):
             # todo limit
             op_value_type_hint = s0.value_type_hint
-        elif (s1.type == ExpressionType.VAR and self.get_variable_info(s1.value).is_pointer) or (s1.type == ExpressionType.VAR and self.get_variable_info(s1.value).address_space_qualifier == VariableAddressSpaceQualifiers.GLOBAL):
+        elif ((s1.type == ExpressionType.VAR and self.get_variable_info(s1.value).is_pointer)
+              or (s1.type == ExpressionType.VAR
+                  and self.get_variable_info(s1.value).address_space_qualifier == VariableAddressSpaceQualifiers.GLOBAL)):
             # todo limit
             op_value_type_hint = s1.value_type_hint
-        elif (op in (ExpressionOperationType.PLUS, ExpressionOperationType.MINUS)) and (
-            str(s0.value) == "0" or str(s1.value) == "0"
-        ):
-            if str(s0.value) == "0":
-                op_value_type_hint = s1.value_type_hint
-            elif str(s1.value) == "0":
-                op_value_type_hint = s0.value_type_hint
         else:
-            if value_type_hint == OpenCLTypes.UNKNOWN:
-                value_type_hint = get_common_type(s0.value_type_hint, s1.value_type_hint)
-            op_value_type_hint = value_type_hint  # get_common_type(get_common_type(s0.value_type_hint, s1.value_type_hint), value_type_hint)  # noqa: E501
+            op_value_type_hint = value_type_hint
 
-        operation_node = self.create_op_node(op, s0, s1, op_value_type_hint)
+        # if both values are constant, we can evaluate expression
+        if s0.type == ExpressionType.CONST and s1.type == ExpressionType.CONST:
+            simplified_type = get_common_type(s0.value_type_hint, s1.value_type_hint)
+            result = self.evaluate_operation(s0.value, op, s1.value, simplified_type)
+            assert result is not None
+            return self.add_const_node(result, simplified_type)
 
-        # if (s0.type == ExpressionType.OP
-        #     and s0.value in [ExpressionOperationType.PLUS, ExpressionOperationType.MINUS]
-        #     and s0.left.type == ExpressionType.VAR
-        #     and self.get_variable_info(s0.left.value).is_pointer):
-        #     print("operation_node:", self.expression_to_string(operation_node))  # noqa: T201
-        #     tmp = s0.right
-        #     s0.right.parent = operation_node
-        #     s0.right = operation_node
-        #     operation_node.parent = s0
-        #     operation_node.left = tmp
-        #     operation_node = s0
-        #     operation_node.parent = None
-        #     print("operation_node:", self.expression_to_string(operation_node))  # noqa: T201
-        #     pass
+        if op == ExpressionOperationType.PLUS:
+            operation_node = self._optimized_nodes_sum(s0, s1, value_type_hint)
+        elif op == ExpressionOperationType.MINUS:
+            operation_node = self._optimized_nodes_sub(s0, s1, value_type_hint)
+        elif op == ExpressionOperationType.MUL:
+            operation_node = self._optimized_nodes_mul(s0, s1, value_type_hint)
+        elif op == ExpressionOperationType.DIV:
+            operation_node = self._optimized_nodes_div(s0, s1, value_type_hint)
+        elif op.is_logical_operator():
+            operation_node = self._optimized_nodes_logical_operation(s0, s1, value_type_hint)
+        else:
+            operation_node = self.create_op_node(op, s0, s1, op_value_type_hint)
 
         self.add_node(operation_node)
-        print("added operation:", self.expression_to_string(operation_node))  # noqa: T201
+        print("added operation:", self.expression_to_string(operation_node))
         return operation_node
 
     def invert_node(self, node: ExpressionNode) -> ExpressionNode:
@@ -406,7 +559,7 @@ class ExpressionManager(metaclass=Singleton):
         return self._expression_to_string_updated(node, cast_to)
 
     #todo maybe move it
-    def evaluate_operation(self, left_value, op: ExpressionOperationType, right_value):  # noqa: C901, PLR0912
+    def evaluate_operation(self, left_value, op: ExpressionOperationType, right_value, value_type_hint: OpenCLTypes):  # noqa: C901, PLR0912
         result = None
         match op:
             case ExpressionOperationType.PLUS:
@@ -416,7 +569,7 @@ class ExpressionManager(metaclass=Singleton):
             case ExpressionOperationType.MUL:
                 result = left_value * right_value
             case ExpressionOperationType.DIV:
-                result = left_value / right_value
+                result = left_value // right_value if value_type_hint.value.is_integer else left_value / right_value
             case ExpressionOperationType.REM:
                 result = left_value % right_value
             case ExpressionOperationType.LSHIFT:
@@ -451,48 +604,6 @@ class ExpressionManager(metaclass=Singleton):
                 result = left_value | right_value
         return result
 
-    # @dataclass
-    # class SimplificationContext:
-    #     operation: # muldiv or plusminus
-    #     nodes: list[ExpressionNode] = []
-
-    #     pass
-
-    # def simplify_node(self, node: ExpressionNode, simplify_context) -> ExpressionNode:
-    #     assert node is not None
-
-    #     if node.type == ExpressionType.VAR:
-    #         var_info = self.get_variable_info(node.value)
-    #         if var_info is not None and var_info.value_node is not None:
-    #             return var_info.value_node
-
-    #     if node.type != ExpressionType.OP:
-    #         return node
-
-    #     operator = node.value
-
-    #     #todo double not
-
-    #     if operator not in [ExpressionOperationType.PLUS,
-    #                         ExpressionOperationType.MINUS,
-    #                         ExpressionOperationType.MUL,
-    #                         ExpressionOperationType.DIV]:
-    #         return node
-
-    #     left_node = node.left
-    #     right_node = node.right
-    #     if left_node.type == ExpressionType.CONST and right_node.type == ExpressionType.CONST:
-    #         simplified_value = self.evaluate_operation(left_node.value, operator, right_node.value)
-    #         simplified_type = get_common_type(left_node.value_type_hint, right_node.value_type_hint)
-    #         return self.add_const_node(simplified_value, simplified_type)
-
-    #     left_node_simplified
-
-    #     simplify_context
-
-    #     return node
-
-
     def get_variable_info(self, var_name: str) -> VariableInfo:
         if (self._variables_for_programs.get(self._name_of_program) is not None
             and self._variables_for_programs[self._name_of_program].get(var_name) is not None):
@@ -523,7 +634,7 @@ class ExpressionManager(metaclass=Singleton):
         left_value = self._expression_to_string_updated(
             left_node, cast_to
         )
-        operator = str(operation.value)
+        operation = str(operation.value)
         right_value = self._expression_to_string_updated(
             right_node, cast_to
         )
@@ -544,7 +655,7 @@ class ExpressionManager(metaclass=Singleton):
         else:
             output += left_value
 
-        output += f" {operator} "
+        output += f" {operation} "
 
         if ((check_needs_brackets(expression_node) and right_node.type in [ExpressionType.OP, ExpressionType.IF_TERNARY]and right_node.value in op_doesnt_need_additional_brackets)
             or check_needs_brackets(right_node)):
@@ -574,6 +685,12 @@ class ExpressionManager(metaclass=Singleton):
 
         return address_space_qualifier_str + constness_str + variable_type_str + ptr_str + var_name_str
 
+    def _work_item_function_expression_to_string(self,
+                                                 work_item_function_node: ExpressionNode,
+                                                 _: OpenCLTypes = OpenCLTypes.UNKNOWN) -> str:
+        reg_type = work_item_function_node.value
+        return  f"{CONSTANT_VALUES[reg_type][0]}"
+
     def _expression_to_string_updated(self,
                                       expression_node: ExpressionNode,
                                       cast_to: OpenCLTypes = OpenCLTypes.UNKNOWN) -> str:
@@ -597,12 +714,140 @@ class ExpressionManager(metaclass=Singleton):
             left_value = self._expression_to_string_updated(expression_node.left, cast_to)
             right_value = self._expression_to_string_updated(expression_node.right, cast_to)
             output =  f"({cond_value}) ? ({left_value}) : ({right_value})"
+        elif expression_node.type == ExpressionType.WORK_ITEM_FUNCTION:
+            return self._work_item_function_expression_to_string(expression_node, cast_to)
         else:
-            if expression_node.type == ExpressionType.WORK_ITEM_FUNCTION:
-                output = f"{CONSTANT_VALUES[expression_node.value][0]}"
-            else:
-                output = f"{expression_node.value}"
+            output = f"{expression_node.value}"
             if (cast_to not in (OpenCLTypes.UNKNOWN, expression_node.value_type_hint)
                 and check_value_needs_cast(expression_node.value, expression_node.value_type_hint, cast_to)):
                 output = f"({cast_to!s})" + output
         return output
+
+    # @dataclass
+    # class SimplificationContext:
+    #     class Simplification(Enum):
+    #         PLUSMINUS = "+-"
+    #         MULDIV = "*/"
+    #     operation: Simplification = Simplification.PLUSMINUS
+    #     nodes: list[(ExpressionNode, ExpressionOperationType)] = field(default_factory=list)
+
+    # def simplify_nodes(self, nodes: list[(ExpressionNode, ExpressionOperationType)]):
+    #     invert_operators = {
+    #         ExpressionOperationType.PLUS : ExpressionOperationType.MINUS,
+    #         ExpressionOperationType.MINUS : ExpressionOperationType.PLUS,
+    #         ExpressionOperationType.MUL : ExpressionOperationType.DIV,
+    #         ExpressionOperationType.DIV : ExpressionOperationType.MUL,
+    #     }
+
+    #     #todo assert only +- or */
+
+    #     res = []
+    #     for first_node in nodes:
+    #         found_inverted = False
+    #         for second_node in nodes:
+    #             if (ExpressionManager().expression_to_string(first_node[0]) == ExpressionManager().expression_to_string(second_node[0])
+    #                 and first_node[1] == invert_operators[second_node[1]]):
+    #                 found_inverted = True
+    #                 break
+    #         if not found_inverted:
+    #             res.append(first_node)
+
+
+    #     if len(res) == 0:
+    #         return None
+
+    #     node = res[0][0]
+    #     if len(res) == 1:
+    #         return node
+
+    #     for r in res[1:]:
+    #         node = self.add_operation(node, r[0], r[1], OpenCLTypes.UNKNOWN)
+
+    #     return node
+
+    # def simplify_node(self, node: ExpressionNode, visited_nodes: list[(ExpressionNode, ExpressionOperationType)], prev_operation: ExpressionOperationType.UNKNOWN) -> ExpressionNode:
+    #     assert node is not None
+
+    #     if node.type == ExpressionType.VAR:
+    #         var_info = self.get_variable_info(node.value)
+    #         if var_info is not None and var_info.value_node is not None:
+    #             return var_info.value_node
+
+    #     if node.type != ExpressionType.OP:
+    #         return node
+    #     operation = node.value
+
+    #     #todo double not
+
+    #     if operation not in [ExpressionOperationType.PLUS,
+    #                         ExpressionOperationType.MINUS,
+    #                         ExpressionOperationType.MUL,
+    #                         ExpressionOperationType.DIV]:
+    #         return node
+
+    #     left_node = node.left
+    #     right_node = node.right
+    #     if left_node.type == ExpressionType.CONST and right_node.type == ExpressionType.CONST:
+    #         simplified_type = get_common_type(left_node.value_type_hint, right_node.value_type_hint)
+    #         simplified_node = self.evaluate_operation(left_node.value, operation, right_node.value, simplified_type)
+    #         return node.from_other(simplified_node)
+
+    #     invert_operators = {
+    #         ExpressionOperationType.PLUS : ExpressionOperationType.MINUS,
+    #         ExpressionOperationType.MINUS : ExpressionOperationType.PLUS,
+    #         ExpressionOperationType.MUL : ExpressionOperationType.DIV,
+    #         ExpressionOperationType.DIV : ExpressionOperationType.MUL,
+    #     }
+
+    #     signs = {
+    #         ExpressionOperationType.PLUS : ["+", "+"],
+    #         ExpressionOperationType.MINUS: ["+", "-"],
+    #         ExpressionOperationType.MUL : ExpressionOperationType.DIV,
+    #         ExpressionOperationType.DIV : ExpressionOperationType.MUL,
+    #     }
+
+    #     if operation == prev_operation or invert_operators[operation] == prev_operation:
+    #         left_node = self.simplify_node(left_node, visited_nodes, prev_operation)
+    #         right_node = self.simplify_node(right_node, visited_nodes, operation)
+    #         visited_nodes.append((left_node, prev_operation))
+    #         visited_nodes.append((right_node, operation))
+    #     else:
+    #         visited_nodes.append((node, prev_operation))
+
+    #     return self.simplify_nodes(visited_nodes)
+
+
+# sub_node0 = ExpressionManager().add_register_node(RegisterType.GLOBAL_OFFSET_X)
+# sub_node1 = ExpressionManager().add_register_node(RegisterType.GLOBAL_OFFSET_X)
+# sub_node_res = ExpressionManager().add_operation(sub_node0, sub_node1, ExpressionOperationType.MINUS, OpenCLTypes.ULONG)
+# print("before optimization:", ExpressionManager().expression_to_string(sub_node_res))
+# tmp = ExpressionManager().simplify_node(sub_node_res, [], sub_node_res.value)
+# if tmp is not None:
+#     print("after optimization:", ExpressionManager().expression_to_string(tmp))
+
+# node1 = ExpressionManager().add_register_node(RegisterType.GLOBAL_OFFSET_X)
+# node2 = ExpressionManager().add_register_node(RegisterType.WORK_ITEM_ID_X)
+# node3= ExpressionManager().add_register_node(RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE)
+
+# sum_node = ExpressionManager().add_operation(node1, node2, ExpressionOperationType.PLUS, OpenCLTypes.ULONG)
+# result_node = ExpressionManager().add_operation(sum_node, node3, ExpressionOperationType.PLUS, OpenCLTypes.ULONG)
+
+# print("before optimization:", ExpressionManager().expression_to_string(result_node))
+# context = ExpressionManager().simplify_node(result_node, [], ExpressionOperationType.UNKNOWN)
+# print("after optimization:", ExpressionManager().expression_to_string(result_node))
+
+# pass
+
+
+
+node1 = ExpressionManager().add_register_node(RegisterType.GLOBAL_OFFSET_X)
+node2 = ExpressionManager().add_register_node(RegisterType.WORK_ITEM_ID_X)
+node3= ExpressionManager().add_register_node(RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE)
+
+sum_node = ExpressionManager().add_operation(node1, node2, ExpressionOperationType.PLUS, OpenCLTypes.ULONG)
+global_id_node = ExpressionManager().add_operation(sum_node, node3, ExpressionOperationType.PLUS, OpenCLTypes.ULONG)
+sum_node = global_id_node
+print("\t\t1", ExpressionManager().expression_to_string(sum_node))
+
+testt = ExpressionManager()._global_id_optimization(sum_node, global_id_node, OpenCLTypes.UINT)
+print("\t\t2", ExpressionManager().expression_to_string(testt))

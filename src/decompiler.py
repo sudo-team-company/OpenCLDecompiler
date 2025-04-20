@@ -49,6 +49,7 @@ def process_src(  # noqa: C901, PLR0912, PLR0915
     set_of_global_data_instruction: list[str],
 ):
     decompiler_data = DecompilerData()
+    expression_manager = ExpressionManager()
     decompiler_data.reset(name_of_program)
     if decompiler_data.gpu.startswith("gfx11"):
         decompiler_data.is_rdna3 = True
@@ -57,9 +58,9 @@ def process_src(  # noqa: C901, PLR0912, PLR0915
         # because in RDNA3 kernel arguments are parsed at the beggining.
         # ExpressionManager already contains every kernel argument in _variables_for_program dict
         # Only specifying name of program to obtain correct arguments here
-        ExpressionManager().set_name_of_program(name_of_program)
+        expression_manager.set_name_of_program(name_of_program)
     else:
-        ExpressionManager().reset(name_of_program)
+        expression_manager.reset(name_of_program)
     set_of_instructions = [instr.replace("null", "0x0") for instr in set_of_instructions]
     new_set_of_instructions = []
     for instr in set_of_instructions:
@@ -68,6 +69,7 @@ def process_src(  # noqa: C901, PLR0912, PLR0915
     initial_set_of_instructions = copy.deepcopy(set_of_instructions)
     process_global_data(set_of_global_data_instruction, set_of_global_data_bytes)
     decompiler_data.set_config_data(config_data)
+    expression_manager.set_size_of_workgroups(config_data.size_of_work_groups)
     if not decompiler_data.is_rdna3:
         process_kernel_params()
     last_node = Node([""], decompiler_data.initial_state)

@@ -110,7 +110,7 @@ class VAdd3(BaseInstruction):
                         new_value = make_op(self.node, new_value, src2, "+", "(ulong)", "(ulong)", suffix=self.suffix)
 
                         sum_node = self.expression_manager.add_register_node(reg_type, "")
-                        expr_node = self.expression_manager.add_operation(sum_node, self.node.get_expression_node(src2), ExpressionOperationType.PLUS, OpenCLTypes.ULONG)
+                        expr_node = self.expression_manager.add_operation(sum_node, self.node.get_expression_node(src2), ExpressionOperationType.PLUS, OpenCLTypes.UINT)
             if is_reg(self.src0) and is_reg(self.src1) and is_reg(self.src2):
                 src_types = frozenset(
                     {
