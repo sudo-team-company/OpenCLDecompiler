@@ -35,6 +35,7 @@ class VAddc(BaseInstruction):
 
     def to_fill_node(self):
         if self.decompiler_data.is_rdna3 and is_reg(self.src0) and is_reg(self.src1):
+            assert(self.node.state[self.src0].register_content.get_expression_node() is not None and self.node.state[self.src1].register_content.get_expression_node() is not None)
             new_reg = self.node.state[self.src0] + self.node.state[self.src1]
 
             return set_reg(
