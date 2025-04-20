@@ -328,7 +328,7 @@ class ExpressionManager(metaclass=Singleton):
         elif op == ExpressionOperationType.DIV:
             operation_node = self._optimized_nodes_div(s0, s1, value_type_hint)
         elif op.is_logical_operator():
-            operation_node = self._optimized_nodes_logical_operation(s0, s1, value_type_hint)
+            operation_node = self._optimized_nodes_logical_operation(op, s0, s1, value_type_hint)
         else:
             operation_node = self.create_op_node(op, s0, s1, op_value_type_hint)
 

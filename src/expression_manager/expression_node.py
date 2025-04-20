@@ -106,7 +106,6 @@ class ExpressionNode:
         )
 
     def __eq__(self, other: "ExpressionNode"):
-        # todo mb id is enough
         return (
             self.id == other.id
             and self.left == other.left
@@ -157,7 +156,14 @@ class ExpressionNode:
             return self
 
         if self == from_node:
-            return self.from_other(to_node)
+            if self.parent is not None:
+                if self.parent.left == self:
+                    self.parent.left = to_node
+                elif self.parent.right == self:
+                    self.parent.right = to_node
+            to_node.parent = self.parent
+            self = to_node
+            return self
 
         if self.type == ExpressionType.OP:
             if self.left is not None:
@@ -173,16 +179,6 @@ class ExpressionNode:
                 self.right = self.right.replace(from_node, to_node)
 
         return self
-    
-    def from_other(self, other: "ExpressionNode"):
-        if self.parent is not None:
-            if self.parent.left == self:
-                self.parent.left = other
-            elif self.parent.right == self:
-                self.parent.right = other
-        other.parent = self.parent
-        self = other
-
 
 # def update_types(expression_node: ExpressionNode):
 #     if expression_node is None:
