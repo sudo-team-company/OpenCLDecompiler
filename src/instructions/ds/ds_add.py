@@ -25,8 +25,8 @@ class DsAdd(BaseInstruction):
             return self.expression_manager.expression_to_string(self.expression_manager.add_offset_div_data_size(
                 self.decompiler_data.lds_vars[self.offset],
                 self.node.get_expression_node(self.addr),
-                4),
-                OpenCLTypes.from_string(self.suffix))
+                4,
+                OpenCLTypes.from_string(self.suffix)))
 
     def to_fill_node(self):
         if self.suffix == "u32":

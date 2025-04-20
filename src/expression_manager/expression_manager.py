@@ -110,13 +110,14 @@ class ExpressionManager(metaclass=Singleton):
         return self.add_operation(s0, div_node, ExpressionOperationType.PLUS, value_type_hint)
 
 
-    def _parse_and_optimize_node_sum(self, left: ExpressionNode, right: ExpressionNode, value_type_hint: OpenCLTypes) -> RegisterType:
+    def _parse_and_optimize_node_sum(
+            self, left: ExpressionNode, right: ExpressionNode, value_type_hint: OpenCLTypes) -> RegisterType:
         nodes_info: list[NodeParseInfo] = parse_node_sum(left) + parse_node_sum(right)
 
-        filtered_nodes_info = [n for n in nodes_info if n.sign == ExpressionOperationType.PLUS]
+        filtered_nodes_info = [n for n in nodes_info if n.operation == ExpressionOperationType.PLUS]
 
         for node_info in nodes_info:
-            if node_info.sign == ExpressionOperationType.MINUS:
+            if node_info.operation == ExpressionOperationType.MINUS:
                 for n in filtered_nodes_info:
                     if node_info.node.contents_equal(n.node):
                         filtered_nodes_info.remove(n)
@@ -260,6 +261,18 @@ class ExpressionManager(metaclass=Singleton):
         assert not const_zero_node(s1)
 
         if const_one_node(s1):
+            return s0
+
+        # special case for offsets like this one - (get_global_id(0) * 4) / 4
+        if (s1.type == ExpressionType.CONST
+            and s0.type == ExpressionType.OP
+            and s0.value == ExpressionOperationType.MUL
+            and s0.right.type == ExpressionType.CONST):
+            simplified_type = get_common_type(s0.right.value_type_hint, s1.value_type_hint)
+            new_const_value = self.evaluate_operation(s0.right.value, ExpressionOperationType.DIV, s1.value, simplified_type)
+            if new_const_value == 1:
+                return s0.left
+            s0.right = self.add_const_node(new_const_value, simplified_type)
             return s0
 
         return self.create_op_node(ExpressionOperationType.DIV, s0, s1, value_type_hint)

@@ -21,16 +21,16 @@ def get_all_nodes_with_operations(node: ExpressionNode) -> list[ExpressionNode]:
 class NodeParseInfo:
     node: ExpressionNode
     reg_type: RegisterType
-    sign: ExpressionOperationType
+    operation: ExpressionOperationType
 
-def parse_node_sum(node: ExpressionNode, positive_sign: bool=True) -> list[NodeParseInfo]:  # noqa: FBT001, FBT002
+def parse_node_sum(node: ExpressionNode, op_plus: bool = True) -> list[NodeParseInfo]:  # noqa: FBT001, FBT002
     if node is None:
         return []
     if node.type == ExpressionType.OP:
         if node.value == ExpressionOperationType.PLUS:
-            return parse_node_sum(node.left, positive_sign) + parse_node_sum(node.right, positive_sign)
+            return parse_node_sum(node.left, op_plus) + parse_node_sum(node.right, op_plus)
         if node.value == ExpressionOperationType.MINUS:
-            return parse_node_sum(node.left, positive_sign) + parse_node_sum(node.right, not positive_sign)
+            return parse_node_sum(node.left, op_plus) + parse_node_sum(node.right, not op_plus)
         if (
             node.value == ExpressionOperationType.MUL
             and node.left.type == ExpressionType.WORK_ITEM_FUNCTION
@@ -51,15 +51,14 @@ def parse_node_sum(node: ExpressionNode, positive_sign: bool=True) -> list[NodeP
                 return [NodeParseInfo(
                     node,
                     RegisterType[f"WORK_GROUP_ID_{left_dim}_LOCAL_SIZE"],
-                    ExpressionOperationType.PLUS if positive_sign else ExpressionOperationType.MINUS
+                    ExpressionOperationType.PLUS if op_plus else ExpressionOperationType.MINUS
                 )]
 
     return [NodeParseInfo(
         node,
         node.value if node.type == ExpressionType.WORK_ITEM_FUNCTION else RegisterType.UNKNOWN,
-        ExpressionOperationType.PLUS if positive_sign else ExpressionOperationType.MINUS
+        ExpressionOperationType.PLUS if op_plus else ExpressionOperationType.MINUS
     )]
-
 
 
 def num_groups_node_plus_work_group_id_local_size_node(
