@@ -24,7 +24,7 @@ class VAddc(BaseInstruction):
             self.decompiler_data.write(f"uint {temp} = (ulong){self.src0} + (ulong){self.src1} + {cc}\n")
             self.decompiler_data.write(f"{self.sdst} = 0\n")
             self.decompiler_data.write(f"{self.vdst} = CLAMP ? min({temp}, 0xffffffff) : {temp}\n")
-            self.decompiler_data.write(f"{self.sdst} = ({self.sdst}&~{mask }) | (({temp} >> 32) ? {mask} : 0)\n")
+            self.decompiler_data.write(f"{self.sdst} = ({self.sdst}&~{mask}) | (({temp} >> 32) ? {mask} : 0)\n")
             self.decompiler_data.number_of_temp += 1
             self.decompiler_data.number_of_mask += 1
             self.decompiler_data.number_of_cc += 1
