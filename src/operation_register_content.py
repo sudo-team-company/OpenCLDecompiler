@@ -261,11 +261,11 @@ class OperationRegisterContent(RegisterContent):
                 operation=copy.deepcopy(self._operation),
                 register_contents=[],
             )
-            new_operation_register_content._value = new_value  # noqa: SLF001
-            new_operation_register_content._type = new_type  # noqa: SLF001
-            new_operation_register_content._size = new_size  # noqa: SLF001
-            new_operation_register_content._data_type = new_data_type  # noqa: SLF001
-            new_operation_register_content._sign = new_sign  # noqa: SLF001
+            new_operation_register_content._value = new_value
+            new_operation_register_content._type = new_type
+            new_operation_register_content._size = new_size
+            new_operation_register_content._data_type = new_data_type
+            new_operation_register_content._sign = new_sign
 
             return new_operation_register_content
 

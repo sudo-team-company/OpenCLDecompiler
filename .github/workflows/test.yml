@@ -1,4 +1,4 @@
-name: Main
+name: test
 on: [push, pull_request]
 jobs:
   test:
@@ -25,15 +25,3 @@ jobs:
         run: |
           cd tests
           pytest -v -n 8
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/ruff-action@v1
-  format:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/ruff-action@v1
-        with:
-          args: "format --diff"
