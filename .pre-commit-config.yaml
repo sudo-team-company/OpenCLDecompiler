@@ -21,11 +21,11 @@ repos:
         exclude: '^.*\.asm$'
         args: [--markdown-linebreak-ext=md]
   - repo: https://github.com/google/yamlfmt
-    rev: v0.14.0
+    rev: v0.16.0
     hooks:
       - id: yamlfmt
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.0
+    rev: v0.11.6
     hooks:
       - id: ruff-format
       - id: ruff
