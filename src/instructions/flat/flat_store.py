@@ -122,9 +122,12 @@ class FlatStore(BaseInstruction):
                 # TODO: Сделать присвоение в пары
                 elif self.node.state[from_reg].data_type is not None and "bytes" in self.node.state[from_reg].data_type:
                     self.node.state[from_reg].cast_to(self.node.state[self.to_registers].data_type)
-                    self.decompiler_data.names_of_vars[self.node.state[from_reg].val] = self.node.state[
+                    var_name = self.node.state[from_reg].val
+                    self.decompiler_data.names_of_vars[var_name] = self.node.state[
                         self.to_registers
                     ].data_type
+                    self.expression_manager.update_variable_type(var_name,
+                                                                 self.node.get_expression_node(self.to_registers).value_type_hint)
                 elif (
                     str(self.node.state[from_reg].data_type) not in self.node.state[self.to_registers].data_type
                     and not is_vector_type(self.node.state[from_reg].data_type)
@@ -138,9 +141,13 @@ class FlatStore(BaseInstruction):
                             make_new_type_without_modifier(self.node, self.to_registers),
                         )
                         self.decompiler_data.names_of_vars[val] = self.node.state[from_reg].data_type
+                        self.expression_manager.update_variable_type(val,
+                                                                 self.node.get_expression_node(from_reg).value_type_hint)
                     else:
                         # init var - i32, gdata - i64. var = gdata -> var - i64
                         self.decompiler_data.names_of_vars[val] = self.node.state[from_reg].data_type
+                        self.expression_manager.update_variable_type(val,
+                                                                 self.node.get_expression_node(from_reg).value_type_hint)
             return self.node
         return super().to_fill_node()
 
@@ -179,7 +186,7 @@ class FlatStore(BaseInstruction):
                     #todo - check other branches
                     self.output_string = self.node.state[self.from_registers].val
                     self.output_string = ExpressionManager().expression_to_string(
-                        self.node.state[self.from_registers].get_expression_node(), var_node.value_type_hint)
+                        self.node.state[self.from_registers].get_expression_node())
             else:
                 self.output_string = self.decompiler_data.initial_state[self.from_registers].val
             #todo delete debug output

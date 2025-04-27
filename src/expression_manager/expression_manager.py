@@ -338,8 +338,18 @@ class ExpressionManager(metaclass=Singleton):
                   and self.get_variable_info(s1.value).address_space_qualifier == VariableAddressSpaceQualifiers.GLOBAL)):
             # todo limit
             op_value_type_hint = s1.value_type_hint
+        elif s0.value_type_hint == s1.value_type_hint:
+            #todo check that type fits into value_type_hint
+            op_value_type_hint = s0.value_type_hint
         else:
-            op_value_type_hint = value_type_hint
+            nodes_common_type = get_common_type(s0.value_type_hint, s1.value_type_hint)
+            if nodes_common_type == OpenCLTypes.CHAR:
+                pass
+            #todo remove test
+            if check_value_needs_cast("test", nodes_common_type, value_type_hint):
+                op_value_type_hint = get_common_type(value_type_hint, nodes_common_type)
+            else:
+                op_value_type_hint = nodes_common_type
 
         # if both values are constant, we can evaluate expression
         if s0.type == ExpressionType.CONST and s1.type == ExpressionType.CONST:
@@ -576,6 +586,13 @@ class ExpressionManager(metaclass=Singleton):
         assert s1 is not None
         return get_common_type(s0.value_type_hint, s1.value_type_hint)
 
+    def update_variable_type(self, var_name: str, value_type_hint: OpenCLTypes) -> bool:
+        existing_var_info = self.get_variable_info(var_name)
+        if existing_var_info is not None:
+            existing_var_info.var_node.value_type_hint = copy.deepcopy(value_type_hint)
+            return True
+        return False
+
     def add_variable_node(
         self,
         name: str,
@@ -585,6 +602,9 @@ class ExpressionManager(metaclass=Singleton):
         check_duplicate: bool = True,  # noqa: FBT001, FBT002
     ) -> ExpressionNode:
         var_name, is_pointer = self.parse_variable_name(name)
+        print(var_name)
+        if var_name == "gdata0":
+            pass
 
         if var_name == "var0":
             pass
