@@ -279,11 +279,16 @@ class ExpressionManager(metaclass=Singleton):
             and s0.type == ExpressionType.OP
             and s0.value == ExpressionOperationType.MUL
             and s0.right.type == ExpressionType.CONST):
+            if self.expression_to_string(s0) == "var3 * 4":
+                pass
+            print("div before:", self.expression_to_string(s0), "/", self.expression_to_string(s1))
             simplified_type = get_common_type(s0.right.value_type_hint, s1.value_type_hint)
             new_const_value = self.evaluate_operation(s0.right.value, ExpressionOperationType.DIV, s1.value, simplified_type)
             if new_const_value == 1:
+                print("div after:", self.expression_to_string(s0.left))
                 return s0.left
             s0.right = self.add_const_node(new_const_value, simplified_type)
+            print("div after:", self.expression_to_string(s0))
             return s0
 
         return self.create_op_node(ExpressionOperationType.DIV, s0, s1, value_type_hint)
@@ -566,6 +571,11 @@ class ExpressionManager(metaclass=Singleton):
             self._variables_for_programs[self._name_of_program][node.value].var_node.cast_to(to_type)
         return node.cast_to(to_type)
 
+    def get_common_type(self, s0: ExpressionNode, s1: ExpressionNode):
+        assert s0 is not None
+        assert s1 is not None
+        return get_common_type(s0.value_type_hint, s1.value_type_hint)
+
     def add_variable_node(
         self,
         name: str,
@@ -578,8 +588,15 @@ class ExpressionManager(metaclass=Singleton):
 
         if var_name == "var0":
             pass
-        if check_duplicate and self.get_variable_info(var_name) is not None:
-            return self.get_variable_info(var_name).var_node
+
+        existing_var_info = self.get_variable_info(var_name)
+        if check_duplicate and existing_var_info is not None:
+            # There are cases when we make VAR from one value,
+            # but then it is reassigned to another value with another type
+            # For those cases, we need to make all types fit into variable type
+            existing_var_info.var_node.value_type_hint = get_common_type(
+                existing_var_info.var_node.value_type_hint, value_type_hint)
+            return existing_var_info.var_node
 
         # "{var}___s{idx}" case, make sure full variable is there too
         vector_element_symbol_pos = var_name.find("___")

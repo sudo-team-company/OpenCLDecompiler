@@ -54,7 +54,9 @@ class VCndmask(BaseInstruction):
             ):
                 variable = f"*{variable}"
             reg_type = RegisterType.PROGRAM_PARAM
-            var_node = self.expression_manager.add_variable_node(variable, OpenCLTypes.UINT)
+            src0_src1_common_type = self.expression_manager.get_common_type(
+                self.node.get_expression_node(self.src0), self.node.get_expression_node(self.src1))
+            var_node = self.expression_manager.add_variable_node(variable, src0_src1_common_type)
             node = set_reg_value(self.node, variable, self.vdst, [self.src0, self.src1], self.suffix, reg_type=reg_type, expression_node=var_node)
             self.decompiler_data.make_var(node.state[self.vdst].version, variable, self.suffix)
             return node
@@ -70,7 +72,7 @@ class VCndmask(BaseInstruction):
                 return ""
             if ssrc2 and ssrc2.type == RegisterType.DIVISION_PASS:
                 return ""
-            if vdst and vdst.get_expression_node().value == "0":
+            if vdst and vdst.get_expression_node().value == 0:
                 return ""
             ssrc2_node = ssrc2.get_expression_node()
             ssrc2_val = ExpressionManager().expression_to_string(ssrc2_node)
