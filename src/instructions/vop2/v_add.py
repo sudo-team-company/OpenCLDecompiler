@@ -1,7 +1,10 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg, set_reg_value
-from src.expression_manager.expression_manager import VariableAddressSpaceQualifiers
-from src.expression_manager.expression_node import ExpressionOperationType
+from src.expression_manager.expression_node import (
+    ExpressionOperationType,
+    ExpressionValueTypeHint,
+    TypeAddressSpaceQualifiers,
+)
 from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.integrity import Integrity
 from src.opencl_types import evaluate_size, make_asm_type, most_common_type
@@ -182,9 +185,13 @@ class VAdd(BaseInstruction):
                         new_value = make_op(self.node, name, new_value, "+", suffix=self.suffix)
                         reg_type = RegisterType.GLOBAL_DATA_POINTER
 
-                        src0_node = self.expression_manager.add_variable_node(f"*{name}",
-                                                                              OpenCLTypes.from_string(self.suffix),
-                                                                              VariableAddressSpaceQualifiers.GLOBAL)
+                        src0_node = self.expression_manager.add_variable_node(
+                            name,
+                            ExpressionValueTypeHint(
+                                OpenCLTypes.from_string(self.suffix),
+                                TypeAddressSpaceQualifiers.CONST,
+                                is_pointer=True)
+                        )
                         src1_node = self.node.get_expression_node(self.src1)
                         expr_node = self.expression_manager.add_offset_div_data_size(
                             src0_node, src1_node, value, OpenCLTypes.from_string(self.suffix))
@@ -243,6 +250,7 @@ class VAdd(BaseInstruction):
                         src1_node = self.node.get_expression_node(self.src1)
                         expr_node = self.expression_manager.add_offset_div_data_size(
                             src0_node, src1_node, data_size, OpenCLTypes.from_string(self.suffix))
+                        expr_node.value_type_hint.is_address = True
                 if src1_reg:
                     reg_type = self.node.state[self.src1].type
 

@@ -2,6 +2,7 @@ import operator
 
 from src.decompiler_data import DecompilerData
 from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.expression_node import ExpressionValueTypeHint
 from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.node import Node
 from src.region_type import RegionType
@@ -163,7 +164,7 @@ def process_unrolled_loops():  # noqa: C901, PLR0912, PLR0915
             while cur != end and not cur.children[0].exclude_unrolled:
                 cur = cur.children[0]
             
-            acc_node = expression_manager.add_variable_node("acc", OpenCLTypes.UINT)
+            acc_node = expression_manager.add_variable_node("acc", ExpressionValueTypeHint(OpenCLTypes.UINT))
 
             # before = cur.state[dst].val
             before = expression_manager.expression_to_string(cur.state[dst].get_expression_node())

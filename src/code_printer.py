@@ -3,7 +3,6 @@ from src.expression_manager.expression_manager import ExpressionManager
 from src.expression_manager.expression_node import ExpressionNode
 from src.node import Node
 from src.node_processor import to_opencl
-from src.opencl_types import make_opencl_type
 from src.operation_status import OperationStatus
 from src.region_type import RegionType
 from src.regions.region import Region
@@ -18,19 +17,16 @@ def create_opencl_body():
     for var in sorted(decompiler_data.names_of_vars.keys()):
         if " " not in var:
             var_info = ExpressionManager().get_variable_info(var)
-            const = "const " if var_info.is_const else ""
             type_of_var = str(var_info.var_node.value_type_hint)
-            if var_info.is_pointer:
-                var = "*" + var  # noqa: PLW2901
             if "___" in var:
                 var = var[: var.find("___")]  # noqa: PLW2901
-            decompiler_data.write("    " + const + type_of_var + " " + var + ";\n")
+            decompiler_data.write("    " + type_of_var + " " + var + ";\n")
     offsets = list(decompiler_data.lds_vars.keys())
     offsets.append(decompiler_data.config_data.local_size)
     offsets.sort()
     for key in range(len(offsets) - 1):
         lds_var_node: ExpressionNode = decompiler_data.lds_vars[offsets[key]]
-        size_var = int((offsets[key + 1] - offsets[key]) / (lds_var_node.value_type_hint.value.size_bytes))
+        size_var = int((offsets[key + 1] - offsets[key]) / (lds_var_node.value_type_hint.get_size()))
         type_of_var = str(lds_var_node.value_type_hint)
         decompiler_data.write(
             "    __local "
@@ -48,6 +44,7 @@ def create_opencl_body():
 
 def write_global_data():  # noqa: PLR0912
     decompiler_data = DecompilerData()
+    expression_manager = ExpressionManager()
     for key, var in sorted(decompiler_data.type_gdata.items()):
         if var in {"uint", "int"}:
             list_of_gdata_values = evaluate_from_hex(decompiler_data.global_data[key], 4, "<i")
@@ -61,7 +58,8 @@ def write_global_data():  # noqa: PLR0912
             list_of_gdata_values = evaluate_from_hex(decompiler_data.global_data[key], 4, "<i")
         else:
             raise NotImplementedError
-        decompiler_data.write("__constant " + var + " " + key + "[] = {")
+        var_info = expression_manager.get_variable_info(key)
+        decompiler_data.write(str(var_info.var_node.value_type_hint) + " " + var_info.name + "[] = {")
         if var in {"int2", "int4", "int8"}:
             num = int(var[-1])
             for index, element in enumerate(list_of_gdata_values):

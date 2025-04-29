@@ -3,7 +3,7 @@ import copy
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier
 from src.expression_manager.expression_manager import ExpressionManager
-from src.expression_manager.expression_node import ExpressionOperationType
+from src.expression_manager.expression_node import ExpressionNode, ExpressionOperationType, ExpressionType
 from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.opencl_types import make_opencl_type
 from src.register import (
@@ -55,8 +55,8 @@ def prepare_vector_type_output(from_registers, vdata, to_registers, node):
         values = ExpressionManager().expression_to_string(node.state[reg].get_expression_node()).split(", ")
         for v in values:
             new_vector.append(v)
-    to_type: OpenCLTypes = node.state[to_registers].get_expression_node().value_type_hint
-    from_type: OpenCLTypes = node.state[from_registers].get_expression_node().value_type_hint
+    to_type: OpenCLTypes = node.state[to_registers].get_expression_node().value_type_hint.opencl_type
+    from_type: OpenCLTypes = node.state[from_registers].get_expression_node().value_type_hint.opencl_type
 
     to_type_single_component = to_type.set_number_of_components(1)
 
@@ -65,12 +65,12 @@ def prepare_vector_type_output(from_registers, vdata, to_registers, node):
         or to_type.equal_without_modifiers(from_type)
     ):
         output_string = get_vector_name(new_vector[0])
-        if not is_right_order(new_vector) or (ExpressionManager().get_variable_info(output_string) is not None and ExpressionManager().get_variable_info(output_string).var_node.value_type_hint.value.number_of_components != to_type.value.number_of_components):
+        if not is_right_order(new_vector) or (ExpressionManager().get_variable_info(output_string) is not None and ExpressionManager().get_variable_info(output_string).var_node.value_type_hint.opencl_type.value.number_of_components != to_type.value.number_of_components):
             output_string += ".s"
             for element in new_vector:
                 output_string += str(get_vector_element_number(element))
     else:
-        to_type = node.state[to_registers].get_expression_node().value_type_hint
+        to_type = node.state[to_registers].get_expression_node().value_type_hint.opencl_type
         tmp = copy.deepcopy(to_type.value)
         tmp.modifiers = ()
         to_type = OpenCLTypes.from_string(str(tmp))
@@ -126,6 +126,12 @@ class FlatStore(BaseInstruction):
                     self.decompiler_data.names_of_vars[var_name] = self.node.state[
                         self.to_registers
                     ].data_type
+
+                    expr_node: ExpressionNode = self.node.state[from_reg].get_expression_node()
+                    #todo fix me
+                    if expr_node.type == ExpressionType.OP:
+                        expr_node = expr_node.left
+                    var_name = expr_node.value
                     self.expression_manager.update_variable_type(var_name,
                                                                  self.node.get_expression_node(self.to_registers).value_type_hint)
                 elif (

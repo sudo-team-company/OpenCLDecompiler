@@ -92,7 +92,7 @@ class RegisterSignType(enum.Enum):
 
 
 # Data for known register values
-CONSTANT_VALUES: dict[RegisterType, (str, int, str, RegisterSignType)] = {
+CONSTANT_VALUES: dict[RegisterType, tuple[str, int, str, RegisterSignType]] = {
     RegisterType.WORK_DIM: ("get_work_dim()", 32, "u32", RegisterSignType.POSITIVE),
     RegisterType.GLOBAL_SIZE_X: ("get_global_size(0)", 32, "u32", RegisterSignType.POSITIVE),
     RegisterType.GLOBAL_SIZE_Y: ("get_global_size(1)", 32, "u32", RegisterSignType.POSITIVE),

@@ -6,8 +6,13 @@ import sympy
 
 from src import utils
 from src.combined_register_content import CombinedRegisterContent
-from src.expression_manager.expression_manager import ExpressionManager, VariableAddressSpaceQualifiers
-from src.expression_manager.expression_node import ExpressionNode, ExpressionOperationType
+from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.expression_node import (
+    ExpressionNode,
+    ExpressionOperationType,
+    ExpressionValueTypeHint,
+    TypeAddressSpaceQualifiers,
+)
 from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.flag_type import FlagType
 from src.integrity import Integrity
@@ -739,8 +744,9 @@ class DecompilerData(metaclass=Singleton):
         if self.lds_vars.get(offset) is None:
             self.lds_vars[offset] = ExpressionManager().add_variable_node(
                 "*lds" + str(self.lds_var_number),
-                OpenCLTypes.from_string("u" + suffix[1:]),
-                VariableAddressSpaceQualifiers.LOCAL)
+                ExpressionValueTypeHint(
+                    OpenCLTypes.from_string("u" + suffix[1:]), TypeAddressSpaceQualifiers.LOCAL)
+            )
             self.lds_var_number += 1
 
     def make_var(self, register_version, variable, data_type):

@@ -3,7 +3,7 @@ import re
 from collections import deque
 
 from src.decompiler_data import DecompilerData
-from src.expression_manager.expression_manager import ExpressionManager, VariableAddressSpaceQualifiers
+from src.expression_manager.expression_manager import ExpressionManager
 from src.expression_manager.expression_node import ExpressionNode, ExpressionType
 from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.register_type import RegisterType
@@ -41,20 +41,11 @@ def update_reg_version(reg, curr_node, max_version, prev_versions_of_reg):
     curr_node.state[reg].register_content._value = variable  # noqa: SLF001
 
     prev_expr_node: ExpressionNode = curr_node.state[reg].get_expression_node()
-    if prev_expr_node.type == ExpressionType.VAR:
-        var_info = ExpressionManager().get_variable_info(prev_expr_node.value)
-        variable_name = f"*{variable}" if var_info.is_pointer else variable
-        var_node = ExpressionManager().add_variable_node(variable_name,
-                                                         prev_expr_node.value_type_hint,
-                                                         var_info.address_space_qualifier,
-                                                         var_info.is_const)
-    else:
-        prev_value_type_hint = prev_expr_node.value_type_hint
-        if prev_value_type_hint == OpenCLTypes.UNKNOWN:
-            prev_value_type_hint = OpenCLTypes.UINT
-            print("CHANGIN TO UINT!!!")
-        var_node = ExpressionManager().add_variable_node(variable,
-                                                         prev_value_type_hint)
+    prev_value_type_hint = prev_expr_node.value_type_hint
+    if prev_value_type_hint.opencl_type == OpenCLTypes.UNKNOWN:
+        prev_value_type_hint.opencl_type = OpenCLTypes.UINT
+        print("CHANGIN TO UINT!!!")
+    var_node = ExpressionManager().add_variable_node(variable, prev_value_type_hint)
 
     curr_node.state[reg].register_content._expression_node = var_node
     print("after", reg, curr_node.state[reg].register_content._value, ExpressionManager().expression_to_string(curr_node.state[reg].register_content._expression_node))
@@ -191,7 +182,8 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
         if decompiler_data.checked_variables.get(check_version) is not None:
 
             #todo move that to checked_variables...
-            tmp_var_node = ExpressionManager().add_variable_node(decompiler_data.checked_variables[check_version], OpenCLTypes.UINT)
+            tmp_var_node = ExpressionManager().add_variable_node(decompiler_data.checked_variables[check_version],
+                                                                 expr_node.value_type_hint)
             changes[curr_node.state[first_reg].version + "_expr_node"] = [tmp_var_node, expr_node]
             if re.match(r"(flat|global)_(store|load)", instruction[0]):
                 curr_node.state[register].register_content._expression_node = curr_node.state[register].register_content._expression_node.replace(expr_node, tmp_var_node)

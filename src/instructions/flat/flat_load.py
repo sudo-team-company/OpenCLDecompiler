@@ -1,6 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier, set_reg_value
 from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.expression_node import ExpressionValueTypeHint
 from src.opencl_types import evaluate_size, make_asm_type, make_opencl_type
 from src.register import check_and_split_regs, get_next_reg, is_vector_type
 from src.register_type import RegisterType
@@ -82,7 +83,9 @@ class FlatLoad(BaseInstruction):
 
                     vector_position += 1
                 #todo fix
-                node_type_hint = self.node.state[self.from_registers].get_expression_node().value_type_hint
+                node_type_hint: ExpressionValueTypeHint = self.node.state[self.from_registers].get_expression_node().value_type_hint
+                if node_type_hint.is_pointer and not node_type_hint.is_address:
+                    node_type_hint = ExpressionValueTypeHint(node_type_hint.opencl_type)
                 expr_node = self.expression_manager.add_variable_node(reg_val, node_type_hint)
                 self.node = set_reg_value(
                     self.node, reg_val, to_now, [], data_type, reg_type=register_type, expression_node=expr_node)

@@ -78,6 +78,10 @@ class VAddc(BaseInstruction):
                         #todo check that default nodes sum will work here, should work
                         new_value = f"{self.node.state[self.src0].val}[get_global_id(0)]"
                         reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT
+                        global_id_node = self.expression_manager.add_register_node(RegisterType.GLOBAL_ID_X)
+                        expr_node = self.expression_manager.add_operation(
+                            src0_node, global_id_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG)
+                        expr_node.value_type_hint.is_address = True
             else:
                 reg_type = RegisterType.INT32
                 if src0_reg:
@@ -86,7 +90,8 @@ class VAddc(BaseInstruction):
                     reg_type = self.node.state[self.src1].type
 
             if expr_node is None:
-                expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG)
+                expr_node = self.expression_manager.add_operation(
+                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.from_string(self.suffix))
 
             return set_reg_value(
                 self.node,

@@ -4,6 +4,7 @@ import uuid
 from dataclasses import dataclass, field
 from enum import Enum, auto
 
+from src.expression_manager.types.asm_types import ASMTypes
 from src.expression_manager.types.opencl_types import OpenCLType, OpenCLTypes
 
 
@@ -83,6 +84,73 @@ class ExpressionOperationType(Enum):
 
     # other logical operator, see https://registry.khronos.org/OpenCL/specs/3.0-unified/html/OpenCL_C.html
 
+class TypeAddressSpaceQualifiers(Enum):
+    UNKNOWN = ""
+    GLOBAL = "__global"
+    LOCAL = "__local"
+    CONST = "__constant"
+    PRIVATE = "__private"
+
+@dataclass
+class ExpressionValueTypeHint:
+    opencl_type: OpenCLTypes = field(default_factory=lambda: OpenCLTypes.UNKNOWN)
+    qualifier: TypeAddressSpaceQualifiers = field(default_factory=lambda: TypeAddressSpaceQualifiers.UNKNOWN)
+    is_const: bool = False
+    is_pointer: bool = False
+    is_address: bool = False
+
+    def __str__(self):
+        qualifier_str = f"{self.qualifier.value} " if self.qualifier != TypeAddressSpaceQualifiers.UNKNOWN else ""
+        const_str = "const " if self.is_const else ""
+        type_str = str(self.opencl_type)
+        pointer_str = "*" if self.is_pointer else ""
+        if self.qualifier == TypeAddressSpaceQualifiers.CONST:
+            return f"{qualifier_str}{const_str}{type_str}"
+        return f"{qualifier_str}{const_str}{type_str}{pointer_str}"
+
+    @staticmethod
+    def get_common_type(first: "ExpressionValueTypeHint", second: "ExpressionValueTypeHint") -> "ExpressionValueTypeHint":
+        res = ExpressionValueTypeHint()
+        res.opencl_type = get_common_type(first.opencl_type, second.opencl_type)
+        #todo modifiers and stuff?
+        return res
+
+    @staticmethod
+    def from_string(type_hint) -> "ExpressionValueTypeHint":
+        if isinstance(type_hint, ExpressionValueTypeHint):
+            return type_hint
+
+        if not isinstance(type_hint, str):
+            return ExpressionValueTypeHint()
+
+        assert type_hint.startswith("g") is False
+        assert type_hint.startswith("__global ") is False
+
+        if "b32" in type_hint or "b64" in type_hint:
+            type_hint = type_hint.replace("b", "u", 1)
+
+        opencl_type = OpenCLTypes.UNKNOWN
+        for e in OpenCLTypes:
+            if str(e) == type_hint:
+                opencl_type = e
+        if opencl_type == OpenCLTypes.UNKNOWN:
+            asm_type = ASMTypes.from_string(type_hint)
+            if asm_type != ASMTypes.UNKNOWN:
+                opencl_type = OpenCLTypes.from_asm_type(asm_type)
+
+        return ExpressionValueTypeHint(opencl_type)
+
+    def size_bytes(self):
+        return self.opencl_type.value.get_size()
+    
+    def number_of_components(self):
+        return self.opencl_type.value.number_of_components
+    
+    def set_number_of_components(self, number_of_components: int):
+        self.opencl_type = self.opencl_type.set_number_of_components(number_of_components)
+    
+    def is_integer(self):
+        return self.opencl_type.value.is_integer
 
 @dataclass
 class ExpressionNode:
@@ -92,7 +160,7 @@ class ExpressionNode:
     parent: "ExpressionNode" = None
     type: ExpressionType = ExpressionType.UNKNOWN
     value: ExpressionOperationType | int | str = None
-    value_type_hint: OpenCLTypes = field(default_factory=lambda: OpenCLTypes.UNKNOWN)
+    value_type_hint: ExpressionValueTypeHint = field(default_factory=lambda: ExpressionValueTypeHint())
 
     def __str__(self):
         return (
@@ -114,7 +182,7 @@ class ExpressionNode:
             and self.value == other.value
             and self.value_type_hint == other.value_type_hint
         )
-    
+
     def contents_equal(self, other: "ExpressionNode"):
         return (
             self.type == other.type
@@ -139,7 +207,7 @@ class ExpressionNode:
         return self
 
     def cast_to(self, to_type: OpenCLTypes) -> "ExpressionNode":
-        self.value_type_hint = to_type
+        self.value_type_hint.opencl_type = to_type
         return self
 
     def replace(self, from_node: "ExpressionNode", to_node: "ExpressionNode") -> "ExpressionNode":
@@ -181,39 +249,6 @@ class ExpressionNode:
 
         return self
 
-# def update_types(expression_node: ExpressionNode):
-#     if expression_node is None:
-#         return
-
-#     match expression_node.type:
-#         case ExpressionType.OP:
-#             update_types(expression_node.left)
-#             update_types(expression_node.right)
-#             expression_node.value_type_hint = get_common_type(expression_node.left.value_type_hint, expression_node.right.value_type_hint)
-#             return
-
-# def check_op_node_needs_cast(op_node: ExpressionNode) -> tuple[bool, bool]:
-#     assert(op_node.type == ExpressionType.OP)
-
-#     to_type = op_node.value_type_hint
-#     left_node: ExpressionNode = op_node.left
-
-#     match left_node.type:
-#         case ExpressionType.OP:
-#             left_child_needs_cast = check_op_node_needs_cast(left_node)
-#         case _:
-
-#     right_node: ExpressionNode = op_node.right
-
-#     left_node_needs_cast = True
-#     if left_node.type == ExpressionType.OP:
-#         left_node_needs_cast = check_nodes_need_cast_to(left_node)
-
-
-#     right_node_needs_cast = True
-
-#     return (check_nodes_need_cast_to(left_node, to_type), check_nodes_need_cast_to(right_node, to_type))
-
 
 # todo check with C99 standard
 def get_common_type(first: OpenCLTypes, second: OpenCLTypes) -> OpenCLTypes:
@@ -236,7 +271,7 @@ def get_common_type(first: OpenCLTypes, second: OpenCLTypes) -> OpenCLTypes:
         float_type = second_type if first_type.is_integer else first_type
 
         if int_type.get_size() == float_type.get_size():
-            return float_type
+            return OpenCLTypes.from_string(str(float_type))
 
         float_type.number_of_components = max(float_type.number_of_components, int_type.number_of_components)
         float_type.size_bytes = max(float_type.size_bytes, int_type.size_bytes)
@@ -270,101 +305,3 @@ def get_common_type(first: OpenCLTypes, second: OpenCLTypes) -> OpenCLTypes:
                 return OpenCLTypes.from_string(str(signed_type))
 
     return OpenCLTypes.UNKNOWN
-
-
-def get_expresion_type(expression_node: ExpressionNode) -> OpenCLTypes:
-    match expression_node.type:
-        case ExpressionType.OP:
-            left_type = get_expresion_type(expression_node.left)
-            right_type = get_expresion_type(expression_node.right)
-            return get_common_type(left_type, right_type)
-        case _:
-            return expression_node.value_type_hint
-
-
-def check_nodes_need_cast_to(expression_node: ExpressionNode, op_node: ExpressionNode) -> bool:
-    if (
-        expression_node is None
-        or expression_node.value_type_hint == OpenCLTypes.UNKNOWN
-        or op_node is None
-        or op_node.value_type_hint == OpenCLTypes.UNKNOWN
-    ):
-        return True
-
-    if expression_node.type == ExpressionType.OP:
-        # todo fix that
-        return True
-
-    from_type: OpenCLType = expression_node.value_type_hint.value
-    to_type: OpenCLType = op_node.value_type_hint.value
-
-    if from_type == to_type:
-        return False
-
-    # if not from_type or not to_type:
-    #     if re.fullmatch(r"[+-]?\d+([.,]\d+)?", value) is not None:
-    #         return value[0] == "-" and re.fullmatch(r"g?[ub]\d+", from_type) is not None
-    #     return (
-    #         re.fullmatch(r"0x[\da-f]+", value) is None and re.fullmatch(r"[+-]?[\d,.]+([eE][+-]?\d+)?", value) is None
-    #     )
-
-    from_type_size = from_type.size_bytes
-    from_type_component_count = from_type.number_of_components
-    #todo check from get_variable_info???
-    is_global_from_type = False #TypeModifiers.GLOBAL in from_type.modifiers
-
-    to_type_size = to_type.size_bytes
-    to_type_component_count = to_type.number_of_components
-    is_global_to_type = False #TypeModifiers.GLOBAL in to_type.modifiers
-
-    value = str(expression_node.value)
-
-    # strange case, but still
-    if (is_global_from_type and not is_global_to_type) or (not is_global_from_type and is_global_to_type):
-        return True
-    needs_casting = True
-    # same type, different size
-    if (
-        (from_type.is_signed and to_type.is_signed)
-        or (not from_type.is_signed and not to_type.is_signed)
-        or (not from_type.is_integer and not to_type.is_integer)
-    ):
-        needs_casting = (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
-
-    # todo float/intergers and combinations separately!!!
-
-    # from unsigned type to signed or from signed type to unsigned
-    if (not from_type.is_signed and to_type.is_signed) or (from_type.is_signed and not to_type.is_signed):
-        needs_casting = (
-            (
-                (value[0] == "-" and value[1:].isnumeric())
-                or re.fullmatch(r"\d+", value) is None
-                or re.fullmatch(r"0x[\da-f]+", value) is None
-            )
-            or (from_type_size > to_type_size)
-            or (from_type_component_count != to_type_component_count)
-        )
-    # from float to unsigned
-    if not from_type.is_integer and not to_type.is_signed:
-        try:
-            float_value = float(value)
-            needs_casting = (
-                (float_value != int(float_value))
-                or (float_value < 0)
-                or (from_type_size > to_type_size)
-                or (from_type_component_count != to_type_component_count)
-            )
-        except ValueError:
-            return True
-    # from float to signed
-    if not from_type.is_integer and to_type.is_signed:
-        try:
-            float_value = float(value)
-            needs_casting = (
-                (float_value != int(float_value))
-                or (from_type_size > to_type_size)
-                or (from_type_component_count != to_type_component_count)
-            )
-        except ValueError:
-            return True
-    return needs_casting
