@@ -483,10 +483,10 @@ class ExpressionManager(metaclass=Singleton):
             # There are cases when we make VAR from one value,
             # but then it is reassigned to another value with another type
             # For those cases, we need to make all types fit into variable type
-            # if existing_var_info.var_node.value_type_hint != value_type_hint:
-            #     existing_var_info.var_node.value_type_hint = ExpressionValueTypeHint.get_common_type(
-            #         existing_var_info.var_node.value_type_hint,
-            #         value_type_hint)
+            if existing_var_info.var_node.value_type_hint != value_type_hint:
+                existing_var_info.var_node.value_type_hint = ExpressionValueTypeHint.get_common_type(
+                    existing_var_info.var_node.value_type_hint,
+                    value_type_hint)
             return existing_var_info.var_node
 
         # "{var}___s{idx}" case, make sure full variable is there too

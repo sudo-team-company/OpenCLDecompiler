@@ -182,8 +182,7 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
         if decompiler_data.checked_variables.get(check_version) is not None:
 
             #todo move that to checked_variables...
-            tmp_var_node = ExpressionManager().add_variable_node(decompiler_data.checked_variables[check_version],
-                                                                 expr_node.value_type_hint)
+            tmp_var_node = ExpressionManager().get_variable_node(decompiler_data.checked_variables[check_version])
             changes[curr_node.state[first_reg].version + "_expr_node"] = [tmp_var_node, expr_node]
             if re.match(r"(flat|global)_(store|load)", instruction[0]):
                 curr_node.state[register].register_content._expression_node = curr_node.state[register].register_content._expression_node.replace(expr_node, tmp_var_node)
@@ -203,7 +202,7 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
                 val_reg, decompiler_data.variables[check_version]
             )
 
-            tmp_var_node = ExpressionManager().add_variable_node(decompiler_data.variables[check_version], curr_node.state[first_reg].get_expression_node().value_type_hint)
+            tmp_var_node = ExpressionManager().get_variable_node(decompiler_data.variables[check_version])
             changes[curr_node.state[first_reg].version + "_expr_node"] = [tmp_var_node, expr_node]
             curr_node.state[first_reg].register_content._expression_node = curr_node.state[first_reg].register_content._expression_node.replace(expr_node, tmp_var_node)
         elif re.match(r"(flat|global)_store", instruction[0]):
@@ -211,7 +210,7 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
                 val_reg, decompiler_data.variables[check_version]
             )
             #todo need it here?
-            tmp_var_node = ExpressionManager().add_variable_node(decompiler_data.variables[check_version], curr_node.state[register].get_expression_node().value_type_hint)
+            tmp_var_node = ExpressionManager().get_variable_node(decompiler_data.variables[check_version])
             changes[curr_node.state[first_reg].version + "_expr_node"] = [tmp_var_node, expr_node]
             curr_node.state[register].register_content._expression_node = curr_node.state[register].register_content._expression_node.replace(expr_node, tmp_var_node)
 
