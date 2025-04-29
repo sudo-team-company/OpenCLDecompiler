@@ -104,7 +104,8 @@ class ExpressionValueTypeHint:
         const_str = "const " if self.is_const else ""
         type_str = str(self.opencl_type)
         pointer_str = "*" if self.is_pointer else ""
-        if self.qualifier == TypeAddressSpaceQualifiers.CONST:
+        #todo do this more logically
+        if self.qualifier == TypeAddressSpaceQualifiers.CONST or self.qualifier == TypeAddressSpaceQualifiers.LOCAL:
             return f"{qualifier_str}{const_str}{type_str}"
         return f"{qualifier_str}{const_str}{type_str}{pointer_str}"
 
@@ -146,8 +147,10 @@ class ExpressionValueTypeHint:
     def number_of_components(self):
         return self.opencl_type.value.number_of_components
     
-    def set_number_of_components(self, number_of_components: int):
-        self.opencl_type = self.opencl_type.set_number_of_components(number_of_components)
+    def set_number_of_components(self, number_of_components: int) -> "ExpressionValueTypeHint":
+        res = copy.deepcopy(self)
+        res.opencl_type = self.opencl_type.set_number_of_components(number_of_components)
+        return res
     
     def is_integer(self):
         return self.opencl_type.value.is_integer

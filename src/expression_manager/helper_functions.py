@@ -86,7 +86,7 @@ def create_permute_node(
     s1.parent = permute_node
 
     common_type_hint = ExpressionValueTypeHint.get_common_type(s0.value_type_hint, s1.value_type_hint)
-    common_type_hint.set_number_of_components(
+    common_type_hint = common_type_hint.set_number_of_components(
         s0.value_type_hint.number_of_components() + s1.value_type_hint.number_of_components())
 
     permute_node.value_type_hint = common_type_hint

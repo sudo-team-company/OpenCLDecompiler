@@ -16,20 +16,22 @@ def create_opencl_body():
     decompiler_data.write("{\n")
     for var in sorted(decompiler_data.names_of_vars.keys()):
         if " " not in var:
-            var_info = ExpressionManager().get_variable_info(var)
-            type_of_var = str(var_info.var_node.value_type_hint)
             if "___" in var:
                 var = var[: var.find("___")]  # noqa: PLW2901
+            if var == "var0":
+                pass
+            var_info = ExpressionManager().get_variable_info(var)
+            type_of_var = str(var_info.var_node.value_type_hint)
             decompiler_data.write("    " + type_of_var + " " + var + ";\n")
     offsets = list(decompiler_data.lds_vars.keys())
     offsets.append(decompiler_data.config_data.local_size)
     offsets.sort()
     for key in range(len(offsets) - 1):
         lds_var_node: ExpressionNode = decompiler_data.lds_vars[offsets[key]]
-        size_var = int((offsets[key + 1] - offsets[key]) / (lds_var_node.value_type_hint.get_size()))
+        size_var = int((offsets[key + 1] - offsets[key]) / (lds_var_node.value_type_hint.size_bytes()))
         type_of_var = str(lds_var_node.value_type_hint)
         decompiler_data.write(
-            "    __local "
+            "    "
             + type_of_var
             + " "
             + lds_var_node.value

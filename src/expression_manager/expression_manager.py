@@ -475,7 +475,7 @@ class ExpressionManager(metaclass=Singleton):
         #todo fix that - make sure var_name doesnt start with *, always pass is_pointer through ExpressionValueTypeHint
         value_type_hint.is_pointer |= is_pointer
         print(var_name)
-        if var_name == "var0" or var_name == "gdata0":
+        if var_name in {"var0", "gdata0"}:
             pass
 
         existing_var_info = self.get_variable_info(var_name)
@@ -496,7 +496,7 @@ class ExpressionManager(metaclass=Singleton):
             base_var_name = name[:vector_element_symbol_pos]
             if check_duplicate and self.get_variable_info(base_var_name) is None:
                 self.add_variable_node(base_var_name, value_type_hint, check_duplicate)
-            value_type_hint.set_number_of_components(1)
+            value_type_hint = value_type_hint.set_number_of_components(1)
 
         var_node = create_var_node(var_name, value_type_hint)
 
