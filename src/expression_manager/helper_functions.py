@@ -90,6 +90,7 @@ def create_permute_node(
         s0.value_type_hint.number_of_components() + s1.value_type_hint.number_of_components())
 
     permute_node.value_type_hint = common_type_hint
+    return permute_node
 
 def create_logical_not_node(
     node: ExpressionNode
@@ -107,6 +108,10 @@ def evaluate_operation(# noqa: C901, PLR0912
         right_value,
         value_type_hint: ExpressionValueTypeHint):
     result = None
+    if isinstance(left_value, str):
+        left_value = int(left_value, base=16)
+    if isinstance(right_value, str):
+        right_value = int(right_value, base=16)
     match op:
         case ExpressionOperationType.PLUS:
             result = left_value + right_value
@@ -115,7 +120,8 @@ def evaluate_operation(# noqa: C901, PLR0912
         case ExpressionOperationType.MUL:
             result = left_value * right_value
         case ExpressionOperationType.DIV:
-            result = left_value // right_value if value_type_hint.is_integer() else left_value / right_value
+            # result = left_value // right_value if value_type_hint.is_integer() else left_value / right_value
+            result = left_value / right_value
         case ExpressionOperationType.REM:
             result = left_value % right_value
         case ExpressionOperationType.LSHIFT:
@@ -148,6 +154,7 @@ def evaluate_operation(# noqa: C901, PLR0912
             result = left_value & right_value
         case ExpressionOperationType.BITWISE_OR:
             result = left_value | right_value
+    print("evalute:", left_value, op, right_value, result)
     return result
 
 def parse_variable_name( var_name: str) -> tuple[str, bool]:
@@ -265,8 +272,6 @@ def op_expression_to_string_updated(
         return f"!({expression_to_string(left_node, OpenCLTypes.UNKNOWN)})"
 
     # special case for: data_ptr + smth => data_ptr[smth]
-    if left_node.value == "gdata0":
-        pass
     if operation == ExpressionOperationType.PLUS and left_node.type == ExpressionType.VAR and left_node.value_type_hint.is_pointer and not left_node.value_type_hint.is_address:
         if expression_node.parent is None:
             return f"{left_node.value!s}[{expression_to_string(right_node, cast_to)}]"
@@ -275,7 +280,6 @@ def op_expression_to_string_updated(
     left_value = expression_to_string(
         left_node, cast_to
     )
-    operation = str(operation.value)
     right_value = expression_to_string(
         right_node, cast_to
     )
@@ -285,21 +289,31 @@ def op_expression_to_string_updated(
     op_needs_additional_brackets = [ExpressionOperationType.DIV, ExpressionOperationType.MUL]
     op_doesnt_need_additional_brackets = [ExpressionOperationType.PLUS, ExpressionOperationType.MINUS]
 
-    def check_needs_brackets(cur_node) -> bool:
-        return (
-            (cur_node.type == ExpressionType.OP and cur_node.value in op_needs_additional_brackets)
-            or cur_node.type == ExpressionType.IF_TERNARY
-            )
-    if ((check_needs_brackets(expression_node) and left_node.type in [ExpressionType.OP, ExpressionType.IF_TERNARY] and left_node.value in op_doesnt_need_additional_brackets)
-        or check_needs_brackets(left_node)):
+    def check_needs_brackets_op_node(op: ExpressionOperationType, child_node: ExpressionNode) -> bool:
+        if child_node.type == ExpressionType.OP:
+            child_op: ExpressionOperationType = child_node.value
+            if child_op.is_bitshift_operator() or child_op.is_bitwise_operator():
+                return True
+            if ExpressionOperationType.are_operations_inverted(op, child_op):
+                return True
+            if ExpressionOperationType.are_operations_inverted(op, child_op):
+                return True
+            if op == child_op and op == ExpressionOperationType.MINUS:
+                return True
+            return op != child_op
+        elif child_node.type == ExpressionType.IF_TERNARY:
+            return True
+        # child_node.type is either CONST, WORK_ITEM_FUNCTION, VAR, PERMUTE
+        return False
+
+    if check_needs_brackets_op_node(operation, left_node) and "[" not in left_value:
         output += f"({left_value})"
     else:
         output += left_value
 
-    output += f" {operation} "
+    output += f" {operation.value} "
 
-    if ((check_needs_brackets(expression_node) and right_node.type in [ExpressionType.OP, ExpressionType.IF_TERNARY]and right_node.value in op_doesnt_need_additional_brackets)
-        or check_needs_brackets(right_node)):
+    if check_needs_brackets_op_node(operation, right_node):
         output += f"({right_value})"
     else:
         output += right_value
@@ -307,6 +321,9 @@ def op_expression_to_string_updated(
     if "[" in left_value:
         output += "]"
 
+    print("output:", output)
+    if output == "2 + 0":
+        pass
     return output
 
 def var_expression_to_string_updated(var_node: ExpressionNode) -> str:

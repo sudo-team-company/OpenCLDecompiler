@@ -11,7 +11,7 @@ void bellmanFordIter_ver1(uint nEdges, __global uint2 *edges, __global double *w
         if (var1 < 1e12) {
             var2 = d[var0.s1];
             var3 = weights[get_global_id(0)];
-            if (var2 > var1 + var3) {
+            if (var2 > (var1 + var3)) {
                 d[var0.s1] = var1 + var3;
                 *changed = 1;
             }

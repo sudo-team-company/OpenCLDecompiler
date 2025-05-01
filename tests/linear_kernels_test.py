@@ -8,9 +8,9 @@ class TestLinearKernels:
         ("mcpu", "disasm"),
         [
             ("amd_gcn", "clrxdisasm"),
-            # ("gfx1010", "clrxdisasm"),
-            # ("gfx1030", "clrxdisasm"),
-            # ("gfx1103", "amdgpu-dis"),
+            ("gfx1010", "clrxdisasm"),
+            ("gfx1030", "clrxdisasm"),
+            ("gfx1103", "amdgpu-dis"),
         ],
     )
     def test_addition(self, mcpu, disasm):

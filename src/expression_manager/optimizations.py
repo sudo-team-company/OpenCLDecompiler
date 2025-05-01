@@ -7,10 +7,30 @@ from src.register_type import RegisterType
 
 
 def const_one_node(node: ExpressionNode) -> bool:
-    return node.type == ExpressionType.CONST and node.value == 1
+    if node.type != ExpressionType.CONST:
+        return False
+    val = node.value
+    if isinstance(val, str):
+        val = int(val, base=16)
+    return val == 1
 
 def const_zero_node(node: ExpressionNode) -> bool:
-    return node.type == ExpressionType.CONST and node.value == 0
+    if node.type != ExpressionType.CONST:
+        return False
+    val = node.value
+    if isinstance(val, str):
+        val = int(val, base=16)
+    return val == 0
+
+def const_negative_node(node: ExpressionNode) -> bool:
+    if node.type != ExpressionType.CONST:
+        return False
+    if not node.value_type_hint.is_signed():
+        return False
+    val = node.value
+    if isinstance(val, str):
+        val = int(val, base=16)
+    return val < 0
 
 def get_all_nodes_with_operations(node: ExpressionNode) -> list[ExpressionNode]:
     if node.type == ExpressionType.OP and node.value == ExpressionOperationType.PLUS:

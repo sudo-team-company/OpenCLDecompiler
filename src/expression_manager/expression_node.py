@@ -22,7 +22,8 @@ class ExpressionType(Enum):
 
 
 class ExpressionOperationType(Enum):
-    def from_string(s: str):  # noqa: N805
+    @staticmethod
+    def from_string(s: str):
         for expr_op_type in ExpressionOperationType:
             if s == expr_op_type.value:
                 return expr_op_type
@@ -54,6 +55,29 @@ class ExpressionOperationType(Enum):
 
     def is_bitwise_operator(self):
         return self in (ExpressionOperationType.BITWISE_AND, ExpressionOperationType.BITWISE_OR)
+
+    @staticmethod
+    def are_operations_inverted(first: "ExpressionOperationType", second: "ExpressionOperationType"):
+        _inv_ops = {
+            ExpressionOperationType.PLUS : ExpressionOperationType.MINUS,
+            ExpressionOperationType.MINUS : ExpressionOperationType.PLUS,
+            ExpressionOperationType.MUL : ExpressionOperationType.DIV,
+            ExpressionOperationType.DIV : ExpressionOperationType.MUL,
+
+            ExpressionOperationType.LSHIFT : ExpressionOperationType.RSHIFT,
+            ExpressionOperationType.RSHIFT : ExpressionOperationType.LSHIFT,
+
+            ExpressionOperationType.EQ : ExpressionOperationType.NE,
+            ExpressionOperationType.NE : ExpressionOperationType.EQ,
+            ExpressionOperationType.LT : ExpressionOperationType.GE,
+            ExpressionOperationType.GE : ExpressionOperationType.LT,
+            ExpressionOperationType.LE : ExpressionOperationType.GT,
+            ExpressionOperationType.GT : ExpressionOperationType.LE,
+        }
+        if first in _inv_ops:
+            return _inv_ops[first] == second
+        return False
+
 
     UNKNOWN = "UNKNOWN"
 
@@ -154,6 +178,9 @@ class ExpressionValueTypeHint:
     
     def is_integer(self):
         return self.opencl_type.value.is_integer
+    
+    def is_signed(self):
+        return self.opencl_type.value.is_signed
 
 @dataclass
 class ExpressionNode:
@@ -187,8 +214,13 @@ class ExpressionNode:
         )
 
     def contents_equal(self, other: "ExpressionNode"):
+        if other is None:
+            return False
+        left_equal = self.left.contents_equal(other.left) if self.left is not None else other.left is None
+        right_equal = self.right.contents_equal(other.right) if self.right is not None else other.right is None
         return (
-            self.type == other.type
+            left_equal and right_equal
+            and self.type == other.type
             and self.value == other.value
             and self.value_type_hint == other.value_type_hint
         )

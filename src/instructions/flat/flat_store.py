@@ -173,6 +173,7 @@ class FlatStore(BaseInstruction):
                 if self.decompiler_data.name_of_program == "cpFACE":
                     pass
                 var = make_elem_from_addr(var)
+                var_node.value_type_hint.is_address = False
                 var = ExpressionManager().expression_to_string(var_node)
             elif (
                 var in self.decompiler_data.names_of_vars

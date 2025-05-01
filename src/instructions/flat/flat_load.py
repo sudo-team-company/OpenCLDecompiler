@@ -73,6 +73,10 @@ class FlatLoad(BaseInstruction):
             vector_position = 0
             reg_val = variable
             while True:
+                #todo fix
+                node_type_hint: ExpressionValueTypeHint = self.node.state[self.from_registers].get_expression_node().value_type_hint
+                if node_type_hint.is_pointer and not node_type_hint.is_address:
+                    node_type_hint = ExpressionValueTypeHint(node_type_hint.opencl_type)
                 if is_vector_type(data_type):
                     data_type = data_type[:-1]
                     if self.suffix[-1].isdigit():
@@ -80,12 +84,9 @@ class FlatLoad(BaseInstruction):
                         data_type += self.suffix[-1]
                     else:
                         data_type = make_asm_type(data_type)
+                        node_type_hint = node_type_hint.set_number_of_components(1)
 
                     vector_position += 1
-                #todo fix
-                node_type_hint: ExpressionValueTypeHint = self.node.state[self.from_registers].get_expression_node().value_type_hint
-                if node_type_hint.is_pointer and not node_type_hint.is_address:
-                    node_type_hint = ExpressionValueTypeHint(node_type_hint.opencl_type)
                 expr_node = self.expression_manager.add_variable_node(reg_val, node_type_hint)
                 self.node = set_reg_value(
                     self.node, reg_val, to_now, [], data_type, reg_type=register_type, expression_node=expr_node)
