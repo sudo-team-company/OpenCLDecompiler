@@ -1,13 +1,14 @@
 import copy
+
 from src.expression_manager.expression_node import (
     ExpressionNode,
     ExpressionOperationType,
     ExpressionType,
     ExpressionValueTypeHint,
     TypeAddressSpaceQualifiers,
-    get_common_type,
 )
 from src.expression_manager.helper_functions import (
+    VECTOR_COMPONENT_DELIMITER,
     VariableInfo,
     create_const_node,
     create_if_ternary_node,
@@ -346,11 +347,6 @@ class ExpressionManager(metaclass=Singleton):
         else:
             nodes_common_type = ExpressionValueTypeHint.get_common_type(s0.value_type_hint, s1.value_type_hint)
             op_value_type_hint = nodes_common_type
-            # #todo remove test
-            # if check_value_needs_cast("test", nodes_common_type, value_type_hint):
-            #     op_value_type_hint = get_common_type(value_type_hint, nodes_common_type)
-            # else:
-            #     op_value_type_hint = nodes_common_type
 
         # if both values are constant, we can evaluate expression
         if s0.type == ExpressionType.CONST and s1.type == ExpressionType.CONST:
@@ -462,7 +458,39 @@ class ExpressionManager(metaclass=Singleton):
         assert s0.type == ExpressionType.VAR
         assert s1.type == ExpressionType.VAR
 
+        if s0.value.find(VECTOR_COMPONENT_DELIMITER) != -1 and s1.value.find(VECTOR_COMPONENT_DELIMITER) != -1:
+            var0, component0 = s0.value.split(VECTOR_COMPONENT_DELIMITER)
+            var1, component1 = s1.value.split(VECTOR_COMPONENT_DELIMITER)
+            if var0 == var1 and component0 != "" and component1 != "":
+                var_node: ExpressionNode = self.get_variable_node(var0)
+                assert(var_node is not None)
+                list_of_components = [int(i) for i in component0] + [int(i) for i in component1]
+                if list_of_components[0] == 0:
+                    ascending_order = True
+                    for k in range(len(list_of_components)):
+                        if list_of_components[k] != k:
+                            ascending_order = False
+                            break
+                    if ascending_order and len(list_of_components) == var_node.value_type_hint.number_of_components():
+                        return var_node
+                new_var_name = f"{var0}{VECTOR_COMPONENT_DELIMITER}{"".join(map(str, list_of_components))}"
+                new_var_value_type_hint = var_node.value_type_hint.set_number_of_components(len(list_of_components))
+                return self.add_variable_node(new_var_name, new_var_value_type_hint)
+
         permute_node = create_permute_node(s0, s1)
+
+        self.add_node(permute_node)
+
+        return permute_node
+
+    def add_permute_node_from_list(self, nodes: list[ExpressionNode]) -> ExpressionNode:
+        if len(nodes) == 0:
+            return None
+
+        permute_node = nodes[0]
+
+        for next_node in nodes[1:]:
+            permute_node = self.add_permute_node(permute_node, next_node)
 
         self.add_node(permute_node)
 
@@ -485,6 +513,7 @@ class ExpressionManager(metaclass=Singleton):
         var_info = self.get_variable_info(name)
         if var_info is not None:
             return var_info.var_node
+        print("Cant find var with name:", name)
         return None
 
     def cast_node(self, node: ExpressionNode, to_type: OpenCLTypes) -> ExpressionNode:
@@ -516,7 +545,7 @@ class ExpressionManager(metaclass=Singleton):
         #todo fix that - make sure var_name doesnt start with *, always pass is_pointer through ExpressionValueTypeHint
         value_type_hint.is_pointer |= is_pointer
         print(var_name)
-        if var_name in {"var0", "gdata0"}:
+        if var_name in {"var2", "var3"}:
             pass
 
         existing_var_info = self.get_variable_info(var_name)
@@ -531,13 +560,12 @@ class ExpressionManager(metaclass=Singleton):
             return existing_var_info.var_node
 
         # "{var}___s{idx}" case, make sure full variable is there too
-        vector_element_symbol_pos = var_name.find("___")
-        is_vector_element = vector_element_symbol_pos != -1
-        if is_vector_element and value_type_hint.number_of_components() > 1:
-            base_var_name = name[:vector_element_symbol_pos]
-            if check_duplicate and self.get_variable_info(base_var_name) is None:
-                self.add_variable_node(base_var_name, value_type_hint, check_duplicate)
-            value_type_hint = value_type_hint.set_number_of_components(1)
+        if var_name.find(VECTOR_COMPONENT_DELIMITER) != -1:
+            base_var_name, var_components = var_name.split(VECTOR_COMPONENT_DELIMITER)
+            if var_components != "" and value_type_hint.number_of_components() != len(var_components):
+                if check_duplicate and self.get_variable_info(base_var_name) is None:
+                    self.add_variable_node(base_var_name, value_type_hint, check_duplicate)
+                value_type_hint = value_type_hint.set_number_of_components(1)
 
         var_node = create_var_node(var_name, value_type_hint)
 
@@ -551,6 +579,8 @@ class ExpressionManager(metaclass=Singleton):
         return var_node
 
     def expression_to_string(self, node: ExpressionNode, cast_to: OpenCLTypes = OpenCLTypes.UNKNOWN):
+        if isinstance(cast_to, ExpressionValueTypeHint):
+            return expression_to_string(node, cast_to)
         return expression_to_string(node, ExpressionValueTypeHint(cast_to))
 
     def get_variable_info(self, var_name: str) -> VariableInfo:

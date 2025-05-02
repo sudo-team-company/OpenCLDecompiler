@@ -13,11 +13,10 @@ def get_output_for_different_vector_types(output, var_type, data_type):
         close_square_bracket_position = output.find("]")
         element_number = output[open_square_bracket_position + 1 : close_square_bracket_position]
         second_term_separator = element_number.find(" + ")
-        size_type_part = element_number[second_term_separator + 4 :-1]
-        dividend_separator = size_type_part.find("/")
-        size_elements = size_type_part[:dividend_separator]
+        vector_offset_value = float(element_number[second_term_separator + 3:])
+        vector_size, _ = evaluate_size(make_asm_type(data_type), only_size=True)
         one_element_size, _ = evaluate_size(make_asm_type(data_type[:-1]), only_size=True)
-        curr_element = int(int(size_elements) / one_element_size)
+        curr_element = int(vector_offset_value * vector_size / one_element_size)
         output = output[: output.find(" + ")] + "]"
     else:
         curr_element = 0
@@ -82,6 +81,7 @@ class FlatLoad(BaseInstruction):
                     if self.suffix[-1].isdigit():
                         reg_val = f"{variable}___s{vector_position}"
                         data_type += self.suffix[-1]
+                        node_type_hint = node_type_hint.set_number_of_components(int(self.suffix[-1]))
                     else:
                         data_type = make_asm_type(data_type)
                         node_type_hint = node_type_hint.set_number_of_components(1)
@@ -113,6 +113,7 @@ class FlatLoad(BaseInstruction):
                 output = expression_manager.expression_to_string(self.node.state[self.from_registers].get_expression_node())
                 data_type = self.node.state[self.from_registers].data_type
             #todo fix me
+            output_orig =""
             if " + " in output_just_for_if:
                 print("bro, everything is fine")
                 print(output)

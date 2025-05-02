@@ -181,6 +181,9 @@ class ExpressionValueTypeHint:
     
     def is_signed(self):
         return self.opencl_type.value.is_signed
+    
+    def is_unknown(self):
+        return self.opencl_type == OpenCLTypes.UNKNOWN
 
 @dataclass
 class ExpressionNode:
@@ -240,6 +243,53 @@ class ExpressionNode:
 
     def invert(self) -> "ExpressionNode":
         return self
+    
+    def needs_cast(
+        self,
+        to_hint: ExpressionValueTypeHint) -> bool:
+        from_hint = self.value_type_hint
+        assert from_hint.is_unknown() == False
+        if to_hint.is_unknown():
+            return False
+
+        if from_hint == to_hint:
+            return False
+        
+        if from_hint.number_of_components() != to_hint.number_of_components():
+            return True
+
+        is_to_type_smaller = from_hint.size_bytes() > to_hint.size_bytes()
+
+        # floating point - floating point
+        if not from_hint.is_integer() and not to_hint.is_integer():
+            return is_to_type_smaller
+        # integer - integer
+        if from_hint.is_integer() and to_hint.is_integer():
+            if from_hint.is_signed() == to_hint.is_signed():
+                return is_to_type_smaller
+            # from unsigned type to signed or from signed type to unsigned
+            if re.fullmatch(r"0x[\da-f]+", str(self.value)) is not None:
+                return False
+            if isinstance(self.value, int) and self.value >= 0:
+                return False
+            return True
+        
+        # integer -> floating point / floating point -> integer
+        # We can deduce it only for const nodes
+        if self.type == ExpressionType.CONST:
+            # integer -> floating point
+            if from_hint.is_integer():
+                if re.fullmatch(r"0x[\da-f]+", str(self.value)) is not None:
+                    return False
+                return is_to_type_smaller
+
+            # floating point -> integer
+            if to_hint.is_signed():
+                return self.value != int(self.value) or is_to_type_smaller
+            # floating point -> unsigned integer
+            else:
+                return self.value < 0.0 or is_to_type_smaller
+        return is_to_type_smaller
 
     def cast_to(self, to_type: OpenCLTypes) -> "ExpressionNode":
         self.value_type_hint.opencl_type = to_type

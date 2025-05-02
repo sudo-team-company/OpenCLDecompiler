@@ -32,11 +32,6 @@ def const_negative_node(node: ExpressionNode) -> bool:
         val = int(val, base=16)
     return val < 0
 
-def get_all_nodes_with_operations(node: ExpressionNode) -> list[ExpressionNode]:
-    if node.type == ExpressionType.OP and node.value == ExpressionOperationType.PLUS:
-        return get_all_nodes_with_operations(node.left) + get_all_nodes_with_operations(node.right)
-    return [(node, node.parent.value)]
-
 @dataclass
 class NodeParseInfo:
     node: ExpressionNode

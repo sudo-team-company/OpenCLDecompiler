@@ -1,5 +1,4 @@
 import copy
-import re
 from enum import Enum
 
 from src.expression_manager.types.asm_types import ASMTypes
@@ -115,108 +114,56 @@ class OpenCLTypes(Enum):
 
     # Vector Types
     CHAR2 = OpenCLType(size_bytes=1, number_of_components=2)
+    CHAR3 = OpenCLType(size_bytes=1, number_of_components=3)
     CHAR4 = OpenCLType(size_bytes=1, number_of_components=4)
     CHAR8 = OpenCLType(size_bytes=1, number_of_components=8)
+
     UCHAR2 = OpenCLType(size_bytes=1, number_of_components=2, is_signed=False)
+    UCHAR3 = OpenCLType(size_bytes=1, number_of_components=3, is_signed=False)
     UCHAR4 = OpenCLType(size_bytes=1, number_of_components=4, is_signed=False)
     UCHAR8 = OpenCLType(size_bytes=1, number_of_components=8, is_signed=False)
 
     SHORT2 = OpenCLType(size_bytes=2, number_of_components=2)
+    SHORT3 = OpenCLType(size_bytes=2, number_of_components=3)
     SHORT4 = OpenCLType(size_bytes=2, number_of_components=4)
     SHORT8 = OpenCLType(size_bytes=2, number_of_components=8)
+
     USHORT2 = OpenCLType(size_bytes=2, number_of_components=2, is_signed=False)
+    USHORT3 = OpenCLType(size_bytes=2, number_of_components=3, is_signed=False)
     USHORT4 = OpenCLType(size_bytes=2, number_of_components=4, is_signed=False)
     USHORT8 = OpenCLType(size_bytes=2, number_of_components=8, is_signed=False)
 
     INT2 = OpenCLType(size_bytes=4, number_of_components=2)
+    INT3 = OpenCLType(size_bytes=4, number_of_components=3)
     INT4 = OpenCLType(size_bytes=4, number_of_components=4)
     INT8 = OpenCLType(size_bytes=4, number_of_components=8)
+
     UINT2 = OpenCLType(size_bytes=4, number_of_components=2, is_signed=False)
+    UINT3 = OpenCLType(size_bytes=4, number_of_components=3, is_signed=False)
     UINT4 = OpenCLType(size_bytes=4, number_of_components=4, is_signed=False)
     UINT8 = OpenCLType(size_bytes=4, number_of_components=8, is_signed=False)
 
     LONG2 = OpenCLType(size_bytes=8, number_of_components=2)
+    LONG3 = OpenCLType(size_bytes=8, number_of_components=3)
     LONG4 = OpenCLType(size_bytes=8, number_of_components=4)
     LONG8 = OpenCLType(size_bytes=8, number_of_components=8)
+
     ULONG2 = OpenCLType(size_bytes=8, number_of_components=2, is_signed=False)
+    ULONG3 = OpenCLType(size_bytes=8, number_of_components=3, is_signed=False)
     ULONG4 = OpenCLType(size_bytes=8, number_of_components=4, is_signed=False)
     ULONG8 = OpenCLType(size_bytes=8, number_of_components=8, is_signed=False)
 
     HALF2 = OpenCLType(size_bytes=2, is_integer=False, number_of_components=2)
+    HALF3 = OpenCLType(size_bytes=2, is_integer=False, number_of_components=3)
     HALF4 = OpenCLType(size_bytes=2, is_integer=False, number_of_components=4)
     HALF8 = OpenCLType(size_bytes=2, is_integer=False, number_of_components=8)
 
     FLOAT2 = OpenCLType(size_bytes=4, is_integer=False, number_of_components=2)
+    FLOAT3 = OpenCLType(size_bytes=4, is_integer=False, number_of_components=3)
     FLOAT4 = OpenCLType(size_bytes=4, is_integer=False, number_of_components=4)
     FLOAT8 = OpenCLType(size_bytes=4, is_integer=False, number_of_components=8)
 
     DOUBLE2 = OpenCLType(size_bytes=8, is_integer=False, number_of_components=2)
+    DOUBLE3 = OpenCLType(size_bytes=8, is_integer=False, number_of_components=3)
     DOUBLE4 = OpenCLType(size_bytes=8, is_integer=False, number_of_components=4)
     DOUBLE8 = OpenCLType(size_bytes=8, is_integer=False, number_of_components=8)
-
-def check_value_needs_cast(value, from_type: OpenCLTypes, to_type: OpenCLTypes) -> bool:
-    if OpenCLTypes.UNKNOWN in (from_type, to_type):
-        return True
-
-    if from_type == to_type:
-        return False
-
-    if value == "1.0":
-        pass
-
-    from_type: OpenCLType = from_type.value
-    to_type: OpenCLType = to_type.value
-
-    from_type_size = from_type.size_bytes
-    from_type_component_count = from_type.number_of_components
-
-    to_type_size = to_type.size_bytes
-    to_type_component_count = to_type.number_of_components
-
-    needs_casting = True
-    to_type_smaller = (from_type_size > to_type_size) or (from_type_component_count != to_type_component_count)
-    # same type, different size
-    if (
-        (from_type.is_signed and to_type.is_signed)
-        or (not from_type.is_signed and not to_type.is_signed)
-        or (not from_type.is_integer and not to_type.is_integer)
-    ):
-        needs_casting = to_type_smaller
-
-    # todo float/intergers and combinations separately!!!
-
-    # from unsigned type to signed or from signed type to unsigned
-    if (not from_type.is_signed and to_type.is_signed) or (from_type.is_signed and not to_type.is_signed):
-        if re.fullmatch(r"0x[\da-f]+", str(value)) is not None:
-            return False
-        if isinstance(value, int) and value >= 0:
-            return False
-        needs_casting = (
-            (isinstance(value, int) and value < 0)
-            or re.fullmatch(r"\d+", str(value)) is None
-            or re.fullmatch(r"0x[\da-f]+", str(value)) is None
-            or to_type_smaller
-        )
-    # from float to unsigned
-    if not from_type.is_integer and not to_type.is_signed:
-        try:
-            float_value = float(value)
-            needs_casting = (
-                (float_value != int(float_value))
-                or (float_value < 0)
-                or to_type_smaller
-            )
-        except ValueError:
-            return True
-    # from float to signed
-    if not from_type.is_integer and to_type.is_signed:
-        try:
-            float_value = float(value)
-            needs_casting = (
-                (float_value != int(float_value))
-                or (from_type_size > to_type_size)
-                or (from_type_component_count != to_type_component_count)
-            )
-        except ValueError:
-            return True
-    return needs_casting

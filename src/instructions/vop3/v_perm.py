@@ -50,7 +50,7 @@ class VPerm(BaseInstruction):
                     self.node.get_expression_node(self.src0),
                     self.node.get_expression_node(self.src1),
                 )
-                
+
                 if is_vector_type(self.node.state[self.src0].data_type):
                     src0_data_type_name = self.node.state[self.src0].data_type[:1]
                     src0_data_type_size = self.node.state[self.src0].data_type[-1:]

@@ -104,9 +104,6 @@ def make_output_for_linear_region(region, indent):
         curr_node = decompiler_data.cfg.children[0] if region.start == decompiler_data.cfg else region.start
         while True:
             new_output = to_opencl(curr_node, OperationStatus.TO_PRINT)
-            if "var0" in new_output:
-                new_output2 = to_opencl(curr_node, OperationStatus.TO_PRINT)
-                print(new_output2)
             if decompiler_data.loops_nodes_for_variables.get(curr_node):
                 make_output_for_loop_vars(curr_node, indent)
             elif new_output:

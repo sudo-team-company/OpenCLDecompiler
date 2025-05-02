@@ -8,10 +8,11 @@ from src.expression_manager.expression_node import (
     ExpressionValueTypeHint,
     TypeAddressSpaceQualifiers,
 )
-from src.expression_manager.types.opencl_types import OpenCLTypes, check_value_needs_cast
+from src.expression_manager.types.opencl_types import OpenCLType, OpenCLTypes
 from src.model.kernel_argument import KernelArgument
 from src.register_type import CONSTANT_VALUES, RegisterType
 
+VECTOR_COMPONENT_DELIMITER = "___s"
 
 @dataclass
 class VariableInfo:
@@ -155,6 +156,8 @@ def evaluate_operation(# noqa: C901, PLR0912
         case ExpressionOperationType.BITWISE_OR:
             result = left_value | right_value
     print("evalute:", left_value, op, right_value, result)
+    if result == 0.25:
+        pass
     return result
 
 def parse_variable_name( var_name: str) -> tuple[str, bool]:
@@ -231,20 +234,11 @@ def expression_to_string(
         cast_to: ExpressionValueTypeHint) -> str:
     assert expression_node is not None
     if expression_node.type == ExpressionType.OP:
-        return op_expression_to_string_updated(expression_node, cast_to)
-    # if expression_node.type == ExpressionType.VAR:
-    #     return self._var_expression_to_string_updated(expression_node, cast_to)
-
-    # cast_to = get_common_type(cast_to, expression_node.value_type_hint)
-
-    output = ""
+        return op_expression_to_string(expression_node, cast_to)
     if expression_node.type == ExpressionType.PERMUTE:
-        # todo need brackets???
-        left_value = expression_to_string(expression_node.left, expression_node.left.value_type_hint)
-        right_value = expression_to_string(expression_node.right, expression_node.right.value_type_hint)
-        output = f"{left_value}, {right_value}"
-    elif expression_node.type == ExpressionType.IF_TERNARY:
-        # todo need brackets?
+        return permute_expression_to_string(expression_node, cast_to)
+    output = ""
+    if expression_node.type == ExpressionType.IF_TERNARY:
         cond_value = expression_to_string(expression_node.value, cast_to)
         left_value = expression_to_string(expression_node.left, cast_to)
         right_value = expression_to_string(expression_node.right, cast_to)
@@ -253,12 +247,27 @@ def expression_to_string(
         return work_item_function_expression_to_string(expression_node)
     else:
         output = f"{expression_node.value}"
-        if (cast_to.opencl_type not in (OpenCLTypes.UNKNOWN, expression_node.value_type_hint.opencl_type)
-            and check_value_needs_cast(expression_node.value, expression_node.value_type_hint.opencl_type, cast_to.opencl_type)):
+        if expression_node.needs_cast(cast_to):
             output = f"({cast_to!s})" + output
     return output
 
-def op_expression_to_string_updated(
+def permute_expression_to_string(
+        expression_node: ExpressionNode,
+        cast_to: ExpressionValueTypeHint) -> str:
+    left_value_type_hint = expression_node.value_type_hint.set_number_of_components(
+        expression_node.left.value_type_hint.number_of_components())
+    right_value_type_hint = expression_node.value_type_hint.set_number_of_components(
+        expression_node.right.value_type_hint.number_of_components())
+    left_value = expression_to_string(expression_node.left, left_value_type_hint)
+    right_value = expression_to_string(expression_node.right, right_value_type_hint)
+    output = f"({left_value}, {right_value})"
+    if expression_node.value_type_hint != cast_to:
+        output = f"({cast_to!s}){output}"
+    else:
+        output = f"({expression_node.value_type_hint!s}){output}"
+    return output
+
+def op_expression_to_string(
         expression_node: ExpressionNode,
         cast_to: ExpressionValueTypeHint) -> str:
     assert expression_node is not None
@@ -286,10 +295,7 @@ def op_expression_to_string_updated(
 
     output = ""
 
-    op_needs_additional_brackets = [ExpressionOperationType.DIV, ExpressionOperationType.MUL]
-    op_doesnt_need_additional_brackets = [ExpressionOperationType.PLUS, ExpressionOperationType.MINUS]
-
-    def check_needs_brackets_op_node(op: ExpressionOperationType, child_node: ExpressionNode) -> bool:
+    def check_needs_brackets_op_node(op: ExpressionOperationType, child_node: ExpressionNode) -> bool:  # noqa: PLR0911
         if child_node.type == ExpressionType.OP:
             child_op: ExpressionOperationType = child_node.value
             if child_op.is_bitshift_operator() or child_op.is_bitwise_operator():
@@ -301,7 +307,7 @@ def op_expression_to_string_updated(
             if op == child_op and op == ExpressionOperationType.MINUS:
                 return True
             return op != child_op
-        elif child_node.type == ExpressionType.IF_TERNARY:
+        elif child_node.type == ExpressionType.IF_TERNARY:  # noqa: RET505
             return True
         # child_node.type is either CONST, WORK_ITEM_FUNCTION, VAR, PERMUTE
         return False
@@ -321,12 +327,9 @@ def op_expression_to_string_updated(
     if "[" in left_value:
         output += "]"
 
-    print("output:", output)
-    if output == "2 + 0":
-        pass
     return output
 
-def var_expression_to_string_updated(var_node: ExpressionNode) -> str:
+def var_expression_to_string(var_node: ExpressionNode) -> str:
     assert var_node is not None
     assert var_node.type == ExpressionType.VAR
 
