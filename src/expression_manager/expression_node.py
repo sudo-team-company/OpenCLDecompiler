@@ -19,6 +19,7 @@ class ExpressionType(Enum):
     VAR = auto()
     PERMUTE = auto()
     IF_TERNARY = auto()
+    MIN = auto()
 
 
 class ExpressionOperationType(Enum):
@@ -103,6 +104,8 @@ class ExpressionOperationType(Enum):
     OR = "||"
     XOR = "^"
 
+    MIN = "min"
+
     BITWISE_AND = "&"
     BITWISE_OR = "|"
 
@@ -124,20 +127,25 @@ class ExpressionValueTypeHint:
     is_address: bool = False
 
     def __str__(self):
+        return self.to_string(True)
+    
+    def to_string(self, with_pointer: bool):
         qualifier_str = f"{self.qualifier.value} " if self.qualifier != TypeAddressSpaceQualifiers.UNKNOWN else ""
         const_str = "const " if self.is_const else ""
         type_str = str(self.opencl_type)
-        pointer_str = "*" if self.is_pointer else ""
-        #todo do this more logically
-        if self.qualifier == TypeAddressSpaceQualifiers.CONST or self.qualifier == TypeAddressSpaceQualifiers.LOCAL:
-            return f"{qualifier_str}{const_str}{type_str}"
-        return f"{qualifier_str}{const_str}{type_str}{pointer_str}"
+        pointer_str = " *" if self.is_pointer else ""
+        if with_pointer:
+            return f"{qualifier_str}{const_str}{type_str}{pointer_str}"
+        return f"{qualifier_str}{const_str}{type_str}"
 
     @staticmethod
     def get_common_type(first: "ExpressionValueTypeHint", second: "ExpressionValueTypeHint") -> "ExpressionValueTypeHint":
         res = ExpressionValueTypeHint()
         res.opencl_type = get_common_type(first.opencl_type, second.opencl_type)
-        #todo modifiers and stuff?
+        res.qualifier = first.qualifier if first.qualifier == second.qualifier else TypeAddressSpaceQualifiers.UNKNOWN
+        res.is_const = (first.is_const and second.is_const)
+        res.is_pointer = (first.is_pointer and second.is_pointer)
+        res.is_address = (first.is_address and second.is_address)
         return res
 
     @staticmethod
@@ -148,8 +156,13 @@ class ExpressionValueTypeHint:
         if not isinstance(type_hint, str):
             return ExpressionValueTypeHint()
 
-        assert type_hint.startswith("g") is False
-        assert type_hint.startswith("__global ") is False
+        qualifier = TypeAddressSpaceQualifiers.UNKNOWN
+        if type_hint.startswith("g"):
+            type_hint = type_hint.removeprefix("g")
+            qualifier = TypeAddressSpaceQualifiers.GLOBAL
+        if type_hint.startswith("__global "):
+            type_hint = type_hint.removeprefix("__global ")
+            qualifier = TypeAddressSpaceQualifiers.GLOBAL
 
         if "b32" in type_hint or "b64" in type_hint:
             type_hint = type_hint.replace("b", "u", 1)
@@ -163,7 +176,7 @@ class ExpressionValueTypeHint:
             if asm_type != ASMTypes.UNKNOWN:
                 opencl_type = OpenCLTypes.from_asm_type(asm_type)
 
-        return ExpressionValueTypeHint(opencl_type)
+        return ExpressionValueTypeHint(opencl_type, qualifier)
 
     def size_bytes(self):
         return self.opencl_type.value.get_size()
@@ -215,6 +228,9 @@ class ExpressionNode:
             and self.value == other.value
             and self.value_type_hint == other.value_type_hint
         )
+    
+    def __hash__(self):
+        return hash(str(self.id))
 
     def contents_equal(self, other: "ExpressionNode"):
         if other is None:
@@ -248,7 +264,8 @@ class ExpressionNode:
         self,
         to_hint: ExpressionValueTypeHint) -> bool:
         from_hint = self.value_type_hint
-        assert from_hint.is_unknown() == False
+        if from_hint.is_unknown():
+            return not to_hint.is_unknown()
         if to_hint.is_unknown():
             return False
 
@@ -300,11 +317,11 @@ class ExpressionNode:
         assert from_node is not None
         assert to_node is not None
 
-        print("self:", ExpressionManager().expression_to_string(self))
-        print("from_node:", ExpressionManager().expression_to_string(from_node))
-        print("to_node:", ExpressionManager().expression_to_string(to_node))
-        print("equal from", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(from_node), self == from_node)
-        print("equal to", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(to_node), self == to_node)
+        # print("self:", ExpressionManager().expression_to_string(self))
+        # print("from_node:", ExpressionManager().expression_to_string(from_node))
+        # print("to_node:", ExpressionManager().expression_to_string(to_node))
+        # print("equal from", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(from_node), self == from_node)
+        # print("equal to", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(to_node), self == to_node)
 
         if self == to_node:
             return self
@@ -316,6 +333,7 @@ class ExpressionNode:
                 elif self.parent.right == self:
                     self.parent.right = to_node
             to_node.parent = self.parent
+            #todo can't I just return to_node here?
             self = to_node
             return self
 

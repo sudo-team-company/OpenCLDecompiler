@@ -101,6 +101,7 @@ def create_logical_not_node(
     logical_not_node.value = ExpressionOperationType.NOT
     logical_not_node.value_type_hint = node.value_type_hint
     logical_not_node.left = node
+    node.parent = logical_not_node
     return logical_not_node
 
 def evaluate_operation(# noqa: C901, PLR0912
@@ -155,6 +156,8 @@ def evaluate_operation(# noqa: C901, PLR0912
             result = left_value & right_value
         case ExpressionOperationType.BITWISE_OR:
             result = left_value | right_value
+        case ExpressionOperationType.MIN:
+            result = min(left_value, right_value)
     print("evalute:", left_value, op, right_value, result)
     if result == 0.25:
         pass
@@ -278,13 +281,14 @@ def op_expression_to_string(
     right_node = expression_node.right
 
     if operation == ExpressionOperationType.NOT:
-        return f"!({expression_to_string(left_node, OpenCLTypes.UNKNOWN)})"
+        return f"!({expression_to_string(left_node, cast_to)})"
 
     # special case for: data_ptr + smth => data_ptr[smth]
-    if operation == ExpressionOperationType.PLUS and left_node.type == ExpressionType.VAR and left_node.value_type_hint.is_pointer and not left_node.value_type_hint.is_address:
+    if operation == ExpressionOperationType.PLUS and left_node.type == ExpressionType.VAR and left_node.value_type_hint.is_pointer and not left_node.value_type_hint.is_address and not cast_to.is_pointer:
         if expression_node.parent is None:
             return f"{left_node.value!s}[{expression_to_string(right_node, cast_to)}]"
         return f"{left_node.value!s}[{expression_to_string(right_node, cast_to)}"
+
 
     left_value = expression_to_string(
         left_node, cast_to
@@ -292,6 +296,9 @@ def op_expression_to_string(
     right_value = expression_to_string(
         right_node, cast_to
     )
+
+    if operation == ExpressionOperationType.MIN:
+        return f"min({left_value}, {right_value})"
 
     output = ""
 
@@ -334,8 +341,10 @@ def var_expression_to_string(var_node: ExpressionNode) -> str:
     assert var_node.type == ExpressionType.VAR
 
     var_name_str = var_node.value
-
-    return f"{var_node.value_type_hint!s} {var_name_str}"
+    var_type_str = str(var_node.value_type_hint)
+    if var_type_str[-1] != "*":
+        var_type_str += " "
+    return f"{var_type_str}{var_name_str}"
 
 def work_item_function_expression_to_string(work_item_function_node: ExpressionNode) -> str:
     reg_type = work_item_function_node.value

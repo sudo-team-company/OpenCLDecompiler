@@ -1,5 +1,5 @@
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
-void uint2_uint(__global uint2 *edges, __global double *d)
+void uint2_uint(__global const uint2 *edges, __global double *d)
 {
     uint2 var0;
     double var1;

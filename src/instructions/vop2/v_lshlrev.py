@@ -33,7 +33,7 @@ class VLshlrev(BaseInstruction):
             left_node = self.node.get_expression_node(self.src1)
             right_node = self.expression_manager.add_const_node(pow(2, int(self.src0)), OpenCLTypes.UINT)
             expr_node = self.expression_manager.add_operation(left_node, right_node, ExpressionOperationType.MUL, OpenCLTypes.UINT)
-                
+
             return set_reg_value(
                 self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix, reg_type=reg_type, expression_node=expr_node
             )

@@ -51,6 +51,9 @@ class RegisterContent:
     
     def get_expression_node(self) -> ExpressionNode:
         return self._expression_node
+    
+    def set_expression_node(self, node: ExpressionNode):
+        self._expression_node = node
 
     def maybe_simplify(self) -> Optional["RegisterContent"]:
         return None

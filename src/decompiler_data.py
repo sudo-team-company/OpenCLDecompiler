@@ -564,6 +564,8 @@ class DecompilerData(metaclass=Singleton):
         if self.flag_for_decompilation != FlagType.ONLY_CLRX and "Not resolved yet. " not in output:
             output = simplify_opencl_statement(output)
             output = output.replace("___", ".")
+        if "var7" in output:
+            pass
         self.output_file.write(output)
         self.output_file.flush()
 
@@ -721,6 +723,7 @@ class DecompilerData(metaclass=Singleton):
             definition += f"__attribute__((reqd_work_group_size({size_of_work_groups})))\n"
 
         params = ", ".join([f"{arg}" for arg in self.config_data.arguments if not arg.hidden])
+        params = ", ".join([f"{ExpressionManager().variable_to_string(arg.name)}" for arg in self.config_data.arguments if not arg.hidden])
         definition += f"void {self.name_of_program}({params})\n"
 
         return definition

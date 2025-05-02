@@ -75,6 +75,9 @@ class Register:
     def get_expression_node(self) -> ExpressionNode:
         return self.register_content.get_expression_node()
 
+    def set_expression_node(self, node: ExpressionNode):
+        self.register_content.set_expression_node(node)
+
     def get_size(self) -> int:
         return self._size
 
@@ -244,6 +247,8 @@ class Register:
     def add_version(self, name_version, num_version):
         self._version_name = name_version
         self._version_num = num_version + 1
+        if self.version == "4_2" or self.version == "4_3":
+            pass
 
     def make_prev(self):
         self.prev_version = [f"{self._version_name}_{self._version_num - 1}"]

@@ -4,7 +4,7 @@ from collections import deque
 
 from src.decompiler_data import DecompilerData
 from src.expression_manager.expression_manager import ExpressionManager
-from src.expression_manager.expression_node import ExpressionNode, ExpressionType
+from src.expression_manager.expression_node import ExpressionNode, ExpressionType, ExpressionValueTypeHint
 from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.register_type import RegisterType
 
@@ -36,19 +36,30 @@ def update_reg_version(reg, curr_node, max_version, prev_versions_of_reg):
             old_var = decompiler_data.checked_variables[prev]
             decompiler_data.checked_variables[prev] = variable
             decompiler_data.variables = {k: v.replace(old_var, variable) for k, v in decompiler_data.variables.items()}
+    print(curr_node.state[reg].register_content._value)
+    curr_node.state[reg].register_content._value = variable  # noqa: SLF001
+    print(curr_node.state[reg].register_content._value)
+
     #todo do we need additional checks?
     print("before", reg, curr_node.state[reg].register_content._value, ExpressionManager().expression_to_string(curr_node.state[reg].register_content._expression_node))
-    curr_node.state[reg].register_content._value = variable  # noqa: SLF001
 
-    prev_expr_node: ExpressionNode = curr_node.state[reg].get_expression_node()
-    prev_value_type_hint = prev_expr_node.value_type_hint
-    if prev_value_type_hint.opencl_type == OpenCLTypes.UNKNOWN:
-        prev_value_type_hint.opencl_type = OpenCLTypes.UINT
-        print("CHANGIN TO UINT!!!")
-    var_node = ExpressionManager().add_variable_node(variable, prev_value_type_hint)
+    # Get all type hints from previous versions, because we need to find common type for variable
+    prev_node_value_type_hints = []
+    for parent in curr_node.parent:
+        if reg in parent.state and parent.state[reg].version is not None:
+            prev_node_value_type_hints.append(parent.state[reg].get_expression_node().value_type_hint)  # noqa: PERF401
 
-    curr_node.state[reg].register_content._expression_node = var_node
+    cur_expr_node: ExpressionNode = curr_node.state[reg].get_expression_node()
+    value_type_hint = cur_expr_node.value_type_hint
+    for prev_value_type_hint in prev_node_value_type_hints:
+        value_type_hint = ExpressionValueTypeHint.get_common_type(value_type_hint, prev_value_type_hint)
+    if value_type_hint.opencl_type == OpenCLTypes.UNKNOWN:
+        value_type_hint.opencl_type = OpenCLTypes.UINT
+    var_node = ExpressionManager().add_variable_node(variable, value_type_hint)
+
+    curr_node.state[reg].set_expression_node(var_node)
     print("after", reg, curr_node.state[reg].register_content._value, ExpressionManager().expression_to_string(curr_node.state[reg].register_content._expression_node))
+
     if curr_node.state[reg].type in {
         RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT,
         RegisterType.ADDRESS_KERNEL_ARGUMENT,
@@ -109,7 +120,6 @@ def update_val_from_changes(curr_node, register, changes, check_version, num_of_
         and curr_node.state[register].data_type is not None
         and (register != "vcc" or "and_saveexec" in instruction[0])
     ):
-        print("update_val_from_changes:")
         if re.match(r"(flat|global)_store", instruction[0]):
             if num_of_reg == 1:
                 node_state = curr_node.parent[0].state
@@ -125,9 +135,11 @@ def update_val_from_changes(curr_node, register, changes, check_version, num_of_
                 node_state[register].register_content._value = node_state[register].val.replace(  # noqa: SLF001
                     changes[check_version][1], changes[check_version][0]
                 )
-
-                node_state[register].register_content._expression_node = node_state[register].register_content._expression_node.replace(  # noqa: SLF001
-                    changes[check_version + "_expr_node"][1], changes[check_version + "_expr_node"][0])
+                replaced_node = ExpressionManager().replace_node(
+                    node_state[register].get_expression_node(),
+                    changes[check_version + "_expr_node"][1],
+                    changes[check_version + "_expr_node"][0])
+                node_state[register].set_expression_node(replaced_node)
 
         copy_val_prev = node_state[first_reg].val
         copy_expr_node_prev = copy.deepcopy(node_state[first_reg].get_expression_node())
@@ -135,8 +147,11 @@ def update_val_from_changes(curr_node, register, changes, check_version, num_of_
             changes[check_version][1], changes[check_version][0]
         )
 
-        node_state[first_reg].register_content._expression_node = node_state[first_reg].register_content._expression_node.replace(
-                    changes[check_version + "_expr_node"][1], changes[check_version + "_expr_node"][0])
+        replaced_node = ExpressionManager().replace_node(
+                    node_state[first_reg].get_expression_node(),
+                    changes[check_version + "_expr_node"][1],
+                    changes[check_version + "_expr_node"][0])
+        node_state[first_reg].set_expression_node(replaced_node)
 
         copy_val_last = node_state[first_reg].val
         copy_expr_node_last = node_state[first_reg].get_expression_node()
@@ -166,8 +181,6 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
         and curr_node.state[register].data_type is not None
         and (register != "vcc" or "and_saveexec" in instruction[0])
     ):
-        if curr_node.instruction[0] == "flat_store_dword":
-            pass
         val_reg = curr_node.state[register].val
         expr_node = curr_node.state[register].get_expression_node()
         if register == first_reg:
@@ -182,12 +195,17 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
         if decompiler_data.checked_variables.get(check_version) is not None:
 
             #todo move that to checked_variables...
-            tmp_var_node = ExpressionManager().get_variable_node(decompiler_data.checked_variables[check_version])
-            changes[curr_node.state[first_reg].version + "_expr_node"] = [tmp_var_node, expr_node]
-            if re.match(r"(flat|global)_(store|load)", instruction[0]):
-                curr_node.state[register].register_content._expression_node = curr_node.state[register].register_content._expression_node.replace(expr_node, tmp_var_node)
+            if expr_node.type == ExpressionType.VAR and expr_node.value == decompiler_data.variables[check_version]:
+                tmp_var_node = expr_node
             else:
-                curr_node.state[first_reg].register_content._expression_node = curr_node.state[first_reg].register_content._expression_node.replace(expr_node, tmp_var_node)
+                tmp_var_node = ExpressionManager().add_variable_node(decompiler_data.variables[check_version], expr_node.value_type_hint)
+            # changes[curr_node.state[first_reg].version + "_expr_node"] = [tmp_var_node, expr_node]
+
+            node_to_change_reg = register if re.match(r"(flat|global)_(store|load)", instruction[0]) else first_reg
+            node_to_change = curr_node.state[node_to_change_reg].get_expression_node()
+            replaced_node = ExpressionManager().replace_node(node_to_change, expr_node, tmp_var_node)
+            curr_node.state[node_to_change_reg].set_expression_node(replaced_node)
+
             if curr_node.state[first_reg].val.find(val_reg) != -1:
                 curr_node.state[first_reg].register_content._value = curr_node.state[first_reg].val.replace(  # noqa: SLF001
                     val_reg, decompiler_data.checked_variables[check_version]
@@ -202,24 +220,45 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
                 val_reg, decompiler_data.variables[check_version]
             )
 
-            tmp_var_node = ExpressionManager().get_variable_node(decompiler_data.variables[check_version])
-            changes[curr_node.state[first_reg].version + "_expr_node"] = [tmp_var_node, expr_node]
-            curr_node.state[first_reg].register_content._expression_node = curr_node.state[first_reg].register_content._expression_node.replace(expr_node, tmp_var_node)
+            if expr_node.type == ExpressionType.VAR and expr_node.value == decompiler_data.variables[check_version]:
+                tmp_var_node = expr_node
+            else:
+                tmp_var_node = ExpressionManager().add_variable_node(decompiler_data.variables[check_version], expr_node.value_type_hint)
+            # changes[curr_node.state[first_reg].version + "_expr_node"] = [tmp_var_node, expr_node]
+
+            replaced_node = ExpressionManager().replace_node(
+                curr_node.state[first_reg].get_expression_node(),
+                expr_node,
+                tmp_var_node)
+            curr_node.state[first_reg].set_expression_node(replaced_node)
         elif re.match(r"(flat|global)_store", instruction[0]):
             curr_node.state[register].register_content._value = curr_node.state[register].val.replace(  # noqa: SLF001
                 val_reg, decompiler_data.variables[check_version]
             )
-            #todo need it here?
-            tmp_var_node = ExpressionManager().get_variable_node(decompiler_data.variables[check_version])
-            changes[curr_node.state[first_reg].version + "_expr_node"] = [tmp_var_node, expr_node]
-            curr_node.state[register].register_content._expression_node = curr_node.state[register].register_content._expression_node.replace(expr_node, tmp_var_node)
+            
+            if expr_node.type == ExpressionType.VAR and expr_node.value == decompiler_data.variables[check_version]:
+                tmp_var_node = expr_node
+            else:
+                tmp_var_node = ExpressionManager().add_variable_node(decompiler_data.variables[check_version], expr_node.value_type_hint)
+            # changes[curr_node.state[register].version + "_expr_node"] = [tmp_var_node, expr_node]
+
+            replaced_node = ExpressionManager().replace_node(
+                curr_node.state[register].get_expression_node(),
+                expr_node,
+                tmp_var_node)
+            curr_node.state[register].set_expression_node(replaced_node)
 
         copy_val_last = curr_node.state[first_reg].val
         copy_expr_node_last = copy.deepcopy(curr_node.state[first_reg].register_content._expression_node)
         if copy_val_prev != copy_val_last:
+            # list_of_optimizations = ExpressionManager()._optimized_nodes_to_original
+            # print(len(list_of_optimizations), expr_node in list_of_optimizations, copy_expr_node_prev in list_of_optimizations)
+            # for o in list_of_optimizations:
+            #     print(ExpressionManager().expression_to_string(o), "\t", ExpressionManager().expression_to_string(list_of_optimizations[o]) )
+            print("hey:", ExpressionManager().expression_to_string(copy_expr_node_prev), ExpressionManager().expression_to_string(copy_expr_node_last))
             assert(copy_expr_node_last != copy_expr_node_prev)
             changes[curr_node.state[first_reg].version] = [copy_val_last, copy_val_prev]
-            # changes[curr_node.state[first_reg].version + "_expr_node"] = [tmp_var_node, expr_node]
+            changes[curr_node.state[first_reg].version + "_expr_node"] = [tmp_var_node, expr_node]
             update_value_for_reg(first_reg, curr_node)
 
 

@@ -22,6 +22,7 @@ from src.expression_manager.helper_functions import (
     get_kernel_argument_type_and_qualifiers,
     get_sufficient_type_for_const,
     parse_variable_name,
+    var_expression_to_string,
 )
 from src.expression_manager.optimizations import (
     NodeParseInfo,
@@ -43,6 +44,7 @@ class ExpressionManager(metaclass=Singleton):
         self._variables_for_programs: dict[str, dict[str, VariableInfo]] = {}
         self._name_of_program = ""
         self._size_of_workgroups = []
+        self._optimized_nodes_to_original: dict[ExpressionNode, ExpressionNode] = {}
 
     def set_name_of_program(self, name_of_program: str):
         self._name_of_program = name_of_program
@@ -114,7 +116,7 @@ class ExpressionManager(metaclass=Singleton):
                 work_group_id_mul_local_size_reg_types,
                 strict=False
             ):
-                l_array = [n for n in result if (n.reg_type == local_id_dim 
+                l_array = [n for n in result if (n.reg_type == local_id_dim
                                                               and n.operation == ExpressionOperationType.PLUS)]
                 g_array = [n for n in result if (n.reg_type == global_offset_dim
                                                               and n.operation == ExpressionOperationType.PLUS)]
@@ -280,8 +282,6 @@ class ExpressionManager(metaclass=Singleton):
             and s0.type == ExpressionType.OP
             and s0.value == ExpressionOperationType.MUL
             and s0.right.type == ExpressionType.CONST):
-            if self.expression_to_string(s0) == "var3 * 4":
-                pass
             print("div before:", self.expression_to_string(s0), "/", self.expression_to_string(s1))
             simplified_type = ExpressionValueTypeHint.get_common_type(s0.right.value_type_hint, s1.value_type_hint)
             new_const_value = evaluate_operation(s0.right.value, ExpressionOperationType.DIV, s1.value, simplified_type)
@@ -345,17 +345,15 @@ class ExpressionManager(metaclass=Singleton):
             #todo check that type fits into value_type_hint
             op_value_type_hint = s0.value_type_hint
         else:
-            nodes_common_type = ExpressionValueTypeHint.get_common_type(s0.value_type_hint, s1.value_type_hint)
-            op_value_type_hint = nodes_common_type
+            op_value_type_hint = ExpressionValueTypeHint.get_common_type(s0.value_type_hint, s1.value_type_hint)
 
         # if both values are constant, we can evaluate expression
         if s0.type == ExpressionType.CONST and s1.type == ExpressionType.CONST:
             simplified_type = ExpressionValueTypeHint.get_common_type(s0.value_type_hint, s1.value_type_hint)
             result = evaluate_operation(s0.value, op, s1.value, simplified_type)
             assert result is not None
-            return self.add_const_node(result, simplified_type.opencl_type)
-
-        if op == ExpressionOperationType.PLUS:
+            operation_node = self.add_const_node(result, simplified_type.opencl_type)
+        elif op == ExpressionOperationType.PLUS:
             operation_node = self._optimized_nodes_sum(s0, s1, op_value_type_hint)
         elif op == ExpressionOperationType.MINUS:
             operation_node = self._optimized_nodes_sub(s0, s1, op_value_type_hint)
@@ -367,6 +365,9 @@ class ExpressionManager(metaclass=Singleton):
             operation_node = self._optimized_nodes_logical_operation(op, s0, s1, op_value_type_hint)
         else:
             operation_node = create_op_node(op, s0, s1, op_value_type_hint)
+
+        unoptimized_node = create_op_node(op, s0, s1, op_value_type_hint)
+        self._optimized_nodes_to_original[operation_node] = unoptimized_node
 
         self.add_node(operation_node)
         return operation_node
@@ -509,7 +510,19 @@ class ExpressionManager(metaclass=Singleton):
 
         return prev_node
 
+    def variable_to_string(self, name: str) -> str:
+        assert len(name) > 0
+        if name[0] == "*":
+            return self.variable_to_string(name[1:])
+        var_info = self.get_variable_info(name)
+        assert var_info is not None
+        return var_expression_to_string(var_info.var_node)
+
     def get_variable_node(self, name: str) -> ExpressionNode | None:
+        if len(name) == 0:
+            return None
+        if name[0] == "*":
+            return self.get_variable_node(name[1:])
         var_info = self.get_variable_info(name)
         if var_info is not None:
             return var_info.var_node
@@ -545,7 +558,7 @@ class ExpressionManager(metaclass=Singleton):
         #todo fix that - make sure var_name doesnt start with *, always pass is_pointer through ExpressionValueTypeHint
         value_type_hint.is_pointer |= is_pointer
         print(var_name)
-        if var_name in {"var2", "var3"}:
+        if var_name in {"gdata0"}:
             pass
 
         existing_var_info = self.get_variable_info(var_name)
@@ -588,3 +601,21 @@ class ExpressionManager(metaclass=Singleton):
             and self._variables_for_programs[self._name_of_program].get(var_name) is not None):
                 return self._variables_for_programs[self._name_of_program][var_name]
         return None
+
+    def replace_node(
+            self,
+            node: ExpressionNode,
+            from_node: ExpressionNode,
+            to_node: ExpressionNode) -> ExpressionNode:
+        print("replace_nodes:", self.expression_to_string(node), self.expression_to_string(from_node), self.expression_to_string(to_node))
+
+        # We could have optimized things that we want to replace :(
+        if node in self._optimized_nodes_to_original:
+            unoptimized_node = self._optimized_nodes_to_original[node]
+            print("found unoptimized node, so now:", self.expression_to_string(unoptimized_node), self.expression_to_string(from_node), self.expression_to_string(to_node))
+
+            node = node.replace(from_node, to_node)
+            unoptimized_node = unoptimized_node.replace(from_node, to_node)
+            self._optimized_nodes_to_original[node] = unoptimized_node
+            return unoptimized_node
+        return node.replace(from_node, to_node)

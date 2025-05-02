@@ -113,15 +113,14 @@ class FlatLoad(BaseInstruction):
                 output = expression_manager.expression_to_string(self.node.state[self.from_registers].get_expression_node())
                 data_type = self.node.state[self.from_registers].data_type
             #todo fix me
-            output_orig =""
+            output_orig = ""
             if " + " in output_just_for_if:
                 print("bro, everything is fine")
                 print(output)
                 output_orig = make_elem_from_addr(output_just_for_if)
                 print(output_orig)
-            elif self.node.state[self.start_to_registers].data_type != self.decompiler_data.names_of_vars[output][1:]:
-                assert(False)
-                output = f"*({make_opencl_type(self.decompiler_data.names_of_vars[output])}*)({output})"
+            elif self.node.state[self.start_to_registers].data_type != self.decompiler_data.names_of_vars[output_just_for_if][1:]:
+                output = f"*({make_opencl_type(self.decompiler_data.names_of_vars[output_just_for_if])}*)({output_just_for_if})"
             else:
                 #todo make this inside expression_to_string
                 output = f"*{output}"

@@ -1,6 +1,7 @@
 from src.decompiler_data import DecompilerData, evaluate_from_hex
 from src.expression_manager.expression_manager import ExpressionManager
 from src.expression_manager.expression_node import ExpressionNode
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.node import Node
 from src.node_processor import to_opencl
 from src.operation_status import OperationStatus
@@ -18,18 +19,18 @@ def create_opencl_body():
         if " " not in var:
             if "___" in var:
                 var = var[: var.find("___")]  # noqa: PLW2901
-            if var == "var0":
-                pass
             var_info = ExpressionManager().get_variable_info(var)
             type_of_var = str(var_info.var_node.value_type_hint)
-            decompiler_data.write("    " + type_of_var + " " + var + ";\n")
+            if type_of_var[-1] != "*":
+                type_of_var += " "
+            decompiler_data.write("    " + type_of_var + var + ";\n")
     offsets = list(decompiler_data.lds_vars.keys())
     offsets.append(decompiler_data.config_data.local_size)
     offsets.sort()
     for key in range(len(offsets) - 1):
         lds_var_node: ExpressionNode = decompiler_data.lds_vars[offsets[key]]
         size_var = int((offsets[key + 1] - offsets[key]) / (lds_var_node.value_type_hint.size_bytes()))
-        type_of_var = str(lds_var_node.value_type_hint)
+        type_of_var = lds_var_node.value_type_hint.to_string(False)  # noqa: FBT003
         decompiler_data.write(
             "    "
             + type_of_var
@@ -61,7 +62,7 @@ def write_global_data():  # noqa: PLR0912
         else:
             raise NotImplementedError
         var_info = expression_manager.get_variable_info(key)
-        decompiler_data.write(str(var_info.var_node.value_type_hint) + " " + var_info.name + "[] = {")
+        decompiler_data.write(var_info.var_node.value_type_hint.to_string(False) + " " + var_info.name + "[] = {")
         if var in {"int2", "int4", "int8"}:
             num = int(var[-1])
             for index, element in enumerate(list_of_gdata_values):
@@ -127,10 +128,14 @@ def make_output_for_linear_region(region, indent):
                     )
                 ):  # версия поменялась по сравнению с предком
                     # decompiler_data.write(indent + var + " = " + curr_node.state[reg].val + ";\n")
+                    value_type_hint = expression_manager.get_variable_node(var).value_type_hint
+                    value_type_hint.opencl_type = OpenCLTypes.UNKNOWN
                     decompiler_data.write(indent
                                           + var
                                           + " = "
-                                          + expression_manager.expression_to_string(curr_node.state[reg].get_expression_node())
+                                          + expression_manager.expression_to_string(
+                                              curr_node.state[reg].get_expression_node(),
+                                              value_type_hint)
                                           + ";\n")
             if curr_node == region.end:
                 break
