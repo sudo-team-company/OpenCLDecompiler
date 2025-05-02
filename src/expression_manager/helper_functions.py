@@ -108,7 +108,7 @@ def evaluate_operation(# noqa: C901, PLR0912
         left_value,
         op: ExpressionOperationType,
         right_value,
-        value_type_hint: ExpressionValueTypeHint):
+        _: ExpressionValueTypeHint):
     result = None
     if isinstance(left_value, str):
         left_value = int(left_value, base=16)
@@ -122,7 +122,6 @@ def evaluate_operation(# noqa: C901, PLR0912
         case ExpressionOperationType.MUL:
             result = left_value * right_value
         case ExpressionOperationType.DIV:
-            # result = left_value // right_value if value_type_hint.is_integer() else left_value / right_value
             result = left_value / right_value
         case ExpressionOperationType.REM:
             result = left_value % right_value
@@ -159,8 +158,6 @@ def evaluate_operation(# noqa: C901, PLR0912
         case ExpressionOperationType.MIN:
             result = min(left_value, right_value)
     print("evalute:", left_value, op, right_value, result)
-    if result == 0.25:
-        pass
     return result
 
 def parse_variable_name( var_name: str) -> tuple[str, bool]:
@@ -284,6 +281,8 @@ def op_expression_to_string(
         return f"!({expression_to_string(left_node, cast_to)})"
 
     # special case for: data_ptr + smth => data_ptr[smth]
+    if str(left_node.value) == "var11":
+        pass
     if operation == ExpressionOperationType.PLUS and left_node.type == ExpressionType.VAR and left_node.value_type_hint.is_pointer and not left_node.value_type_hint.is_address and not cast_to.is_pointer:
         if expression_node.parent is None:
             return f"{left_node.value!s}[{expression_to_string(right_node, cast_to)}]"

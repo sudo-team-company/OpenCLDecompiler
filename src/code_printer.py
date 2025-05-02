@@ -92,9 +92,12 @@ def make_output_for_loop_vars(curr_node, indent):
     key = decompiler_data.loops_nodes_for_variables[curr_node]
     reg = key[: key.find("_")]
     loop_variable = decompiler_data.loops_variables[key]
+    loop_variable_node = expression_manager.get_variable_node(loop_variable)
     decompiler_data.write(indent
                           + loop_variable + " = "
-                          + expression_manager.expression_to_string(curr_node.state[reg].get_expression_node())
+                          + expression_manager.expression_to_string(
+                              curr_node.state[reg].get_expression_node(),
+                              loop_variable_node.value_type_hint)
                           + ";\n")
 
 

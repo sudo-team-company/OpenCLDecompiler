@@ -93,6 +93,11 @@ class OpenCLTypes(Enum):
         new_type_value.number_of_components = number_of_components
         return OpenCLTypes.from_string(str(new_type_value))
 
+    def set_is_integer(self, is_integer) -> "OpenCLTypes":
+        new_type_value = copy.deepcopy(self.value)
+        new_type_value.is_integer = is_integer
+        return OpenCLTypes.from_string(str(new_type_value))
+
     UNKNOWN = UnknownOpenCLType()
 
     # Base Types

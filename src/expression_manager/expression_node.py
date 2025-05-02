@@ -189,6 +189,11 @@ class ExpressionValueTypeHint:
         res.opencl_type = self.opencl_type.set_number_of_components(number_of_components)
         return res
     
+    def set_is_integer(self, is_integer: bool) -> "ExpressionValueTypeHint":
+        res = copy.deepcopy(self)
+        res.opencl_type = self.opencl_type.set_is_integer(is_integer)
+        return res
+    
     def is_integer(self):
         return self.opencl_type.value.is_integer
     
@@ -317,16 +322,19 @@ class ExpressionNode:
         assert from_node is not None
         assert to_node is not None
 
-        # print("self:", ExpressionManager().expression_to_string(self))
-        # print("from_node:", ExpressionManager().expression_to_string(from_node))
-        # print("to_node:", ExpressionManager().expression_to_string(to_node))
-        # print("equal from", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(from_node), self == from_node)
-        # print("equal to", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(to_node), self == to_node)
+        print("self:", ExpressionManager().expression_to_string(self))
+        print("from_node:", ExpressionManager().expression_to_string(from_node))
+        print("to_node:", ExpressionManager().expression_to_string(to_node))
+        print("equal from", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(from_node), self == from_node, self.contents_equal(from_node))
+        print("equal to", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(to_node), self == to_node)
+        
+        if ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(from_node) and self != from_node:
+            pass
 
-        if self == to_node:
+        if self.contents_equal(to_node):
             return self
 
-        if self == from_node:
+        if self.contents_equal(from_node):
             if self.parent is not None:
                 if self.parent.left == self:
                     self.parent.left = to_node

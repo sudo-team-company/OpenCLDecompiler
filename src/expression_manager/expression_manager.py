@@ -353,6 +353,7 @@ class ExpressionManager(metaclass=Singleton):
             result = evaluate_operation(s0.value, op, s1.value, simplified_type)
             assert result is not None
             operation_node = self.add_const_node(result, simplified_type.opencl_type)
+            op_value_type_hint = simplified_type
         elif op == ExpressionOperationType.PLUS:
             operation_node = self._optimized_nodes_sum(s0, s1, op_value_type_hint)
         elif op == ExpressionOperationType.MINUS:
@@ -608,7 +609,8 @@ class ExpressionManager(metaclass=Singleton):
             from_node: ExpressionNode,
             to_node: ExpressionNode) -> ExpressionNode:
         print("replace_nodes:", self.expression_to_string(node), self.expression_to_string(from_node), self.expression_to_string(to_node))
-
+        if self.expression_to_string(node) == "data - 0.25":
+            pass
         # We could have optimized things that we want to replace :(
         if node in self._optimized_nodes_to_original:
             unoptimized_node = self._optimized_nodes_to_original[node]
