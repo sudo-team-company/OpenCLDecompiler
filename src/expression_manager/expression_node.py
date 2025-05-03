@@ -282,6 +282,8 @@ class ExpressionNode:
             if from_hint.is_signed() == to_hint.is_signed():
                 return is_to_type_smaller
             # from unsigned type to signed or from signed type to unsigned
+            if re.fullmatch(r"-\d+.\d+", str(self.value)) is not None:
+                return False
             if re.fullmatch(r"0x[\da-f]+", str(self.value)) is not None:
                 return False
             if isinstance(self.value, int) and self.value >= 0:
@@ -313,11 +315,11 @@ class ExpressionNode:
         assert from_node is not None
         assert to_node is not None
 
-        print("self:", ExpressionManager().expression_to_string(self))
-        print("from_node:", ExpressionManager().expression_to_string(from_node))
-        print("to_node:", ExpressionManager().expression_to_string(to_node))
-        print("equal from", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(from_node), self == from_node, self.contents_equal(from_node))
-        print("equal to", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(to_node), self == to_node)
+        # print("self:", ExpressionManager().expression_to_string(self))
+        # print("from_node:", ExpressionManager().expression_to_string(from_node))
+        # print("to_node:", ExpressionManager().expression_to_string(to_node))
+        # print("equal from", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(from_node), self == from_node, self.contents_equal(from_node))
+        # print("equal to", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(to_node), self == to_node)
 
         if ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(from_node) and self != from_node:
             pass

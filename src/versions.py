@@ -211,8 +211,8 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
             if expr_node.type == ExpressionType.VAR and expr_node.value == decompiler_data.variables[check_version]:
                 tmp_var_node = expr_node
             else:
-                tmp_var_node = ExpressionManager().add_variable_node(decompiler_data.variables[check_version], expr_node.value_type_hint)
-                changes[curr_node.state[first_reg].version + "_expr_node"] = [tmp_var_node, expr_node]
+                tmp_var_node = ExpressionManager().add_variable_node(decompiler_data.variables[check_version], expr_node.value_type_hint.set_is_const(False))
+                # changes[curr_node.state[first_reg].version + "_expr_node"] = [tmp_var_node, expr_node]
             assert(tmp_var_node.value_type_hint.opencl_type != OpenCLTypes.UNKNOWN)
             node_to_change_reg = register if re.match(r"(flat|global)_(store|load)", instruction[0]) else first_reg
             node_to_change = curr_node.state[node_to_change_reg].get_expression_node()
@@ -229,8 +229,8 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
             if expr_node.type == ExpressionType.VAR and expr_node.value == decompiler_data.variables[check_version]:
                 tmp_var_node = expr_node
             else:
-                tmp_var_node = ExpressionManager().add_variable_node(decompiler_data.variables[check_version], expr_node.value_type_hint)
-                changes[curr_node.state[first_reg].version + "_expr_node"] = [tmp_var_node, expr_node]
+                tmp_var_node = ExpressionManager().add_variable_node(decompiler_data.variables[check_version], expr_node.value_type_hint.set_is_const(False))
+                # changes[curr_node.state[first_reg].version + "_expr_node"] = [tmp_var_node, expr_node]
             assert(tmp_var_node.value_type_hint.opencl_type != OpenCLTypes.UNKNOWN)
 
             replaced_node = ExpressionManager().replace_node(
@@ -248,8 +248,8 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
             if expr_node.type == ExpressionType.VAR and expr_node.value == decompiler_data.variables[check_version]:
                 tmp_var_node = expr_node
             else:
-                tmp_var_node = ExpressionManager().add_variable_node(decompiler_data.variables[check_version], expr_node.value_type_hint)
-                changes[curr_node.state[register].version + "_expr_node"] = [tmp_var_node, expr_node]
+                tmp_var_node = ExpressionManager().add_variable_node(decompiler_data.variables[check_version], expr_node.value_type_hint.set_is_const(False))
+                # changes[curr_node.state[register].version + "_expr_node"] = [tmp_var_node, expr_node]
             assert(tmp_var_node.value_type_hint.opencl_type != OpenCLTypes.UNKNOWN)
             replaced_node = ExpressionManager().replace_node(
                 curr_node.state[register].get_expression_node(),
@@ -265,7 +265,7 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
                 assert(copy_expr_node_last.right.value_type_hint.opencl_type != OpenCLTypes.UNKNOWN)
             assert(copy_expr_node_last != copy_expr_node_prev)
             changes[curr_node.state[first_reg].version] = [copy_val_last, copy_val_prev]
-            changes[curr_node.state[first_reg].version + "_expr_node"] = [tmp_var_node, expr_node]
+            changes[curr_node.state[first_reg].version + "_expr_node"] = [copy_expr_node_last, copy_expr_node_prev]
             update_value_for_reg(first_reg, curr_node)
 
 

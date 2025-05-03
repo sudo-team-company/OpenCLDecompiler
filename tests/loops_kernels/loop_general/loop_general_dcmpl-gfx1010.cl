@@ -4,7 +4,7 @@ void loop_general(__global int *data, int from, int to, int x)
     int var0;
     int var2;
     int var3;
-    uint var4;
+    int var4;
     int var5;
     var0 = data[get_global_id(0)];
     var4 = var0;
@@ -12,10 +12,10 @@ void loop_general(__global int *data, int from, int to, int x)
     if (var5 >= to) {
         do {
             var3 = x * var4;
-            var4 = (ulong)var5 + (var3);
+            var4 = var5 + var3;
             var5 = var5 + 1;
         } while (!((var5 + 1) >= to));
-        var2 = (var3) + (ulong)(var5 + 1) + (-1);
+        var2 = (var3 + var5 + 1) - 1;
     }
     data[get_global_id(0)] = var2;
 }
