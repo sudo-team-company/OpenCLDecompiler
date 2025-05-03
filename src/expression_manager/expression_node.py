@@ -198,6 +198,9 @@ class ExpressionValueTypeHint:
         res.is_const = is_const
         return res
 
+    def is_vector_type(self):
+        return self.number_of_components() > 1
+
     def is_integer(self):
         return self.opencl_type.value.is_integer
 

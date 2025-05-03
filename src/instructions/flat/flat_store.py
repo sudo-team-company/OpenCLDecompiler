@@ -55,7 +55,7 @@ def prepare_vector_type_output(from_registers, vdata, to_registers, node):
     permute_node = ExpressionManager().add_permute_node_from_list(permute_nodes)
 
     to_type = node.state[to_registers].get_expression_node().value_type_hint
-    from_type: OpenCLTypes = node.state[from_registers].get_expression_node().value_type_hint.opencl_type
+    node.state[from_registers].get_expression_node().value_type_hint.opencl_type
 
     return ExpressionManager().expression_to_string(permute_node, to_type.opencl_type)
 

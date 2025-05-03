@@ -1,29 +1,32 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier, set_reg_value
+from src.decompiler_data import make_new_type_without_modifier, set_reg_value
 from src.expression_manager.expression_manager import ExpressionManager
-from src.expression_manager.expression_node import ExpressionValueTypeHint
-from src.opencl_types import evaluate_size, make_asm_type, make_opencl_type
+from src.expression_manager.expression_node import ExpressionNode, ExpressionValueTypeHint
+from src.opencl_types import make_asm_type
 from src.register import check_and_split_regs, get_next_reg, is_vector_type
 from src.register_type import RegisterType
 
 
-def get_output_for_different_vector_types(output, var_type, data_type):
+def get_output_for_different_vector_types(
+        output: str,
+        variable_type_hint: ExpressionValueTypeHint,
+        output_type_hint: ExpressionValueTypeHint):
     if output.find(" + ") != -1:
         open_square_bracket_position = output.find("[")
         close_square_bracket_position = output.find("]")
         element_number = output[open_square_bracket_position + 1 : close_square_bracket_position]
         second_term_separator = element_number.find(" + ")
         vector_offset_value = float(element_number[second_term_separator + 3 :])
-        vector_size, _ = evaluate_size(make_asm_type(data_type), only_size=True)
-        one_element_size, _ = evaluate_size(make_asm_type(data_type[:-1]), only_size=True)
+        vector_size = output_type_hint.size_bytes()
+        one_element_size = variable_type_hint.set_number_of_components(1).size_bytes()
         curr_element = int(vector_offset_value * vector_size / one_element_size)
         output = output[: output.find(" + ")] + "]"
     else:
         curr_element = 0
     output += "___s"
     new_size = curr_element
-    if make_opencl_type(var_type)[-1].isdigit():
-        new_size += int(var_type[-1])
+    if variable_type_hint.is_vector_type():
+        new_size += variable_type_hint.number_of_components()
     else:
         new_size += 1
     while curr_element < new_size:
@@ -72,7 +75,6 @@ class FlatLoad(BaseInstruction):
             vector_position = 0
             reg_val = variable
             while True:
-                # todo fix
                 node_type_hint: ExpressionValueTypeHint = (
                     self.node.state[self.from_registers].get_expression_node().value_type_hint
                 )
@@ -90,6 +92,7 @@ class FlatLoad(BaseInstruction):
 
                     vector_position += 1
                 expr_node = self.expression_manager.add_variable_node(reg_val, node_type_hint)
+                expr_node.value_type_hint = node_type_hint
                 self.node = set_reg_value(
                     self.node, reg_val, to_now, [], data_type, reg_type=register_type, expression_node=expr_node
                 )
@@ -108,42 +111,34 @@ class FlatLoad(BaseInstruction):
         expression_manager = ExpressionManager()
         if self.suffix in {"dword", "dwordx2", "dwordx4"}:
             if self.start_to_registers == self.from_registers:
-                output_just_for_if = self.node.parent[0].state[self.from_registers].val
-                output = expression_manager.expression_to_string(
+                output_node: ExpressionNode = (
                     self.node.parent[0].state[self.from_registers].get_expression_node()
                 )
-                data_type = self.node.parent[0].state[self.from_registers].data_type
             else:
-                output_just_for_if = self.node.state[self.from_registers].val
-                output = expression_manager.expression_to_string(
+                output_node: ExpressionNode = (
                     self.node.state[self.from_registers].get_expression_node()
                 )
-                data_type = self.node.state[self.from_registers].data_type
-            # todo fix me
-            output_orig = ""
-            if " + " in output_just_for_if:
-                print("bro, everything is fine")
-                print(output)
-                output_orig = make_elem_from_addr(output_just_for_if)
-                print(output_orig)
-            elif (
-                self.node.state[self.start_to_registers].data_type
-                != self.decompiler_data.names_of_vars[output_just_for_if][1:]
-            ):
-                output = f"*({make_opencl_type(self.decompiler_data.names_of_vars[output_just_for_if])}*)({output_just_for_if})"
-            else:
-                # todo make this inside expression_to_string
-                output = f"*{output}"
-            var_name = self.node.state[self.start_to_registers].val
-            var_name = expression_manager.expression_to_string(
+            output = expression_manager.expression_to_string(output_node)
+            if "[" not in output:
+                start_to_registers_node: ExpressionNode = (
+                    self.node.state[self.start_to_registers].get_expression_node()
+                )
+                if (
+                    start_to_registers_node.value_type_hint.opencl_type != output_node.value_type_hint.opencl_type
+                ):
+                    output = f"*({output_node.value_type_hint!s})({output})"
+                else:
+                    output = f"*{output}"
+            var_node: ExpressionNode = (
                 self.node.state[self.start_to_registers].get_expression_node()
             )
-            if is_vector_type(data_type):
+            var_name = expression_manager.expression_to_string(var_node)
+            if output_node.value_type_hint.is_vector_type():
                 if var_name[-2] == "s" and var_name[-1].isdigit():
                     var_name = var_name[:-5]
-                var_type = self.node.state[self.start_to_registers].data_type
-                if data_type != var_type:
-                    output = get_output_for_different_vector_types(output, var_type, data_type)
+                if output_node.value_type_hint.opencl_type != var_node.value_type_hint.opencl_type:
+                    output = get_output_for_different_vector_types(
+                        output, var_node.value_type_hint, output_node.value_type_hint)
             self.output_string = f"{var_name} = {output}"
             return self.output_string
         return super().to_print()
