@@ -181,6 +181,7 @@ def update_val_from_checked_variables(  # noqa: PLR0912, PLR0913
         changes,
         changes_expression_nodes):
     decompiler_data = DecompilerData()
+    expression_manager = ExpressionManager()
     instruction = curr_node.instruction
     if (
         register in curr_node.state
@@ -205,7 +206,7 @@ def update_val_from_checked_variables(  # noqa: PLR0912, PLR0913
         if expr_node.type == ExpressionType.VAR and expr_node.value == decompiler_data.variables[check_version]:
             var_node = expr_node
         else:
-            var_node = ExpressionManager().add_variable_node(
+            var_node = expression_manager.add_variable_node(
                 decompiler_data.variables[check_version], expr_node.value_type_hint.set_is_const(False)
             )
 
@@ -222,14 +223,14 @@ def update_val_from_checked_variables(  # noqa: PLR0912, PLR0913
                 )
             node_to_change_reg = register if re.match(r"(flat|global)_(store|load)", instruction[0]) else first_reg
             node_to_change = curr_node.state[node_to_change_reg].get_expression_node()
-            replaced_node = ExpressionManager().replace_node(node_to_change, expr_node, var_node)
+            replaced_node = expression_manager.replace_node(node_to_change, expr_node, var_node)
             curr_node.state[node_to_change_reg].set_expression_node(replaced_node)
         # а тут наоборот, наверное, надо сделать присвоение для первого регистра
         elif curr_node.state[first_reg].val.find(val_reg) != -1 and first_reg in {"vcc", "scc", "exec"}:
             curr_node.state[first_reg].register_content._value = curr_node.state[first_reg].val.replace(  # noqa: SLF001
                 val_reg, decompiler_data.variables[check_version]
             )
-            replaced_node = ExpressionManager().replace_node(
+            replaced_node = expression_manager.replace_node(
                 curr_node.state[first_reg].get_expression_node(), expr_node, var_node
             )
             curr_node.state[first_reg].set_expression_node(replaced_node)
@@ -237,7 +238,7 @@ def update_val_from_checked_variables(  # noqa: PLR0912, PLR0913
             curr_node.state[register].register_content._value = curr_node.state[register].val.replace(  # noqa: SLF001
                 val_reg, decompiler_data.variables[check_version]
             )
-            replaced_node = ExpressionManager().replace_node(
+            replaced_node = expression_manager.replace_node(
                 curr_node.state[register].get_expression_node(), expr_node, var_node
             )
             curr_node.state[register].set_expression_node(replaced_node)
