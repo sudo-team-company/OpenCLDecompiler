@@ -65,8 +65,6 @@ def create_parser():
 
 
 def start_point():
-    #todo caused by loop_unrolled example, can we fix it in any other way?
-    sys.setrecursionlimit(10000)
     namespace = create_parser().parse_args(sys.argv[1:])
     if not (namespace.input or namespace.output):
         print("""

@@ -315,12 +315,6 @@ class ExpressionNode:
         assert from_node is not None
         assert to_node is not None
 
-        # print("self:", ExpressionManager().expression_to_string(self))
-        # print("from_node:", ExpressionManager().expression_to_string(from_node))
-        # print("to_node:", ExpressionManager().expression_to_string(to_node))
-        # print("equal from", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(from_node), self == from_node, self.contents_equal(from_node))
-        # print("equal to", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(to_node), self == to_node)
-
         if ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(from_node) and self != from_node:
             pass
 
@@ -334,9 +328,7 @@ class ExpressionNode:
                 elif self.parent.right == self:
                     self.parent.right = to_node
             to_node.parent = self.parent
-            #todo can't I just return to_node here?
-            self = to_node
-            return self
+            return to_node
 
         if self.type == ExpressionType.OP:
             if self.left is not None:

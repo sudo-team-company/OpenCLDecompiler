@@ -22,7 +22,6 @@ usesetup_dict = {
         register_content=RegisterContent(
             value="get_local_size(0)",
             type_=RegisterType.LOCAL_SIZE_X,
-            #todo ???
             expression_node=ExpressionManager().get_empty_node()
         ),
     ),
