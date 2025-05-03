@@ -8,14 +8,14 @@ from src.expression_manager.expression_node import (
     ExpressionValueTypeHint,
     TypeAddressSpaceQualifiers,
 )
-from src.expression_manager.types.opencl_types import OpenCLType, OpenCLTypes
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.model.kernel_argument import KernelArgument
 from src.register_type import CONSTANT_VALUES, RegisterType
 
 VECTOR_COMPONENT_DELIMITER = "___s"
 
 @dataclass
-class VariableInfo:
+class ExpressionVariableInfo:
     name: str = ""
     var_node: ExpressionNode = None
     value_node: ExpressionNode = None
@@ -160,7 +160,6 @@ def evaluate_operation(# noqa: C901, PLR0912
             result = min(left_value, right_value)
     if result == int(result):
         result = int(result)
-    print("evalute:", left_value, op, right_value, result)
     return result
 
 def parse_variable_name( var_name: str) -> tuple[str, bool]:
@@ -272,6 +271,23 @@ def permute_expression_to_string(
         output = f"({expression_node.value_type_hint!s}){output}"
     return output
 
+def check_op_node_needs_brackets(op: ExpressionOperationType, child_node: ExpressionNode) -> bool:  # noqa: PLR0911
+    if child_node.type == ExpressionType.OP:
+        child_op: ExpressionOperationType = child_node.value
+        if child_op.is_bitshift_operator() or child_op.is_bitwise_operator():
+            return True
+        if ExpressionOperationType.are_operations_inverted(op, child_op):
+            return True
+        if ExpressionOperationType.are_operations_inverted(op, child_op):
+            return True
+        if op == child_op and op == ExpressionOperationType.MINUS:
+            return True
+        return op != child_op
+    elif child_node.type == ExpressionType.IF_TERNARY:  # noqa: RET505
+        return True
+    # child_node.type is either CONST, WORK_ITEM_FUNCTION, VAR, PERMUTE
+    return False
+
 def op_expression_to_string(
         expression_node: ExpressionNode,
         cast_to: ExpressionValueTypeHint) -> str:
@@ -286,13 +302,10 @@ def op_expression_to_string(
         return f"!({expression_to_string(left_node, cast_to)})"
 
     # special case for: data_ptr + smth => data_ptr[smth]
-    if str(left_node.value) == "var11":
-        pass
     if operation == ExpressionOperationType.PLUS and left_node.type == ExpressionType.VAR and left_node.value_type_hint.is_pointer and not left_node.value_type_hint.is_address and not cast_to.is_pointer:
         if expression_node.parent is None:
             return f"{left_node.value!s}[{expression_to_string(right_node, cast_to)}]"
         return f"{left_node.value!s}[{expression_to_string(right_node, cast_to)}"
-
 
     left_value = expression_to_string(
         left_node, cast_to
@@ -306,31 +319,14 @@ def op_expression_to_string(
 
     output = ""
 
-    def check_needs_brackets_op_node(op: ExpressionOperationType, child_node: ExpressionNode) -> bool:  # noqa: PLR0911
-        if child_node.type == ExpressionType.OP:
-            child_op: ExpressionOperationType = child_node.value
-            if child_op.is_bitshift_operator() or child_op.is_bitwise_operator():
-                return True
-            if ExpressionOperationType.are_operations_inverted(op, child_op):
-                return True
-            if ExpressionOperationType.are_operations_inverted(op, child_op):
-                return True
-            if op == child_op and op == ExpressionOperationType.MINUS:
-                return True
-            return op != child_op
-        elif child_node.type == ExpressionType.IF_TERNARY:  # noqa: RET505
-            return True
-        # child_node.type is either CONST, WORK_ITEM_FUNCTION, VAR, PERMUTE
-        return False
-
-    if check_needs_brackets_op_node(operation, left_node) and "[" not in left_value:
+    if check_op_node_needs_brackets(operation, left_node) and "[" not in left_value:
         output += f"({left_value})"
     else:
         output += left_value
 
     output += f" {operation.value} "
 
-    if check_needs_brackets_op_node(operation, right_node):
+    if check_op_node_needs_brackets(operation, right_node):
         output += f"({right_value})"
     else:
         output += right_value
