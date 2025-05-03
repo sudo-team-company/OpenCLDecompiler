@@ -8,9 +8,6 @@ from src.expression_manager.types.asm_types import ASMTypes
 from src.expression_manager.types.opencl_types import OpenCLType, OpenCLTypes
 
 
-class ExpressionEvaluationExceptionError(Exception):
-    pass
-
 class ExpressionType(Enum):
     UNKNOWN = auto()
     OP = auto()
@@ -28,8 +25,6 @@ class ExpressionOperationType(Enum):
         for expr_op_type in ExpressionOperationType:
             if s == expr_op_type.value:
                 return expr_op_type
-
-        assert False  # noqa: PT015
         return ExpressionOperationType.UNKNOWN
 
     def is_compare_operator(self):
@@ -104,12 +99,10 @@ class ExpressionOperationType(Enum):
     OR = "||"
     XOR = "^"
 
-    MIN = "min"
-
     BITWISE_AND = "&"
     BITWISE_OR = "|"
 
-    # other logical operator, see https://registry.khronos.org/OpenCL/specs/3.0-unified/html/OpenCL_C.html
+    MIN = "min"
 
 class TypeAddressSpaceQualifiers(Enum):
     UNKNOWN = ""
@@ -257,7 +250,7 @@ class ExpressionNode:
     def invert(self) -> "ExpressionNode":
         return self
 
-    def needs_cast(
+    def needs_cast(  # noqa: PLR0911, PLR0912
         self,
         to_hint: ExpressionValueTypeHint) -> bool:
         from_hint = self.value_type_hint
@@ -286,9 +279,7 @@ class ExpressionNode:
                 return False
             if re.fullmatch(r"0x[\da-f]+", str(self.value)) is not None:
                 return False
-            if isinstance(self.value, int) and self.value >= 0:
-                return False
-            return True
+            return not (isinstance(self.value, int) and self.value >= 0)
 
         # integer -> floating point / floating point -> integer
         # We can deduce it only for const nodes
@@ -311,12 +302,8 @@ class ExpressionNode:
         return self
 
     def replace(self, from_node: "ExpressionNode", to_node: "ExpressionNode") -> "ExpressionNode":
-        from src.expression_manager.expression_manager import ExpressionManager
         assert from_node is not None
         assert to_node is not None
-
-        if ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(from_node) and self != from_node:
-            pass
 
         if self.contents_equal(to_node):
             return self
@@ -345,17 +332,12 @@ class ExpressionNode:
 
         return self
 
-
-# todo check with C99 standard
 def get_common_type(first: OpenCLTypes, second: OpenCLTypes) -> OpenCLTypes:
-    if first == OpenCLTypes.UNKNOWN and second == OpenCLTypes.UNKNOWN:
-        return OpenCLTypes.UNKNOWN
+    if first == second:
+        return first
     if first == OpenCLTypes.UNKNOWN:
         return second
     if second == OpenCLTypes.UNKNOWN:
-        return first
-
-    if first == second:
         return first
 
     first_type: OpenCLType = copy.deepcopy(first.value)
@@ -367,35 +349,32 @@ def get_common_type(first: OpenCLTypes, second: OpenCLTypes) -> OpenCLTypes:
         float_type = second_type if first_type.is_integer else first_type
 
         if int_type.get_size() == float_type.get_size():
-            return OpenCLTypes.from_string(str(float_type))
-
-        float_type.number_of_components = max(float_type.number_of_components, int_type.number_of_components)
-        float_type.size_bytes = max(float_type.size_bytes, int_type.size_bytes)
-
-        return OpenCLTypes.from_string(str(float_type))
-
+            result_type = OpenCLTypes.from_string(str(float_type))
+        else:
+            float_type.number_of_components = max(float_type.number_of_components, int_type.number_of_components)
+            float_type.size_bytes = max(float_type.size_bytes, int_type.size_bytes)
+            result_type = OpenCLTypes.from_string(str(float_type))
     # interger/integer
-
-    if first_type.is_signed == second_type.is_signed:
+    elif first_type.is_signed == second_type.is_signed:
         first_type.number_of_components = max(first_type.number_of_components, second_type.number_of_components)
         first_type.size_bytes = max(first_type.size_bytes, second_type.size_bytes)
-
-        return OpenCLTypes.from_string(str(first_type))
-
-    if (first_type.is_signed and not second_type.is_signed) or (not first_type.is_signed and second_type.is_signed):
+        result_type = OpenCLTypes.from_string(str(first_type))
+    elif (first_type.is_signed and not second_type.is_signed) or (not first_type.is_signed and second_type.is_signed):
         signed_type = first_type if first_type.is_signed else second_type
         unsigned_type = second_type if first_type.is_signed else first_type
 
         signed_type.number_of_components = max(signed_type.number_of_components, unsigned_type.number_of_components)
         unsigned_type.number_of_components = signed_type.number_of_components
         if unsigned_type.size_bytes >= signed_type.size_bytes:
-            return OpenCLTypes.from_string(str(unsigned_type))
-        max_signed_value = pow(2, signed_type.size_bytes * 8) - 1
-        max_unsigned_value = pow(2, unsigned_type.size_bytes * 8) - 1
+            result_type = OpenCLTypes.from_string(str(unsigned_type))
+        else:
+            max_signed_value = pow(2, signed_type.size_bytes * 8) - 1
+            max_unsigned_value = pow(2, unsigned_type.size_bytes * 8) - 1
 
-        if max_signed_value >= max_unsigned_value:
-            return OpenCLTypes.from_string(str(signed_type))
-        signed_type.is_signed = False
-        return OpenCLTypes.from_string(str(signed_type))
+            if max_signed_value >= max_unsigned_value:
+                result_type = OpenCLTypes.from_string(str(signed_type))
+            else:
+                signed_type.is_signed = False
+                result_type = OpenCLTypes.from_string(str(signed_type))
 
-    return OpenCLTypes.UNKNOWN
+    return result_type
