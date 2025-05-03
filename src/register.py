@@ -73,6 +73,7 @@ class Register:
         return self.register_content.get_data_type()
 
     def get_expression_node(self) -> ExpressionNode:
+        print(ExpressionManager().expression_to_string(self.register_content.get_expression_node()))
         return self.register_content.get_expression_node()
 
     def set_expression_node(self, node: ExpressionNode):

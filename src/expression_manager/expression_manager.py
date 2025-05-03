@@ -313,10 +313,13 @@ class ExpressionManager(metaclass=Singleton):
 
         if ExpressionType.CONST in (s0.type, s1.type):
             const_node = s0 if s0.type == ExpressionType.CONST else s1
+            other_node = s1 if s0.type == ExpressionType.CONST else s0
             const_value = 1 if const_node.value else 0
             if op == ExpressionOperationType.OR and const_value:
                 return create_const_node(1, value_type_hint)
-            if op == ExpressionOperationType.AND and not const_value:
+            if op == ExpressionOperationType.AND:
+                if const_value:
+                    return other_node
                 return create_const_node(0, value_type_hint)
 
         return create_op_node(op, s0, s1, value_type_hint)
@@ -450,6 +453,18 @@ class ExpressionManager(metaclass=Singleton):
     def add_if_ternary_node(self, cond: ExpressionNode, s0: ExpressionNode, s1: ExpressionNode):
         if_ternary_node = create_if_ternary_node(cond, s0, s1)
 
+        unoptimized_cond = cond
+        if cond in self._optimized_nodes_to_original:
+            unoptimized_cond = self._optimized_nodes_to_original[cond]
+        unoptimized_s0 = s0
+        if s0 in self._optimized_nodes_to_original:
+            unoptimized_s0 = self._optimized_nodes_to_original[s0]
+        unoptimized_s1 = s1
+        if s1 in self._optimized_nodes_to_original:
+            unoptimized_s1 = self._optimized_nodes_to_original[s1]
+
+        self._optimized_nodes_to_original[if_ternary_node] = create_if_ternary_node(unoptimized_cond, unoptimized_s0, unoptimized_s1)
+
         self.add_node(if_ternary_node)
 
         return if_ternary_node
@@ -558,8 +573,8 @@ class ExpressionManager(metaclass=Singleton):
         var_name, is_pointer = parse_variable_name(name)
         #todo fix that - make sure var_name doesnt start with *, always pass is_pointer through ExpressionValueTypeHint
         value_type_hint.is_pointer |= is_pointer
-        print(var_name)
-        if var_name in {"gdata0"}:
+        print(var_name, str(value_type_hint))
+        if var_name in {"var9"}:
             pass
 
         existing_var_info = self.get_variable_info(var_name)
@@ -609,15 +624,20 @@ class ExpressionManager(metaclass=Singleton):
             from_node: ExpressionNode,
             to_node: ExpressionNode) -> ExpressionNode:
         print("replace_nodes:", self.expression_to_string(node), self.expression_to_string(from_node), self.expression_to_string(to_node))
-        if self.expression_to_string(node) == "data - 0.25":
+        if self.expression_to_string(to_node) == "va54":
             pass
+        original_node = copy.deepcopy(node)
+        node = node.replace(from_node, to_node)
+        print("after first replace:", self.expression_to_string(node), "original:", self.expression_to_string(original_node))
         # We could have optimized things that we want to replace :(
-        if node in self._optimized_nodes_to_original:
+        print(original_node.contents_equal(node), node in self._optimized_nodes_to_original)
+        if original_node.contents_equal(node) and node in self._optimized_nodes_to_original:
             unoptimized_node = self._optimized_nodes_to_original[node]
             print("found unoptimized node, so now:", self.expression_to_string(unoptimized_node), self.expression_to_string(from_node), self.expression_to_string(to_node))
 
-            node = node.replace(from_node, to_node)
             unoptimized_node = unoptimized_node.replace(from_node, to_node)
             self._optimized_nodes_to_original[node] = unoptimized_node
             return unoptimized_node
-        return node.replace(from_node, to_node)
+        else:
+            self._optimized_nodes_to_original[original_node] = node
+        return node

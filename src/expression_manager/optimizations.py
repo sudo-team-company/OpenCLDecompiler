@@ -2,7 +2,11 @@
 import itertools
 from dataclasses import dataclass
 
-from src.expression_manager.expression_node import ExpressionNode, ExpressionOperationType, ExpressionType
+from src.expression_manager.expression_node import (
+    ExpressionNode,
+    ExpressionOperationType,
+    ExpressionType,
+)
 from src.register_type import RegisterType
 
 
@@ -21,6 +25,9 @@ def const_zero_node(node: ExpressionNode) -> bool:
     if isinstance(val, str):
         val = int(val, base=16)
     return val == 0
+
+def negative_node(node: ExpressionNode) -> bool:
+    return node.sign == ExpressionNodeSign.NEGATIVE
 
 def const_negative_node(node: ExpressionNode) -> bool:
     if node.type != ExpressionType.CONST:

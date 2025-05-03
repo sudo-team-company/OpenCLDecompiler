@@ -182,5 +182,5 @@ def process_unrolled_loops():  # noqa: C901, PLR0912, PLR0915
 
             cur.children[0].state[dst].register_content._value = "acc"  # noqa: SLF001
             #todo checK???
-            cur.children[0].state[dst].register_content._expression_node = acc_node
+            cur.children[0].state[dst].set_expression_node(acc_node)
             cur.add_first_child(Region(RegionType.UNROLLED_LOOP, (before, first, last, diff, inside)))

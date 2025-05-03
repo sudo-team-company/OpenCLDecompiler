@@ -25,6 +25,7 @@ def create_const_node(value, value_type_hint: ExpressionValueTypeHint) -> Expres
     const_node.type = ExpressionType.CONST
     const_node.value = value
     const_node.value_type_hint = value_type_hint
+
     return const_node
 
 def create_var_node(var_name: str, var_type_hint: ExpressionValueTypeHint) -> ExpressionNode:
@@ -246,6 +247,8 @@ def expression_to_string(
     elif expression_node.type == ExpressionType.WORK_ITEM_FUNCTION:
         return work_item_function_expression_to_string(expression_node)
     else:
+        if expression_node.type == ExpressionType.VAR:
+            assert(expression_node.value_type_hint.opencl_type != OpenCLTypes.UNKNOWN)
         output = f"{expression_node.value}"
         if expression_node.needs_cast(cast_to):
             output = f"({cast_to!s})" + output

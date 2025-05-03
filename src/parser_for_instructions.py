@@ -61,11 +61,12 @@ def create_parser():
     )
     parser.add_argument("--cfg", help="path to output control flow graph")
     parser.add_argument("--unrolling_limit", help="number of repeations to recognize unrolled loop", default=16)
-
     return parser
 
 
 def start_point():
+    #todo caused by loop_unrolled example, can we fix it in any other way?
+    sys.setrecursionlimit(10000)
     namespace = create_parser().parse_args(sys.argv[1:])
     if not (namespace.input or namespace.output):
         print("""

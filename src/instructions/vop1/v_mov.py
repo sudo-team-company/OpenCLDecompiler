@@ -24,6 +24,7 @@ class VMov(BaseInstruction):
             if self.src0 in self.node.state:
                 new_reg = copy.deepcopy(self.node.state[self.src0])
                 assert(self.node.state[self.src0].get_expression_node() is not None)
+                print("moving:", self.expression_manager.expression_to_string(self.node.state[self.src0].get_expression_node()))
                 return set_reg(
                     node=self.node,
                     to_reg=self.vdst,

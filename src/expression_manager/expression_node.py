@@ -128,7 +128,7 @@ class ExpressionValueTypeHint:
 
     def __str__(self):
         return self.to_string(True)
-    
+
     def to_string(self, with_pointer: bool):
         qualifier_str = f"{self.qualifier.value} " if self.qualifier != TypeAddressSpaceQualifiers.UNKNOWN else ""
         const_str = "const " if self.is_const else ""
@@ -180,26 +180,31 @@ class ExpressionValueTypeHint:
 
     def size_bytes(self):
         return self.opencl_type.value.get_size()
-    
+
     def number_of_components(self):
         return self.opencl_type.value.number_of_components
-    
+
     def set_number_of_components(self, number_of_components: int) -> "ExpressionValueTypeHint":
         res = copy.deepcopy(self)
         res.opencl_type = self.opencl_type.set_number_of_components(number_of_components)
         return res
-    
-    def set_is_integer(self, is_integer: bool) -> "ExpressionValueTypeHint":
+
+    def set_is_integer(self, is_integer: bool) -> "ExpressionValueTypeHint":  # noqa: FBT001
         res = copy.deepcopy(self)
         res.opencl_type = self.opencl_type.set_is_integer(is_integer)
         return res
-    
+
+    def set_is_const(self, is_const: bool) -> "ExpressionValueTypeHint":  # noqa: FBT001
+        res = copy.deepcopy(self)
+        res.is_const = is_const
+        return res
+
     def is_integer(self):
         return self.opencl_type.value.is_integer
-    
+
     def is_signed(self):
         return self.opencl_type.value.is_signed
-    
+
     def is_unknown(self):
         return self.opencl_type == OpenCLTypes.UNKNOWN
 
@@ -221,7 +226,7 @@ class ExpressionNode:
             f"\tparent: {str(self.parent.id) if self.parent is not None else "None"}\n"
             f"\ttype: {self.type!s}\n"
             f"\tvalue: {self.value!s}\n"
-            f"\tvalue_type_hint: {self.value_type_hint}"
+            f"\tvalue_type_hint: {self.value_type_hint!s}"
         )
 
     def __eq__(self, other: "ExpressionNode"):
@@ -233,7 +238,7 @@ class ExpressionNode:
             and self.value == other.value
             and self.value_type_hint == other.value_type_hint
         )
-    
+
     def __hash__(self):
         return hash(str(self.id))
 
@@ -249,22 +254,9 @@ class ExpressionNode:
             and self.value_type_hint == other.value_type_hint
         )
 
-    def __add__(self, other: "ExpressionNode"):
-        op_node = ExpressionNode()
-        op_node.type = ExpressionType.OP
-        op_node.value = ExpressionOperationType.PLUS
-        op_node.value_type_hint = get_common_type(self.value_type_hint, other.value_type_hint)
-        op_node.left = self
-        op_node.right = other
-
-        self.parent = op_node
-        other.parent = op_node
-
-        return op_node
-
     def invert(self) -> "ExpressionNode":
         return self
-    
+
     def needs_cast(
         self,
         to_hint: ExpressionValueTypeHint) -> bool:
@@ -276,7 +268,7 @@ class ExpressionNode:
 
         if from_hint == to_hint:
             return False
-        
+
         if from_hint.number_of_components() != to_hint.number_of_components():
             return True
 
@@ -295,7 +287,7 @@ class ExpressionNode:
             if isinstance(self.value, int) and self.value >= 0:
                 return False
             return True
-        
+
         # integer -> floating point / floating point -> integer
         # We can deduce it only for const nodes
         if self.type == ExpressionType.CONST:
@@ -309,8 +301,7 @@ class ExpressionNode:
             if to_hint.is_signed():
                 return self.value != int(self.value) or is_to_type_smaller
             # floating point -> unsigned integer
-            else:
-                return self.value < 0.0 or is_to_type_smaller
+            return self.value < 0.0 or is_to_type_smaller
         return is_to_type_smaller
 
     def cast_to(self, to_type: OpenCLTypes) -> "ExpressionNode":
@@ -327,7 +318,7 @@ class ExpressionNode:
         print("to_node:", ExpressionManager().expression_to_string(to_node))
         print("equal from", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(from_node), self == from_node, self.contents_equal(from_node))
         print("equal to", ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(to_node), self == to_node)
-        
+
         if ExpressionManager().expression_to_string(self) == ExpressionManager().expression_to_string(from_node) and self != from_node:
             pass
 
@@ -365,9 +356,9 @@ class ExpressionNode:
 def get_common_type(first: OpenCLTypes, second: OpenCLTypes) -> OpenCLTypes:
     if first == OpenCLTypes.UNKNOWN and second == OpenCLTypes.UNKNOWN:
         return OpenCLTypes.UNKNOWN
-    elif first == OpenCLTypes.UNKNOWN:
+    if first == OpenCLTypes.UNKNOWN:
         return second
-    elif second == OpenCLTypes.UNKNOWN:
+    if second == OpenCLTypes.UNKNOWN:
         return first
 
     if first == second:
@@ -405,14 +396,12 @@ def get_common_type(first: OpenCLTypes, second: OpenCLTypes) -> OpenCLTypes:
         unsigned_type.number_of_components = signed_type.number_of_components
         if unsigned_type.size_bytes >= signed_type.size_bytes:
             return OpenCLTypes.from_string(str(unsigned_type))
-        else:
-            max_signed_value = pow(2, signed_type.size_bytes * 8) - 1
-            max_unsigned_value = pow(2, unsigned_type.size_bytes * 8) - 1
+        max_signed_value = pow(2, signed_type.size_bytes * 8) - 1
+        max_unsigned_value = pow(2, unsigned_type.size_bytes * 8) - 1
 
-            if max_signed_value >= max_unsigned_value:
-                return OpenCLTypes.from_string(str(signed_type))
-            else:
-                signed_type.is_signed = False
-                return OpenCLTypes.from_string(str(signed_type))
+        if max_signed_value >= max_unsigned_value:
+            return OpenCLTypes.from_string(str(signed_type))
+        signed_type.is_signed = False
+        return OpenCLTypes.from_string(str(signed_type))
 
     return OpenCLTypes.UNKNOWN

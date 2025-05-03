@@ -3,6 +3,8 @@ from collections import deque
 
 from src.decompiler_data import DecompilerData
 from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.expression_node import ExpressionValueTypeHint
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.region_type import RegionType
 from src.regions.region import Region
 from src.register_type import RegisterType
@@ -217,7 +219,8 @@ def make_var_for_loop(curr_node, register, version, prev_version):
     else:
         variable = "var" + str(decompiler_data.num_of_var)
         prev_value_node = curr_node.state[register].get_expression_node()
-        variable_value_type_hint = prev_value_node.value_type_hint
+        variable_value_type_hint = prev_value_node.value_type_hint.set_is_const(False)
+        assert(variable_value_type_hint.opencl_type != OpenCLTypes.UNKNOWN)
         ExpressionManager().add_variable_node(variable, variable_value_type_hint)
         decompiler_data.num_of_var += 1
     data_type = curr_node.state[register].data_type
