@@ -309,8 +309,9 @@ class ExpressionNode:
         return is_to_type_smaller
 
     def cast_to(self, to_type: OpenCLTypes) -> "ExpressionNode":
-        self.value_type_hint.opencl_type = to_type
-        return self
+        res = copy.deepcopy(self)
+        res.value_type_hint.opencl_type = to_type
+        return res
 
     def replace(self, from_node: "ExpressionNode", to_node: "ExpressionNode") -> "ExpressionNode":
         assert from_node is not None
