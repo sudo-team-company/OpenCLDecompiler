@@ -28,6 +28,7 @@ from src.expression_manager.expression_node import (
 from src.expression_manager.expression_optimizations import (
     NodeSumInfo,
     const_negative_node,
+    const_non_zero_node,
     const_one_node,
     const_zero_node,
     group_id_node_mul_size_of_work_groups,
@@ -46,7 +47,6 @@ class ExpressionManager(metaclass=Singleton):
         self._name_of_program = ""
         self._size_of_workgroups = []
         self._optimized_nodes_to_original: dict[ExpressionNode, ExpressionNode] = {}
-        self._replaced_nodes_to_original: dict[ExpressionNode, ExpressionNode] = {}
 
     def set_name_of_program(self, name_of_program: str):
         self._name_of_program = name_of_program
@@ -60,7 +60,6 @@ class ExpressionManager(metaclass=Singleton):
         self._variables_for_programs = {}
         self._size_of_workgroups = []
         self._optimized_nodes_to_original = {}
-        self._replaced_nodes_to_original = {}
 
     def add_node(self, node: ExpressionNode):
         assert node is not None
@@ -322,9 +321,9 @@ class ExpressionManager(metaclass=Singleton):
 
         if op == ExpressionOperationType.XOR:
             if s0.type == ExpressionType.UNKNOWN:
-                return self.logical_not_node(s1)
+                return self.add_logical_not_node(s1)
             if s1.type == ExpressionType.UNKNOWN:
-                return self.logical_not_node(s0)
+                return self.add_logical_not_node(s0)
 
         if ExpressionType.CONST in (s0.type, s1.type):
             const_node = s0 if s0.type == ExpressionType.CONST else s1
@@ -394,14 +393,28 @@ class ExpressionManager(metaclass=Singleton):
         self.add_node(operation_node)
         return operation_node
 
-    def logical_not_node(self, node: ExpressionNode) -> ExpressionNode:
+    def add_logical_not_node(self, node: ExpressionNode) -> ExpressionNode:
         assert node is not None
 
-        # double not optimization
-        if node.type == ExpressionType.OP and node.value == ExpressionOperationType.NOT:
-            return node.left
+        optimized_node = None
+        if node.type == ExpressionType.OP:
+            # double not optimization
+            if node.value == ExpressionOperationType.NOT:
+                optimized_node = copy.deepcopy(node.left)
+            # apply not for compare operators
+            if node.value.is_compare_operator():
+                optimized_node = copy.deepcopy(node)
+                optimized_node.value = ExpressionOperationType.get_inverted_operation(optimized_node.value)
+        elif const_zero_node(node):
+            optimized_node = self.add_const_node(1, OpenCLTypes.UINT)
+        elif const_non_zero_node(node):
+            optimized_node = self.add_const_node(0, OpenCLTypes.UINT)
 
         logical_not_node = create_logical_not_node(node)
+
+        if optimized_node is not None:
+            self._optimized_nodes_to_original[optimized_node] = logical_not_node
+            return optimized_node
 
         self.add_node(logical_not_node)
         return logical_not_node
@@ -643,7 +656,7 @@ class ExpressionManager(metaclass=Singleton):
             return None
         if node.type == ExpressionType.OP:
             if node.value == ExpressionOperationType.NOT:
-                return self.logical_not_node(node.left)
+                return self.add_logical_not_node(node.left)
             return self.add_operation(
                 self.apply_optimizations(node.left),
                 self.apply_optimizations(node.right),

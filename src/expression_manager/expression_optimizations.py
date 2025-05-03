@@ -17,6 +17,12 @@ def const_one_node(node: ExpressionNode) -> bool:
     return val == 1
 
 
+def const_non_zero_node(node: ExpressionNode) -> bool:
+    if node.type != ExpressionType.CONST:
+        return False
+    return not const_zero_node(node)
+
+
 def const_zero_node(node: ExpressionNode) -> bool:
     if node.type != ExpressionType.CONST:
         return False

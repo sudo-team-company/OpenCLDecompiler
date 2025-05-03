@@ -53,7 +53,7 @@ class ExpressionOperationType(Enum):
         return self in (ExpressionOperationType.BITWISE_AND, ExpressionOperationType.BITWISE_OR)
 
     @staticmethod
-    def are_operations_inverted(first: "ExpressionOperationType", second: "ExpressionOperationType"):
+    def get_inverted_operation(op: "ExpressionOperationType"):
         _inv_ops = {
             ExpressionOperationType.PLUS: ExpressionOperationType.MINUS,
             ExpressionOperationType.MINUS: ExpressionOperationType.PLUS,
@@ -68,8 +68,15 @@ class ExpressionOperationType(Enum):
             ExpressionOperationType.LE: ExpressionOperationType.GT,
             ExpressionOperationType.GT: ExpressionOperationType.LE,
         }
-        if first in _inv_ops:
-            return _inv_ops[first] == second
+        if op in _inv_ops:
+            return _inv_ops[op]
+        return ExpressionOperationType.UNKNOWN
+
+    @staticmethod
+    def are_operations_inverted(first: "ExpressionOperationType", second: "ExpressionOperationType"):
+        first_inverted = ExpressionOperationType.get_inverted_operation(first)
+        if first_inverted != ExpressionOperationType.UNKNOWN:
+            return first_inverted == second
         return False
 
     UNKNOWN = "UNKNOWN"
