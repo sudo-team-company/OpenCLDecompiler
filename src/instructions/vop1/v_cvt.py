@@ -1,6 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
-from src.expression_manager.expression_node import ExpressionType
+from src.expression_manager.expression_node import ExpressionType, ExpressionValueTypeHint
 from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.opencl_types import make_opencl_type
 from src.register import check_and_split_regs

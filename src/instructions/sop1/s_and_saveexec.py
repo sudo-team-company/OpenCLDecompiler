@@ -25,7 +25,6 @@ class SAndSaveexec(BaseInstruction):
 
             prev_exec_cond_node = self.node.get_expression_node("exec")
 
-            #todo double check?
             self.decompiler_data.exec_registers[self.sdst] = old_exec_condition
             set_reg_value(
                 self.node,
@@ -42,9 +41,6 @@ class SAndSaveexec(BaseInstruction):
             new_exec_cond_node = self.node.get_expression_node(self.ssrc0)
 
             expr_node = new_exec_cond_node
-            # if prev_exec_cond_node.type == ExpressionType.UNKNOWN:
-            # else:
-            #     expr_node = self.expression_manager.add_operation(prev_exec_cond_node, new_exec_cond_node, ExpressionOperationType.AND, OpenCLTypes.UINT if self.suffix == "b32" else OpenCLTypes.ULONG)
 
             return set_reg_value(
                 self.node,

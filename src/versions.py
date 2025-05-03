@@ -36,12 +36,7 @@ def update_reg_version(reg, curr_node, max_version, prev_versions_of_reg):
             old_var = decompiler_data.checked_variables[prev]
             decompiler_data.checked_variables[prev] = variable
             decompiler_data.variables = {k: v.replace(old_var, variable) for k, v in decompiler_data.variables.items()}
-    print(curr_node.state[reg].register_content._value)
     curr_node.state[reg].register_content._value = variable  # noqa: SLF001
-    print(curr_node.state[reg].register_content._value)
-
-    #todo do we need additional checks?
-    print("before", reg, curr_node.state[reg].register_content._value, ExpressionManager().expression_to_string(curr_node.state[reg].register_content._expression_node))
 
     # Get all type hints from previous versions, because we need to find common type for variable
     prev_node_value_type_hints = []
@@ -56,9 +51,7 @@ def update_reg_version(reg, curr_node, max_version, prev_versions_of_reg):
     if value_type_hint.opencl_type == OpenCLTypes.UNKNOWN:
         value_type_hint.opencl_type = OpenCLTypes.UINT
     var_node = ExpressionManager().add_variable_node(variable, value_type_hint)
-
     curr_node.state[reg].set_expression_node(var_node)
-    print("after", reg, curr_node.state[reg].register_content._value, ExpressionManager().expression_to_string(curr_node.state[reg].register_content._expression_node))
 
     if curr_node.state[reg].type in {
         RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT,

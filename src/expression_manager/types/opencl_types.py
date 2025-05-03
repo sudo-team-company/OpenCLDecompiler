@@ -45,7 +45,6 @@ class UnknownOpenCLType(OpenCLType):
     def __init__(self):
         super().__init__(0)
 
-#todo: add ptr, local and const
 class OpenCLTypes(Enum):
     def __str__(self):
         return str(self.value)

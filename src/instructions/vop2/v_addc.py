@@ -35,7 +35,6 @@ class VAddc(BaseInstruction):
 
     def to_fill_node(self):
         if self.decompiler_data.is_rdna3 and is_reg(self.src0) and is_reg(self.src1):
-            assert(self.node.state[self.src0].register_content.get_expression_node() is not None and self.node.state[self.src1].register_content.get_expression_node() is not None)
             new_reg = self.node.state[self.src0] + self.node.state[self.src1]
 
             return set_reg(
@@ -75,13 +74,11 @@ class VAddc(BaseInstruction):
                         self.node.state[self.src0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT
                         and self.node.state[self.src1].type == RegisterType.GLOBAL_ID_X
                     ):
-                        #todo check that default nodes sum will work here, should work
                         new_value = f"{self.node.state[self.src0].val}[get_global_id(0)]"
                         reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT
                         global_id_node = self.expression_manager.add_register_node(RegisterType.GLOBAL_ID_X)
                         expr_node = self.expression_manager.add_operation(
                             src0_node, global_id_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG)
-                        # expr_node.value_type_hint.is_address = True
             else:
                 reg_type = RegisterType.INT32
                 if src0_reg:

@@ -1,4 +1,3 @@
-#todo also move here simplifactions for different operations?? like + and so on, so we can remove all if checks
 from dataclasses import dataclass
 
 from src.expression_manager.expression_node import (

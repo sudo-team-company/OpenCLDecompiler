@@ -27,8 +27,6 @@ class SAddc(BaseInstruction):
 
     def to_fill_node(self):
         if self.decompiler_data.is_rdna3 and is_reg(self.ssrc0) and is_reg(self.ssrc1):
-            assert(self.node.state[self.ssrc0].register_content.get_expression_node() is not None and self.node.state[self.ssrc1].register_content.get_expression_node() is not None)
-
             new_reg = self.node.state[self.ssrc0] + self.node.state[self.ssrc1]
 
             return set_reg(
@@ -52,21 +50,17 @@ class SAddc(BaseInstruction):
             if self.ssrc0.isdigit() and int(self.ssrc0) == 0 and ssrc1_reg:
                 new_value = self.node.state[self.ssrc1].val
                 reg_type = self.node.state[self.ssrc1].type
-
-                #todo - put it inside optimization?
                 expr_node = src1_node
             if self.ssrc1.isdigit() and int(self.ssrc1) == 0 and ssrc0_reg:
                 new_value = self.node.state[self.ssrc0].val
                 reg_type = self.node.state[self.ssrc0].type
-
-                #todo - same as above
                 expr_node = src0_node
             if ssrc0_reg and self.node.state[self.ssrc0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
                 if self.node.state[self.ssrc0].data_type in {"u32", "i32", "gu32", "gi32"}:
                     new_value = make_op(self.node, self.ssrc1, "4", "/", suffix=self.suffix)
                     new_value = make_op(self.node, self.ssrc0, new_value, "+", suffix=self.suffix)
 
-                    expr_node = self.expression_manager.add_offset_div_data_size(
+                    expr_node = self.expression_manager.add_offset_div_data_size_node(
                         src0_node, src1_node, 4, OpenCLTypes.from_string(self.suffix))
                 if self.ssrc0 == self.sdst:
                     data_type = self.node.parent[0].state[self.ssrc0].data_type
@@ -75,9 +69,16 @@ class SAddc(BaseInstruction):
                 reg_type = self.node.state[self.ssrc0].type
 
             if expr_node is None:
-                expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.UINT)
+                expr_node = self.expression_manager.add_operation(
+                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.UINT)
 
             return set_reg_value(
-                self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], data_type, reg_type=reg_type, expression_node=expr_node
+                self.node,
+                new_value,
+                self.sdst,
+                [self.ssrc0, self.ssrc1],
+                data_type,
+                reg_type=reg_type,
+                expression_node=expr_node
             )
         return super().to_fill_node()

@@ -82,7 +82,7 @@ class SAdd(BaseInstruction):
                         data_type = "8 bytes"
 
                     data_size = 4 if self.node.state[self.ssrc1].data_type == "4 bytes" else 8
-                    expr_node = self.expression_manager.add_offset_div_data_size(
+                    expr_node = self.expression_manager.add_offset_div_data_size_node(
                         src0_node, src1_node, data_size, OpenCLTypes.from_string(self.suffix))
                 elif ssrc0_type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
                     reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT
@@ -90,7 +90,7 @@ class SAdd(BaseInstruction):
                         new_value = make_op(self.node, self.ssrc1, "4", "/", suffix=self.suffix)
                         new_value = make_op(self.node, self.ssrc0, new_value, "+", suffix=self.suffix)
 
-                        expr_node = self.expression_manager.add_offset_div_data_size(
+                        expr_node = self.expression_manager.add_offset_div_data_size_node(
                             src0_node, src1_node, 4, OpenCLTypes.from_string(self.suffix))
                 elif RegisterType.KERNEL_ARGUMENT_VALUE in src_types:
                     reg_type = RegisterType.KERNEL_ARGUMENT_VALUE
@@ -108,7 +108,7 @@ class SAdd(BaseInstruction):
                     new_value = make_op(self.node, self.ssrc1, "4", "/", suffix=self.suffix)
                     new_value = make_op(self.node, self.ssrc0, new_value, "+", suffix=self.suffix)
 
-                    expr_node = self.expression_manager.add_offset_div_data_size(
+                    expr_node = self.expression_manager.add_offset_div_data_size_node(
                         src0_node, src1_node, 4, OpenCLTypes.from_string(self.suffix))
             if self.node.state[self.ssrc0].type == RegisterType.ADDRESS_KERNEL_ARGUMENT:
                 if self.ssrc0 == self.sdst:

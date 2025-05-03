@@ -67,7 +67,7 @@ class ExpressionManager(metaclass=Singleton):
         assert node.value_type_hint.opencl_type != OpenCLTypes.UNKNOWN
         self._nodes.append(node)
 
-    def add_offset_div_data_size(
+    def add_offset_div_data_size_node(
             self,
             s0: ExpressionNode,
             s1: ExpressionNode,

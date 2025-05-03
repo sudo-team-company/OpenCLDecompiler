@@ -53,7 +53,7 @@ class VAdd(BaseInstruction):
                     data_size, _ = evaluate_size(data_type, only_size=True)
                     new_value = make_op(self.node, self.src1, str(data_size), "/", suffix=self.suffix)
 
-                    expr_node = self.expression_manager.add_offset_div_data_size(
+                    expr_node = self.expression_manager.add_offset_div_data_size_node(
                         self.node.get_expression_node(self.src0),
                         self.node.get_expression_node(self.src1),
                         data_size,
@@ -96,13 +96,12 @@ class VAdd(BaseInstruction):
             right_node = None
             expr_node = None
             if src0_reg and src1_reg:
-                assert(self.src0 in self.node.state and self.src1 in self.node.state)
                 left_node = self.node.get_expression_node(self.src0)
                 right_node = self.node.get_expression_node(self.src1)
             elif src0_reg:
                 assert(self.src0 in self.node.state)
                 left_node = self.node.get_expression_node(self.src0)
-                right_node = self.expression_manager.add_const_node(self.src1, OpenCLTypes.UINT) #todo: optimize type here? or inside func
+                right_node = self.expression_manager.add_const_node(self.src1, OpenCLTypes.UINT)
             elif src1_reg:
                 assert(self.src1 in self.node.state)
                 left_node = self.expression_manager.add_const_node(self.src0, OpenCLTypes.UINT)
@@ -111,12 +110,12 @@ class VAdd(BaseInstruction):
                 left_node = self.expression_manager.add_const_node(self.src0, OpenCLTypes.UINT)
                 right_node = self.expression_manager.add_const_node(self.src1, OpenCLTypes.UINT)
 
-            expr_node = self.expression_manager.add_operation(left_node, right_node, ExpressionOperationType.PLUS, OpenCLTypes.UINT)
+            expr_node = self.expression_manager.add_operation(
+                left_node, right_node, ExpressionOperationType.PLUS, OpenCLTypes.UINT)
 
             reg_type = RegisterType.UNKNOWN
             reg_entire = Integrity.ENTIRE
             if src0_reg and src1_reg:
-                #todo - all this could be hidden inside tree?
                 reg_entire = self.node.state[self.src1].integrity
                 if (
                     self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE_OFFSET
@@ -172,7 +171,7 @@ class VAdd(BaseInstruction):
 
                     src0_node = self.node.get_expression_node(self.src0)
                     src1_node = self.node.get_expression_node(self.src1)
-                    expr_node = self.expression_manager.add_offset_div_data_size(
+                    expr_node = self.expression_manager.add_offset_div_data_size_node(
                         src0_node, src1_node, data_size, OpenCLTypes.from_string(self.suffix))
                 elif self.node.state[self.src0].type == RegisterType.GLOBAL_DATA_POINTER:
                     data_type = self.node.state[self.src1].data_type
@@ -193,7 +192,7 @@ class VAdd(BaseInstruction):
                                 is_pointer=True)
                         )
                         src1_node = self.node.get_expression_node(self.src1)
-                        expr_node = self.expression_manager.add_offset_div_data_size(
+                        expr_node = self.expression_manager.add_offset_div_data_size_node(
                             src0_node, src1_node, value, OpenCLTypes.from_string(self.suffix))
                 elif (
                     self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE
@@ -248,7 +247,7 @@ class VAdd(BaseInstruction):
 
                         src0_node = self.node.get_expression_node(self.src0)
                         src1_node = self.node.get_expression_node(self.src1)
-                        expr_node = self.expression_manager.add_offset_div_data_size(
+                        expr_node = self.expression_manager.add_offset_div_data_size_node(
                             src0_node, src1_node, data_size, OpenCLTypes.from_string(self.suffix))
                         expr_node.value_type_hint.is_address = True
                 if src1_reg:
@@ -284,7 +283,8 @@ class VAdd(BaseInstruction):
                 new_value = make_op(
                     self.node, start_from_src0, start_from_src1, "+", "(double)", "(double)", suffix=self.suffix
                 )
-                expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.DOUBLE)
+                expr_node = self.expression_manager.add_operation(
+                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.DOUBLE)
             return set_reg_value(
                 self.node,
                 new_value,
