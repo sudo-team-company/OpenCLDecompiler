@@ -15,7 +15,7 @@ class RegisterContent:
         size: list | int = DEFAULT_REGISTER_SIZE,
         data_type: list | str | None = None,
         sign: list | RegisterSignType = RegisterSignType.POSITIVE,
-        expression_node: list[ExpressionNode] | ExpressionNode = None
+        expression_node: list[ExpressionNode] | ExpressionNode = None,
     ):
         if type_ is RegisterType and type_ in CONSTANT_VALUES:
             self._type = type_
@@ -48,10 +48,10 @@ class RegisterContent:
 
     def get_sign(self) -> RegisterSignType:
         return self._sign
-    
+
     def get_expression_node(self) -> ExpressionNode:
         return self._expression_node
-    
+
     def set_expression_node(self, node: ExpressionNode):
         self._expression_node = node
 
@@ -121,7 +121,7 @@ class RegisterContent:
                         type_=RegisterType.UNKNOWN,
                         size=0,
                         data_type=None,
-                        expression_node=ExpressionManager().add_const_node(other, OpenCLTypes.UINT)
+                        expression_node=ExpressionManager().add_const_node(other, OpenCLTypes.UINT),
                     ),
                 ],
             )
@@ -177,7 +177,7 @@ class RegisterContent:
                         type_=RegisterType.INT32,
                         size=0,
                         data_type=None,
-                        expression_node=ExpressionManager().add_const_node(other, OpenCLTypes.INT)
+                        expression_node=ExpressionManager().add_const_node(other, OpenCLTypes.INT),
                     ),
                 ],
             )

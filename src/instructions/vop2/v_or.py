@@ -45,7 +45,7 @@ class VOr(BaseInstruction):
     def to_fill_node(self):
         if self.suffix == "b32":
             new_value = None
-            
+
             src0_node = self.node.get_expression_node(self.src0)
             src1_node = self.node.get_expression_node(self.src1)
             expr_node = None
@@ -54,7 +54,9 @@ class VOr(BaseInstruction):
                 RegisterType[f"WORK_ITEM_ID_{dim}"] for dim in "XYZ"
             ]:
                 new_value = make_op(self.node, self.src0, self.src1, "+", "(ulong)", "(ulong)", suffix=self.suffix)
-                expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG)
+                expr_node = self.expression_manager.add_operation(
+                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG
+                )
             if self.src0.isdigit() and is_reg(self.src1):
                 src_types = frozenset(
                     {
@@ -64,7 +66,9 @@ class VOr(BaseInstruction):
                 )
                 if src_types in self._instruction_special_cases:
                     new_value = make_op(self.node, self.src0, self.src1, "+", "(ulong)", "(ulong)", suffix=self.suffix)
-                    expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG)
+                    expr_node = self.expression_manager.add_operation(
+                        src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG
+                    )
             if is_reg(self.src0) and is_reg(self.src1):
                 src_types = frozenset(
                     {
@@ -74,7 +78,9 @@ class VOr(BaseInstruction):
                 )
                 if src_types in self._instruction_special_cases:
                     new_value = make_op(self.node, self.src0, self.src1, "+", "(ulong)", "(ulong)", suffix=self.suffix)
-                    expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG)
+                    expr_node = self.expression_manager.add_operation(
+                        src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG
+                    )
             if new_value is not None:
                 return set_reg_value(
                     node=self.node,
@@ -83,6 +89,6 @@ class VOr(BaseInstruction):
                     from_regs=[self.src0, self.src1],
                     data_type=self.suffix,
                     integrity=self.node.state[self.src1].integrity,
-                    expression_node=expr_node
+                    expression_node=expr_node,
                 )
         return super().to_fill_node()

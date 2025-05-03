@@ -41,23 +41,19 @@ def set_reg_value(  # noqa: PLR0913
     sign: RegisterSignType | list[RegisterSignType] = RegisterSignType.POSITIVE,
     operation: OperationType | None = None,
     size: list[int] | None = None,
-    expression_node: ExpressionNode = None
+    expression_node: ExpressionNode = None,
 ):
     decompiler_data = DecompilerData()
     if register_content_type == RegisterContent:
         node.state[to_reg] = Register(
             integrity=integrity,
             register_content=RegisterContent(
-                value=new_value,
-                type_=reg_type,
-                sign=sign,
-                data_type=data_type,
-                expression_node=expression_node
+                value=new_value, type_=reg_type, sign=sign, data_type=data_type, expression_node=expression_node
             ),
         )
         node.state[to_reg].try_simplify()
     elif register_content_type == CombinedRegisterContent:
-        assert(expression_node is not None)
+        assert expression_node is not None
         node.state[to_reg] = Register(
             integrity=integrity,
             register_content=CombinedRegisterContent(
@@ -73,7 +69,7 @@ def set_reg_value(  # noqa: PLR0913
                         new_value, reg_type, sign, data_type, size, strict=False
                     )
                 ],
-                expression_node=expression_node
+                expression_node=expression_node,
             ),
         )
     elif register_content_type == OperationRegisterContent:
@@ -90,7 +86,7 @@ def set_reg_value(  # noqa: PLR0913
                         )
                         for value, type_ in zip(new_value, reg_type, strict=False)
                     ],
-                    expression_node=expression_node
+                    expression_node=expression_node,
                 ),
             )
         elif isinstance(data_type, list):
@@ -107,7 +103,7 @@ def set_reg_value(  # noqa: PLR0913
                         )
                         for value, type_, sign_, data_type_ in zip(new_value, reg_type, sign, data_type, strict=False)
                     ],
-                    expression_node=expression_node
+                    expression_node=expression_node,
                 ),
             )
         else:
@@ -124,7 +120,7 @@ def set_reg_value(  # noqa: PLR0913
                         )
                         for value, type_, sign_ in zip(new_value, reg_type, sign, strict=False)
                     ],
-                    expression_node=expression_node
+                    expression_node=expression_node,
                 ),
             )
     else:
@@ -161,7 +157,7 @@ def set_reg(
         )
         else None,
         size=reg.register_content._size,  # noqa: SLF001
-        expression_node=reg.register_content._expression_node
+        expression_node=reg.register_content._expression_node,
     )
 
 
@@ -189,13 +185,17 @@ def compare_values(node: Node, to_reg: str, from_reg0: str, from_reg1: str, oper
 
     src0_node = node.get_expression_node(from_reg0)
     src1_node = node.get_expression_node(from_reg1)
-    expr_node = ExpressionManager().add_operation(src0_node, src1_node, ExpressionOperationType.from_string(operation), OpenCLTypes.from_string(suffix))
-    
+    expr_node = ExpressionManager().add_operation(
+        src0_node, src1_node, ExpressionOperationType.from_string(operation), OpenCLTypes.from_string(suffix)
+    )
+
     if is_range(to_reg):
-        #todo fix with range
+        # todo fix with range
         low, high = split_range(to_reg)
         set_reg_value(node, new_value, low, from_regs, suffix, integrity=Integrity.LOW_PART, expression_node=expr_node)
-        set_reg_value(node, new_value, high, from_regs, suffix, integrity=Integrity.HIGH_PART, expression_node=expr_node)
+        set_reg_value(
+            node, new_value, high, from_regs, suffix, integrity=Integrity.HIGH_PART, expression_node=expr_node
+        )
     else:
         set_reg_value(node, new_value, to_reg, from_regs, suffix, expression_node=expr_node)
     return node
@@ -592,14 +592,15 @@ class DecompilerData(metaclass=Singleton):
                     type_=[RegisterType.WORK_GROUP_ID_X, RegisterType.WORK_GROUP_ID_Y, RegisterType.WORK_GROUP_ID_Z][
                         dim
                     ],
-                    expression_node=ExpressionManager().add_register_node([RegisterType.WORK_GROUP_ID_X, RegisterType.WORK_GROUP_ID_Y, RegisterType.WORK_GROUP_ID_Z][
-                        dim
-                    ], f"get_group_id({dim})")
+                    expression_node=ExpressionManager().add_register_node(
+                        [RegisterType.WORK_GROUP_ID_X, RegisterType.WORK_GROUP_ID_Y, RegisterType.WORK_GROUP_ID_Z][dim],
+                        f"get_group_id({dim})",
+                    ),
                 ),
             ),
         )
 
-        if self.is_rdna3: #todo: add node here when CombinedRegisterContent is supported
+        if self.is_rdna3:  # todo: add node here when CombinedRegisterContent is supported
             v_dim = "v0"
             register_content = CombinedRegisterContent(
                 register_contents=[
@@ -607,7 +608,7 @@ class DecompilerData(metaclass=Singleton):
                         value=f"get_local_id({i})",
                         type_=t,
                         size=10,
-                        expression_node=ExpressionManager().add_register_node(t, f"get_local_id({i})")
+                        expression_node=ExpressionManager().add_register_node(t, f"get_local_id({i})"),
                     )
                     for i, t in enumerate(
                         [RegisterType.WORK_ITEM_ID_X, RegisterType.WORK_ITEM_ID_Y, RegisterType.WORK_ITEM_ID_Z]
@@ -619,9 +620,10 @@ class DecompilerData(metaclass=Singleton):
             register_content = RegisterContent(
                 value=f"get_local_id({dim})",
                 type_=[RegisterType.WORK_ITEM_ID_X, RegisterType.WORK_ITEM_ID_Y, RegisterType.WORK_ITEM_ID_Z][dim],
-                expression_node=ExpressionManager().add_register_node([RegisterType.WORK_ITEM_ID_X, RegisterType.WORK_ITEM_ID_Y, RegisterType.WORK_ITEM_ID_Z][
-                        dim
-                    ], f"get_local_id({dim})")
+                expression_node=ExpressionManager().add_register_node(
+                    [RegisterType.WORK_ITEM_ID_X, RegisterType.WORK_ITEM_ID_Y, RegisterType.WORK_ITEM_ID_Z][dim],
+                    f"get_local_id({dim})",
+                ),
             )
 
         self.set_reg_make_version(
@@ -723,7 +725,13 @@ class DecompilerData(metaclass=Singleton):
             definition += f"__attribute__((reqd_work_group_size({size_of_work_groups})))\n"
 
         params = ", ".join([f"{arg}" for arg in self.config_data.arguments if not arg.hidden])
-        params = ", ".join([f"{ExpressionManager().variable_to_string(arg.name)}" for arg in self.config_data.arguments if not arg.hidden])
+        params = ", ".join(
+            [
+                f"{ExpressionManager().variable_to_string(arg.name)}"
+                for arg in self.config_data.arguments
+                if not arg.hidden
+            ]
+        )
         definition += f"void {self.name_of_program}({params})\n"
 
         return definition
@@ -747,8 +755,7 @@ class DecompilerData(metaclass=Singleton):
         if self.lds_vars.get(offset) is None:
             self.lds_vars[offset] = ExpressionManager().add_variable_node(
                 "*lds" + str(self.lds_var_number),
-                ExpressionValueTypeHint(
-                    OpenCLTypes.from_string("u" + suffix[1:]), TypeAddressSpaceQualifiers.LOCAL)
+                ExpressionValueTypeHint(OpenCLTypes.from_string("u" + suffix[1:]), TypeAddressSpaceQualifiers.LOCAL),
             )
             self.lds_var_number += 1
 

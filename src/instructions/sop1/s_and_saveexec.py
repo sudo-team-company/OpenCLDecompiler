@@ -29,10 +29,11 @@ class SAndSaveexec(BaseInstruction):
             set_reg_value(
                 self.node,
                 old_exec_condition.top(),
-                self.sdst, ["exec"],
+                self.sdst,
+                ["exec"],
                 None,
                 exec_condition=old_exec_condition,
-                expression_node=prev_exec_cond_node
+                expression_node=prev_exec_cond_node,
             )
 
             new_exec_condition = old_exec_condition & new_cond
@@ -49,7 +50,7 @@ class SAndSaveexec(BaseInstruction):
                 ["exec", self.ssrc0],
                 None,
                 exec_condition=new_exec_condition,
-                expression_node=expr_node
+                expression_node=expr_node,
             )
         return super().to_fill_node()
 

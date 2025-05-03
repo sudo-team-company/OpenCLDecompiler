@@ -29,25 +29,36 @@ class DsWrite(BaseInstruction):
         return super().to_print_unresolved()
 
     def get_lds_var_name_with_offset(self):
-        return self.expression_manager.expression_to_string(self.expression_manager.add_offset_div_data_size_node(
-            self.decompiler_data.lds_vars[self.offset],
-            self.node.get_expression_node(self.addr),
-            4,
-            OpenCLTypes.from_string(self.suffix)))
+        return self.expression_manager.expression_to_string(
+            self.expression_manager.add_offset_div_data_size_node(
+                self.decompiler_data.lds_vars[self.offset],
+                self.node.get_expression_node(self.addr),
+                4,
+                OpenCLTypes.from_string(self.suffix),
+            )
+        )
 
     def to_fill_node(self):
         if self.suffix == "b32":
             name = self.get_lds_var_name_with_offset()
             new_value = self.node.state[self.vdata0].val
             reg_type = self.node.state[self.vdata0].type
-            return set_reg_value(self.node, new_value, name, [], f"u{self.suffix[1:]}", reg_type=reg_type,
-                                 expression_node=self.node.get_expression_node(self.vdata0))
+            return set_reg_value(
+                self.node,
+                new_value,
+                name,
+                [],
+                f"u{self.suffix[1:]}",
+                reg_type=reg_type,
+                expression_node=self.node.get_expression_node(self.vdata0),
+            )
         return super().to_fill_node()
 
     def to_print(self):
         if self.suffix == "b32":
             name = self.get_lds_var_name_with_offset()
-            self.output_string = f"{name} = {self.expression_manager.expression_to_string(
-                self.node.get_expression_node(name))}"
+            self.output_string = (
+                f"{name} = {self.expression_manager.expression_to_string(self.node.get_expression_node(name))}"
+            )
             return self.output_string
         return super().to_print()

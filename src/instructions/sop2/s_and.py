@@ -39,7 +39,7 @@ class SAnd(BaseInstruction):
                     [self.ssrc0, self.ssrc1],
                     None,
                     exec_condition=new_exec_condition,
-                    expression_node=new_condition_node
+                    expression_node=new_condition_node,
                 )
             if self.ssrc0 in self.node.state and self.ssrc1 in self.node.state:
                 ssrc0 = self.node.state[self.ssrc0]
@@ -47,10 +47,8 @@ class SAnd(BaseInstruction):
                 src0_node = self.node.get_expression_node(self.ssrc0)
                 src1_node = self.node.get_expression_node(self.ssrc1)
                 expr_node = self.expression_manager.add_operation(
-                    src0_node,
-                    src1_node,
-                    ExpressionOperationType.AND,
-                    OpenCLTypes.from_string(self.suffix))
+                    src0_node, src1_node, ExpressionOperationType.AND, OpenCLTypes.from_string(self.suffix)
+                )
 
                 return set_reg_value(
                     node=self.node,
@@ -60,7 +58,7 @@ class SAnd(BaseInstruction):
                     data_type=self.suffix,
                     reg_type=ssrc0.type,
                     integrity=ssrc0.integrity,
-                    expression_node=expr_node
+                    expression_node=expr_node,
                 )
             expr_node = None
             if self.ssrc0 in self.node.state:
@@ -78,7 +76,7 @@ class SAnd(BaseInstruction):
                 data_type=self.suffix,
                 reg_type=reg.type,
                 integrity=reg.integrity,
-                expression_node=expr_node
+                expression_node=expr_node,
             )
         return super().to_fill_node()
 

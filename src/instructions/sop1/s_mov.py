@@ -34,7 +34,8 @@ class SMov(BaseInstruction):
                 exec_node = self.node.get_expression_node("exec")
                 src0_node = self.node.get_expression_node(self.ssrc0)
                 expr_node = self.expression_manager.add_operation(
-                    exec_node, src0_node, ExpressionOperationType.OR, OpenCLTypes.from_string(self.suffix))
+                    exec_node, src0_node, ExpressionOperationType.OR, OpenCLTypes.from_string(self.suffix)
+                )
 
                 return set_reg_value(
                     self.node,
@@ -43,7 +44,7 @@ class SMov(BaseInstruction):
                     [self.ssrc0],
                     None,
                     exec_condition=new_exec_condition,
-                    expression_node=expr_node
+                    expression_node=expr_node,
                 )
             if self.ssrc0 in self.node.state:
                 new_value = self.node.state[self.ssrc0].val
@@ -56,9 +57,8 @@ class SMov(BaseInstruction):
                     expr_node = self.expression_manager.add_variable_node(
                         new_value,
                         ExpressionValueTypeHint(
-                            OpenCLTypes.from_string(self.suffix),
-                            TypeAddressSpaceQualifiers.CONST,
-                            is_pointer=True)
+                            OpenCLTypes.from_string(self.suffix), TypeAddressSpaceQualifiers.CONST, is_pointer=True
+                        ),
                     )
                 else:
                     new_value = self.ssrc0
@@ -70,5 +70,6 @@ class SMov(BaseInstruction):
                 expr_node = self.node.get_expression_node(self.ssrc0)
 
             return set_reg_value(
-                self.node, new_value, self.sdst, [], data_type, reg_type=reg_type, expression_node=expr_node)
+                self.node, new_value, self.sdst, [], data_type, reg_type=reg_type, expression_node=expr_node
+            )
         return super().to_fill_node()

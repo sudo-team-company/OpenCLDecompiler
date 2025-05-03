@@ -1,4 +1,5 @@
 import copy
+
 from src.decompiler_data import DecompilerData, evaluate_from_hex
 from src.expression_manager.expression_manager import ExpressionManager
 from src.expression_manager.expression_node import ExpressionNode
@@ -32,16 +33,7 @@ def create_opencl_body():
         lds_var_node: ExpressionNode = decompiler_data.lds_vars[offsets[key]]
         size_var = int((offsets[key + 1] - offsets[key]) / (lds_var_node.value_type_hint.size_bytes()))
         type_of_var = lds_var_node.value_type_hint.to_string(False)  # noqa: FBT003
-        decompiler_data.write(
-            "    "
-            + type_of_var
-            + " "
-            + lds_var_node.value
-            + "["
-            + str(size_var)
-            + "]"
-            + ";\n"
-        )
+        decompiler_data.write("    " + type_of_var + " " + lds_var_node.value + "[" + str(size_var) + "]" + ";\n")
     make_output_from_region(decompiler_data.improve_cfg, "    ")
     decompiler_data.write("}\n")
 
@@ -96,12 +88,15 @@ def make_output_for_loop_vars(curr_node, indent):
     loop_variable_node = expression_manager.get_variable_node(loop_variable)
     if loop_variable == "var10":
         pass
-    decompiler_data.write(indent
-                          + loop_variable + " = "
-                          + expression_manager.expression_to_string(
-                              curr_node.state[reg].get_expression_node(),
-                              loop_variable_node.value_type_hint)
-                          + ";\n")
+    decompiler_data.write(
+        indent
+        + loop_variable
+        + " = "
+        + expression_manager.expression_to_string(
+            curr_node.state[reg].get_expression_node(), loop_variable_node.value_type_hint
+        )
+        + ";\n"
+    )
 
 
 def make_output_for_linear_region(region, indent):
@@ -136,13 +131,15 @@ def make_output_for_linear_region(region, indent):
                     # decompiler_data.write(indent + var + " = " + curr_node.state[reg].val + ";\n")
                     value_type_hint = copy.deepcopy(expression_manager.get_variable_node(var).value_type_hint)
                     value_type_hint.opencl_type = OpenCLTypes.UNKNOWN
-                    decompiler_data.write(indent
-                                          + var
-                                          + " = "
-                                          + expression_manager.expression_to_string(
-                                              curr_node.state[reg].get_expression_node(),
-                                              value_type_hint)
-                                          + ";\n")
+                    decompiler_data.write(
+                        indent
+                        + var
+                        + " = "
+                        + expression_manager.expression_to_string(
+                            curr_node.state[reg].get_expression_node(), value_type_hint
+                        )
+                        + ";\n"
+                    )
             if curr_node == region.end:
                 break
             child = curr_node.children[0]

@@ -1,7 +1,7 @@
-from src.expression_manager.expression_manager import ExpressionManager
-from src.expression_manager.expression_node import *
 from src.combined_register_content import CombinedRegisterContent
 from src.decompiler_data import DecompilerData, make_elem_from_addr
+from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.expression_node import *
 from src.integrity import Integrity
 from src.register import Register, check_and_split_regs, get_next_reg
 from src.register_content import RegisterContent
@@ -11,9 +11,7 @@ usesetup_dict = {
     "0x0": Register(
         integrity=Integrity.ENTIRE,
         register_content=RegisterContent(
-            value="",
-            type_=RegisterType.GENERAL_SETUP,
-            expression_node=ExpressionManager().get_empty_node()
+            value="", type_=RegisterType.GENERAL_SETUP, expression_node=ExpressionManager().get_empty_node()
         ),
     ),
     #  TODO: Подумать, как лучше вписать, что здесь и LOCAL_SIZE_X, и LOCAL_SIZE_Y
@@ -22,7 +20,7 @@ usesetup_dict = {
         register_content=RegisterContent(
             value="get_local_size(0)",
             type_=RegisterType.LOCAL_SIZE_X,
-            expression_node=ExpressionManager().get_empty_node()
+            expression_node=ExpressionManager().get_empty_node(),
         ),
     ),
     "0x8": Register(
@@ -30,7 +28,7 @@ usesetup_dict = {
         register_content=RegisterContent(
             value="get_local_size(2)",
             type_=RegisterType.LOCAL_SIZE_Z,
-            expression_node=ExpressionManager().add_register_node(RegisterType.LOCAL_SIZE_Z, "get_local_size(2)")
+            expression_node=ExpressionManager().add_register_node(RegisterType.LOCAL_SIZE_Z, "get_local_size(2)"),
         ),
     ),
     "0xc": Register(
@@ -38,7 +36,7 @@ usesetup_dict = {
         register_content=RegisterContent(
             value="get_global_size(0)",
             type_=RegisterType.GLOBAL_SIZE_X,
-            expression_node=ExpressionManager().add_register_node(RegisterType.GLOBAL_SIZE_X, "get_global_size(0)")
+            expression_node=ExpressionManager().add_register_node(RegisterType.GLOBAL_SIZE_X, "get_global_size(0)"),
         ),
     ),
     "0x10": Register(
@@ -46,7 +44,7 @@ usesetup_dict = {
         register_content=RegisterContent(
             value="get_global_size(1)",
             type_=RegisterType.GLOBAL_SIZE_Y,
-            expression_node=ExpressionManager().add_register_node(RegisterType.GLOBAL_SIZE_Y, "get_global_size(1)")
+            expression_node=ExpressionManager().add_register_node(RegisterType.GLOBAL_SIZE_Y, "get_global_size(1)"),
         ),
     ),
     "0x14": Register(
@@ -54,15 +52,13 @@ usesetup_dict = {
         register_content=RegisterContent(
             value="get_global_size(2)",
             type_=RegisterType.GLOBAL_SIZE_Z,
-            expression_node=ExpressionManager().add_register_node(RegisterType.GLOBAL_SIZE_Z, "get_global_size(2)")
+            expression_node=ExpressionManager().add_register_node(RegisterType.GLOBAL_SIZE_Z, "get_global_size(2)"),
         ),
     ),
     "0x18": Register(
         integrity=Integrity.ENTIRE,
         register_content=RegisterContent(
-            value="",
-            type_=RegisterType.UNKNOWN,
-            expression_node=ExpressionManager().get_empty_node()
+            value="", type_=RegisterType.UNKNOWN, expression_node=ExpressionManager().get_empty_node()
         ),
     ),
 }
@@ -131,7 +127,7 @@ def upload_global_data_pointer(state, to_registers, from_registers):
                 value=new_val,
                 type_=RegisterType.GLOBAL_DATA_POINTER,
                 data_type=data_type,
-                expression_node=state[start_from_register].register_content._expression_node
+                expression_node=state[start_from_register].register_content._expression_node,
             ),
         ),
     )
@@ -182,7 +178,7 @@ def upload_by_offset(
                         value=register_content.get_value(),
                         type_=register_content.get_type(),
                         data_type=register_content.get_data_type(),
-                        expression_node=register_content._expression_node
+                        expression_node=register_content._expression_node,
                     ),
                 )
             else:
@@ -217,7 +213,7 @@ def upload_by_offset(
                             value=register_content.get_value(),
                             type_=register_content.get_type(),
                             data_type=register_content.get_data_type(),
-                            expression_node=register_content._expression_node
+                            expression_node=register_content._expression_node,
                         ),
                     ),
                 )
@@ -235,7 +231,7 @@ def upload_by_offset(
                             value=register_content.get_value(),
                             type_=register_content.get_type(),
                             data_type=register_content.get_data_type(),
-                            expression_node=register_content._expression_node
+                            expression_node=register_content._expression_node,
                         ),
                     ),
                 )

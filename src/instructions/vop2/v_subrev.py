@@ -33,10 +33,8 @@ class VSubrev(BaseInstruction):
             src0_node = self.node.get_expression_node(self.src0)
             src1_node = self.node.get_expression_node(self.src1)
             expr_node = self.expression_manager.add_operation(
-                src1_node,
-                src0_node,
-                ExpressionOperationType.MINUS,
-                OpenCLTypes.from_string(self.suffix))
+                src1_node, src0_node, ExpressionOperationType.MINUS, OpenCLTypes.from_string(self.suffix)
+            )
 
             reg_entire = self.node.state[self.src1].integrity
             return set_reg_value(
@@ -46,6 +44,6 @@ class VSubrev(BaseInstruction):
                 [self.src0, self.src1],
                 self.suffix,
                 integrity=reg_entire,
-                expression_node=expr_node
+                expression_node=expr_node,
             )
         return super().to_fill_node()

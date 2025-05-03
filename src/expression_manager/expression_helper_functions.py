@@ -14,11 +14,13 @@ from src.register_type import CONSTANT_VALUES, RegisterType
 
 VECTOR_COMPONENT_DELIMITER = "___s"
 
+
 @dataclass
 class ExpressionVariableInfo:
     name: str = ""
     var_node: ExpressionNode = None
     value_node: ExpressionNode = None
+
 
 def create_const_node(value, value_type_hint: ExpressionValueTypeHint) -> ExpressionNode:
     const_node = ExpressionNode()
@@ -28,6 +30,7 @@ def create_const_node(value, value_type_hint: ExpressionValueTypeHint) -> Expres
 
     return const_node
 
+
 def create_var_node(var_name: str, var_type_hint: ExpressionValueTypeHint) -> ExpressionNode:
     var_node = ExpressionNode()
     var_node.type = ExpressionType.VAR
@@ -35,19 +38,19 @@ def create_var_node(var_name: str, var_type_hint: ExpressionValueTypeHint) -> Ex
     var_node.value_type_hint = var_type_hint
     return var_node
 
+
 def create_work_item_function_node(reg_type: RegisterType) -> ExpressionNode:
     work_item_function_node = ExpressionNode()
     work_item_function_node.type = ExpressionType.WORK_ITEM_FUNCTION
     work_item_function_node.value = reg_type
     work_item_function_node.value_type_hint = ExpressionValueTypeHint(
-        OpenCLTypes.UINT if CONSTANT_VALUES[reg_type][1] == 32 else OpenCLTypes.ULONG)  # noqa: PLR2004
+        OpenCLTypes.UINT if CONSTANT_VALUES[reg_type][1] == 32 else OpenCLTypes.ULONG
+    )
     return work_item_function_node
 
+
 def create_op_node(
-    op: ExpressionOperationType,
-    left: ExpressionNode,
-    right: ExpressionNode,
-    value_type_hint: ExpressionValueTypeHint
+    op: ExpressionOperationType, left: ExpressionNode, right: ExpressionNode, value_type_hint: ExpressionValueTypeHint
 ) -> ExpressionNode:
     op_node = ExpressionNode()
     op_node.type = ExpressionType.OP
@@ -59,11 +62,8 @@ def create_op_node(
     right.parent = op_node
     return op_node
 
-def create_if_ternary_node(
-    cond: ExpressionNode,
-    s0: ExpressionNode,
-    s1: ExpressionNode
-) -> ExpressionNode:
+
+def create_if_ternary_node(cond: ExpressionNode, s0: ExpressionNode, s1: ExpressionNode) -> ExpressionNode:
     if_ternary_node = ExpressionNode()
     if_ternary_node.type = ExpressionType.IF_TERNARY
     if_ternary_node.value = cond
@@ -75,10 +75,8 @@ def create_if_ternary_node(
     s1.parent = if_ternary_node
     return if_ternary_node
 
-def create_permute_node(
-    s0: ExpressionNode,
-    s1: ExpressionNode
-) -> ExpressionNode:
+
+def create_permute_node(s0: ExpressionNode, s1: ExpressionNode) -> ExpressionNode:
     permute_node = ExpressionNode()
     permute_node.type = ExpressionType.PERMUTE
     permute_node.left = s0
@@ -89,14 +87,14 @@ def create_permute_node(
 
     common_type_hint = ExpressionValueTypeHint.get_common_type(s0.value_type_hint, s1.value_type_hint)
     common_type_hint = common_type_hint.set_number_of_components(
-        s0.value_type_hint.number_of_components() + s1.value_type_hint.number_of_components())
+        s0.value_type_hint.number_of_components() + s1.value_type_hint.number_of_components()
+    )
 
     permute_node.value_type_hint = common_type_hint
     return permute_node
 
-def create_logical_not_node(
-    node: ExpressionNode
-) -> ExpressionNode:
+
+def create_logical_not_node(node: ExpressionNode) -> ExpressionNode:
     logical_not_node = ExpressionNode()
     logical_not_node.type = ExpressionType.OP
     logical_not_node.value = ExpressionOperationType.NOT
@@ -105,11 +103,10 @@ def create_logical_not_node(
     node.parent = logical_not_node
     return logical_not_node
 
-def evaluate_operation(# noqa: C901, PLR0912
-        left_value,
-        op: ExpressionOperationType,
-        right_value,
-        _: ExpressionValueTypeHint):
+
+def evaluate_operation(  # noqa: C901, PLR0912
+    left_value, op: ExpressionOperationType, right_value, _: ExpressionValueTypeHint
+):
     result = None
     if isinstance(left_value, str):
         left_value = int(left_value, base=16)
@@ -162,7 +159,8 @@ def evaluate_operation(# noqa: C901, PLR0912
         result = int(result)
     return result
 
-def parse_variable_name( var_name: str) -> tuple[str, bool]:
+
+def parse_variable_name(var_name: str) -> tuple[str, bool]:
     if var_name[0] == "*":
         var_node_name = var_name[1:]
         is_pointer = True
@@ -171,9 +169,8 @@ def parse_variable_name( var_name: str) -> tuple[str, bool]:
         is_pointer = False
     return (var_node_name, is_pointer)
 
-def get_kernel_argument_type_and_qualifiers(
-        arg: KernelArgument
-    ) -> tuple[OpenCLTypes, TypeAddressSpaceQualifiers]:
+
+def get_kernel_argument_type_and_qualifiers(arg: KernelArgument) -> tuple[OpenCLTypes, TypeAddressSpaceQualifiers]:
     qualifier = TypeAddressSpaceQualifiers.UNKNOWN
     arg_type_str = arg.type_name
     if arg_type_str.startswith("__global "):
@@ -192,11 +189,15 @@ def get_kernel_argument_type_and_qualifiers(
 
     return (value_type_hint, qualifier)
 
+
 def get_sufficient_type_for_const(value, opencl_type_hint: OpenCLTypes) -> tuple[any, ExpressionValueTypeHint]:
     def get_min_sufficient_type_for_integer(value):
-        signed = (value < 0)
-        types_to_check = ([OpenCLTypes.CHAR, OpenCLTypes.SHORT, OpenCLTypes.INT, OpenCLTypes.LONG] if signed
-                            else [OpenCLTypes.UCHAR, OpenCLTypes.USHORT, OpenCLTypes.UINT, OpenCLTypes.ULONG])
+        signed = value < 0
+        types_to_check = (
+            [OpenCLTypes.CHAR, OpenCLTypes.SHORT, OpenCLTypes.INT, OpenCLTypes.LONG]
+            if signed
+            else [OpenCLTypes.UCHAR, OpenCLTypes.USHORT, OpenCLTypes.UINT, OpenCLTypes.ULONG]
+        )
         for t in types_to_check:
             abs_max_value = pow(2, t.value.get_size() * 8)
             if signed:
@@ -225,15 +226,16 @@ def get_sufficient_type_for_const(value, opencl_type_hint: OpenCLTypes) -> tuple
                     try:
                         decimals_after_point = len(value) - value.find(".")
                         value = float(value)
-                        value_type_hint.opencl_type = OpenCLTypes.FLOAT if decimals_after_point <= 7 else OpenCLTypes.DOUBLE  # noqa: E501, PLR2004
+                        value_type_hint.opencl_type = (
+                            OpenCLTypes.FLOAT if decimals_after_point <= 7 else OpenCLTypes.DOUBLE
+                        )
                     except ValueError:
                         pass
     return (value, value_type_hint)
 
+
 # PRINT functions
-def expression_to_string(
-        expression_node: ExpressionNode,
-        cast_to: ExpressionValueTypeHint) -> str:
+def expression_to_string(expression_node: ExpressionNode, cast_to: ExpressionValueTypeHint) -> str:
     assert expression_node is not None
     if expression_node.type == ExpressionType.OP:
         return op_expression_to_string(expression_node, cast_to)
@@ -244,24 +246,25 @@ def expression_to_string(
         cond_value = expression_to_string(expression_node.value, cast_to)
         left_value = expression_to_string(expression_node.left, cast_to)
         right_value = expression_to_string(expression_node.right, cast_to)
-        output =  f"({cond_value}) ? ({left_value}) : ({right_value})"
+        output = f"({cond_value}) ? ({left_value}) : ({right_value})"
     elif expression_node.type == ExpressionType.WORK_ITEM_FUNCTION:
         return work_item_function_expression_to_string(expression_node)
     else:
         if expression_node.type == ExpressionType.VAR:
-            assert(expression_node.value_type_hint.opencl_type != OpenCLTypes.UNKNOWN)
+            assert expression_node.value_type_hint.opencl_type != OpenCLTypes.UNKNOWN
         output = f"{expression_node.value}"
         if expression_node.needs_cast(cast_to):
             output = f"({cast_to!s})" + output
     return output
 
-def permute_expression_to_string(
-        expression_node: ExpressionNode,
-        cast_to: ExpressionValueTypeHint) -> str:
+
+def permute_expression_to_string(expression_node: ExpressionNode, cast_to: ExpressionValueTypeHint) -> str:
     left_value_type_hint = expression_node.value_type_hint.set_number_of_components(
-        expression_node.left.value_type_hint.number_of_components())
+        expression_node.left.value_type_hint.number_of_components()
+    )
     right_value_type_hint = expression_node.value_type_hint.set_number_of_components(
-        expression_node.right.value_type_hint.number_of_components())
+        expression_node.right.value_type_hint.number_of_components()
+    )
     left_value = expression_to_string(expression_node.left, left_value_type_hint)
     right_value = expression_to_string(expression_node.right, right_value_type_hint)
     output = f"({left_value}, {right_value})"
@@ -270,6 +273,7 @@ def permute_expression_to_string(
     else:
         output = f"({expression_node.value_type_hint!s}){output}"
     return output
+
 
 def check_op_node_needs_brackets(op: ExpressionOperationType, child_node: ExpressionNode) -> bool:  # noqa: PLR0911
     if child_node.type == ExpressionType.OP:
@@ -288,9 +292,8 @@ def check_op_node_needs_brackets(op: ExpressionOperationType, child_node: Expres
     # child_node.type is either CONST, WORK_ITEM_FUNCTION, VAR, PERMUTE
     return False
 
-def op_expression_to_string(
-        expression_node: ExpressionNode,
-        cast_to: ExpressionValueTypeHint) -> str:
+
+def op_expression_to_string(expression_node: ExpressionNode, cast_to: ExpressionValueTypeHint) -> str:
     assert expression_node is not None
     assert expression_node.type == ExpressionType.OP
 
@@ -302,17 +305,19 @@ def op_expression_to_string(
         return f"!({expression_to_string(left_node, cast_to)})"
 
     # special case for: data_ptr + smth => data_ptr[smth]
-    if operation == ExpressionOperationType.PLUS and left_node.type == ExpressionType.VAR and left_node.value_type_hint.is_pointer and not left_node.value_type_hint.is_address and not cast_to.is_pointer:
+    if (
+        operation == ExpressionOperationType.PLUS
+        and left_node.type == ExpressionType.VAR
+        and left_node.value_type_hint.is_pointer
+        and not left_node.value_type_hint.is_address
+        and not cast_to.is_pointer
+    ):
         if expression_node.parent is None:
             return f"{left_node.value!s}[{expression_to_string(right_node, cast_to)}]"
         return f"{left_node.value!s}[{expression_to_string(right_node, cast_to)}"
 
-    left_value = expression_to_string(
-        left_node, cast_to
-    )
-    right_value = expression_to_string(
-        right_node, cast_to
-    )
+    left_value = expression_to_string(left_node, cast_to)
+    right_value = expression_to_string(right_node, cast_to)
 
     if operation == ExpressionOperationType.MIN:
         return f"min({left_value}, {right_value})"
@@ -336,6 +341,7 @@ def op_expression_to_string(
 
     return output
 
+
 def var_expression_to_string(var_node: ExpressionNode) -> str:
     assert var_node is not None
     assert var_node.type == ExpressionType.VAR
@@ -346,6 +352,7 @@ def var_expression_to_string(var_node: ExpressionNode) -> str:
         var_type_str += " "
     return f"{var_type_str}{var_name_str}"
 
+
 def work_item_function_expression_to_string(work_item_function_node: ExpressionNode) -> str:
     reg_type = work_item_function_node.value
-    return  f"{CONSTANT_VALUES[reg_type][0]}"
+    return f"{CONSTANT_VALUES[reg_type][0]}"

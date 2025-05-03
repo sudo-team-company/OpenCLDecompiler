@@ -101,19 +101,16 @@ _SUM_SIMPLIFY_COMBINATIONS = [
 
 
 class OperationRegisterContent(RegisterContent):
-    def __init__(self,  # noqa: PLR0912, PLR0915
-                 operation: OperationType,
-                 register_contents: list[RegisterContent],
-                 expression_node: ExpressionNode = None):
+    def __init__(
+        self,
+        operation: OperationType,
+        register_contents: list[RegisterContent],
+        expression_node: ExpressionNode = None,
+    ):
         if len(register_contents) == 0:
             self._operation = operation
             super().__init__(
-                value=[],
-                type_=[],
-                data_type=None,
-                size=DEFAULT_REGISTER_SIZE,
-                sign=[],
-                expression_node=None
+                value=[], type_=[], data_type=None, size=DEFAULT_REGISTER_SIZE, sign=[], expression_node=None
             )
 
             return
@@ -178,15 +175,11 @@ class OperationRegisterContent(RegisterContent):
         if expression_node is None:
             expression_node = ExpressionManager().apply_operation_to_nodes(
                 [content.get_expression_node() for content in register_contents],
-                ExpressionOperationType.from_string(operation.value))
+                ExpressionOperationType.from_string(operation.value),
+            )
 
         super().__init__(
-            value=values,
-            type_=types,
-            size=max(sizes),
-            data_type=data_type,
-            sign=signs,
-            expression_node=expression_node
+            value=values, type_=types, size=max(sizes), data_type=data_type, sign=signs, expression_node=expression_node
         )
         self._operation = operation
 
@@ -293,7 +286,7 @@ class OperationRegisterContent(RegisterContent):
                 size=self._size[0],
                 data_type=self._data_type[0],
                 sign=self._sign[0],
-                expression_node=self._expression_node
+                expression_node=self._expression_node,
             )
 
         maybe_pos = maybe_find_opposite_pos()

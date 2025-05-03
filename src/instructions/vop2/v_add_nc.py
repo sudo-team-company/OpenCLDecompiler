@@ -145,7 +145,8 @@ class VAddNc(BaseInstruction):
 
             if expr_node is None:
                 expr_node = self.expression_manager.add_operation(
-                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.from_string(self.suffix))
+                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.from_string(self.suffix)
+                )
 
             return set_reg_value(
                 node=self.node,

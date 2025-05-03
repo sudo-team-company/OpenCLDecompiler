@@ -22,8 +22,10 @@ class SXor(BaseInstruction):
         if self.suffix in {"b32", "b64"}:
             src0_node = self.node.get_expression_node(self.ssrc0)
             src1_node = self.node.get_expression_node(self.ssrc1)
-            expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.XOR, OpenCLTypes.from_string(self.suffix))
-            
+            expr_node = self.expression_manager.add_operation(
+                src0_node, src1_node, ExpressionOperationType.XOR, OpenCLTypes.from_string(self.suffix)
+            )
+
             if "exec" in {self.sdst, self.ssrc0}:
                 new_exec_condition = (
                     self.decompiler_data.exec_registers[self.ssrc0] ^ self.decompiler_data.exec_registers[self.ssrc1]
@@ -37,7 +39,7 @@ class SXor(BaseInstruction):
                     [self.ssrc0, self.ssrc1],
                     None,
                     exec_condition=new_exec_condition,
-                    expression_node=expr_node
+                    expression_node=expr_node,
                 )
             reg_entire = Integrity.ENTIRE
             if self.ssrc1 in self.node.state:
@@ -47,6 +49,12 @@ class SXor(BaseInstruction):
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, "^", suffix=self.suffix)
 
             return set_reg_value(
-                self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix, integrity=reg_entire, expression_node=expr_node
+                self.node,
+                new_value,
+                self.sdst,
+                [self.ssrc0, self.ssrc1],
+                self.suffix,
+                integrity=reg_entire,
+                expression_node=expr_node,
             )
         return super().to_fill_node()

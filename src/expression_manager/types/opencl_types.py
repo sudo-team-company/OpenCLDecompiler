@@ -5,20 +5,21 @@ from src.expression_manager.types.asm_types import ASMTypes
 from src.expression_manager.types.base_type import BaseType, UnknownTypeExceptionError
 
 _byte_size_to_type_integer: dict[int, str] = {
-    1 : "char",
-    2 : "short",
-    4 : "int",
-    8 : "long",
+    1: "char",
+    2: "short",
+    4: "int",
+    8: "long",
 }
 
 _byte_size_to_type_float: dict[int, str] = {
-    2 : "half",
-    4 : "float",
-    8 : "double",
+    2: "half",
+    4: "float",
+    8: "double",
 }
 
+
 class OpenCLType(BaseType):
-    def __init__(self, size_bytes = 0, is_signed = True, is_integer = True, number_of_components = 1):  # noqa: FBT002
+    def __init__(self, size_bytes=0, is_signed=True, is_integer=True, number_of_components=1):  # noqa: FBT002
         super().__init__(size_bytes, is_signed, is_integer, number_of_components)
 
     def get_type_string(self):
@@ -26,7 +27,7 @@ class OpenCLType(BaseType):
             if _byte_size_to_type_integer.get(self.size_bytes) is not None:
                 return _byte_size_to_type_integer[self.size_bytes]
             raise UnknownTypeExceptionError
-        #float
+        # float
         if _byte_size_to_type_float.get(self.size_bytes) is not None:
             return _byte_size_to_type_float[self.size_bytes]
         raise UnknownTypeExceptionError
@@ -41,9 +42,11 @@ class OpenCLType(BaseType):
 
         return signed_prefix + type_prefix + number_of_components_prefix
 
+
 class UnknownOpenCLType(OpenCLType):
     def __init__(self):
         super().__init__(0)
+
 
 class OpenCLTypes(Enum):
     def __str__(self):
@@ -78,7 +81,7 @@ class OpenCLTypes(Enum):
         return opencl_type
 
     @staticmethod
-    def from_asm_type(asm_type : ASMTypes) -> "OpenCLTypes":
+    def from_asm_type(asm_type: ASMTypes) -> "OpenCLTypes":
         for t in OpenCLTypes:
             if t.value == asm_type.value:
                 return t

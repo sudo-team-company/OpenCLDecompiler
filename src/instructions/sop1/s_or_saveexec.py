@@ -28,7 +28,13 @@ class SOrSaveexec(BaseInstruction):
 
             self.decompiler_data.exec_registers[self.sdst] = old_exec_condition
             set_reg_value(
-                self.node, old_exec_condition.top(), self.sdst, ["exec"], None, exec_condition=old_exec_condition, expression_node=prev_exec_cond_node
+                self.node,
+                old_exec_condition.top(),
+                self.sdst,
+                ["exec"],
+                None,
+                exec_condition=old_exec_condition,
+                expression_node=prev_exec_cond_node,
             )
 
             new_exec_cond_node = self.node.get_expression_node(self.ssrc0)
@@ -37,7 +43,11 @@ class SOrSaveexec(BaseInstruction):
                 expr_node = new_exec_cond_node
             else:
                 expr_node = self.expression_manager.add_operation(
-                    prev_exec_cond_node, new_exec_cond_node, ExpressionOperationType.OR, OpenCLTypes.from_string(self.suffix))
+                    prev_exec_cond_node,
+                    new_exec_cond_node,
+                    ExpressionOperationType.OR,
+                    OpenCLTypes.from_string(self.suffix),
+                )
 
             new_exec_condition = old_exec_condition | another
             self.decompiler_data.exec_registers["exec"] = new_exec_condition
@@ -48,6 +58,6 @@ class SOrSaveexec(BaseInstruction):
                 ["exec", self.ssrc0],
                 None,
                 exec_condition=new_exec_condition,
-                expression_node=expr_node
+                expression_node=expr_node,
             )
         return self.to_fill_node()

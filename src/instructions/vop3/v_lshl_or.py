@@ -58,8 +58,12 @@ class VLshlOr(BaseInstruction):
             if src_types in self._instruction_internal_mapping_by_types:
                 new_value, reg_type, reg_sign, reg_types = self._instruction_internal_mapping_by_types[src_types]
 
-                left_node, right_node = (self.expression_manager.add_register_node(t, str(CONSTANT_VALUES[t][0])) for t in reg_types)
-                expr_node = self.expression_manager.add_operation(left_node, right_node, ExpressionOperationType.MINUS, OpenCLTypes.UINT)
+                left_node, right_node = (
+                    self.expression_manager.add_register_node(t, str(CONSTANT_VALUES[t][0])) for t in reg_types
+                )
+                expr_node = self.expression_manager.add_operation(
+                    left_node, right_node, ExpressionOperationType.MINUS, OpenCLTypes.UINT
+                )
 
                 if self.decompiler_data.is_rdna3:
                     return set_reg_value(
@@ -72,7 +76,7 @@ class VLshlOr(BaseInstruction):
                         register_content_type=OperationRegisterContent,
                         sign=reg_sign,
                         operation=OperationType.PLUS,
-                        expression_node=expr_node
+                        expression_node=expr_node,
                     )
 
                 return set_reg_value(
@@ -83,7 +87,7 @@ class VLshlOr(BaseInstruction):
                     data_type=self.suffix,
                     reg_type=reg_type,
                     integrity=Integrity.ENTIRE,
-                    expression_node=expr_node
+                    expression_node=expr_node,
                 )
 
         new_reg = self.node.state[self.src0] << int(self.src1)

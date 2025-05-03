@@ -33,7 +33,8 @@ class VLshlrev(BaseInstruction):
             left_node = self.node.get_expression_node(self.src1)
             right_node = self.expression_manager.add_const_node(pow(2, int(self.src0)), OpenCLTypes.UINT)
             expr_node = self.expression_manager.add_operation(
-                left_node, right_node, ExpressionOperationType.MUL, OpenCLTypes.from_string(self.suffix))
+                left_node, right_node, ExpressionOperationType.MUL, OpenCLTypes.from_string(self.suffix)
+            )
 
             return set_reg_value(
                 self.node,
@@ -42,7 +43,7 @@ class VLshlrev(BaseInstruction):
                 [self.src0, self.src1],
                 self.suffix,
                 reg_type=reg_type,
-                expression_node=expr_node
+                expression_node=expr_node,
             )
         if self.suffix == "b64":
             start_to_register, end_to_register = check_and_split_regs(self.vdst)
@@ -55,13 +56,16 @@ class VLshlrev(BaseInstruction):
             reg_entire1 = Integrity.HIGH_PART
 
             const_node = self.expression_manager.add_const_node(
-                pow(2, int(self.src0)), OpenCLTypes.from_string(self.suffix))
+                pow(2, int(self.src0)), OpenCLTypes.from_string(self.suffix)
+            )
             start_from_register_node = self.node.get_expression_node(start_from_register)
             end_from_register_node = self.node.get_expression_node(end_from_register)
             new_value0_node = self.expression_manager.add_operation(
-                start_from_register_node, const_node, ExpressionOperationType.MUL, OpenCLTypes.from_string(self.suffix))
+                start_from_register_node, const_node, ExpressionOperationType.MUL, OpenCLTypes.from_string(self.suffix)
+            )
             new_value1_node = self.expression_manager.add_operation(
-                end_from_register_node, const_node, ExpressionOperationType.MUL, OpenCLTypes.from_string(self.suffix))
+                end_from_register_node, const_node, ExpressionOperationType.MUL, OpenCLTypes.from_string(self.suffix)
+            )
 
             if src0_flag and src1_flag:
                 reg_type = self.node.state[start_from_register].type
@@ -91,7 +95,7 @@ class VLshlrev(BaseInstruction):
                 data_type,
                 reg_type=reg_type,
                 integrity=reg_entire0,
-                expression_node=new_value0_node
+                expression_node=new_value0_node,
             )
             return set_reg_value(
                 node,
@@ -101,6 +105,6 @@ class VLshlrev(BaseInstruction):
                 data_type,
                 reg_type=reg_type,
                 integrity=reg_entire1,
-                expression_node=new_value1_node
+                expression_node=new_value1_node,
             )
         return super().to_fill_node()

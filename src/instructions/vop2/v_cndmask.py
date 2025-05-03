@@ -2,7 +2,6 @@ from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value, try_get_reg
 from src.expression_manager.expression_manager import ExpressionManager
 from src.expression_manager.expression_node import ExpressionType
-from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.register_type import RegisterType
 
 
@@ -33,19 +32,32 @@ class VCndmask(BaseInstruction):
                     [self.src0, self.src1],
                     self.suffix,
                     reg_type=RegisterType.DIVISION_PT9,
-                    expression_node=self.node.get_expression_node(self.src1)
+                    expression_node=self.node.get_expression_node(self.src1),
                 )
             if self.src1 in self.node.state and self.node.state[self.src1].type == RegisterType.DIVISION_PT10:
                 new_value = self.node.state[self.src1].val
                 return set_reg_value(
-                    self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix, reg_type=RegisterType.UNKNOWN, expression_node=self.node.get_expression_node(self.src1)
+                    self.node,
+                    new_value,
+                    self.vdst,
+                    [self.src0, self.src1],
+                    self.suffix,
+                    reg_type=RegisterType.UNKNOWN,
+                    expression_node=self.node.get_expression_node(self.src1),
                 )
             if self.ssrc2 in self.node.state and self.node.state[self.ssrc2].type == RegisterType.DIVISION_PASS:
                 return set_reg_value(
                     self.node, "", self.vdst, [self.src0, self.src1], self.suffix, reg_type=RegisterType.DIVISION_PASS
                 )
             if self.ssrc2 in self.node.state and self.node.state[self.ssrc2].val == "0":
-                return set_reg_value(self.node, self.src0, self.vdst, [self.src0, self.src1], self.suffix, expression_node=self.node.get_expression_node(self.src0))
+                return set_reg_value(
+                    self.node,
+                    self.src0,
+                    self.vdst,
+                    [self.src0, self.src1],
+                    self.suffix,
+                    expression_node=self.node.get_expression_node(self.src0),
+                )
             variable = f"var{self.decompiler_data.num_of_var}"
             if (
                 self.vdst in self.node.state
@@ -55,9 +67,18 @@ class VCndmask(BaseInstruction):
                 variable = f"*{variable}"
             reg_type = RegisterType.PROGRAM_PARAM
             src0_src1_common_type = self.expression_manager.get_common_type(
-                self.node.get_expression_node(self.src0), self.node.get_expression_node(self.src1))
+                self.node.get_expression_node(self.src0), self.node.get_expression_node(self.src1)
+            )
             var_node = self.expression_manager.add_variable_node(variable, src0_src1_common_type)
-            node = set_reg_value(self.node, variable, self.vdst, [self.src0, self.src1], self.suffix, reg_type=reg_type, expression_node=var_node)
+            node = set_reg_value(
+                self.node,
+                variable,
+                self.vdst,
+                [self.src0, self.src1],
+                self.suffix,
+                reg_type=reg_type,
+                expression_node=var_node,
+            )
             self.decompiler_data.make_var(node.state[self.vdst].version, variable, self.suffix)
             return node
         return super().to_fill_node()
@@ -81,14 +102,20 @@ class VCndmask(BaseInstruction):
 
             if "s" in self.src1 or "v" in self.src1:
                 src1_parent_val = self.node.parent[0].state[self.src1].val
-                src1_parent_val = ExpressionManager().expression_to_string(self.node.parent[0].get_expression_node(self.src1))
+                src1_parent_val = ExpressionManager().expression_to_string(
+                    self.node.parent[0].get_expression_node(self.src1)
+                )
             else:
                 src1_parent_val = self.src1
             if "s" in self.src0 or "v" in self.src0:
                 src0_parent_val = self.node.parent[0].state[self.src0].val
-                src0_parent_val = ExpressionManager().expression_to_string(self.node.parent[0].get_expression_node(self.src0))
+                src0_parent_val = ExpressionManager().expression_to_string(
+                    self.node.parent[0].get_expression_node(self.src0)
+                )
             else:
                 src0_parent_val = self.src0
-            self.output_string = f"{vdst.get_expression_node().value} = {ssrc2_val} ? {src1_parent_val} : {src0_parent_val}"
+            self.output_string = (
+                f"{vdst.get_expression_node().value} = {ssrc2_val} ? {src1_parent_val} : {src0_parent_val}"
+            )
             return self.output_string
         return super().to_print()

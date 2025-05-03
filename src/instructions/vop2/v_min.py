@@ -25,7 +25,9 @@ class VMin(BaseInstruction):
             src0_node = self.node.get_expression_node(self.src0)
             src1_node = self.node.get_expression_node(self.src1)
             min_node = self.expression_manager.add_operation(
-                src0_node, src1_node, ExpressionOperationType.MIN, OpenCLTypes.from_string(self.suffix))
+                src0_node, src1_node, ExpressionOperationType.MIN, OpenCLTypes.from_string(self.suffix)
+            )
             return set_reg_value(
-                self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix, expression_node=min_node)
+                self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix, expression_node=min_node
+            )
         return super().to_fill_node()

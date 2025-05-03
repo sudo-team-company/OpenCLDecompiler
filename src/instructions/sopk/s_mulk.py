@@ -43,6 +43,11 @@ class SMulk(BaseInstruction):
 
         if self.suffix == "i32":
             new_value = make_op(self.node, self.sdst, self.simm16, "*", suffix=self.suffix)
-            expr_node = self.expression_manager(self.node.get_expression_node(self.sdst), self.node.get_expression_node(self.simm16), ExpressionOperationType.MUL, OpenCLTypes.INT)
+            expr_node = self.expression_manager(
+                self.node.get_expression_node(self.sdst),
+                self.node.get_expression_node(self.simm16),
+                ExpressionOperationType.MUL,
+                OpenCLTypes.INT,
+            )
             return set_reg_value(self.node, new_value, self.sdst, [self.sdst], self.suffix)
         return super().to_fill_node()

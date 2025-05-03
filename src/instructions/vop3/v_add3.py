@@ -68,8 +68,11 @@ class VAdd3(BaseInstruction):
     def to_fill_node(self):
         if self.suffix == "u32":
             if self.decompiler_data.is_rdna3:
-                assert(self.node.state[self.src0].register_content.get_expression_node() is not None and self.node.state[self.src1].register_content.get_expression_node() is not None)
-                assert(self.node.state[self.src2].register_content.get_expression_node() is not None)
+                assert (
+                    self.node.state[self.src0].register_content.get_expression_node() is not None
+                    and self.node.state[self.src1].register_content.get_expression_node() is not None
+                )
+                assert self.node.state[self.src2].register_content.get_expression_node() is not None
 
                 if self.decompiler_data.name_of_program == "add_char_get_work_dim_8_8" and self.vdst == "v0":
                     pass
@@ -110,7 +113,12 @@ class VAdd3(BaseInstruction):
                         new_value = make_op(self.node, new_value, src2, "+", "(ulong)", "(ulong)", suffix=self.suffix)
 
                         sum_node = self.expression_manager.add_register_node(reg_type, "")
-                        expr_node = self.expression_manager.add_operation(sum_node, self.node.get_expression_node(src2), ExpressionOperationType.PLUS, OpenCLTypes.UINT)
+                        expr_node = self.expression_manager.add_operation(
+                            sum_node,
+                            self.node.get_expression_node(src2),
+                            ExpressionOperationType.PLUS,
+                            OpenCLTypes.UINT,
+                        )
             if is_reg(self.src0) and is_reg(self.src1) and is_reg(self.src2):
                 src_types = frozenset(
                     {
@@ -125,9 +133,13 @@ class VAdd3(BaseInstruction):
                     expr_node = self.expression_manager.add_register_node(reg_type, "")
 
             if expr_node is None:
-                sum_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG)
-                expr_node = self.expression_manager.add_operation(sum_node, src2_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG)
-            
+                sum_node = self.expression_manager.add_operation(
+                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG
+                )
+                expr_node = self.expression_manager.add_operation(
+                    sum_node, src2_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG
+                )
+
             return set_reg_value(
                 node=self.node,
                 new_value=new_value,
@@ -135,6 +147,6 @@ class VAdd3(BaseInstruction):
                 from_regs=[self.src0, self.src1, self.src2],
                 data_type=self.suffix,
                 reg_type=reg_type,
-                expression_node=expr_node
+                expression_node=expr_node,
             )
         return super().to_fill_node()

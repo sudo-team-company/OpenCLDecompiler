@@ -26,7 +26,7 @@ class VAddc(BaseInstruction):
             self.decompiler_data.write(f"uint {temp} = (ulong){self.src0} + (ulong){self.src1} + {cc}\n")
             self.decompiler_data.write(f"{self.sdst} = 0\n")
             self.decompiler_data.write(f"{self.vdst} = CLAMP ? min({temp}, 0xffffffff) : {temp}\n")
-            self.decompiler_data.write(f"{self.sdst} = ({self.sdst}&~{mask }) | (({temp} >> 32) ? {mask} : 0)\n")
+            self.decompiler_data.write(f"{self.sdst} = ({self.sdst}&~{mask}) | (({temp} >> 32) ? {mask} : 0)\n")
             self.decompiler_data.number_of_temp += 1
             self.decompiler_data.number_of_mask += 1
             self.decompiler_data.number_of_cc += 1
@@ -78,7 +78,8 @@ class VAddc(BaseInstruction):
                         reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT
                         global_id_node = self.expression_manager.add_register_node(RegisterType.GLOBAL_ID_X)
                         expr_node = self.expression_manager.add_operation(
-                            src0_node, global_id_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG)
+                            src0_node, global_id_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG
+                        )
             else:
                 reg_type = RegisterType.INT32
                 if src0_reg:
@@ -88,7 +89,8 @@ class VAddc(BaseInstruction):
 
             if expr_node is None:
                 expr_node = self.expression_manager.add_operation(
-                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.from_string(self.suffix))
+                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.from_string(self.suffix)
+                )
 
             return set_reg_value(
                 self.node,

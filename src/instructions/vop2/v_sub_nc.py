@@ -34,14 +34,30 @@ class VSubNc(BaseInstruction):
             reg_type = self.node.state[self.src1].integrity
         if self.suffix == "u32":
             new_value = make_op(self.node, self.src0, self.src1, "-", "(uint)", "(uint)", suffix=self.suffix)
-            expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.MINUS, OpenCLTypes.UINT)
+            expr_node = self.expression_manager.add_operation(
+                src0_node, src1_node, ExpressionOperationType.MINUS, OpenCLTypes.UINT
+            )
             return set_reg_value(
-                self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix, reg_type=reg_type, expression_node=expr_node
+                self.node,
+                new_value,
+                self.vdst,
+                [self.src0, self.src1],
+                self.suffix,
+                reg_type=reg_type,
+                expression_node=expr_node,
             )
         if self.suffix == "u16":
             new_value = make_op(self.node, self.src0, self.src1, "-", "(ushort)", "(ushort)", suffix=self.suffix)
-            expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.MINUS, OpenCLTypes.USHORT)
+            expr_node = self.expression_manager.add_operation(
+                src0_node, src1_node, ExpressionOperationType.MINUS, OpenCLTypes.USHORT
+            )
             return set_reg_value(
-                self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix, reg_type=reg_type, expression_node=expr_node
+                self.node,
+                new_value,
+                self.vdst,
+                [self.src0, self.src1],
+                self.suffix,
+                reg_type=reg_type,
+                expression_node=expr_node,
             )
         return super().to_fill_node()

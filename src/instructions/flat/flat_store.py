@@ -1,5 +1,3 @@
-import copy
-
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier
 from src.expression_manager.expression_manager import ExpressionManager
@@ -60,7 +58,6 @@ def prepare_vector_type_output(from_registers, vdata, to_registers, node):
     from_type: OpenCLTypes = node.state[from_registers].get_expression_node().value_type_hint.opencl_type
 
     return ExpressionManager().expression_to_string(permute_node, to_type.opencl_type)
-
 
     # to_type_single_component = to_type.set_number_of_components(1)
 
@@ -127,17 +124,16 @@ class FlatStore(BaseInstruction):
                 elif self.node.state[from_reg].data_type is not None and "bytes" in self.node.state[from_reg].data_type:
                     self.node.state[from_reg].cast_to(self.node.state[self.to_registers].data_type)
                     var_name = self.node.state[from_reg].val
-                    self.decompiler_data.names_of_vars[var_name] = self.node.state[
-                        self.to_registers
-                    ].data_type
+                    self.decompiler_data.names_of_vars[var_name] = self.node.state[self.to_registers].data_type
 
                     expr_node: ExpressionNode = self.node.state[from_reg].get_expression_node()
-                    #todo fix me
+                    # todo fix me
                     if expr_node.type == ExpressionType.OP:
                         expr_node = expr_node.left
                     var_name = expr_node.value
-                    self.expression_manager.update_variable_type(var_name,
-                                                                 self.node.get_expression_node(self.to_registers).value_type_hint)
+                    self.expression_manager.update_variable_type(
+                        var_name, self.node.get_expression_node(self.to_registers).value_type_hint
+                    )
                 elif (
                     str(self.node.state[from_reg].data_type) not in self.node.state[self.to_registers].data_type
                     and not is_vector_type(self.node.state[from_reg].data_type)
@@ -151,13 +147,15 @@ class FlatStore(BaseInstruction):
                             make_new_type_without_modifier(self.node, self.to_registers),
                         )
                         self.decompiler_data.names_of_vars[val] = self.node.state[from_reg].data_type
-                        self.expression_manager.update_variable_type(val,
-                                                                 self.node.get_expression_node(from_reg).value_type_hint)
+                        self.expression_manager.update_variable_type(
+                            val, self.node.get_expression_node(from_reg).value_type_hint
+                        )
                     else:
                         # init var - i32, gdata - i64. var = gdata -> var - i64
                         self.decompiler_data.names_of_vars[val] = self.node.state[from_reg].data_type
-                        self.expression_manager.update_variable_type(val,
-                                                                 self.node.get_expression_node(from_reg).value_type_hint)
+                        self.expression_manager.update_variable_type(
+                            val, self.node.get_expression_node(from_reg).value_type_hint
+                        )
             return self.node
         return super().to_fill_node()
 
@@ -168,7 +166,12 @@ class FlatStore(BaseInstruction):
             if is_sgpr_range(self.inst_offset):
                 offset_reg, _ = check_and_split_regs(self.inst_offset)
                 if self.node.state[offset_reg].get_type() == RegisterType.ADDRESS_KERNEL_ARGUMENT:
-                    var_node = self.expression_manager.add_operation(self.node.get_expression_node(offset_reg), var_node, ExpressionOperationType.PLUS, OpenCLTypes.UNKNOWN)
+                    var_node = self.expression_manager.add_operation(
+                        self.node.get_expression_node(offset_reg),
+                        var_node,
+                        ExpressionOperationType.PLUS,
+                        OpenCLTypes.UNKNOWN,
+                    )
                     var = f"{self.node.state[offset_reg].get_value()} + {var}"
 
             if self.inst_offset == "inst_offset:4":
@@ -194,13 +197,14 @@ class FlatStore(BaseInstruction):
                         self.from_registers, self.vdata, self.to_registers, self.node
                     )
                 else:
-                    #todo - check other branches
+                    # todo - check other branches
                     self.output_string = self.node.state[self.from_registers].val
                     self.output_string = ExpressionManager().expression_to_string(
-                        self.node.state[self.from_registers].get_expression_node())
+                        self.node.state[self.from_registers].get_expression_node()
+                    )
             else:
                 self.output_string = self.decompiler_data.initial_state[self.from_registers].val
-            #todo delete debug output
+            # todo delete debug output
             return f"{var} = {self.output_string}"
 
         return super().to_print()

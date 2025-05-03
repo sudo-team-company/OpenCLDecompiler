@@ -49,10 +49,14 @@ class VSub(BaseInstruction):
         src1_node = self.node.get_expression_node(self.src1)
         if self.suffix == "u32":
             new_val = make_op(self.node, self.src0, self.src1, "-", "(ulong)", suffix=self.suffix)
-            expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.MINUS, OpenCLTypes.UINT)
+            expr_node = self.expression_manager.add_operation(
+                src0_node, src1_node, ExpressionOperationType.MINUS, OpenCLTypes.UINT
+            )
             return v_sub_fill_node(self.node, self.src0, self.src1, self.vdst, new_val, self.suffix, expr_node)
         if self.suffix == "f32":
             new_val = make_op(self.node, self.src0, self.src1, "-", "(float)", "(float)", suffix=self.suffix)
-            expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.MINUS, OpenCLTypes.FLOAT)
+            expr_node = self.expression_manager.add_operation(
+                src0_node, src1_node, ExpressionOperationType.MINUS, OpenCLTypes.FLOAT
+            )
             return v_sub_fill_node(self.node, self.src0, self.src1, self.vdst, new_val, self.suffix, expr_node)
         return super().to_fill_node()

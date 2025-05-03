@@ -52,12 +52,13 @@ class VMulF32(BaseInstruction):
                     [self.src0, self.src1],
                     self.suffix,
                     reg_type=RegisterType.DIVISION_PT2,
-                    expression_node=expr_node
+                    expression_node=expr_node,
                 )
             reg_entire = self.node.state[self.src1].integrity
             new_value = make_op(self.node, self.src0, self.src1, "*", "(float)", "(float)", suffix=self.suffix)
             expr_node = self.expression_manager.add_operation(
-                src0_node, src1_node, ExpressionOperationType.MUL, OpenCLTypes.FLOAT)
+                src0_node, src1_node, ExpressionOperationType.MUL, OpenCLTypes.FLOAT
+            )
             return set_reg_value(
                 self.node,
                 new_value,
@@ -65,13 +66,14 @@ class VMulF32(BaseInstruction):
                 [self.src0, self.src1],
                 self.suffix,
                 integrity=reg_entire,
-                expression_node=expr_node
+                expression_node=expr_node,
             )
         if self.suffix == "i32_i24":
             reg_entire = self.node.state[self.src1].integrity
             new_value = make_op(self.node, self.src0, self.src1, "*", "(int)", "(int)", suffix=self.suffix)
             expr_node = self.expression_manager.add_operation(
-                src0_node, src1_node, ExpressionOperationType.MUL, OpenCLTypes.INT)
+                src0_node, src1_node, ExpressionOperationType.MUL, OpenCLTypes.INT
+            )
             return set_reg_value(
                 self.node,
                 new_value,
@@ -79,13 +81,14 @@ class VMulF32(BaseInstruction):
                 [self.src0, self.src1],
                 self.suffix,
                 integrity=reg_entire,
-                expression_node=expr_node
+                expression_node=expr_node,
             )
         if self.suffix == "u32_u24":
             reg_entire = self.node.state[self.src1].integrity
             new_value = make_op(self.node, self.src0, self.src1, "*", suffix=self.suffix)
             expr_node = self.expression_manager.add_operation(
-                src0_node, src1_node, ExpressionOperationType.MUL, OpenCLTypes.UINT)
+                src0_node, src1_node, ExpressionOperationType.MUL, OpenCLTypes.UINT
+            )
             return set_reg_value(
                 self.node,
                 new_value,
@@ -93,6 +96,6 @@ class VMulF32(BaseInstruction):
                 [self.src0, self.src1],
                 self.suffix,
                 integrity=reg_entire,
-                expression_node=expr_node
+                expression_node=expr_node,
             )
         return super().to_fill_node()

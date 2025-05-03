@@ -69,6 +69,8 @@ class VPerm(BaseInstruction):
                     data_type = f"{src1_data_type_name}{src1_data_type_size + src0_data_type_size}"
                 else:
                     data_type = self.node.state[self.src1].data_type
-                set_reg_value(self.node, new_value, self.vdst, [], data_type, reg_type=reg_type, expression_node=expr_node)
+                set_reg_value(
+                    self.node, new_value, self.vdst, [], data_type, reg_type=reg_type, expression_node=expr_node
+                )
             return self.node
         return super().to_fill_node()

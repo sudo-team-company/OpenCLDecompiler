@@ -28,8 +28,12 @@ class VMac(BaseInstruction):
             src1_node = self.node.get_expression_node(self.src1)
             vdst_node = self.node.get_expression_node(self.vdst)
             expr_node = self.expression_manager.add_operation(
-                src0_node, src1_node, ExpressionOperationType.MUL, OpenCLTypes.FLOAT)
+                src0_node, src1_node, ExpressionOperationType.MUL, OpenCLTypes.FLOAT
+            )
             expr_node = self.expression_manager.add_operation(
-                expr_node, vdst_node, ExpressionOperationType.PLUS, OpenCLTypes.FLOAT)
-            return set_reg_value(self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix, expression_node=expr_node)
+                expr_node, vdst_node, ExpressionOperationType.PLUS, OpenCLTypes.FLOAT
+            )
+            return set_reg_value(
+                self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix, expression_node=expr_node
+            )
         return super().to_fill_node()

@@ -13,7 +13,7 @@ def get_output_for_different_vector_types(output, var_type, data_type):
         close_square_bracket_position = output.find("]")
         element_number = output[open_square_bracket_position + 1 : close_square_bracket_position]
         second_term_separator = element_number.find(" + ")
-        vector_offset_value = float(element_number[second_term_separator + 3:])
+        vector_offset_value = float(element_number[second_term_separator + 3 :])
         vector_size, _ = evaluate_size(make_asm_type(data_type), only_size=True)
         one_element_size, _ = evaluate_size(make_asm_type(data_type[:-1]), only_size=True)
         curr_element = int(vector_offset_value * vector_size / one_element_size)
@@ -72,8 +72,10 @@ class FlatLoad(BaseInstruction):
             vector_position = 0
             reg_val = variable
             while True:
-                #todo fix
-                node_type_hint: ExpressionValueTypeHint = self.node.state[self.from_registers].get_expression_node().value_type_hint
+                # todo fix
+                node_type_hint: ExpressionValueTypeHint = (
+                    self.node.state[self.from_registers].get_expression_node().value_type_hint
+                )
                 if node_type_hint.is_pointer and not node_type_hint.is_address:
                     node_type_hint = ExpressionValueTypeHint(node_type_hint.opencl_type)
                 if is_vector_type(data_type):
@@ -89,7 +91,8 @@ class FlatLoad(BaseInstruction):
                     vector_position += 1
                 expr_node = self.expression_manager.add_variable_node(reg_val, node_type_hint)
                 self.node = set_reg_value(
-                    self.node, reg_val, to_now, [], data_type, reg_type=register_type, expression_node=expr_node)
+                    self.node, reg_val, to_now, [], data_type, reg_type=register_type, expression_node=expr_node
+                )
                 if to_now == self.end_to_registers:
                     break
                 to_now = get_next_reg(to_now)
@@ -106,26 +109,35 @@ class FlatLoad(BaseInstruction):
         if self.suffix in {"dword", "dwordx2", "dwordx4"}:
             if self.start_to_registers == self.from_registers:
                 output_just_for_if = self.node.parent[0].state[self.from_registers].val
-                output = expression_manager.expression_to_string(self.node.parent[0].state[self.from_registers].get_expression_node())
+                output = expression_manager.expression_to_string(
+                    self.node.parent[0].state[self.from_registers].get_expression_node()
+                )
                 data_type = self.node.parent[0].state[self.from_registers].data_type
             else:
                 output_just_for_if = self.node.state[self.from_registers].val
-                output = expression_manager.expression_to_string(self.node.state[self.from_registers].get_expression_node())
+                output = expression_manager.expression_to_string(
+                    self.node.state[self.from_registers].get_expression_node()
+                )
                 data_type = self.node.state[self.from_registers].data_type
-            #todo fix me
+            # todo fix me
             output_orig = ""
             if " + " in output_just_for_if:
                 print("bro, everything is fine")
                 print(output)
                 output_orig = make_elem_from_addr(output_just_for_if)
                 print(output_orig)
-            elif self.node.state[self.start_to_registers].data_type != self.decompiler_data.names_of_vars[output_just_for_if][1:]:
+            elif (
+                self.node.state[self.start_to_registers].data_type
+                != self.decompiler_data.names_of_vars[output_just_for_if][1:]
+            ):
                 output = f"*({make_opencl_type(self.decompiler_data.names_of_vars[output_just_for_if])}*)({output_just_for_if})"
             else:
-                #todo make this inside expression_to_string
+                # todo make this inside expression_to_string
                 output = f"*{output}"
             var_name = self.node.state[self.start_to_registers].val
-            var_name = expression_manager.expression_to_string(self.node.state[self.start_to_registers].get_expression_node())
+            var_name = expression_manager.expression_to_string(
+                self.node.state[self.start_to_registers].get_expression_node()
+            )
             if is_vector_type(data_type):
                 if var_name[-2] == "s" and var_name[-1].isdigit():
                     var_name = var_name[:-5]

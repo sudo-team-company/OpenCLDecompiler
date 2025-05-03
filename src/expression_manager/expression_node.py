@@ -55,25 +55,22 @@ class ExpressionOperationType(Enum):
     @staticmethod
     def are_operations_inverted(first: "ExpressionOperationType", second: "ExpressionOperationType"):
         _inv_ops = {
-            ExpressionOperationType.PLUS : ExpressionOperationType.MINUS,
-            ExpressionOperationType.MINUS : ExpressionOperationType.PLUS,
-            ExpressionOperationType.MUL : ExpressionOperationType.DIV,
-            ExpressionOperationType.DIV : ExpressionOperationType.MUL,
-
-            ExpressionOperationType.LSHIFT : ExpressionOperationType.RSHIFT,
-            ExpressionOperationType.RSHIFT : ExpressionOperationType.LSHIFT,
-
-            ExpressionOperationType.EQ : ExpressionOperationType.NE,
-            ExpressionOperationType.NE : ExpressionOperationType.EQ,
-            ExpressionOperationType.LT : ExpressionOperationType.GE,
-            ExpressionOperationType.GE : ExpressionOperationType.LT,
-            ExpressionOperationType.LE : ExpressionOperationType.GT,
-            ExpressionOperationType.GT : ExpressionOperationType.LE,
+            ExpressionOperationType.PLUS: ExpressionOperationType.MINUS,
+            ExpressionOperationType.MINUS: ExpressionOperationType.PLUS,
+            ExpressionOperationType.MUL: ExpressionOperationType.DIV,
+            ExpressionOperationType.DIV: ExpressionOperationType.MUL,
+            ExpressionOperationType.LSHIFT: ExpressionOperationType.RSHIFT,
+            ExpressionOperationType.RSHIFT: ExpressionOperationType.LSHIFT,
+            ExpressionOperationType.EQ: ExpressionOperationType.NE,
+            ExpressionOperationType.NE: ExpressionOperationType.EQ,
+            ExpressionOperationType.LT: ExpressionOperationType.GE,
+            ExpressionOperationType.GE: ExpressionOperationType.LT,
+            ExpressionOperationType.LE: ExpressionOperationType.GT,
+            ExpressionOperationType.GT: ExpressionOperationType.LE,
         }
         if first in _inv_ops:
             return _inv_ops[first] == second
         return False
-
 
     UNKNOWN = "UNKNOWN"
 
@@ -104,12 +101,14 @@ class ExpressionOperationType(Enum):
 
     MIN = "min"
 
+
 class TypeAddressSpaceQualifiers(Enum):
     UNKNOWN = ""
     GLOBAL = "__global"
     LOCAL = "__local"
     CONST = "__constant"
     PRIVATE = "__private"
+
 
 @dataclass
 class ExpressionValueTypeHint:
@@ -132,13 +131,15 @@ class ExpressionValueTypeHint:
         return f"{qualifier_str}{const_str}{type_str}"
 
     @staticmethod
-    def get_common_type(first: "ExpressionValueTypeHint", second: "ExpressionValueTypeHint") -> "ExpressionValueTypeHint":
+    def get_common_type(
+        first: "ExpressionValueTypeHint", second: "ExpressionValueTypeHint"
+    ) -> "ExpressionValueTypeHint":
         res = ExpressionValueTypeHint()
         res.opencl_type = get_common_type(first.opencl_type, second.opencl_type)
         res.qualifier = first.qualifier if first.qualifier == second.qualifier else TypeAddressSpaceQualifiers.UNKNOWN
-        res.is_const = (first.is_const and second.is_const)
-        res.is_pointer = (first.is_pointer and second.is_pointer)
-        res.is_address = (first.is_address and second.is_address)
+        res.is_const = first.is_const and second.is_const
+        res.is_pointer = first.is_pointer and second.is_pointer
+        res.is_address = first.is_address and second.is_address
         return res
 
     @staticmethod
@@ -201,6 +202,7 @@ class ExpressionValueTypeHint:
     def is_unknown(self):
         return self.opencl_type == OpenCLTypes.UNKNOWN
 
+
 @dataclass
 class ExpressionNode:
     id: uuid.UUID = field(default_factory=lambda: uuid.uuid4())
@@ -214,9 +216,9 @@ class ExpressionNode:
     def __str__(self):
         return (
             f"Node {self.id}:\n"
-            f"\tleft: {str(self.left.id) if self.left is not None else "None"}\n"
-            f"\tright: {str(self.right.id) if self.right is not None else "None"}\n"
-            f"\tparent: {str(self.parent.id) if self.parent is not None else "None"}\n"
+            f"\tleft: {str(self.left.id) if self.left is not None else 'None'}\n"
+            f"\tright: {str(self.right.id) if self.right is not None else 'None'}\n"
+            f"\tparent: {str(self.parent.id) if self.parent is not None else 'None'}\n"
             f"\ttype: {self.type!s}\n"
             f"\tvalue: {self.value!s}\n"
             f"\tvalue_type_hint: {self.value_type_hint!s}"
@@ -241,7 +243,8 @@ class ExpressionNode:
         left_equal = self.left.contents_equal(other.left) if self.left is not None else other.left is None
         right_equal = self.right.contents_equal(other.right) if self.right is not None else other.right is None
         return (
-            left_equal and right_equal
+            left_equal
+            and right_equal
             and self.type == other.type
             and self.value == other.value
             and self.value_type_hint == other.value_type_hint
@@ -251,8 +254,8 @@ class ExpressionNode:
         return self
 
     def needs_cast(  # noqa: PLR0911, PLR0912
-        self,
-        to_hint: ExpressionValueTypeHint) -> bool:
+        self, to_hint: ExpressionValueTypeHint
+    ) -> bool:
         from_hint = self.value_type_hint
         if from_hint.is_unknown():
             return not to_hint.is_unknown()
@@ -331,6 +334,7 @@ class ExpressionNode:
                 self.right = self.right.replace(from_node, to_node)
 
         return self
+
 
 def get_common_type(first: OpenCLTypes, second: OpenCLTypes) -> OpenCLTypes:
     if first == second:

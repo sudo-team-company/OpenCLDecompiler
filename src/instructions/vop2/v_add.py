@@ -57,7 +57,8 @@ class VAdd(BaseInstruction):
                         self.node.get_expression_node(self.src0),
                         self.node.get_expression_node(self.src1),
                         data_size,
-                        OpenCLTypes.from_string(self.suffix))
+                        OpenCLTypes.from_string(self.suffix),
+                    )
 
                     return set_reg_value(
                         self.node,
@@ -75,7 +76,7 @@ class VAdd(BaseInstruction):
                         integrity=Integrity.ENTIRE,
                         register_content_type=OperationRegisterContent,
                         operation=OperationType.PLUS,
-                        expression_node=expr_node
+                        expression_node=expr_node,
                     )
 
                 new_reg = self.node.state[self.src0] + self.node.state[self.src1]
@@ -99,11 +100,11 @@ class VAdd(BaseInstruction):
                 left_node = self.node.get_expression_node(self.src0)
                 right_node = self.node.get_expression_node(self.src1)
             elif src0_reg:
-                assert(self.src0 in self.node.state)
+                assert self.src0 in self.node.state
                 left_node = self.node.get_expression_node(self.src0)
                 right_node = self.expression_manager.add_const_node(self.src1, OpenCLTypes.UINT)
             elif src1_reg:
-                assert(self.src1 in self.node.state)
+                assert self.src1 in self.node.state
                 left_node = self.expression_manager.add_const_node(self.src0, OpenCLTypes.UINT)
                 right_node = self.node.get_expression_node(self.src1)
             else:
@@ -111,7 +112,8 @@ class VAdd(BaseInstruction):
                 right_node = self.expression_manager.add_const_node(self.src1, OpenCLTypes.UINT)
 
             expr_node = self.expression_manager.add_operation(
-                left_node, right_node, ExpressionOperationType.PLUS, OpenCLTypes.UINT)
+                left_node, right_node, ExpressionOperationType.PLUS, OpenCLTypes.UINT
+            )
 
             reg_type = RegisterType.UNKNOWN
             reg_entire = Integrity.ENTIRE
@@ -172,7 +174,8 @@ class VAdd(BaseInstruction):
                     src0_node = self.node.get_expression_node(self.src0)
                     src1_node = self.node.get_expression_node(self.src1)
                     expr_node = self.expression_manager.add_offset_div_data_size_node(
-                        src0_node, src1_node, data_size, OpenCLTypes.from_string(self.suffix))
+                        src0_node, src1_node, data_size, OpenCLTypes.from_string(self.suffix)
+                    )
                 elif self.node.state[self.src0].type == RegisterType.GLOBAL_DATA_POINTER:
                     data_type = self.node.state[self.src1].data_type
                     name = self.node.state[self.src0].val
@@ -187,13 +190,13 @@ class VAdd(BaseInstruction):
                         src0_node = self.expression_manager.add_variable_node(
                             name,
                             ExpressionValueTypeHint(
-                                OpenCLTypes.from_string(self.suffix),
-                                TypeAddressSpaceQualifiers.CONST,
-                                is_pointer=True)
+                                OpenCLTypes.from_string(self.suffix), TypeAddressSpaceQualifiers.CONST, is_pointer=True
+                            ),
                         )
                         src1_node = self.node.get_expression_node(self.src1)
                         expr_node = self.expression_manager.add_offset_div_data_size_node(
-                            src0_node, src1_node, value, OpenCLTypes.from_string(self.suffix))
+                            src0_node, src1_node, value, OpenCLTypes.from_string(self.suffix)
+                        )
                 elif (
                     self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE
                     and self.node.state[self.src1].type == RegisterType.WORK_ITEM_ID_X
@@ -201,9 +204,15 @@ class VAdd(BaseInstruction):
                     new_value = "get_global_id(0) - get_global_offset(0)"
                     reg_type = RegisterType.WORK_GROUP_ID_X_WORK_ITEM_ID
 
-                    left_node = self.expression_manager.add_register_node(RegisterType.GLOBAL_ID_X, CONSTANT_VALUES[RegisterType.GLOBAL_ID_X][0])
-                    right_node = self.expression_manager.add_register_node(RegisterType.GLOBAL_OFFSET_X, CONSTANT_VALUES[RegisterType.GLOBAL_OFFSET_X][0])
-                    expr_node = self.expression_manager.add_operation(left_node, right_node, ExpressionOperationType.MINUS, OpenCLTypes.UINT)
+                    left_node = self.expression_manager.add_register_node(
+                        RegisterType.GLOBAL_ID_X, CONSTANT_VALUES[RegisterType.GLOBAL_ID_X][0]
+                    )
+                    right_node = self.expression_manager.add_register_node(
+                        RegisterType.GLOBAL_OFFSET_X, CONSTANT_VALUES[RegisterType.GLOBAL_OFFSET_X][0]
+                    )
+                    expr_node = self.expression_manager.add_operation(
+                        left_node, right_node, ExpressionOperationType.MINUS, OpenCLTypes.UINT
+                    )
                 elif (
                     self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_Y_LOCAL_SIZE
                     and self.node.state[self.src1].type == RegisterType.WORK_ITEM_ID_Y
@@ -211,9 +220,15 @@ class VAdd(BaseInstruction):
                     new_value = "get_global_id(1) - get_global_offset(1)"
                     reg_type = RegisterType.WORK_GROUP_ID_Y_WORK_ITEM_ID
 
-                    left_node = self.expression_manager.add_register_node(RegisterType.GLOBAL_ID_Y, CONSTANT_VALUES[RegisterType.GLOBAL_ID_Y][0])
-                    right_node = self.expression_manager.add_register_node(RegisterType.GLOBAL_OFFSET_Y, CONSTANT_VALUES[RegisterType.GLOBAL_OFFSET_Y][0])
-                    expr_node = self.expression_manager.add_operation(left_node, right_node, ExpressionOperationType.MINUS, OpenCLTypes.UINT)
+                    left_node = self.expression_manager.add_register_node(
+                        RegisterType.GLOBAL_ID_Y, CONSTANT_VALUES[RegisterType.GLOBAL_ID_Y][0]
+                    )
+                    right_node = self.expression_manager.add_register_node(
+                        RegisterType.GLOBAL_OFFSET_Y, CONSTANT_VALUES[RegisterType.GLOBAL_OFFSET_Y][0]
+                    )
+                    expr_node = self.expression_manager.add_operation(
+                        left_node, right_node, ExpressionOperationType.MINUS, OpenCLTypes.UINT
+                    )
                 elif (
                     self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE
                     and self.node.state[self.src1].type == RegisterType.WORK_ITEM_ID_Z
@@ -221,9 +236,15 @@ class VAdd(BaseInstruction):
                     new_value = "get_global_id(2) - get_global_offset(2)"
                     reg_type = RegisterType.WORK_GROUP_ID_Z_WORK_ITEM_ID
 
-                    left_node = self.expression_manager.add_register_node(RegisterType.GLOBAL_ID_Z, CONSTANT_VALUES[RegisterType.GLOBAL_ID_Z][0])
-                    right_node = self.expression_manager.add_register_node(RegisterType.GLOBAL_OFFSET_Z, CONSTANT_VALUES[RegisterType.GLOBAL_OFFSET_Z][0])
-                    expr_node = self.expression_manager.add_operation(left_node, right_node, ExpressionOperationType.MINUS, OpenCLTypes.UINT)
+                    left_node = self.expression_manager.add_register_node(
+                        RegisterType.GLOBAL_ID_Z, CONSTANT_VALUES[RegisterType.GLOBAL_ID_Z][0]
+                    )
+                    right_node = self.expression_manager.add_register_node(
+                        RegisterType.GLOBAL_OFFSET_Z, CONSTANT_VALUES[RegisterType.GLOBAL_OFFSET_Z][0]
+                    )
+                    expr_node = self.expression_manager.add_operation(
+                        left_node, right_node, ExpressionOperationType.MINUS, OpenCLTypes.UINT
+                    )
                 elif (
                     self.node.state[self.src0].type == RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE
                     and self.node.state[self.src1].type == RegisterType.WORK_ITEM_ID_X
@@ -248,7 +269,8 @@ class VAdd(BaseInstruction):
                         src0_node = self.node.get_expression_node(self.src0)
                         src1_node = self.node.get_expression_node(self.src1)
                         expr_node = self.expression_manager.add_offset_div_data_size_node(
-                            src0_node, src1_node, data_size, OpenCLTypes.from_string(self.suffix))
+                            src0_node, src1_node, data_size, OpenCLTypes.from_string(self.suffix)
+                        )
                         expr_node.value_type_hint.is_address = True
                 if src1_reg:
                     reg_type = self.node.state[self.src1].type
@@ -260,7 +282,7 @@ class VAdd(BaseInstruction):
                 data_type,
                 reg_type=reg_type,
                 integrity=reg_entire,
-                expression_node=expr_node
+                expression_node=expr_node,
             )
         if self.suffix == "f64":
             # TODO: Сделать честное присвоение в пару
@@ -284,7 +306,8 @@ class VAdd(BaseInstruction):
                     self.node, start_from_src0, start_from_src1, "+", "(double)", "(double)", suffix=self.suffix
                 )
                 expr_node = self.expression_manager.add_operation(
-                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.DOUBLE)
+                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.DOUBLE
+                )
             return set_reg_value(
                 self.node,
                 new_value,
@@ -292,6 +315,6 @@ class VAdd(BaseInstruction):
                 [start_from_src0, start_from_src1],
                 data_type,
                 reg_type=reg_type,
-                expression_node=expr_node
+                expression_node=expr_node,
             )
         return super().to_fill_node()

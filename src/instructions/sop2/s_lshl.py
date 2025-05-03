@@ -1,7 +1,6 @@
-from src.expression_manager.expression_node import *
-from src.expression_manager.expression_manager import ExpressionManager
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg, set_reg_value
+from src.expression_manager.expression_node import *
 from src.register import check_and_split_regs
 from src.register_type import RegisterType
 
@@ -28,10 +27,12 @@ class SLshl(BaseInstruction):
         if self.suffix == "b32":
             new_value = make_op(self.node, self.ssrc0, str(pow(2, int(self.ssrc1))), "*", suffix=self.suffix)
 
-            op_node = self.expression_manager.add_operation(self.node.get_expression_node(self.ssrc0),
-                                                            self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.UINT),
-                                                            ExpressionOperationType.MUL,
-                                                            OpenCLTypes.UINT)
+            op_node = self.expression_manager.add_operation(
+                self.node.get_expression_node(self.ssrc0),
+                self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.UINT),
+                ExpressionOperationType.MUL,
+                OpenCLTypes.UINT,
+            )
 
             if self.node.state[self.ssrc0].type == RegisterType.WORK_GROUP_ID_X:
                 reg_type = RegisterType.WORK_GROUP_ID_X_LOCAL_SIZE
@@ -42,7 +43,13 @@ class SLshl(BaseInstruction):
             else:
                 reg_type = self.node.state[self.ssrc0].type
             return set_reg_value(
-                self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix, reg_type=reg_type, expression_node=op_node
+                self.node,
+                new_value,
+                self.sdst,
+                [self.ssrc0, self.ssrc1],
+                self.suffix,
+                reg_type=reg_type,
+                expression_node=op_node,
             )
         if self.suffix == "b64":
             start_to_register, end_to_register = check_and_split_regs(self.sdst)
@@ -52,16 +59,20 @@ class SLshl(BaseInstruction):
             reg_type0 = self.node.state[start_from_register].type
             reg_type1 = self.node.state[end_from_register].type
 
-            op_node0 = self.expression_manager.add_operation(self.node.get_expression_node(start_from_register),
-                                                        self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.UINT),
-                                                        ExpressionOperationType.MUL,
-                                                        OpenCLTypes.UINT)
+            op_node0 = self.expression_manager.add_operation(
+                self.node.get_expression_node(start_from_register),
+                self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.UINT),
+                ExpressionOperationType.MUL,
+                OpenCLTypes.UINT,
+            )
 
-            op_node1 = self.expression_manager.add_operation(self.node.get_expression_node(end_from_register),
-                                                        self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.UINT),
-                                                        ExpressionOperationType.MUL,
-                                                        OpenCLTypes.UINT)
-            
+            op_node1 = self.expression_manager.add_operation(
+                self.node.get_expression_node(end_from_register),
+                self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.UINT),
+                ExpressionOperationType.MUL,
+                OpenCLTypes.UINT,
+            )
+
             data_type = self.suffix
             if self.ssrc1 == "3":
                 data_type = "8 bytes"
@@ -77,7 +88,13 @@ class SLshl(BaseInstruction):
                 expression_node=op_node0,
             )
             return set_reg_value(
-                node, new_value1, end_to_register, [end_from_register, self.ssrc1], data_type, reg_type=reg_type1,expression_node=op_node1,
+                node,
+                new_value1,
+                end_to_register,
+                [end_from_register, self.ssrc1],
+                data_type,
+                reg_type=reg_type1,
+                expression_node=op_node1,
             )
 
         if self.decompiler_data.is_rdna3:

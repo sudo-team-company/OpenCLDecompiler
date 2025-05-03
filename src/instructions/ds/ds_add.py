@@ -22,25 +22,31 @@ class DsAdd(BaseInstruction):
         return super().to_print_unresolved()
 
     def get_lds_var_name_with_offset(self):
-            return self.expression_manager.expression_to_string(self.expression_manager.add_offset_div_data_size_node(
+        return self.expression_manager.expression_to_string(
+            self.expression_manager.add_offset_div_data_size_node(
                 self.decompiler_data.lds_vars[self.offset],
                 self.node.get_expression_node(self.addr),
                 4,
-                OpenCLTypes.from_string(self.suffix)))
+                OpenCLTypes.from_string(self.suffix),
+            )
+        )
 
     def to_fill_node(self):
         if self.suffix == "u32":
             new_value = f"{self.node.state[self.varname].val} + {self.node.state[self.vdata0].val}"
-            expr_node = self.expression_manager.add_operation(self.node.get_expression_node(self.varname),
-                                                                       self.node.get_expression_node(self.vdata0),
-                                                                       ExpressionOperationType.PLUS,
-                                                                       OpenCLTypes.UINT)
+            expr_node = self.expression_manager.add_operation(
+                self.node.get_expression_node(self.varname),
+                self.node.get_expression_node(self.vdata0),
+                ExpressionOperationType.PLUS,
+                OpenCLTypes.UINT,
+            )
             return set_reg_value(self.node, new_value, self.varname, [], self.suffix, expression_node=expr_node)
         return super().to_fill_node()
 
     def to_print(self):
         if self.suffix == "u32":
-            self.output_string = f"{self.varname} += {self.expression_manager.expression_to_string(
-                self.node.get_expression_node(self.vdata0))}"
+            self.output_string = f"{self.varname} += {
+                self.expression_manager.expression_to_string(self.node.get_expression_node(self.vdata0))
+            }"
             return self.output_string
         return super().to_print()

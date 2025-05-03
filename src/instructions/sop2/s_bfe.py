@@ -79,7 +79,7 @@ class SBfe(BaseInstruction):
                 to_reg="scc",
                 from_regs=[self.sdst],
                 data_type=self.suffix,
-                expression_node=self.expression_manager.add_const_node(int(not is_zero), OpenCLTypes.UINT)
+                expression_node=self.expression_manager.add_const_node(int(not is_zero), OpenCLTypes.UINT),
             )
 
             return self.node
@@ -97,17 +97,12 @@ class SBfe(BaseInstruction):
             elif self.decompiler_data.bfe_offsets.get((self.node.state[self.ssrc0].val, self.ssrc1)):
                 new_value = self.decompiler_data.bfe_offsets[self.node.state[self.ssrc0].val, self.ssrc1]
                 reg_type = RegisterType.KERNEL_ARGUMENT_VALUE
-                expr_node=self.expression_manager.get_variable_info(new_value).var_node
+                expr_node = self.expression_manager.get_variable_info(new_value).var_node
             else:
                 raise NotImplementedError("Unknown pattern in s_bfe")
             return set_reg_value(
-                self.node,
-                new_value,
-                self.sdst,
-                [],
-                self.suffix,
-                reg_type=reg_type,
-                expression_node=expr_node)
+                self.node, new_value, self.sdst, [], self.suffix, reg_type=reg_type, expression_node=expr_node
+            )
         if self.suffix == "i32":
             if self.decompiler_data.bfe_offsets.get((self.node.state[self.ssrc0].val, self.ssrc1)):
                 new_value = self.decompiler_data.bfe_offsets[self.node.state[self.ssrc0].val, self.ssrc1]
@@ -119,6 +114,7 @@ class SBfe(BaseInstruction):
                     [],
                     self.suffix,
                     reg_type=reg_type,
-                    expression_node=self.expression_manager.get_variable_node(new_value))
+                    expression_node=self.expression_manager.get_variable_node(new_value),
+                )
             return self.node
         return super().to_fill_node()

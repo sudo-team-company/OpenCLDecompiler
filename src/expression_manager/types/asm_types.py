@@ -4,7 +4,7 @@ from src.expression_manager.types.base_type import BaseType, UnknownTypeExceptio
 
 
 class ASMType(BaseType):
-    def __init__(self, size_bytes = 0, is_signed = True, is_integer = True, number_of_components = 1):  # noqa: FBT002
+    def __init__(self, size_bytes=0, is_signed=True, is_integer=True, number_of_components=1):  # noqa: FBT002
         super().__init__(size_bytes, is_signed, is_integer, number_of_components)
 
     def get_type_string(self):
@@ -27,9 +27,11 @@ class ASMType(BaseType):
 
         return type_prefix + number_of_components_prefix
 
+
 class UnknownASMType(ASMType):
     def __init__(self):
         super().__init__()
+
 
 class ASMTypes(Enum):
     def __str__(self):

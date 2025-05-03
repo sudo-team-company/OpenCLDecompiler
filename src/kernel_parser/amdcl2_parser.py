@@ -38,14 +38,7 @@ def process_params(set_of_config: list[str]) -> list[KernelArgument]:
             if name == f"_.global_offset_{i}":
                 name = f"get_global_offset({i})"
         args.append(
-            KernelArgument(
-                type_name=type_name,
-                name=name,
-                offset=offset,
-                size=size,
-                hidden=hidden,
-                const=const
-            )
+            KernelArgument(type_name=type_name, name=name, offset=offset, size=size, hidden=hidden, const=const)
         )
         offset += size
     return args

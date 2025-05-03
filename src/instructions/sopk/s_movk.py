@@ -17,5 +17,12 @@ class SMovk(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == "i32":
-            return set_reg_value(self.node, self.simm16, self.sdst, [], self.suffix,expression_node=self.expression_manager.add_const_node(self.simm16, OpenCLTypes.INT))
+            return set_reg_value(
+                self.node,
+                self.simm16,
+                self.sdst,
+                [],
+                self.suffix,
+                expression_node=self.expression_manager.add_const_node(self.simm16, OpenCLTypes.INT),
+            )
         return super().to_fill_node()

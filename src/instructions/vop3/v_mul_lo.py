@@ -68,9 +68,17 @@ class VMulLo(BaseInstruction):
             new_value = make_op(self.node, self.src0, self.src1, "*", suffix=self.suffix)
 
             if expr_node is None:
-                expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.MUL, OpenCLTypes.from_string(self.suffix))
-            
+                expr_node = self.expression_manager.add_operation(
+                    src0_node, src1_node, ExpressionOperationType.MUL, OpenCLTypes.from_string(self.suffix)
+                )
+
             return set_reg_value(
-                self.node, new_value, self.vdst, [self.src0, self.src1], self.suffix, integrity=reg_entire, expression_node=expr_node
+                self.node,
+                new_value,
+                self.vdst,
+                [self.src0, self.src1],
+                self.suffix,
+                integrity=reg_entire,
+                expression_node=expr_node,
             )
         return super().to_fill_node()

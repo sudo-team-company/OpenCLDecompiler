@@ -46,7 +46,9 @@ class VAnd(BaseInstruction):
                 reg_type = RegisterType.UNKNOWN
                 left_node = self.expression_manager.add_register_node(RegisterType.NUM_GROUPS_X, "get_num_groups(0)")
                 right_node = self.expression_manager.add_const_node(size_of_work_groups[0], OpenCLTypes.UINT)
-                expr_node = self.expression_manager.add_operation(left_node, right_node, ExpressionOperationType.MUL, OpenCLTypes.UINT)
+                expr_node = self.expression_manager.add_operation(
+                    left_node, right_node, ExpressionOperationType.MUL, OpenCLTypes.UINT
+                )
             elif self.node.state[self.src1].type == RegisterType.GLOBAL_SIZE_Y and size_of_work_groups[1] == -int(
                 self.src0
             ):
@@ -56,7 +58,9 @@ class VAnd(BaseInstruction):
                 reg_type = RegisterType.UNKNOWN
                 left_node = self.expression_manager.add_register_node(RegisterType.NUM_GROUPS_Y, "get_num_groups(1)")
                 right_node = self.expression_manager.add_const_node(size_of_work_groups[1], OpenCLTypes.UINT)
-                expr_node = self.expression_manager.add_operation(left_node, right_node, ExpressionOperationType.MUL, OpenCLTypes.UINT)
+                expr_node = self.expression_manager.add_operation(
+                    left_node, right_node, ExpressionOperationType.MUL, OpenCLTypes.UINT
+                )
             elif self.node.state[self.src1].type == RegisterType.GLOBAL_SIZE_Z and size_of_work_groups[2] == -int(
                 self.src0
             ):
@@ -66,7 +70,9 @@ class VAnd(BaseInstruction):
                 reg_type = RegisterType.UNKNOWN
                 left_node = self.expression_manager.add_register_node(RegisterType.NUM_GROUPS_Z, "get_num_groups(2)")
                 right_node = self.expression_manager.add_const_node(size_of_work_groups[2], OpenCLTypes.UINT)
-                expr_node = self.expression_manager.add_operation(left_node, right_node, ExpressionOperationType.MUL, OpenCLTypes.UINT)
+                expr_node = self.expression_manager.add_operation(
+                    left_node, right_node, ExpressionOperationType.MUL, OpenCLTypes.UINT
+                )
             elif (
                 isinstance(self.node.state[self.src1].register_content, CombinedRegisterContent)
                 and isinstance(self.src0, str)
@@ -93,6 +99,6 @@ class VAnd(BaseInstruction):
                 data_type=self.suffix,
                 reg_type=reg_type,
                 integrity=self.node.state[self.src1].integrity,
-                expression_node=expr_node
+                expression_node=expr_node,
             )
         return super().to_fill_node()

@@ -1,4 +1,5 @@
 from src.expression_manager.expression_manager import ExpressionManager
+
 from .decompiler_data import DecompilerData
 from .node import Node
 from .operation_status import OperationStatus

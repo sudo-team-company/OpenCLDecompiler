@@ -1,7 +1,5 @@
 from src.decompiler_data import DecompilerData
 from src.expression_manager.expression_manager import ExpressionManager
-from src.expression_manager.expression_node import ExpressionValueTypeHint
-from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.opencl_types import make_opencl_type
 
 
@@ -24,7 +22,8 @@ def gdata_type_processing():
         elif "var" in key and key in decompiler_data.var_value:
             name = decompiler_data.var_value[key]
             ExpressionManager().update_variable_type(
-                name, ExpressionManager().get_variable_info(key).var_node.value_type_hint)
+                name, ExpressionManager().get_variable_info(key).var_node.value_type_hint
+            )
             decompiler_data.type_gdata[name] = make_opencl_type(val)
         decompiler_data.names_of_vars[key] = val
     tmp = {}

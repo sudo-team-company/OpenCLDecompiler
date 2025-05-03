@@ -10,14 +10,16 @@ from src.register_type import RegisterType
 class CombinedRegisterContent(RegisterContent):
     def __init__(self, register_contents: Iterable[RegisterContent], expression_node: Iterable[ExpressionNode] = None):
         if expression_node is not None:
-            assert(len(expression_node) == len(register_contents))
+            assert len(expression_node) == len(register_contents)
         super().__init__(
             value=[content.get_value() for content in register_contents],
             type_=[content.get_type() for content in register_contents],
             size=[content.get_size() for content in register_contents],
             data_type=[content.get_data_type() for content in register_contents],
             sign=[content.get_sign() for content in register_contents],
-            expression_node=expression_node if expression_node is not None else [content.get_expression_node() for content in register_contents]
+            expression_node=expression_node
+            if expression_node is not None
+            else [content.get_expression_node() for content in register_contents],
         )
 
     def append_content(self, register_content: RegisterContent):
@@ -35,7 +37,7 @@ class CombinedRegisterContent(RegisterContent):
             size=self._size[idx],
             data_type=self._data_type[idx],
             sign=self._sign[idx],
-            expression_node=self._expression_node[idx]
+            expression_node=self._expression_node[idx],
         )
 
     def get_count(self) -> int:
@@ -49,7 +51,7 @@ class CombinedRegisterContent(RegisterContent):
                 size=self._size[0],
                 data_type=self._data_type[0],
                 sign=self._sign[0],
-                expression_node=self._expression_node[0]
+                expression_node=self._expression_node[0],
             )
 
         if len(self._value) == 2 and self._type[0] == RegisterType.EMPTY:  # noqa: PLR2004
@@ -59,21 +61,14 @@ class CombinedRegisterContent(RegisterContent):
                 size=self._size[1],
                 data_type=self._data_type[1],
                 sign=self._sign[1],
-                expression_node=self._expression_node[1]
+                expression_node=self._expression_node[1],
             ) * (2 ** int(self._size[0]))
 
         return None
 
     def _maybe_acquire_content(self, begin: int, end: int) -> RegisterContent | None:
         curr_pos = 0
-        for (
-            value,
-            type_,
-            size,
-            data_type,
-            sign,
-            expression_node
-        ) in zip(
+        for value, type_, size, data_type, sign, expression_node in zip(
             self._value,
             self._type,
             self._size,
@@ -84,12 +79,7 @@ class CombinedRegisterContent(RegisterContent):
         ):
             if curr_pos == begin and curr_pos + size - 1 >= end:
                 return RegisterContent(
-                    value=value,
-                    type_=type_,
-                    size=size,
-                    data_type=data_type,
-                    sign=sign,
-                    expression_node=expression_node
+                    value=value, type_=type_, size=size, data_type=data_type, sign=sign, expression_node=expression_node
                 )
 
             curr_pos += size
@@ -110,7 +100,7 @@ class CombinedRegisterContent(RegisterContent):
 
     def get_sign(self) -> RegisterSignType:
         return self._sign[0]
-    
+
     def get_expression_node(self) -> ExpressionNode:
         return self._expression_node[0]
 
@@ -130,7 +120,7 @@ class CombinedRegisterContent(RegisterContent):
                     type_=RegisterType.UNKNOWN,
                     size=0,
                     data_type=None,
-                    expression_node=ExpressionManager().add_const_node(0, OpenCLTypes.UINT)
+                    expression_node=ExpressionManager().add_const_node(0, OpenCLTypes.UINT),
                 )
 
             begin = None
@@ -196,7 +186,7 @@ class CombinedRegisterContent(RegisterContent):
                             size=size,
                             data_type=data_type,
                             sign=sign,
-                            expression_node=expression_node
+                            expression_node=expression_node,
                         )
                     )
                     continue
@@ -211,7 +201,7 @@ class CombinedRegisterContent(RegisterContent):
                                 size=size,
                                 data_type=data_type,
                                 sign=sign,
-                                expression_node=expression_node
+                                expression_node=expression_node,
                             ),
                         )
                     )

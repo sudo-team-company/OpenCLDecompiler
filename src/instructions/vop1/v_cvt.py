@@ -1,6 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
-from src.expression_manager.expression_node import ExpressionType, ExpressionValueTypeHint
+from src.expression_manager.expression_node import ExpressionType
 from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.opencl_types import make_opencl_type
 from src.register import check_and_split_regs
@@ -53,18 +53,24 @@ class VCvt(BaseInstruction):
             if self.src0 in self.node.state and self.node.state[self.src0].type == RegisterType.DIVISION_PT2:
                 new_value = self.node.state[self.src0].val
                 return set_reg_value(
-                    self.node, new_value, self.vdst, [self.src0], self.suffix, reg_type=RegisterType.DIVISION_PT3,
-                    expression_node=self.node.get_expression_node(self.src0)
+                    self.node,
+                    new_value,
+                    self.vdst,
+                    [self.src0],
+                    self.suffix,
+                    reg_type=RegisterType.DIVISION_PT3,
+                    expression_node=self.node.get_expression_node(self.src0),
                 )
 
             asm_type = self.suffix[4:]
 
             var_node = self.node.get_expression_node(self.from_registers)
-            assert(var_node.type == ExpressionType.VAR)
+            assert var_node.type == ExpressionType.VAR
             var_node = self.expression_manager.cast_node(var_node, OpenCLTypes.from_string(asm_type))
             self.decompiler_data.names_of_vars[self.node.state[self.from_registers].val] = asm_type
             new_value = f"({make_opencl_type(self.suffix[:3])}){self.node.state[self.from_registers].val}"
             reg_type = self.node.state[self.from_registers].type
             return set_reg_value(
-                self.node, new_value, self.to_registers, [], asm_type, reg_type=reg_type, expression_node=var_node)
+                self.node, new_value, self.to_registers, [], asm_type, reg_type=reg_type, expression_node=var_node
+            )
         return super().to_fill_node()

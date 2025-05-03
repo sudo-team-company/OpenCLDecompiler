@@ -49,14 +49,7 @@ def get_params(set_of_config: list[str]) -> list[KernelArgument]:
                 name = f"get_global_offset({i})"
                 type_name = "long"
         args.append(
-            KernelArgument(
-                type_name=type_name,
-                name=name,
-                offset=offset,
-                size=size,
-                hidden=hidden,
-                const=const
-            )
+            KernelArgument(type_name=type_name, name=name, offset=offset, size=size, hidden=hidden, const=const)
         )
         offset += size
     return args

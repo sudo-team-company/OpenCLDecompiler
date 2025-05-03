@@ -167,9 +167,14 @@ def process_unrolled_loops():  # noqa: C901, PLR0912, PLR0915
             acc_node = expression_manager.add_variable_node("acc", ExpressionValueTypeHint(OpenCLTypes.UINT))
             before = expression_manager.expression_to_string(cur.state[dst].get_expression_node())
             vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].set_expression_node(
-                vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].get_expression_node().replace(cur.state[dst].get_expression_node(), acc_node))
+                vertices[vertices[chosen[0]].merged_vertices[-1]]
+                .node.state[dst]
+                .get_expression_node()
+                .replace(cur.state[dst].get_expression_node(), acc_node)
+            )
             inside: str = expression_manager.expression_to_string(
-                vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].get_expression_node())
+                vertices[vertices[chosen[0]].merged_vertices[-1]].node.state[dst].get_expression_node()
+            )
             if len(progressions) != 0:
                 inside = inside.replace(str(progressions[0][0]), "i")
             while cur != end and cur.children[0].exclude_unrolled:

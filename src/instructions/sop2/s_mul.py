@@ -23,7 +23,9 @@ class SMul(BaseInstruction):
         if self.suffix == "i32":
             src0_node = self.node.get_expression_node(self.ssrc0)
             src1_node = self.node.get_expression_node(self.ssrc1)
-            expr_node = self.expression_manager.add_operation(src0_node, src1_node, ExpressionOperationType.MUL, OpenCLTypes.INT)
+            expr_node = self.expression_manager.add_operation(
+                src0_node, src1_node, ExpressionOperationType.MUL, OpenCLTypes.INT
+            )
 
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, "*", suffix=self.suffix)
             ssrc0_reg = is_sgpr(self.ssrc0)
@@ -46,6 +48,12 @@ class SMul(BaseInstruction):
                 ):
                     reg_type = RegisterType.WORK_GROUP_ID_Z_LOCAL_SIZE
             return set_reg_value(
-                self.node, new_value, self.sdst, [self.ssrc0, self.ssrc1], self.suffix, reg_type=reg_type, expression_node=expr_node
+                self.node,
+                new_value,
+                self.sdst,
+                [self.ssrc0, self.ssrc1],
+                self.suffix,
+                reg_type=reg_type,
+                expression_node=expr_node,
             )
         return super().to_fill_node()
