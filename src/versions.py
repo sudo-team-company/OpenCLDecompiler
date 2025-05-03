@@ -105,11 +105,19 @@ def update_value_for_reg(first_reg, curr_node):
             update_value_for_reg(first_reg, child)
 
 
-def update_val_from_changes(curr_node, register, changes, check_version, num_of_reg, first_reg):  # noqa: PLR0913
+def update_val_from_changes(  # noqa: PLR0913
+        curr_node,
+        register,
+        changes,
+        changes_expression_nodes,
+        check_version,
+        num_of_reg,
+        first_reg):
     instruction = curr_node.instruction
     if (
         register in curr_node.state
         and changes.get(check_version)
+        and changes_expression_nodes.get(check_version)
         and curr_node.state[register].data_type is not None
         and (register != "vcc" or "and_saveexec" in instruction[0])
     ):
@@ -130,43 +138,48 @@ def update_val_from_changes(curr_node, register, changes, check_version, num_of_
                 )
                 replaced_node = ExpressionManager().replace_node(
                     node_state[register].get_expression_node(),
-                    changes[check_version + "_expr_node"][1],
-                    changes[check_version + "_expr_node"][0],
+                    changes_expression_nodes[check_version][1],
+                    changes_expression_nodes[check_version][0],
                 )
                 node_state[register].set_expression_node(replaced_node)
 
         copy_val_prev = node_state[first_reg].val
         copy_expr_node_prev = copy.deepcopy(node_state[first_reg].get_expression_node())
+
         node_state[first_reg].register_content._value = node_state[first_reg].val.replace(  # noqa: SLF001
             changes[check_version][1], changes[check_version][0]
         )
 
         replaced_node = ExpressionManager().replace_node(
             node_state[first_reg].get_expression_node(),
-            changes[check_version + "_expr_node"][1],
-            changes[check_version + "_expr_node"][0],
+            changes_expression_nodes[check_version][1],
+            changes_expression_nodes[check_version][0],
         )
         node_state[first_reg].set_expression_node(replaced_node)
 
         copy_val_last = node_state[first_reg].val
         copy_expr_node_last = node_state[first_reg].get_expression_node()
 
-        if copy_val_prev != copy_val_last:
-            assert copy_expr_node_prev != copy_expr_node_last
-
+        if copy_val_prev != copy_val_last and copy_expr_node_prev != copy_expr_node_last:
             if changes.get(node_state[first_reg].version) is not None:
                 copy_val_prev = changes[node_state[first_reg].version][1]
 
-            if changes.get(node_state[first_reg].version + "_expr_node") is not None:
-                copy_expr_node_prev = changes[node_state[first_reg].version + "_expr_node"][1]
+            if changes_expression_nodes.get(node_state[first_reg].version) is not None:
+                copy_expr_node_prev = changes_expression_nodes[node_state[first_reg].version][1]
 
             changes[node_state[first_reg].version] = [copy_val_last, copy_val_prev]
-            changes[node_state[first_reg].version + "_expr_node"] = [copy_expr_node_last, copy_expr_node_prev]
+            changes_expression_nodes[node_state[first_reg].version] = [copy_expr_node_last, copy_expr_node_prev]
             update_value_for_reg(first_reg, curr_node)
-    return changes
+    return changes, changes_expression_nodes
 
 
-def update_val_from_checked_variables(curr_node, register, check_version, first_reg, changes):
+def update_val_from_checked_variables(  # noqa: PLR0912, PLR0913
+        curr_node,
+        register,
+        check_version,
+        first_reg,
+        changes,
+        changes_expression_nodes):
     decompiler_data = DecompilerData()
     instruction = curr_node.instruction
     if (
@@ -180,12 +193,22 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
         if register == first_reg:
             if changes.get(curr_node.parent[0].state[first_reg].version) is None:
                 val_reg = curr_node.parent[0].state[first_reg].val
-                expr_node = curr_node.parent[0].state[first_reg].get_expression_node()
             else:
                 val_reg = changes[curr_node.parent[0].state[first_reg].version][0]
-                expr_node = changes[curr_node.parent[0].state[first_reg].version + "_expr_node"][
-                    0
-                ]  # todo store expr node in changes
+            if changes_expression_nodes.get(curr_node.parent[0].state[first_reg].version) is None:
+                expr_node = curr_node.parent[0].state[first_reg].get_expression_node()
+            else:
+                expr_node = changes_expression_nodes[
+                    curr_node.parent[0].state[first_reg].version
+                ][0]
+
+        if expr_node.type == ExpressionType.VAR and expr_node.value == decompiler_data.variables[check_version]:
+            var_node = expr_node
+        else:
+            var_node = ExpressionManager().add_variable_node(
+                decompiler_data.variables[check_version], expr_node.value_type_hint.set_is_const(False)
+            )
+
         copy_val_prev = curr_node.state[first_reg].val
         copy_expr_node_prev = copy.deepcopy(curr_node.state[first_reg].get_expression_node())
         if decompiler_data.checked_variables.get(check_version) is not None:
@@ -197,69 +220,38 @@ def update_val_from_checked_variables(curr_node, register, check_version, first_
                 curr_node.state[register].register_content._value = curr_node.state[register].val.replace(  # noqa: SLF001
                     val_reg, decompiler_data.checked_variables[check_version]
                 )
-
-            # todo move that to checked_variables...
-            if expr_node.type == ExpressionType.VAR and expr_node.value == decompiler_data.variables[check_version]:
-                tmp_var_node = expr_node
-            else:
-                tmp_var_node = ExpressionManager().add_variable_node(
-                    decompiler_data.variables[check_version], expr_node.value_type_hint.set_is_const(False)
-                )
-                # changes[curr_node.state[first_reg].version + "_expr_node"] = [tmp_var_node, expr_node]
-            assert tmp_var_node.value_type_hint.opencl_type != OpenCLTypes.UNKNOWN
             node_to_change_reg = register if re.match(r"(flat|global)_(store|load)", instruction[0]) else first_reg
             node_to_change = curr_node.state[node_to_change_reg].get_expression_node()
-            replaced_node = ExpressionManager().replace_node(node_to_change, expr_node, tmp_var_node)
+            replaced_node = ExpressionManager().replace_node(node_to_change, expr_node, var_node)
             curr_node.state[node_to_change_reg].set_expression_node(replaced_node)
         # а тут наоборот, наверное, надо сделать присвоение для первого регистра
         elif curr_node.state[first_reg].val.find(val_reg) != -1 and first_reg in {"vcc", "scc", "exec"}:
             curr_node.state[first_reg].register_content._value = curr_node.state[first_reg].val.replace(  # noqa: SLF001
                 val_reg, decompiler_data.variables[check_version]
             )
-
-            if expr_node.type == ExpressionType.VAR and expr_node.value == decompiler_data.variables[check_version]:
-                tmp_var_node = expr_node
-            else:
-                tmp_var_node = ExpressionManager().add_variable_node(
-                    decompiler_data.variables[check_version], expr_node.value_type_hint.set_is_const(False)
-                )
-                # changes[curr_node.state[first_reg].version + "_expr_node"] = [tmp_var_node, expr_node]
-            assert tmp_var_node.value_type_hint.opencl_type != OpenCLTypes.UNKNOWN
-
             replaced_node = ExpressionManager().replace_node(
-                curr_node.state[first_reg].get_expression_node(), expr_node, tmp_var_node
+                curr_node.state[first_reg].get_expression_node(), expr_node, var_node
             )
             curr_node.state[first_reg].set_expression_node(replaced_node)
         elif re.match(r"(flat|global)_store", instruction[0]):
             curr_node.state[register].register_content._value = curr_node.state[register].val.replace(  # noqa: SLF001
                 val_reg, decompiler_data.variables[check_version]
             )
-
-            if expr_node.type == ExpressionType.VAR and expr_node.value == decompiler_data.variables[check_version]:
-                tmp_var_node = expr_node
-            else:
-                tmp_var_node = ExpressionManager().add_variable_node(
-                    decompiler_data.variables[check_version], expr_node.value_type_hint.set_is_const(False)
-                )
-                # changes[curr_node.state[register].version + "_expr_node"] = [tmp_var_node, expr_node]
-            assert tmp_var_node.value_type_hint.opencl_type != OpenCLTypes.UNKNOWN
             replaced_node = ExpressionManager().replace_node(
-                curr_node.state[register].get_expression_node(), expr_node, tmp_var_node
+                curr_node.state[register].get_expression_node(), expr_node, var_node
             )
             curr_node.state[register].set_expression_node(replaced_node)
 
         copy_val_last = curr_node.state[first_reg].val
-        copy_expr_node_last = copy.deepcopy(curr_node.state[first_reg].register_content._expression_node)
-        if copy_val_prev != copy_val_last:
-            if ExpressionManager().expression_to_string(copy_expr_node_last) == "x * var4":
-                assert copy_expr_node_last.right.value_type_hint.opencl_type != OpenCLTypes.UNKNOWN
-            assert copy_expr_node_last != copy_expr_node_prev
+        copy_expr_node_last = copy.deepcopy(curr_node.state[first_reg].get_expression_node())
+
+        if copy_val_prev != copy_val_last and copy_expr_node_last != copy_expr_node_prev:
             changes[curr_node.state[first_reg].version] = [copy_val_last, copy_val_prev]
-            changes[curr_node.state[first_reg].version + "_expr_node"] = [copy_expr_node_last, copy_expr_node_prev]
+            changes_expression_nodes[curr_node.state[first_reg].version] = [copy_expr_node_last, copy_expr_node_prev]
             update_value_for_reg(first_reg, curr_node)
 
 
-def change_values_for_one_instruction(curr_node, changes):
+def change_values_for_one_instruction(curr_node, changes, changes_expression_nodes):
     for num_of_reg in range(1, len(curr_node.instruction)):
         register = curr_node.instruction[num_of_reg]
         if (
@@ -301,18 +293,23 @@ def change_values_for_one_instruction(curr_node, changes):
                 else:
                     continue
 
-            changes = update_val_from_changes(curr_node, register, changes, check_version, num_of_reg, first_reg)
-            update_val_from_checked_variables(curr_node, register, check_version, first_reg, changes)
+            changes, changes_expression_nodes = update_val_from_changes(
+                curr_node, register, changes, changes_expression_nodes, check_version, num_of_reg, first_reg)
+            update_val_from_checked_variables(
+                curr_node, register, check_version, first_reg, changes, changes_expression_nodes)
     if "select" in curr_node.instruction[0]:
         first_reg = curr_node.instruction[1]
         check_version = curr_node.state["scc"].version
-        changes = update_val_from_changes(curr_node, "scc", changes, check_version, 0, first_reg)
-        update_val_from_checked_variables(curr_node, "scc", check_version, first_reg, changes)
+        changes, changes_expression_nodes = update_val_from_changes(
+            curr_node, "scc", changes, changes_expression_nodes, check_version, 0, first_reg)
+        update_val_from_checked_variables(
+            curr_node, "scc", check_version, first_reg, changes, changes_expression_nodes)
 
 
 def change_values():
     decompiler_data = DecompilerData()
     changes = {}
+    changes_expression_nodes = {}
     curr_node = decompiler_data.cfg
     visited = [curr_node]
     queue = deque()
@@ -324,7 +321,7 @@ def change_values():
             if len(curr_node.parent) < 2:  # noqa: PLR2004
                 instruction = curr_node.instruction
                 if (instruction != "c_branch" or curr_node in decompiler_data.back_edges) and len(instruction) > 1:
-                    change_values_for_one_instruction(curr_node, changes)
+                    change_values_for_one_instruction(curr_node, changes, changes_expression_nodes)
             else:
                 flag_of_continue = False
                 for c_p in curr_node.parent:
