@@ -101,7 +101,7 @@ def _convert_args_to_offset_to_content(args: list) -> dict[str, RegisterContent]
 
             int_offset = int(offset, base=16)
 
-            expr_node = ExpressionManager().add_kernel_argument(_make_argument(idx, arg), int_offset, False)
+            expr_node = ExpressionManager().add_kernel_argument(_make_argument(idx, arg), int_offset, False)  # noqa: FBT003
         elif _ARG_KIND_TO_REGISTER_TYPE.get(value_kind) is not None:
             reg_type = _ARG_KIND_TO_REGISTER_TYPE[value_kind]
             expr_node = ExpressionManager().add_register_node(reg_type, _ARG_KIND_TO_VALUE[value_kind])

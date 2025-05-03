@@ -8,7 +8,7 @@ from src.register_type import CONSTANT_VALUES, RegisterSignType, RegisterType
 
 
 class RegisterContent:
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         value: list[object] | object,
         type_: list | RegisterType,

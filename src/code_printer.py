@@ -32,7 +32,7 @@ def create_opencl_body():
     for key in range(len(offsets) - 1):
         lds_var_node: ExpressionNode = decompiler_data.lds_vars[offsets[key]]
         size_var = int((offsets[key + 1] - offsets[key]) / (lds_var_node.value_type_hint.size_bytes()))
-        type_of_var = lds_var_node.value_type_hint.to_string(False)  # noqa: FBT003
+        type_of_var = lds_var_node.value_type_hint.to_string_arr()
         decompiler_data.write("    " + type_of_var + " " + lds_var_node.value + "[" + str(size_var) + "]" + ";\n")
     make_output_from_region(decompiler_data.improve_cfg, "    ")
     decompiler_data.write("}\n")
@@ -55,7 +55,7 @@ def write_global_data():  # noqa: PLR0912
         else:
             raise NotImplementedError
         var_info = expression_manager.get_variable_info(key)
-        decompiler_data.write(var_info.var_node.value_type_hint.to_string(False) + " " + var_info.name + "[] = {")
+        decompiler_data.write(var_info.var_node.value_type_hint.to_string_arr() + " " + var_info.name + "[] = {")
         if var in {"int2", "int4", "int8"}:
             num = int(var[-1])
             for index, element in enumerate(list_of_gdata_values):
@@ -86,8 +86,6 @@ def make_output_for_loop_vars(curr_node, indent):
     reg = key[: key.find("_")]
     loop_variable = decompiler_data.loops_variables[key]
     loop_variable_node = expression_manager.get_variable_node(loop_variable)
-    if loop_variable == "var10":
-        pass
     decompiler_data.write(
         indent
         + loop_variable
@@ -128,7 +126,6 @@ def make_output_for_linear_region(region, indent):
                         or (decompiler_data.gpu and decompiler_data.gpu.startswith("gfx"))
                     )
                 ):  # версия поменялась по сравнению с предком
-                    # decompiler_data.write(indent + var + " = " + curr_node.state[reg].val + ";\n")
                     value_type_hint = copy.deepcopy(expression_manager.get_variable_node(var).value_type_hint)
                     value_type_hint.opencl_type = OpenCLTypes.UNKNOWN
                     decompiler_data.write(

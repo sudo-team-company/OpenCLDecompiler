@@ -177,8 +177,6 @@ class FlatStore(BaseInstruction):
             if self.inst_offset == "inst_offset:4":
                 var = f"{var}[get_global_id(0)]"
             elif " + " in var:
-                if self.decompiler_data.name_of_program == "cpFACE":
-                    pass
                 var = make_elem_from_addr(var)
                 var_node.value_type_hint.is_address = False
                 var = ExpressionManager().expression_to_string(var_node)

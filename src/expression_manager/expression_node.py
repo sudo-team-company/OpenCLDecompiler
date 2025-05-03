@@ -119,16 +119,14 @@ class ExpressionValueTypeHint:
     is_address: bool = False
 
     def __str__(self):
-        return self.to_string(True)
-
-    def to_string(self, with_pointer: bool):
         qualifier_str = f"{self.qualifier.value} " if self.qualifier != TypeAddressSpaceQualifiers.UNKNOWN else ""
         const_str = "const " if self.is_const else ""
         type_str = str(self.opencl_type)
         pointer_str = " *" if self.is_pointer else ""
-        if with_pointer:
-            return f"{qualifier_str}{const_str}{type_str}{pointer_str}"
-        return f"{qualifier_str}{const_str}{type_str}"
+        return f"{qualifier_str}{const_str}{type_str}{pointer_str}"
+
+    def to_string_arr(self):
+        return str(self)[:-2] if self.is_pointer else str(self)
 
     @staticmethod
     def get_common_type(

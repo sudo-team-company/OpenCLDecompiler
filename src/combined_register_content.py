@@ -8,9 +8,10 @@ from src.register_type import RegisterType
 
 
 class CombinedRegisterContent(RegisterContent):
-    def __init__(self, register_contents: Iterable[RegisterContent], expression_node: Iterable[ExpressionNode] = None):
-        if expression_node is not None:
-            assert len(expression_node) == len(register_contents)
+    def __init__(
+            self,
+            register_contents: Iterable[RegisterContent],
+            expression_node: Iterable[ExpressionNode] | None = None):
         super().__init__(
             value=[content.get_value() for content in register_contents],
             type_=[content.get_type() for content in register_contents],

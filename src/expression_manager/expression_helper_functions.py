@@ -43,8 +43,9 @@ def create_work_item_function_node(reg_type: RegisterType) -> ExpressionNode:
     work_item_function_node = ExpressionNode()
     work_item_function_node.type = ExpressionType.WORK_ITEM_FUNCTION
     work_item_function_node.value = reg_type
+    uint_size_bits = OpenCLTypes.UINT.value.get_size() * 8
     work_item_function_node.value_type_hint = ExpressionValueTypeHint(
-        OpenCLTypes.UINT if CONSTANT_VALUES[reg_type][1] == 32 else OpenCLTypes.ULONG
+        OpenCLTypes.UINT if CONSTANT_VALUES[reg_type][1] == uint_size_bits else OpenCLTypes.ULONG
     )
     return work_item_function_node
 
@@ -226,8 +227,9 @@ def get_sufficient_type_for_const(value, opencl_type_hint: OpenCLTypes) -> tuple
                     try:
                         decimals_after_point = len(value) - value.find(".")
                         value = float(value)
+                        float_precision = 7
                         value_type_hint.opencl_type = (
-                            OpenCLTypes.FLOAT if decimals_after_point <= 7 else OpenCLTypes.DOUBLE
+                            OpenCLTypes.FLOAT if decimals_after_point <= float_precision else OpenCLTypes.DOUBLE
                         )
                     except ValueError:
                         pass

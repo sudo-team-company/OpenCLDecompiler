@@ -101,7 +101,7 @@ _SUM_SIMPLIFY_COMBINATIONS = [
 
 
 class OperationRegisterContent(RegisterContent):
-    def __init__(
+    def __init__(  # noqa: PLR0912, PLR0915
         self,
         operation: OperationType,
         register_contents: list[RegisterContent],

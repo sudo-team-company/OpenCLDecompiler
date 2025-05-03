@@ -96,8 +96,9 @@ class ExpressionManager(metaclass=Singleton):
 
         min_worth_checking_node_info = 2
         if len(result) >= min_worth_checking_node_info:
-            # Change expressions like global_offset({i}) + get_group_id({i}) * get_local_size({i}) + get_local_id({i}) + ...
-            # to get_global_id({i}) + ...
+            # Change expressions like
+            # `global_offset({i}) + get_group_id({i}) * get_local_size({i}) + get_local_id({i}) + ...`
+            # to `get_global_id({i}) + ...`
             local_id_reg_types = [RegisterType[f"WORK_ITEM_ID_{dim}"] for dim in "XYZ"]
             global_offset_reg_types = [RegisterType[f"GLOBAL_OFFSET_{dim}"] for dim in "XYZ"]
             work_group_id_mul_local_size_reg_types = [RegisterType[f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"] for dim in "XYZ"]

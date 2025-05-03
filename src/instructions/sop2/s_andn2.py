@@ -27,7 +27,6 @@ class SAndn2(BaseInstruction):
                     self.decompiler_data.exec_registers[self.ssrc0] ^ self.decompiler_data.exec_registers[self.ssrc1]
                 )
                 self.decompiler_data.exec_registers[self.sdst] = new_exec_condition
-                print(new_exec_condition.top())
 
                 left_node = self.node.get_expression_node(self.ssrc0)
                 right_node = self.node.get_expression_node(self.ssrc1)

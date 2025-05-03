@@ -157,7 +157,7 @@ def set_reg(
         )
         else None,
         size=reg.register_content._size,  # noqa: SLF001
-        expression_node=reg.register_content._expression_node,
+        expression_node=reg.register_content._expression_node,  # noqa: SLF001
     )
 
 
@@ -218,10 +218,7 @@ def simplify_opencl_statement(opencl_line):
         for data_type in current_type_conversion.values():
             substring = substring.replace(data_type, "")
         if substring:
-            try:
-                substring = sympy.simplify(substring)
-            except:
-                substring = f"{substring} # !!! could not simplify it !!!"
+            substring = sympy.simplify(substring)
             substring = sympy.sstr(substring)
         # doesn't recover type (int)A in case (int)(A + B) - B
         for key, data_type in current_type_conversion.items():
@@ -564,8 +561,6 @@ class DecompilerData(metaclass=Singleton):
         if self.flag_for_decompilation != FlagType.ONLY_CLRX and "Not resolved yet. " not in output:
             output = simplify_opencl_statement(output)
             output = output.replace("___", ".")
-        if "var7" in output:
-            pass
         self.output_file.write(output)
         self.output_file.flush()
 
@@ -576,8 +571,6 @@ class DecompilerData(metaclass=Singleton):
         self.versions[reg] += 1
 
     def set_reg_make_version(self, state, reg, value):
-        if DecompilerData().name_of_program == "add_get_work_dim_x" and reg == "s4":
-            pass
         state[reg] = value
         self.make_version(state, reg)
 

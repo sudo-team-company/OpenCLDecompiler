@@ -1,7 +1,6 @@
 from src.combined_register_content import CombinedRegisterContent
 from src.decompiler_data import DecompilerData, make_elem_from_addr
 from src.expression_manager.expression_manager import ExpressionManager
-from src.expression_manager.expression_node import *
 from src.integrity import Integrity
 from src.register import Register, check_and_split_regs, get_next_reg
 from src.register_content import RegisterContent
@@ -127,7 +126,7 @@ def upload_global_data_pointer(state, to_registers, from_registers):
                 value=new_val,
                 type_=RegisterType.GLOBAL_DATA_POINTER,
                 data_type=data_type,
-                expression_node=state[start_from_register].register_content._expression_node,
+                expression_node=state[start_from_register].get_expression_node(),
             ),
         ),
     )
@@ -178,7 +177,7 @@ def upload_by_offset(
                         value=register_content.get_value(),
                         type_=register_content.get_type(),
                         data_type=register_content.get_data_type(),
-                        expression_node=register_content._expression_node,
+                        expression_node=register_content.get_expression_node(),
                     ),
                 )
             else:
@@ -213,7 +212,7 @@ def upload_by_offset(
                             value=register_content.get_value(),
                             type_=register_content.get_type(),
                             data_type=register_content.get_data_type(),
-                            expression_node=register_content._expression_node,
+                            expression_node=register_content.get_expression_node(),
                         ),
                     ),
                 )
@@ -231,7 +230,7 @@ def upload_by_offset(
                             value=register_content.get_value(),
                             type_=register_content.get_type(),
                             data_type=register_content.get_data_type(),
-                            expression_node=register_content._expression_node,
+                            expression_node=register_content.get_expression_node(),
                         ),
                     ),
                 )
