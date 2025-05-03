@@ -282,7 +282,7 @@ class ExpressionNode:
             if from_hint.is_signed() == to_hint.is_signed():
                 return is_to_type_smaller
             # from unsigned type to signed or from signed type to unsigned
-            if re.fullmatch(r"-\d+.\d+", str(self.value)) is not None:
+            if re.fullmatch(r"-?\d+.\d+", str(self.value)) is not None:
                 return False
             if re.fullmatch(r"0x[\da-f]+", str(self.value)) is not None:
                 return False

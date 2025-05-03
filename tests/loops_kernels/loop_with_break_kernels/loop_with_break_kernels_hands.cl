@@ -20,7 +20,7 @@ void loop_break_kernel(__global uint *data, uint x, uint y, uint unrollingBreake
                 break;
             }
             var6 = var6 * x;
-            var7 = var7 + 1.0;
+            var7 = var7 + 1;
             var8 = var8;
             var9 = var9 + 1;
         } while (!((var9 + 1) >= unrollingBreaker));

@@ -158,6 +158,8 @@ def evaluate_operation(# noqa: C901, PLR0912
             result = left_value | right_value
         case ExpressionOperationType.MIN:
             result = min(left_value, right_value)
+    if result == int(result):
+        result = int(result)
     print("evalute:", left_value, op, right_value, result)
     return result
 

@@ -377,11 +377,13 @@ class ExpressionManager(metaclass=Singleton):
 
         unoptimized_s0 = s0
         if s0 in self._optimized_nodes_to_original:
-            unoptimized_s0 = self._optimized_nodes_to_original[s0]
+            unoptimized_s0 = copy.deepcopy(self._optimized_nodes_to_original[s0])
         unoptimized_s1 = s1
         if s1 in self._optimized_nodes_to_original:
-            unoptimized_s1 = self._optimized_nodes_to_original[s1]
+            unoptimized_s1 = copy.deepcopy(self._optimized_nodes_to_original[s1])
         unoptimized_node = create_op_node(op, unoptimized_s0, unoptimized_s1, op_value_type_hint)
+        if self.expression_to_string(operation_node) == "1 >= unrollingBreaker":
+            pass
         self._optimized_nodes_to_original[operation_node] = unoptimized_node
 
         self.add_node(operation_node)
@@ -466,13 +468,13 @@ class ExpressionManager(metaclass=Singleton):
 
         unoptimized_cond = cond
         if cond in self._optimized_nodes_to_original:
-            unoptimized_cond = self._optimized_nodes_to_original[cond]
+            unoptimized_cond = copy.deepcopy(self._optimized_nodes_to_original[cond])
         unoptimized_s0 = s0
         if s0 in self._optimized_nodes_to_original:
-            unoptimized_s0 = self._optimized_nodes_to_original[s0]
+            unoptimized_s0 = copy.deepcopy(self._optimized_nodes_to_original[s0])
         unoptimized_s1 = s1
         if s1 in self._optimized_nodes_to_original:
-            unoptimized_s1 = self._optimized_nodes_to_original[s1]
+            unoptimized_s1 = copy.deepcopy(self._optimized_nodes_to_original[s1])
 
         self._optimized_nodes_to_original[if_ternary_node] = create_if_ternary_node(unoptimized_cond, unoptimized_s0, unoptimized_s1)
 
@@ -654,84 +656,18 @@ class ExpressionManager(metaclass=Singleton):
 
         if node.contents_equal(to_node):
             return node
-        # original_node = copy.deepcopy(node)
-        # node = node.replace(from_node, to_node)
-        # node_changed = original_node.contents_equal(node) is False
-        # if node_changed:
-        #     print("node changed!")
-        #     self._optimized_nodes_to_original[original_node] = node
-        #     return node
-        # node = original_node
 
         if node in self._optimized_nodes_to_original:
-            node = self._optimized_nodes_to_original[node]
-        # if from_node in self._optimized_nodes_to_original and from_node not in self._replaced_nodes_to_original:
-        #     self._replaced_nodes_to_original[from_node] = self._optimized_nodes_to_original[from_node]
-        #     from_node = self._optimized_nodes_to_original[from_node]
-        # if to_node in self._optimized_nodes_to_original and to_node not in self._replaced_nodes_to_original:
-        #     self._replaced_nodes_to_original[to_node] = self._optimized_nodes_to_original[to_node]
-        #     to_node = self._optimized_nodes_to_original[to_node]
+            node = copy.deepcopy(self._optimized_nodes_to_original[node])
+
+        original_node = copy.deepcopy(node)
+        node = node.replace(from_node, to_node)
+        if not original_node.contents_equal(node):
+            return self.apply_optimizations(node)
+
+        if from_node in self._optimized_nodes_to_original:
+            from_node = copy.deepcopy(self._optimized_nodes_to_original[from_node])
         print("original nodes:", self.expression_to_string(node), "|", self.expression_to_string(from_node), "|", self.expression_to_string(to_node))
 
         node = node.replace(from_node, to_node)
         return self.apply_optimizations(node)
-        # print("replace_nodes after replaced:", self.expression_to_string(node), self.expression_to_string(from_node), self.expression_to_string(to_node))
-
-        # original_node = copy.deepcopy(node)
-        # node = node.replace(from_node, to_node)
-
-        # print("after first replace:", self.expression_to_string(node), "original:", self.expression_to_string(original_node))
-        # # We could have optimized things that we want to replace :(
-        # print(original_node.contents_equal(node), node in self._optimized_nodes_to_original)
-        # if original_node.contents_equal(node) and node in self._optimized_nodes_to_original:
-        #     unoptimized_node = self._optimized_nodes_to_original[node]
-        #     print("found unoptimized node, so now:", self.expression_to_string(unoptimized_node), self.expression_to_string(from_node), self.expression_to_string(to_node))
-        #     list_nodes = []
-        #     while unoptimized_node in self._optimized_nodes_to_original:
-        #         unoptimized_node = self._optimized_nodes_to_original[unoptimized_node]
-        #         list_nodes.append(unoptimized_node)
-        #         print("found unoptimized node, so now:", self.expression_to_string(unoptimized_node), self.expression_to_string(from_node), self.expression_to_string(to_node))
- 
-        #     unoptimized_node = unoptimized_node.replace(from_node, to_node)
-        #     self._optimized_nodes_to_original[node] = unoptimized_node
-
-        #     self._replaced_nodes_to_original[node] = unoptimized_node
-        #     for i in list_nodes:
-        #         self._replaced_nodes_to_original[i] = unoptimized_node
-
-        #     return unoptimized_node
-        # else:
-        #     self._optimized_nodes_to_original[original_node] = node
-        #     self._replaced_nodes_to_original[original_node] = node
-        # return node
-        # original_node = copy.deepcopy(node)
-        # node = node.replace(from_node, to_node)
-        # node_changed = original_node.contents_equal(node) is False
-        # print("after first replace:", self.expression_to_string(node), "original:", self.expression_to_string(original_node))
-        # print(node_changed, node in self._optimized_nodes_to_original)
-
-        # # We could have optimized things that we want to replace :(
-        # if node_changed:
-        #     print("havent found unoptimized node")
-        #     self._replaced_nodes_to_original[original_node] = node
-        #     return node
-
-        # if node in self._optimized_nodes_to_original:
-        #     unoptimized_node = self._optimized_nodes_to_original[node]
-        #     print("found unoptimized node, so now:", self.expression_to_string(unoptimized_node), self.expression_to_string(from_node), self.expression_to_string(to_node))
-        #     while unoptimized_node in self._optimized_nodes_to_original:
-        #         unoptimized_node = self._optimized_nodes_to_original[unoptimized_node]
-        #         print("found unoptimized node, so now:", self.expression_to_string(unoptimized_node), self.expression_to_string(from_node), self.expression_to_string(to_node))
-
-        #     unoptimized_node = unoptimized_node.replace(from_node, to_node)
-        #     self._replaced_nodes_to_original[unoptimized_node] = node
-
-        #     return unoptimized_node
-        # if node in self._replaced_nodes_to_original:
-        #     assert False
-
-        # for i in self._optimized_nodes_to_original:
-        #     print("optimization:", self.expression_to_string(i), self.expression_to_string(self._optimized_nodes_to_original[i]))
-        # for i in self._replaced_nodes_to_original:
-        #     print("replaced:", self.expression_to_string(i), self.expression_to_string(self._replaced_nodes_to_original[i]))
-        # assert False
