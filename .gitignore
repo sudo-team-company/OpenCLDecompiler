@@ -16,8 +16,5 @@ venv.bak/
 .idea/
 ﻿tests/.idea
 
-# Temp (Delete before merge)
+# VSCode
 .vscode/
-input.asm
-output.cl
-run.sh
