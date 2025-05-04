@@ -85,7 +85,6 @@ class SBfe(BaseInstruction):
             return self.node
 
         if self.suffix == "u32":
-            expr_node = None
             if self.ssrc1 == "0x20010":
                 new_value = "get_work_dim()"
                 reg_type = RegisterType.WORK_DIM

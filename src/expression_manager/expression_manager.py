@@ -411,12 +411,12 @@ class ExpressionManager(metaclass=Singleton):
             optimized_node = self.add_const_node(0, OpenCLTypes.UINT)
 
         logical_not_node = create_logical_not_node(node)
+        self.add_node(logical_not_node)
 
         if optimized_node is not None:
             self._optimized_nodes_to_original[optimized_node] = logical_not_node
             return optimized_node
 
-        self.add_node(logical_not_node)
         return logical_not_node
 
     def add_kernel_argument(self, arg: KernelArgument, offset: int, check_duplicate: bool = True) -> ExpressionNode:  # noqa: FBT001, FBT002
@@ -507,8 +507,6 @@ class ExpressionManager(metaclass=Singleton):
     def add_permute_node(self, s0: ExpressionNode, s1: ExpressionNode) -> ExpressionNode:
         assert s0 is not None
         assert s1 is not None
-        assert s0.type == ExpressionType.VAR
-        assert s1.type == ExpressionType.VAR
 
         if s0.value.find(VECTOR_COMPONENT_DELIMITER) != -1 and s1.value.find(VECTOR_COMPONENT_DELIMITER) != -1:
             var0, component0 = s0.value.split(VECTOR_COMPONENT_DELIMITER)
@@ -561,11 +559,13 @@ class ExpressionManager(metaclass=Singleton):
         return prev_node
 
     def variable_to_string(self, name: str) -> str:
-        assert len(name) > 0
+        if len(name) == 0:
+            return ""
         if name[0] == "*":
             return self.variable_to_string(name[1:])
         var_info = self.get_variable_info(name)
-        assert var_info is not None
+        if var_info is None:
+            return ""
         return var_expression_to_string(var_info.var_node)
 
     def get_variable_node(self, name: str) -> ExpressionNode | None:
@@ -579,7 +579,6 @@ class ExpressionManager(metaclass=Singleton):
         return None
 
     def cast_node(self, node: ExpressionNode, to_type: OpenCLTypes) -> ExpressionNode:
-        # todo fix that
         if node.type == ExpressionType.VAR:
             self._variables_for_programs[self._name_of_program][node.value].var_node.cast_to(to_type)
         return node.cast_to(to_type)
@@ -671,6 +670,8 @@ class ExpressionManager(metaclass=Singleton):
         if node.contents_equal(to_node):
             return node
 
+        # There could be cases when node has already been optimized and doesn't contain from_node
+        # That's why we try to use unoptimized node here
         if node in self._optimized_nodes_to_original:
             node = copy.deepcopy(self._optimized_nodes_to_original[node])
 
@@ -679,6 +680,7 @@ class ExpressionManager(metaclass=Singleton):
         if not original_node.contents_equal(node):
             return self.apply_optimizations(node)
 
+        # Same logic as for node - if nothing has changed after first replace, probably from_node was optimized
         if from_node in self._optimized_nodes_to_original:
             from_node = copy.deepcopy(self._optimized_nodes_to_original[from_node])
 

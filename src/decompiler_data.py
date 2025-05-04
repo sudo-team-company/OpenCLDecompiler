@@ -53,7 +53,6 @@ def set_reg_value(  # noqa: PLR0913
         )
         node.state[to_reg].try_simplify()
     elif register_content_type == CombinedRegisterContent:
-        assert expression_node is not None
         node.state[to_reg] = Register(
             integrity=integrity,
             register_content=CombinedRegisterContent(
@@ -190,7 +189,6 @@ def compare_values(node: Node, to_reg: str, from_reg0: str, from_reg1: str, oper
     )
 
     if is_range(to_reg):
-        # todo fix with range
         low, high = split_range(to_reg)
         set_reg_value(node, new_value, low, from_regs, suffix, integrity=Integrity.LOW_PART, expression_node=expr_node)
         set_reg_value(
@@ -593,7 +591,7 @@ class DecompilerData(metaclass=Singleton):
             ),
         )
 
-        if self.is_rdna3:  # todo: add node here when CombinedRegisterContent is supported
+        if self.is_rdna3:
             v_dim = "v0"
             register_content = CombinedRegisterContent(
                 register_contents=[
@@ -717,7 +715,6 @@ class DecompilerData(metaclass=Singleton):
             size_of_work_groups = ", ".join(map(str, self.config_data.size_of_work_groups))
             definition += f"__attribute__((reqd_work_group_size({size_of_work_groups})))\n"
 
-        params = ", ".join([f"{arg}" for arg in self.config_data.arguments if not arg.hidden])
         params = ", ".join(
             [
                 f"{ExpressionManager().variable_to_string(arg.name)}"
