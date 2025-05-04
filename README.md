@@ -3,10 +3,10 @@
 ![CPU](https://img.shields.io/badge/GPU-AMD_GCN-red)
 ![CPU](https://img.shields.io/badge/GPU-AMD_RDNA-red)
 ![Python](https://img.shields.io/badge/python-v3.12-blue)
-![GitHub repo size](https://img.shields.io/github/repo-size/sudo-team-company/OpenCLDecompiler)
-![GitHub last commit](https://img.shields.io/github/last-commit/sudo-team-company/OpenCLDecompiler/develop)
-![Test](https://github.com/sudo-team-company/OpenCLDecompiler/workflows/Test/badge.svg?branch=develop)
-![Lint](https://github.com/sudo-team-company/OpenCLDecompiler/workflows/Lint/badge.svg?branch=develop)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+![GitHub last commit](https://img.shields.io/github/last-commit/sudo-team-company/OpenCLDecompiler/master)
+![Test](https://github.com/sudo-team-company/OpenCLDecompiler/workflows/test/badge.svg?branch=master)
+![Lint](https://github.com/sudo-team-company/OpenCLDecompiler/workflows/lint/badge.svg?branch=master)
 
 ## Introduction
 *OpenCLDecompiler* is a decompiler OpenCL for GPU AMD with GCN architecture. For disassembly used the GCN disassembler - clrxdisasm from [CLRadeonExtender project](https://clrx.nativeboinc.org/).
