@@ -81,7 +81,7 @@ class VAddc(BaseInstruction):
                             src0_node,
                             global_id_node,
                             ExpressionOperationType.PLUS,
-                            OpenCLTypes.from_string(self.suffix)
+                            OpenCLTypes.from_string(self.suffix),
                         )
             else:
                 reg_type = RegisterType.INT32

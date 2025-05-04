@@ -48,9 +48,7 @@ class VBfe(BaseInstruction):
                 op2_node = self.expression_manager.add_operation(
                     src0_node, const2_node, ExpressionOperationType.DIV, OpenCLTypes.UINT
                 )
-                const3_node = self.expression_manager.add_const_node(
-                    pow(2, int(self.src2)), OpenCLTypes.UINT
-                )
+                const3_node = self.expression_manager.add_const_node(pow(2, int(self.src2)), OpenCLTypes.UINT)
                 op3_node = self.expression_manager.add_operation(
                     op2_node, const3_node, ExpressionOperationType.MUL, OpenCLTypes.UINT
                 )
@@ -64,7 +62,7 @@ class VBfe(BaseInstruction):
                     from_regs=[self.src0],
                     data_type=self.suffix,
                     reg_type=reg_type,
-                    expression_node=expr_node
+                    expression_node=expr_node,
                 )
 
             if isinstance(self.node.state[self.src0].register_content, CombinedRegisterContent):

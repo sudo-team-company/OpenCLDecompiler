@@ -106,13 +106,8 @@ def update_value_for_reg(first_reg, curr_node):
 
 
 def update_val_from_changes(  # noqa: PLR0913
-        curr_node,
-        register,
-        changes,
-        changes_expression_nodes,
-        check_version,
-        num_of_reg,
-        first_reg):
+    curr_node, register, changes, changes_expression_nodes, check_version, num_of_reg, first_reg
+):
     instruction = curr_node.instruction
     if (
         register in curr_node.state
@@ -174,12 +169,8 @@ def update_val_from_changes(  # noqa: PLR0913
 
 
 def update_val_from_checked_variables(  # noqa: PLR0912, PLR0913
-        curr_node,
-        register,
-        check_version,
-        first_reg,
-        changes,
-        changes_expression_nodes):
+    curr_node, register, check_version, first_reg, changes, changes_expression_nodes
+):
     decompiler_data = DecompilerData()
     expression_manager = ExpressionManager()
     instruction = curr_node.instruction
@@ -199,9 +190,7 @@ def update_val_from_checked_variables(  # noqa: PLR0912, PLR0913
             if changes_expression_nodes.get(curr_node.parent[0].state[first_reg].version) is None:
                 expr_node = curr_node.parent[0].state[first_reg].get_expression_node()
             else:
-                expr_node = changes_expression_nodes[
-                    curr_node.parent[0].state[first_reg].version
-                ][0]
+                expr_node = changes_expression_nodes[curr_node.parent[0].state[first_reg].version][0]
 
         if expr_node.type == ExpressionType.VAR and expr_node.value == decompiler_data.variables[check_version]:
             var_node = expr_node
@@ -295,16 +284,18 @@ def change_values_for_one_instruction(curr_node, changes, changes_expression_nod
                     continue
 
             changes, changes_expression_nodes = update_val_from_changes(
-                curr_node, register, changes, changes_expression_nodes, check_version, num_of_reg, first_reg)
+                curr_node, register, changes, changes_expression_nodes, check_version, num_of_reg, first_reg
+            )
             update_val_from_checked_variables(
-                curr_node, register, check_version, first_reg, changes, changes_expression_nodes)
+                curr_node, register, check_version, first_reg, changes, changes_expression_nodes
+            )
     if "select" in curr_node.instruction[0]:
         first_reg = curr_node.instruction[1]
         check_version = curr_node.state["scc"].version
         changes, changes_expression_nodes = update_val_from_changes(
-            curr_node, "scc", changes, changes_expression_nodes, check_version, 0, first_reg)
-        update_val_from_checked_variables(
-            curr_node, "scc", check_version, first_reg, changes, changes_expression_nodes)
+            curr_node, "scc", changes, changes_expression_nodes, check_version, 0, first_reg
+        )
+        update_val_from_checked_variables(curr_node, "scc", check_version, first_reg, changes, changes_expression_nodes)
 
 
 def change_values():

@@ -80,7 +80,8 @@ class SBfe(BaseInstruction):
                 from_regs=[self.sdst],
                 data_type=self.suffix,
                 expression_node=self.expression_manager.add_const_node(
-                    int(not is_zero), OpenCLTypes.from_string(self.suffix)),
+                    int(not is_zero), OpenCLTypes.from_string(self.suffix)
+                ),
             )
 
             return self.node

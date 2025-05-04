@@ -93,7 +93,9 @@ class FlatStore(BaseInstruction):
                     self.node.state[self.to_registers].copy_version_from(self.node.parent[0].state[self.to_registers])
                     self.node.state[self.to_registers].cast_to(self.suffix)
                     self.node.state[self.to_registers].set_expression_node(
-                        self.node.state[self.to_registers].get_expression_node().cast_to(OpenCLTypes.from_string(self.suffix))
+                        self.node.state[self.to_registers]
+                        .get_expression_node()
+                        .cast_to(OpenCLTypes.from_string(self.suffix))
                     )
                 # TODO: Сделать присвоение в пары
                 elif self.node.state[from_reg].data_type is not None and "bytes" in self.node.state[from_reg].data_type:
@@ -153,7 +155,7 @@ class FlatStore(BaseInstruction):
             elif (
                 var in self.decompiler_data.names_of_vars
                 and ExpressionValueTypeHint.from_string(self.decompiler_data.names_of_vars[var]).opencl_type
-                    != var_node.value_type_hint.opencl_type
+                != var_node.value_type_hint.opencl_type
             ):
                 var = f"*({var_node.value_type_hint!s})({var})"
             else:
@@ -165,8 +167,11 @@ class FlatStore(BaseInstruction):
                     )
                 elif var_node.value_type_hint.is_vector_type():
                     permute_node = ExpressionManager().add_permute_node_from_list(
-                        [self.node.state[reg].get_expression_node()
-                         for reg in check_and_split_regs_range_to_full_list(self.vdata)])
+                        [
+                            self.node.state[reg].get_expression_node()
+                            for reg in check_and_split_regs_range_to_full_list(self.vdata)
+                        ]
+                    )
                     to_type = self.node.state[self.to_registers].get_expression_node().value_type_hint
                     self.output_string = ExpressionManager().expression_to_string(permute_node, to_type.opencl_type)
                 else:

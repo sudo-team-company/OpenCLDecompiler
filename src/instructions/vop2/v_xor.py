@@ -24,7 +24,8 @@ class VXor(BaseInstruction):
             src0_node = self.node.get_expression_node(self.src0)
             src1_node = self.node.get_expression_node(self.src1)
             expr_node = self.expression_manager.add_operation(
-                src0_node, src1_node, ExpressionOperationType.XOR, OpenCLTypes.UINT)
+                src0_node, src1_node, ExpressionOperationType.XOR, OpenCLTypes.UINT
+            )
             return set_reg_value(
                 self.node,
                 new_value,
@@ -32,6 +33,6 @@ class VXor(BaseInstruction):
                 [self.src0, self.src1],
                 self.suffix,
                 integrity=reg_entire,
-                expression_node=expr_node
+                expression_node=expr_node,
             )
         return super().to_fill_node()

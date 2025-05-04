@@ -26,6 +26,6 @@ class VRcpIflag(BaseInstruction):
                 [self.src0],
                 data_type,
                 reg_type=RegisterType.DIVISION_RECIPROCAL,
-                expression_node=self.node.get_expression_node(self.src0)
+                expression_node=self.node.get_expression_node(self.src0),
             )
         return super().to_fill_node()

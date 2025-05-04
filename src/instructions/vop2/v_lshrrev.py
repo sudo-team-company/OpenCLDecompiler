@@ -30,7 +30,8 @@ class VLshrrev(BaseInstruction):
                 src1_node = self.node.get_expression_node(self.src1)
                 const_node = self.expression_manager.add_const_node(pow(2, int(self.src0)), OpenCLTypes.UINT)
                 expr_node = self.expression_manager.add_operation(
-                    src1_node, const_node, ExpressionOperationType.DIV, OpenCLTypes.UINT)
+                    src1_node, const_node, ExpressionOperationType.DIV, OpenCLTypes.UINT
+                )
 
                 return set_reg_value(
                     self.node,
@@ -39,7 +40,7 @@ class VLshrrev(BaseInstruction):
                     [self.src0, self.src1],
                     self.suffix,
                     reg_type=reg_type,
-                    expression_node=expr_node
+                    expression_node=expr_node,
                 )
 
             if isinstance(self.node.state[self.src1].register_content, CombinedRegisterContent):
@@ -67,7 +68,7 @@ class VLshrrev(BaseInstruction):
                 [self.src0, self.src1],
                 self.suffix,
                 reg_type=reg_type,
-                expression_node=expr_node
+                expression_node=expr_node,
             )
 
         return super().to_fill_node()

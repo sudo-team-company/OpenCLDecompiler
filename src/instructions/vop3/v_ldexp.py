@@ -28,4 +28,5 @@ class VLdexp(BaseInstruction):
         else:
             raise NotImplementedError
         return set_reg_value(
-            self.node, new_value, start_to_registers, [], data_type, reg_type=reg_type, expression_node=var_node)
+            self.node, new_value, start_to_registers, [], data_type, reg_type=reg_type, expression_node=var_node
+        )

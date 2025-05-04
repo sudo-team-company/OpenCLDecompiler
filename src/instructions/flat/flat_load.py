@@ -8,9 +8,8 @@ from src.register_type import RegisterType
 
 
 def get_output_for_different_vector_types(
-        output: str,
-        variable_type_hint: ExpressionValueTypeHint,
-        output_type_hint: ExpressionValueTypeHint):
+    output: str, variable_type_hint: ExpressionValueTypeHint, output_type_hint: ExpressionValueTypeHint
+):
     if output.find(" + ") != -1:
         open_square_bracket_position = output.find("[")
         close_square_bracket_position = output.find("]")
@@ -111,34 +110,25 @@ class FlatLoad(BaseInstruction):
         expression_manager = ExpressionManager()
         if self.suffix in {"dword", "dwordx2", "dwordx4"}:
             if self.start_to_registers == self.from_registers:
-                output_node: ExpressionNode = (
-                    self.node.parent[0].state[self.from_registers].get_expression_node()
-                )
+                output_node: ExpressionNode = self.node.parent[0].state[self.from_registers].get_expression_node()
             else:
-                output_node: ExpressionNode = (
-                    self.node.state[self.from_registers].get_expression_node()
-                )
+                output_node: ExpressionNode = self.node.state[self.from_registers].get_expression_node()
             output = expression_manager.expression_to_string(output_node)
             if "[" not in output:
-                start_to_registers_node: ExpressionNode = (
-                    self.node.state[self.start_to_registers].get_expression_node()
-                )
-                if (
-                    start_to_registers_node.value_type_hint.opencl_type != output_node.value_type_hint.opencl_type
-                ):
+                start_to_registers_node: ExpressionNode = self.node.state[self.start_to_registers].get_expression_node()
+                if start_to_registers_node.value_type_hint.opencl_type != output_node.value_type_hint.opencl_type:
                     output = f"*({output_node.value_type_hint!s})({output})"
                 else:
                     output = f"*{output}"
-            var_node: ExpressionNode = (
-                self.node.state[self.start_to_registers].get_expression_node()
-            )
+            var_node: ExpressionNode = self.node.state[self.start_to_registers].get_expression_node()
             var_name = expression_manager.expression_to_string(var_node)
             if output_node.value_type_hint.is_vector_type():
                 if var_name[-2] == "s" and var_name[-1].isdigit():
                     var_name = var_name[:-5]
                 if output_node.value_type_hint.opencl_type != var_node.value_type_hint.opencl_type:
                     output = get_output_for_different_vector_types(
-                        output, var_node.value_type_hint, output_node.value_type_hint)
+                        output, var_node.value_type_hint, output_node.value_type_hint
+                    )
             self.output_string = f"{var_name} = {output}"
             return self.output_string
         return super().to_print()
