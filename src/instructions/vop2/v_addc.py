@@ -78,7 +78,10 @@ class VAddc(BaseInstruction):
                         reg_type = RegisterType.ADDRESS_KERNEL_ARGUMENT_ELEMENT
                         global_id_node = self.expression_manager.add_register_node(RegisterType.GLOBAL_ID_X)
                         expr_node = self.expression_manager.add_operation(
-                            src0_node, global_id_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG
+                            src0_node,
+                            global_id_node,
+                            ExpressionOperationType.PLUS,
+                            OpenCLTypes.from_string(self.suffix)
                         )
             else:
                 reg_type = RegisterType.INT32

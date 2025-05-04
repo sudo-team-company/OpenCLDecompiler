@@ -1,4 +1,3 @@
-import enum
 from enum import Enum, auto
 
 
@@ -79,7 +78,7 @@ class RegisterType(Enum):
     DIVISION_PASS = auto()
 
 
-class RegisterSignType(enum.Enum):
+class RegisterSignType(Enum):
     POSITIVE = 0
     NEGATIVE = 1
 

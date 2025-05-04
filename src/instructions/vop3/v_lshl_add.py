@@ -36,12 +36,12 @@ class VLshlAdd(BaseInstruction):
             src2_node = self.node.get_expression_node(self.src2)
             mul_node = self.expression_manager.add_operation(
                 src0_node,
-                self.expression_manager.add_const_node(pow(2, int(self.src1)), OpenCLTypes.ULONG),
+                self.expression_manager.add_const_node(pow(2, int(self.src1)), OpenCLTypes.from_string(self.suffix)),
                 ExpressionOperationType.MUL,
-                OpenCLTypes.ULONG,
+                OpenCLTypes.from_string(self.suffix),
             )
             expr_node = self.expression_manager.add_operation(
-                mul_node, src2_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG
+                mul_node, src2_node, ExpressionOperationType.PLUS, OpenCLTypes.from_string(self.suffix)
             )
 
             return set_reg_value(

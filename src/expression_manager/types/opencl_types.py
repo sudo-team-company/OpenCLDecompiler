@@ -66,7 +66,7 @@ class OpenCLTypes(Enum):
         assert type_hint.startswith("g") is False
         assert type_hint.startswith("__global ") is False
 
-        if "b32" in type_hint or "b64" in type_hint:
+        if type_hint in ["b16", "b32", "b64"]:
             type_hint = type_hint.replace("b", "u", 1)
 
         opencl_type = OpenCLTypes.UNKNOWN

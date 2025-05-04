@@ -30,9 +30,9 @@ class SLshl(BaseInstruction):
 
             op_node = self.expression_manager.add_operation(
                 self.node.get_expression_node(self.ssrc0),
-                self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.UINT),
+                self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.from_string(self.suffix)),
                 ExpressionOperationType.MUL,
-                OpenCLTypes.UINT,
+                OpenCLTypes.from_string(self.suffix),
             )
 
             if self.node.state[self.ssrc0].type == RegisterType.WORK_GROUP_ID_X:
@@ -62,16 +62,16 @@ class SLshl(BaseInstruction):
 
             op_node0 = self.expression_manager.add_operation(
                 self.node.get_expression_node(start_from_register),
-                self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.UINT),
+                self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.from_string(self.suffix)),
                 ExpressionOperationType.MUL,
-                OpenCLTypes.UINT,
+                OpenCLTypes.from_string(self.suffix),
             )
 
             op_node1 = self.expression_manager.add_operation(
                 self.node.get_expression_node(end_from_register),
-                self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.UINT),
+                self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.from_string(self.suffix)),
                 ExpressionOperationType.MUL,
-                OpenCLTypes.UINT,
+                OpenCLTypes.from_string(self.suffix),
             )
 
             data_type = self.suffix

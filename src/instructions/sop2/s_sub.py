@@ -40,7 +40,7 @@ class SSub(BaseInstruction):
         if self.suffix == "u32":
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, "-", "(ulong)", "(ulong)", suffix=self.suffix)
             expr_node = self.expression_manager.add_operation(
-                src0_node, src1_node, ExpressionOperationType.MINUS, OpenCLTypes.ULONG
+                src0_node, src1_node, ExpressionOperationType.MINUS, OpenCLTypes.from_string(self.suffix)
             )
             return set_reg_value(
                 self.node,
@@ -54,7 +54,7 @@ class SSub(BaseInstruction):
         if self.suffix == "i32":
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, "-", "(long)", "(long)", suffix=self.suffix)
             expr_node = self.expression_manager.add_operation(
-                src0_node, src1_node, ExpressionOperationType.MINUS, OpenCLTypes.LONG
+                src0_node, src1_node, ExpressionOperationType.MINUS, OpenCLTypes.from_string(self.suffix)
             )
             return set_reg_value(
                 self.node,

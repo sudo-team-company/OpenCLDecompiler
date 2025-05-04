@@ -126,10 +126,10 @@ class VAdd3(BaseInstruction):
 
             if expr_node is None:
                 sum_node = self.expression_manager.add_operation(
-                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG
+                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.from_string(self.suffix)
                 )
                 expr_node = self.expression_manager.add_operation(
-                    sum_node, src2_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG
+                    sum_node, src2_node, ExpressionOperationType.PLUS, OpenCLTypes.from_string(self.suffix)
                 )
 
             return set_reg_value(

@@ -79,7 +79,8 @@ class SBfe(BaseInstruction):
                 to_reg="scc",
                 from_regs=[self.sdst],
                 data_type=self.suffix,
-                expression_node=self.expression_manager.add_const_node(int(not is_zero), OpenCLTypes.UINT),
+                expression_node=self.expression_manager.add_const_node(
+                    int(not is_zero), OpenCLTypes.from_string(self.suffix)),
             )
 
             return self.node

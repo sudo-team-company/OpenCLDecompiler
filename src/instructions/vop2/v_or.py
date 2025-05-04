@@ -55,7 +55,7 @@ class VOr(BaseInstruction):
             ]:
                 new_value = make_op(self.node, self.src0, self.src1, "+", "(ulong)", "(ulong)", suffix=self.suffix)
                 expr_node = self.expression_manager.add_operation(
-                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG
+                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.from_string(self.suffix)
                 )
             if self.src0.isdigit() and is_reg(self.src1):
                 src_types = frozenset(
@@ -67,7 +67,7 @@ class VOr(BaseInstruction):
                 if src_types in self._instruction_special_cases:
                     new_value = make_op(self.node, self.src0, self.src1, "+", "(ulong)", "(ulong)", suffix=self.suffix)
                     expr_node = self.expression_manager.add_operation(
-                        src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG
+                        src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.from_string(self.suffix)
                     )
             if is_reg(self.src0) and is_reg(self.src1):
                 src_types = frozenset(
@@ -79,7 +79,7 @@ class VOr(BaseInstruction):
                 if src_types in self._instruction_special_cases:
                     new_value = make_op(self.node, self.src0, self.src1, "+", "(ulong)", "(ulong)", suffix=self.suffix)
                     expr_node = self.expression_manager.add_operation(
-                        src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.ULONG
+                        src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.from_string(self.suffix)
                     )
             if new_value is not None:
                 return set_reg_value(
