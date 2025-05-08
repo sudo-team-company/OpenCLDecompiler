@@ -235,6 +235,7 @@ def get_sufficient_type_for_const(value, opencl_type_hint: OpenCLTypes) -> tuple
                         pass
     return (value, value_type_hint)
 
+
 def expression_explicit_cast_to_string(node: ExpressionNode, cast_to: ExpressionValueTypeHint) -> str:
     if cast_to.number_of_components() == 1 or (
         node.value_type_hint.number_of_components() == 1 and cast_to.number_of_components() > 1
@@ -243,6 +244,7 @@ def expression_explicit_cast_to_string(node: ExpressionNode, cast_to: Expression
     assert node.value_type_hint.number_of_components() == cast_to.number_of_components()
     # Only using cast_to.opencl_type here, because we just need OpenCL type name
     return f"convert_{cast_to.opencl_type!s}({node.value})"
+
 
 # PRINT functions
 def expression_to_string(expression_node: ExpressionNode, cast_to: ExpressionValueTypeHint) -> str:
