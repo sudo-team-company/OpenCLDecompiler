@@ -19,11 +19,3 @@ class BaseType:
             and self.is_integer == other.is_integer
             and self.number_of_components == other.number_of_components
         )
-
-
-class UnknownType(BaseType):
-    def __init__(self):
-        super().__init__(0, False, False, 0, False)  # noqa: FBT003
-
-    def __str__(self):
-        return "UNKNOWN TYPE"
