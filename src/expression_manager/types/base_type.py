@@ -20,14 +20,6 @@ class BaseType:
             and self.number_of_components == other.number_of_components
         )
 
-    def equal_without_modifiers(self, other) -> bool:
-        return (
-            self.size_bytes == other.size_bytes
-            and self.is_signed == other.is_signed
-            and self.is_integer == other.is_integer
-            and self.number_of_components == other.number_of_components
-        )
-
 
 class UnknownType(BaseType):
     def __init__(self):
