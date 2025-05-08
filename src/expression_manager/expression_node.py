@@ -276,6 +276,10 @@ class ExpressionNode:
         if from_hint.number_of_components() != to_hint.number_of_components():
             return True
 
+        # There is no implicit conversions for vector type in OpenCL
+        if from_hint.number_of_components() > 1 and from_hint.opencl_type != to_hint.opencl_type:
+            return True
+
         is_to_type_smaller = from_hint.size_bytes() > to_hint.size_bytes()
 
         # floating point - floating point
