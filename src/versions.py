@@ -50,6 +50,7 @@ def update_reg_version(reg, curr_node, max_version, prev_versions_of_reg):
         value_type_hint = ExpressionValueTypeHint.get_common_type(value_type_hint, prev_value_type_hint)
     if value_type_hint.opencl_type == OpenCLTypes.UNKNOWN:
         value_type_hint.opencl_type = OpenCLTypes.UINT
+    value_type_hint = value_type_hint.set_is_const(False)
     var_node = ExpressionManager().add_variable_node(variable, value_type_hint)
     curr_node.state[reg].set_expression_node(var_node)
 

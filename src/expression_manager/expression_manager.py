@@ -23,7 +23,6 @@ from src.expression_manager.expression_node import (
     ExpressionType,
     ExpressionValueTypeHint,
     TypeAddressSpaceQualifiers,
-    get_common_type,
 )
 from src.expression_manager.expression_optimizations import (
     NodeSumInfo,
@@ -344,6 +343,12 @@ class ExpressionManager(metaclass=Singleton):
         assert s0 is not None
         assert s1 is not None
 
+        if opencl_type_hint != OpenCLTypes.UNKNOWN:
+            if s0.value_type_hint.opencl_type == OpenCLTypes.UNKNOWN:
+                s0.value_type_hint.opencl_type = opencl_type_hint
+            if s1.value_type_hint.opencl_type == OpenCLTypes.UNKNOWN:
+                s1.value_type_hint.opencl_type = opencl_type_hint
+
         if (s0.type == ExpressionType.VAR and s0.value_type_hint.is_pointer) or (
             s0.type == ExpressionType.VAR and s0.value_type_hint.qualifier == TypeAddressSpaceQualifiers.GLOBAL
         ):
@@ -356,9 +361,6 @@ class ExpressionManager(metaclass=Singleton):
             op_value_type_hint = s0.value_type_hint
         else:
             op_value_type_hint = ExpressionValueTypeHint.get_common_type(s0.value_type_hint, s1.value_type_hint)
-
-        if op_value_type_hint.size_bytes() > opencl_type_hint.value.size_bytes:
-            op_value_type_hint.opencl_type = get_common_type(op_value_type_hint.opencl_type, opencl_type_hint)
 
         # if both values are constant, we can evaluate expression
         if s0.type == ExpressionType.CONST and s1.type == ExpressionType.CONST:

@@ -68,7 +68,7 @@ class VCndmask(BaseInstruction):
             reg_type = RegisterType.PROGRAM_PARAM
             src0_src1_common_type = self.expression_manager.get_common_type(
                 self.node.get_expression_node(self.src0), self.node.get_expression_node(self.src1)
-            )
+            ).set_is_const(False)
             var_node = self.expression_manager.add_variable_node(variable, src0_src1_common_type)
             node = set_reg_value(
                 self.node,

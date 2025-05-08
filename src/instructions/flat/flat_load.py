@@ -79,6 +79,8 @@ class FlatLoad(BaseInstruction):
                 )
                 if node_type_hint.is_pointer and not node_type_hint.is_address:
                     node_type_hint = ExpressionValueTypeHint(node_type_hint.opencl_type)
+                if node_type_hint.is_const:
+                    node_type_hint = node_type_hint.set_is_const(False)
                 if is_vector_type(data_type):
                     data_type = data_type[:-1]
                     if self.suffix[-1].isdigit():
