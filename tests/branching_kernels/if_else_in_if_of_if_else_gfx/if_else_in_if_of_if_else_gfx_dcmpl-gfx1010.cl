@@ -3,7 +3,7 @@ void if_else_in_if_of_if_else_1(int x, __global int *data, int y)
 {
     uint var4;
     uint var6;
-    uint var8;
+    int var8;
     var6 = get_global_id(0);
     if (1 != var6) {
         var8 = get_global_id(0) * y;
@@ -28,7 +28,7 @@ void if_else_in_if_of_if_else_1(int x, __global int *data, int y)
 __kernel __attribute__((reqd_work_group_size(4, 4, 4)))
 void if_else_in_if_of_if_else_2(int x, __global int *data, int y)
 {
-    uint var12;
+    int var12;
     uint var5;
     var5 = get_global_id(0);
     if (1 != var5) {

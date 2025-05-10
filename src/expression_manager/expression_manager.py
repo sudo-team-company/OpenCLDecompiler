@@ -42,6 +42,7 @@ from src.utils.singleton import Singleton
 class ExpressionManager(metaclass=Singleton):
     def __init__(self):
         self._nodes = []
+        self._arguments_for_programs: dict[str, dict[str, ExpressionNode]] = {}
         self._variables_for_programs: dict[str, dict[str, ExpressionVariableInfo]] = {}
         self._name_of_program = ""
         self._size_of_workgroups = []
@@ -49,14 +50,17 @@ class ExpressionManager(metaclass=Singleton):
 
     def set_name_of_program(self, name_of_program: str):
         self._name_of_program = name_of_program
+        if self._arguments_for_programs.get(self._name_of_program) is None:
+            self._arguments_for_programs[self._name_of_program] = {}
+        if self._variables_for_programs.get(self._name_of_program) is None:
+            self._variables_for_programs[self._name_of_program] = {}
 
     def set_size_of_workgroups(self, new_size_of_workgroups: list[int]):
         self._size_of_workgroups = new_size_of_workgroups
 
     def reset(self, name_of_program: str):
         self._nodes = []
-        self._name_of_program = name_of_program
-        self._variables_for_programs = {}
+        self.set_name_of_program(name_of_program)
         self._size_of_workgroups = []
         self._optimized_nodes_to_original = {}
 
@@ -432,10 +436,21 @@ class ExpressionManager(metaclass=Singleton):
             return None
 
         name = arg.name if not arg.is_vector() else arg.get_vector_element_by_offset(offset)
-        value_type_hint, qualifiers = get_kernel_argument_type_and_qualifiers(arg)
-        return self.add_variable_node(
-            name, ExpressionValueTypeHint(value_type_hint, qualifiers, arg.const), check_duplicate
-        )
+        opencl_type, qualifiers = get_kernel_argument_type_and_qualifiers(arg)
+        value_type_hint = ExpressionValueTypeHint(opencl_type, qualifiers, arg.const)
+
+        var_node = self.add_variable_node(name, value_type_hint, check_duplicate)
+
+        # For kernel argument node make a copy, because variable node can be changed during decompilation
+        arg_name: str = var_node.value
+        if arg_name.find(VECTOR_COMPONENT_DELIMITER) != -1:
+            arg_name, _ = arg_name.split(VECTOR_COMPONENT_DELIMITER)
+            arg_node = copy.deepcopy(self.get_variable_node(arg_name))
+        else:
+            arg_node = copy.deepcopy(var_node)
+        self._arguments_for_programs[self._name_of_program][arg_name] = arg_node
+
+        return var_node
 
     def get_empty_node(self):
         empty_node = ExpressionNode()
@@ -560,6 +575,21 @@ class ExpressionManager(metaclass=Singleton):
 
         return prev_node
 
+    def kernel_arg_to_string(self, name: str) -> str:
+        if len(name) == 0:
+            return ""
+        if name[0] == "*":
+            return self.kernel_arg_to_string(name[1:])
+        kernel_node = None
+        if (
+            self._name_of_program in self._arguments_for_programs
+            and name in self._arguments_for_programs[self._name_of_program]
+        ):
+            kernel_node = self._arguments_for_programs[self._name_of_program][name]
+        if kernel_node is None:
+            return ""
+        return var_expression_to_string(kernel_node)
+
     def variable_to_string(self, name: str) -> str:
         if len(name) == 0:
             return ""
@@ -629,12 +659,7 @@ class ExpressionManager(metaclass=Singleton):
                 value_type_hint = value_type_hint.set_number_of_components(1)
 
         var_node = create_var_node(var_name, value_type_hint)
-
-        if self._variables_for_programs.get(self._name_of_program) is None:
-            self._variables_for_programs[self._name_of_program] = {}
-
         self._variables_for_programs[self._name_of_program][var_name] = ExpressionVariableInfo(var_name, var_node, None)
-
         self.add_node(var_node)
 
         return var_node

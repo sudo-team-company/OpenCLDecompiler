@@ -123,7 +123,7 @@ class FlatStore(BaseInstruction):
                         )
                         self.decompiler_data.names_of_vars[val] = self.node.state[from_reg].data_type
                         self.expression_manager.update_variable_type(
-                            val, self.node.get_expression_node(from_reg).value_type_hint
+                            val, self.node.get_expression_node(self.to_registers).value_type_hint
                         )
                     else:
                         # init var - i32, gdata - i64. var = gdata -> var - i64

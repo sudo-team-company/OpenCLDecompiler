@@ -3,7 +3,7 @@ void if_with_long_expr(int x, __global int *data, int y)
 {
     uint var1;
     uint var2;
-    uint var5;
+    int var5;
     var2 = get_global_id(0);
     if ((x >= y) || (1 != get_global_id(0)) || (2 != get_global_id(2))) {
         var5 = get_global_id(0) * y;

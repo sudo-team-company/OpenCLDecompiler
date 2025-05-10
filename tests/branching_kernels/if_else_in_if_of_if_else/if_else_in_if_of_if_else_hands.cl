@@ -1,7 +1,7 @@
 __kernel __attribute__((reqd_work_group_size(4, 4, 4)))
 void if_else_in_if_of_if_else(int x, __global int *data, int y)
 {
-    uint var5;
+    int var5;
     uint var8;
     var8 = get_global_id(0);
     if (1 == var8) {

@@ -3,7 +3,7 @@ void if_else_and_if_else_1(int x, __global int *data, int y)
 {
     uint var1;
     uint var3;
-    uint var5;
+    int var5;
     var3 = get_global_id(0);
     if (1 != var3) {
         var5 = get_global_id(0) * y;

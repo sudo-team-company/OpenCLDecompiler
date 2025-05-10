@@ -1,7 +1,7 @@
 __kernel __attribute__((reqd_work_group_size(4, 4, 4)))
 void if_else_in_if_and_else_of_if_else_1(int x, __global int *data, int y)
 {
-    uint var5;
+    int var5;
     if (1 != get_global_id(0)) {
         data[get_global_id(0)] = get_global_id(0) * y;
         if (x >= y) {
@@ -27,7 +27,7 @@ void if_else_in_if_and_else_of_if_else_1(int x, __global int *data, int y)
 __kernel __attribute__((reqd_work_group_size(4, 4, 4)))
 void if_else_in_if_and_else_of_if_else_2(int x, __global int *data, int y)
 {
-    uint var5;
+    int var5;
     if (1 != get_global_id(0)) {
         data[get_global_id(0)] = get_global_id(0) * y;
         if (get_global_id(1) != get_global_id(2)) {

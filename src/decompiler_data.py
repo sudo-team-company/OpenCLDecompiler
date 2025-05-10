@@ -717,7 +717,7 @@ class DecompilerData(metaclass=Singleton):
 
         params = ", ".join(
             [
-                f"{ExpressionManager().variable_to_string(arg.name)}"
+                f"{ExpressionManager().kernel_arg_to_string(arg.name)}"
                 for arg in self.config_data.arguments
                 if not arg.hidden
             ]
