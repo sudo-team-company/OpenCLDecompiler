@@ -4,7 +4,6 @@ import uuid
 from dataclasses import dataclass, field
 from enum import Enum, auto
 
-from src.expression_manager.types.asm_types import ASMTypes
 from src.expression_manager.types.opencl_types import OpenCLType, OpenCLTypes
 
 
@@ -16,7 +15,6 @@ class ExpressionType(Enum):
     VAR = auto()
     PERMUTE = auto()
     IF_TERNARY = auto()
-    MIN = auto()
 
 
 class ExpressionOperationType(Enum):
@@ -163,17 +161,7 @@ class ExpressionValueTypeHint:
             type_hint = type_hint.removeprefix("__global ")
             qualifier = TypeAddressSpaceQualifiers.GLOBAL
 
-        if "b32" in type_hint or "b64" in type_hint:
-            type_hint = type_hint.replace("b", "u", 1)
-
-        opencl_type = OpenCLTypes.UNKNOWN
-        for e in OpenCLTypes:
-            if str(e) == type_hint:
-                opencl_type = e
-        if opencl_type == OpenCLTypes.UNKNOWN:
-            asm_type = ASMTypes.from_string(type_hint)
-            if asm_type != ASMTypes.UNKNOWN:
-                opencl_type = OpenCLTypes.from_asm_type(asm_type)
+        opencl_type = OpenCLTypes.from_string(type_hint)
 
         return ExpressionValueTypeHint(opencl_type, qualifier)
 
