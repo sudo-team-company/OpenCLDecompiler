@@ -287,12 +287,10 @@ def permute_expression_to_string(expression_node: ExpressionNode, cast_to: Expre
     return output
 
 
-def check_op_node_needs_brackets(op: ExpressionOperationType, child_node: ExpressionNode) -> bool:  # noqa: PLR0911
+def check_op_node_needs_brackets(op: ExpressionOperationType, child_node: ExpressionNode) -> bool:
     if child_node.type == ExpressionType.OP:
         child_op: ExpressionOperationType = child_node.value
         if child_op.is_bitshift_operator() or child_op.is_bitwise_operator():
-            return True
-        if ExpressionOperationType.are_operations_inverted(op, child_op):
             return True
         if ExpressionOperationType.are_operations_inverted(op, child_op):
             return True
