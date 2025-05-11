@@ -249,7 +249,7 @@ class ExpressionNode:
     def invert(self) -> "ExpressionNode":
         return self
 
-    def needs_cast(  # noqa: PLR0911, PLR0912
+    def needs_cast(  # noqa: C901, PLR0911, PLR0912
         self, to_hint: ExpressionValueTypeHint
     ) -> bool:
         from_hint = self.value_type_hint
@@ -276,7 +276,14 @@ class ExpressionNode:
         # integer - integer
         if from_hint.is_integer() and to_hint.is_integer():
             if from_hint.is_signed() == to_hint.is_signed():
-                return is_to_type_smaller
+                range_max = pow(2, to_hint.size_bytes() * 8)
+                if to_hint.is_signed():
+                    to_hint_min = -1 * range_max / 2
+                    to_hint_max = range_max / 2 - 1
+                else:
+                    to_hint_min = 0
+                    to_hint_max = range_max
+                return is_to_type_smaller and not (self.value >= to_hint_min and self.value <= to_hint_max)
             # from unsigned type to signed or from signed type to unsigned
             if re.fullmatch(r"-?\d+.\d+", str(self.value)) is not None:
                 return False

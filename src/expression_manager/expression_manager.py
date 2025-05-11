@@ -200,7 +200,7 @@ class ExpressionManager(metaclass=Singleton):
                 result.insert(
                     0,
                     NodeSumInfo(
-                        self.add_const_node(0, OpenCLTypes.INT), RegisterType.UNKNOWN, ExpressionOperationType.PLUS
+                        self.add_const_node(0, OpenCLTypes.UINT), RegisterType.UNKNOWN, ExpressionOperationType.PLUS
                     ),
                 )
 

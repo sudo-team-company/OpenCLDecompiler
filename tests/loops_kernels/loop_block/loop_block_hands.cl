@@ -3,7 +3,7 @@ void loop_general(__global int *data, int block, int x)
 {
     int var0;
     int var3;
-    uchar var4;
+    int var4;
     __global int *var5;
     __global int *var6;
     if (block < 1) {
@@ -14,7 +14,7 @@ void loop_general(__global int *data, int block, int x)
             var0 = *var5;
             var3 = var0;
             var3 = x * var3;
-            var3 = (int)var4 + var3;
+            var3 = var4 + var3;
             var4 = var4 + 1;
             *var5 = var3;
             var5 = var5 + 1;

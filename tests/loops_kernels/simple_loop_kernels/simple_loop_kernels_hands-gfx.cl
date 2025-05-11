@@ -6,8 +6,8 @@ void loop_kernel_0(__global uint *data, uint x, uint y, uint unrollingBreaker)
     uint var12;
     uint var13;
     __global uint *var14;
-    uchar var7;
-    uchar var8;
+    int var7;
+    int var8;
     uint var9;
     var8 = 0;
     if (unrollingBreaker == 0) {
@@ -19,7 +19,7 @@ void loop_kernel_0(__global uint *data, uint x, uint y, uint unrollingBreaker)
             var10 = var10 + 1;
             var13 = var9;
             var11 = var11;
-            var12 = (var8 < 63) && (var8 < 63) && ((!(unrollingBreaker)) != var8);
+            var12 = ((uint)var8 < 63) && ((uint)var8 < 63) && ((!(unrollingBreaker)) != (uint)var8);
             var9 = var9 * x;
             *var14 = var13;
         } while ((var8 < 63) && (var8 < 63) && ((!(unrollingBreaker)) != var8));

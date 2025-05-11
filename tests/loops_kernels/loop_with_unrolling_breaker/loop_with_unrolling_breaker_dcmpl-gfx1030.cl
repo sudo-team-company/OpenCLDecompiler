@@ -1,14 +1,14 @@
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
 void loop_with_unrolling_breaker(__global int *data, int x, int unrollingBreaker)
 {
-    int var0;
+    uint var0;
     int var1;
     __global int *var10;
     __global int *var11;
-    int var12;
+    uint var12;
     int var6;
     int var7;
-    int var8;
+    uint var8;
     uint var9;
     if (unrollingBreaker < 0) {
         var0 = unrollingBreaker < 63 ? unrollingBreaker < 63 : 63;
@@ -16,7 +16,7 @@ void loop_with_unrolling_breaker(__global int *data, int x, int unrollingBreaker
         var7 = var1;
         do {
             var6 = var7 * x;
-            var7 = var8 + var6;
+            var7 = (int)var8 + var6;
             var8 = var8 + 1;
             var9 = var9;
             var10 = var10 + -0.25;

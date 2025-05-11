@@ -192,23 +192,6 @@ def get_kernel_argument_type_and_qualifiers(arg: KernelArgument) -> tuple[OpenCL
 
 
 def get_sufficient_type_for_const(value, opencl_type_hint: OpenCLTypes) -> tuple[any, ExpressionValueTypeHint]:
-    def get_min_sufficient_type_for_integer(value):
-        signed = value < 0
-        types_to_check = (
-            [OpenCLTypes.CHAR, OpenCLTypes.SHORT, OpenCLTypes.INT, OpenCLTypes.LONG]
-            if signed
-            else [OpenCLTypes.UCHAR, OpenCLTypes.USHORT, OpenCLTypes.UINT, OpenCLTypes.ULONG]
-        )
-        for t in types_to_check:
-            abs_max_value = pow(2, t.value.get_size() * 8)
-            if signed:
-                min_value, max_value = (-1 * abs_max_value / 2, abs_max_value / 2 - 1)
-            else:
-                min_value, max_value = (0, abs_max_value - 1)
-            if value >= min_value and value <= max_value:
-                return t
-        return OpenCLTypes.UNKNOWN
-
     value_type_hint = ExpressionValueTypeHint(opencl_type_hint, is_const=True)
 
     if isinstance(value, str):
@@ -217,22 +200,16 @@ def get_sufficient_type_for_const(value, opencl_type_hint: OpenCLTypes) -> tuple
         else:
             try:
                 value = int(value)
-                value_type_hint.opencl_type = get_min_sufficient_type_for_integer(value)
             except ValueError:
                 try:
-                    # we want to keep hex numbers as they are, so just find out sufficient type
-                    hex_number = int(value, base=16)
-                    value_type_hint.opencl_type = get_min_sufficient_type_for_integer(hex_number)
+                    decimals_after_point = len(value) - value.find(".")
+                    value = float(value)
+                    float_precision = 7
+                    value_type_hint.opencl_type = (
+                        OpenCLTypes.FLOAT if decimals_after_point <= float_precision else OpenCLTypes.DOUBLE
+                    )
                 except ValueError:
-                    try:
-                        decimals_after_point = len(value) - value.find(".")
-                        value = float(value)
-                        float_precision = 7
-                        value_type_hint.opencl_type = (
-                            OpenCLTypes.FLOAT if decimals_after_point <= float_precision else OpenCLTypes.DOUBLE
-                        )
-                    except ValueError:
-                        pass
+                    pass
     return (value, value_type_hint)
 
 
