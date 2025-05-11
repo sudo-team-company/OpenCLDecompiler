@@ -22,7 +22,7 @@ void if_else_and_if_else_1(int x, __global int *data, int y)
 __kernel __attribute__((reqd_work_group_size(4, 4, 4)))
 void if_else_and_if_else_2(int x, __global int *data, int y)
 {
-    uint var5;
+    int var5;
     uint var8;
     var8 = get_global_id(0);
     if (0 != var8) {

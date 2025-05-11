@@ -109,10 +109,8 @@ class FlatStore(BaseInstruction):
                     self.expression_manager.update_variable_type(
                         expr_node.value, self.node.get_expression_node(self.to_registers).value_type_hint
                     )
-                elif (
-                    str(self.node.state[from_reg].data_type) not in self.node.state[self.to_registers].data_type
-                    and not is_vector_type(self.node.state[from_reg].data_type)
-                    and not is_vector_type(self.node.state[self.to_registers].data_type)
+                elif not is_vector_type(self.node.state[from_reg].data_type) and not is_vector_type(
+                    self.node.state[self.to_registers].data_type
                 ):
                     val = self.node.state[from_reg].get_value()
                     if val[0] == "(":
