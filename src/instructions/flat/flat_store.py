@@ -107,7 +107,7 @@ class FlatStore(BaseInstruction):
                     while expr_node.type == ExpressionType.OP:
                         expr_node = expr_node.left
                     self.expression_manager.update_variable_type(
-                        expr_node.value, self.node.get_expression_node(self.to_registers).value_type_hint
+                        expr_node.value, self.get_expression_node(self.to_registers).value_type_hint
                     )
                 elif not is_vector_type(self.node.state[from_reg].data_type) and not is_vector_type(
                     self.node.state[self.to_registers].data_type
@@ -121,25 +121,25 @@ class FlatStore(BaseInstruction):
                         )
                         self.decompiler_data.names_of_vars[val] = self.node.state[from_reg].data_type
                         self.expression_manager.update_variable_type(
-                            val, self.node.get_expression_node(self.to_registers).value_type_hint
+                            val, self.get_expression_node(self.to_registers).value_type_hint
                         )
                     else:
                         # init var - i32, gdata - i64. var = gdata -> var - i64
                         self.decompiler_data.names_of_vars[val] = self.node.state[from_reg].data_type
                         self.expression_manager.update_variable_type(
-                            val, self.node.get_expression_node(from_reg).value_type_hint
+                            val, self.get_expression_node(from_reg).value_type_hint
                         )
             return self.node
         return super().to_fill_node()
 
     def to_print(self):
         if self.suffix in {"dword", "dwordx2", "dwordx4", "byte", "short", "b32", "b64", "b8"}:
-            var_node = self.node.get_expression_node(self.to_registers)
+            var_node = self.get_expression_node(self.to_registers)
             if is_sgpr_range(self.inst_offset):
                 offset_reg, _ = check_and_split_regs(self.inst_offset)
                 if self.node.state[offset_reg].get_type() == RegisterType.ADDRESS_KERNEL_ARGUMENT:
                     var_node = self.expression_manager.add_operation(
-                        self.node.get_expression_node(offset_reg),
+                        self.get_expression_node(offset_reg),
                         var_node,
                         ExpressionOperationType.PLUS,
                         OpenCLTypes.UNKNOWN,

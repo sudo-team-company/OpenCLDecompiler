@@ -31,8 +31,8 @@ class SMov(BaseInstruction):
                     self.decompiler_data.exec_registers["exec"] | self.decompiler_data.exec_registers[self.ssrc0]
                 )
 
-                exec_node = self.node.get_expression_node("exec")
-                src0_node = self.node.get_expression_node(self.ssrc0)
+                exec_node = self.get_expression_node("exec")
+                src0_node = self.get_expression_node(self.ssrc0)
                 expr_node = self.expression_manager.add_operation(
                     exec_node, src0_node, ExpressionOperationType.OR, OpenCLTypes.from_string(self.suffix)
                 )
@@ -67,7 +67,7 @@ class SMov(BaseInstruction):
                 data_type = self.suffix
 
             if expr_node is None:
-                expr_node = self.node.get_expression_node(self.ssrc0)
+                expr_node = self.get_expression_node(self.ssrc0)
 
             return set_reg_value(
                 self.node, new_value, self.sdst, [], data_type, reg_type=reg_type, expression_node=expr_node

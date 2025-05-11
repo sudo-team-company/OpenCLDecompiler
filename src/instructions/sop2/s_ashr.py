@@ -22,7 +22,7 @@ class SAshr(BaseInstruction):
         if self.suffix == "i32":
             new_value = make_op(self.node, self.ssrc0, str(pow(2, int(self.ssrc1))), "/", "(int)", suffix=self.suffix)
 
-            src0_node = self.node.get_expression_node(self.ssrc0)
+            src0_node = self.get_expression_node(self.ssrc0)
             const_node = self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.UINT)
             expr_node = self.expression_manager.add_operation(
                 src0_node, const_node, ExpressionOperationType.DIV, OpenCLTypes.INT

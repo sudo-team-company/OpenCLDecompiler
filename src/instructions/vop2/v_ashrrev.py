@@ -26,7 +26,7 @@ class VAshrrev(BaseInstruction):
         if self.suffix == "i32":
             new_value = self.node.state[self.src1].val
             reg_type = self.node.state[self.src1].type
-            expr_node = self.node.get_expression_node(self.src1)
+            expr_node = self.get_expression_node(self.src1)
             return set_reg_value(
                 self.node,
                 new_value,
@@ -42,9 +42,9 @@ class VAshrrev(BaseInstruction):
             if self.node.state[start_from_register].val == "0":
                 self.node.state[start_from_register].register_content._value = self.node.state[end_from_register].val  # noqa: SLF001
 
-            start_from_register_node = self.node.get_expression_node(start_from_register)
+            start_from_register_node = self.get_expression_node(start_from_register)
             if str(start_from_register_node.value) == "0":
-                start_from_register_node = self.node.get_expression_node(end_from_register)
+                start_from_register_node = self.get_expression_node(end_from_register)
             power_node = self.expression_manager.add_const_node(pow(2, 32 - int(self.src0)), OpenCLTypes.LONG)
             expr_node = self.expression_manager.add_operation(
                 start_from_register_node, power_node, ExpressionOperationType.MUL, OpenCLTypes.LONG

@@ -52,8 +52,8 @@ class SAdd(BaseInstruction):
             data_type = self.suffix
 
             expr_node = None
-            src0_node = self.node.get_expression_node(self.ssrc0)
-            src1_node = self.node.get_expression_node(self.ssrc1)
+            src0_node = self.get_expression_node(self.ssrc0)
+            src1_node = self.get_expression_node(self.ssrc1)
 
             if (
                 self.ssrc1.isdigit()

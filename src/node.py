@@ -23,7 +23,7 @@ class Node:
     def add_parent(self, parent):
         self.parent.append(parent)
 
-    def get_expression_node(self, reg):  # noqa: PLR0911
+    def get_or_add_expression_node(self, reg, instruction_type_hint: OpenCLTypes):  # noqa: PLR0911
         if reg in self.state:
             register_content = self.state[reg].register_content
             expr_node = register_content.get_expression_node()
@@ -42,7 +42,7 @@ class Node:
 
             flag_big_value, value = check_big_values_new(self, start_register, end_register)
             if flag_big_value:
-                return ExpressionManager().add_const_node(value, OpenCLTypes.ULONG)
+                return ExpressionManager().add_const_node(value, instruction_type_hint)
 
             register_content = self.state[start_register].register_content
             expr_node = register_content.get_expression_node()
@@ -50,4 +50,4 @@ class Node:
                 return expr_node
             return ExpressionManager().add_register_node(register_content.get_type(), register_content.get_value())
 
-        return ExpressionManager().add_const_node(reg, OpenCLTypes.UINT)
+        return ExpressionManager().add_const_node(reg, instruction_type_hint)

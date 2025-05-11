@@ -28,8 +28,8 @@ class SAndn2(BaseInstruction):
                 )
                 self.decompiler_data.exec_registers[self.sdst] = new_exec_condition
 
-                left_node = self.node.get_expression_node(self.ssrc0)
-                right_node = self.node.get_expression_node(self.ssrc1)
+                left_node = self.get_expression_node(self.ssrc0)
+                right_node = self.get_expression_node(self.ssrc1)
                 expr_node = self.expression_manager.add_operation(
                     left_node, right_node, ExpressionOperationType.XOR, OpenCLTypes.from_string(self.suffix)
                 )

@@ -40,8 +40,8 @@ class SAddc(BaseInstruction):
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, "+", "(ulong)", "(ulong)", suffix=self.suffix)
 
             expr_node = None
-            src0_node = self.node.get_expression_node(self.ssrc0)
-            src1_node = self.node.get_expression_node(self.ssrc1)
+            src0_node = self.get_expression_node(self.ssrc0)
+            src1_node = self.get_expression_node(self.ssrc1)
 
             ssrc0_reg = is_sgpr(self.ssrc0)
             ssrc1_reg = is_sgpr(self.ssrc1)

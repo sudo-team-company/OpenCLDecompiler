@@ -51,8 +51,8 @@ class VAddc(BaseInstruction):
             reg_type = RegisterType.UNKNOWN
             reg_entire = Integrity.ENTIRE
 
-            src0_node = self.node.get_expression_node(self.src0)
-            src1_node = self.node.get_expression_node(self.src1)
+            src0_node = self.get_expression_node(self.src0)
+            src1_node = self.get_expression_node(self.src1)
             expr_node = None
 
             if src0_reg and src1_reg:

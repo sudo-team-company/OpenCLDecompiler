@@ -28,7 +28,7 @@ class DsRead(BaseInstruction):
     def get_lds_var_node_with_offset(self) -> ExpressionNode:
         return self.expression_manager.add_offset_div_data_size_node(
             self.decompiler_data.lds_vars[self.offset],
-            self.node.get_expression_node(self.addr),
+            self.get_expression_node(self.addr),
             4,
             OpenCLTypes.from_string(self.suffix),
         )

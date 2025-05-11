@@ -24,7 +24,7 @@ class SOrSaveexec(BaseInstruction):
             old_exec_condition = self.decompiler_data.exec_registers["exec"]
             another = self.decompiler_data.exec_registers[self.ssrc0]
 
-            prev_exec_cond_node = self.node.get_expression_node("exec")
+            prev_exec_cond_node = self.get_expression_node("exec")
 
             self.decompiler_data.exec_registers[self.sdst] = old_exec_condition
             set_reg_value(
@@ -37,7 +37,7 @@ class SOrSaveexec(BaseInstruction):
                 expression_node=prev_exec_cond_node,
             )
 
-            new_exec_cond_node = self.node.get_expression_node(self.ssrc0)
+            new_exec_cond_node = self.get_expression_node(self.ssrc0)
 
             if prev_exec_cond_node.type == ExpressionType.UNKNOWN:
                 expr_node = new_exec_cond_node

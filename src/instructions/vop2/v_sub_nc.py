@@ -24,8 +24,8 @@ class VSubNc(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        src0_node = self.node.get_expression_node(self.src0)
-        src1_node = self.node.get_expression_node(self.src1)
+        src0_node = self.get_expression_node(self.src0)
+        src1_node = self.get_expression_node(self.src1)
 
         reg_type = RegisterType.INT32
         if is_reg(self.src0):

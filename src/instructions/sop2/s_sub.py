@@ -30,8 +30,8 @@ class SSub(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        src0_node = self.node.get_expression_node(self.ssrc0)
-        src1_node = self.node.get_expression_node(self.ssrc1)
+        src0_node = self.get_expression_node(self.ssrc0)
+        src1_node = self.get_expression_node(self.ssrc1)
         reg_entire = Integrity.ENTIRE
         if is_reg(self.ssrc1):
             reg_entire = self.node.state[self.ssrc1].integrity

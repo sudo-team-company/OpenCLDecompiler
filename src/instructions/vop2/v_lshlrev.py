@@ -30,7 +30,7 @@ class VLshlrev(BaseInstruction):
                 new_value = make_op(self.node, self.src1, str(pow(2, int(self.src0))), "*", suffix=self.suffix)
                 reg_type = self.node.state[self.src1].type
 
-            left_node = self.node.get_expression_node(self.src1)
+            left_node = self.get_expression_node(self.src1)
             right_node = self.expression_manager.add_const_node(
                 pow(2, int(self.src0)), OpenCLTypes.from_string(self.suffix)
             )
@@ -60,8 +60,8 @@ class VLshlrev(BaseInstruction):
             const_node = self.expression_manager.add_const_node(
                 pow(2, int(self.src0)), OpenCLTypes.from_string(self.suffix)
             )
-            start_from_register_node = self.node.get_expression_node(start_from_register)
-            end_from_register_node = self.node.get_expression_node(end_from_register)
+            start_from_register_node = self.get_expression_node(start_from_register)
+            end_from_register_node = self.get_expression_node(end_from_register)
             new_value0_node = self.expression_manager.add_operation(
                 start_from_register_node, const_node, ExpressionOperationType.MUL, OpenCLTypes.from_string(self.suffix)
             )

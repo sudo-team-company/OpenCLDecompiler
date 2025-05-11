@@ -35,8 +35,8 @@ class VMulF32(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        src0_node = self.node.get_expression_node(self.src0)
-        src1_node = self.node.get_expression_node(self.src1)
+        src0_node = self.get_expression_node(self.src0)
+        src1_node = self.get_expression_node(self.src1)
         if self.suffix == "f32":
             if (
                 self.src1 in self.node.state

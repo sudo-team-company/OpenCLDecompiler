@@ -87,9 +87,9 @@ class VAdd3(BaseInstruction):
                 (self.src1, self.src2, self.src0),
             ]
 
-            src0_node = self.node.get_expression_node(self.src0)
-            src1_node = self.node.get_expression_node(self.src1)
-            src2_node = self.node.get_expression_node(self.src2)
+            src0_node = self.get_expression_node(self.src0)
+            src1_node = self.get_expression_node(self.src1)
+            src2_node = self.get_expression_node(self.src2)
             expr_node = None
 
             for src0, src1, src2 in reg_permutations_for_sum_mapping:
@@ -107,7 +107,7 @@ class VAdd3(BaseInstruction):
                         sum_node = self.expression_manager.add_register_node(reg_type, "")
                         expr_node = self.expression_manager.add_operation(
                             sum_node,
-                            self.node.get_expression_node(src2),
+                            self.get_expression_node(src2),
                             ExpressionOperationType.PLUS,
                             OpenCLTypes.UINT,
                         )

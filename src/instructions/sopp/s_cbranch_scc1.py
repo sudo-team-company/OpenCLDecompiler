@@ -10,5 +10,5 @@ class SCbranchScc1(SCbranch):
 
     def to_print(self):
         self.output_string = self.node.state["scc"].val
-        self.output_string = ExpressionManager().expression_to_string(self.node.get_expression_node("scc"))
+        self.output_string = ExpressionManager().expression_to_string(self.get_expression_node("scc"))
         return self.output_string

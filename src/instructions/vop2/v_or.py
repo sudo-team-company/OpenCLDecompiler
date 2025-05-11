@@ -46,8 +46,8 @@ class VOr(BaseInstruction):
         if self.suffix == "b32":
             new_value = None
 
-            src0_node = self.node.get_expression_node(self.src0)
-            src1_node = self.node.get_expression_node(self.src1)
+            src0_node = self.get_expression_node(self.src0)
+            src1_node = self.get_expression_node(self.src1)
             expr_node = None
 
             if is_reg(self.src1) and self.node.state[self.src1].type in [

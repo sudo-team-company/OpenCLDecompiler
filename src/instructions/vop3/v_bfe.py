@@ -37,7 +37,7 @@ class VBfe(BaseInstruction):
                 new_value = make_op(self.node, op1, op3, "-", "(ulong)", "(ulong)", suffix=self.suffix)
                 reg_type = self.node.state[self.src0].type
 
-                src0_node = self.node.get_expression_node(self.src0)
+                src0_node = self.get_expression_node(self.src0)
                 const1_node = self.expression_manager.add_const_node(pow(2, int(self.src1)), OpenCLTypes.UINT)
                 op1_node = self.expression_manager.add_operation(
                     src0_node, const1_node, ExpressionOperationType.DIV, OpenCLTypes.UINT

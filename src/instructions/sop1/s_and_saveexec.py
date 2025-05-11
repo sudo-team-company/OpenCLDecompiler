@@ -23,7 +23,7 @@ class SAndSaveexec(BaseInstruction):
             old_exec_condition = self.decompiler_data.exec_registers["exec"]
             new_cond = self.node.state[self.ssrc0].val
 
-            prev_exec_cond_node = self.node.get_expression_node("exec")
+            prev_exec_cond_node = self.get_expression_node("exec")
 
             self.decompiler_data.exec_registers[self.sdst] = old_exec_condition
             set_reg_value(
@@ -39,7 +39,7 @@ class SAndSaveexec(BaseInstruction):
             new_exec_condition = old_exec_condition & new_cond
             self.decompiler_data.exec_registers["exec"] = new_exec_condition
 
-            new_exec_cond_node = self.node.get_expression_node(self.ssrc0)
+            new_exec_cond_node = self.get_expression_node(self.ssrc0)
 
             expr_node = new_exec_cond_node
 
@@ -56,5 +56,5 @@ class SAndSaveexec(BaseInstruction):
 
     def to_print(self):
         self.output_string = self.node.state["exec"].val
-        self.output_string = ExpressionManager().expression_to_string(self.node.get_expression_node("exec"))
+        self.output_string = ExpressionManager().expression_to_string(self.get_expression_node("exec"))
         return self.output_string

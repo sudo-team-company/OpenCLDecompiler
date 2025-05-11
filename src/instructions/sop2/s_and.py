@@ -31,7 +31,7 @@ class SAnd(BaseInstruction):
                 new_exec_condition = old_exec_condition & new_cond
                 self.decompiler_data.exec_registers[self.ssrc0] = new_exec_condition
 
-                new_condition_node = self.node.get_expression_node(self.ssrc1)
+                new_condition_node = self.get_expression_node(self.ssrc1)
                 return set_reg_value(
                     self.node,
                     new_exec_condition.top(),
@@ -44,8 +44,8 @@ class SAnd(BaseInstruction):
             if self.ssrc0 in self.node.state and self.ssrc1 in self.node.state:
                 ssrc0 = self.node.state[self.ssrc0]
 
-                src0_node = self.node.get_expression_node(self.ssrc0)
-                src1_node = self.node.get_expression_node(self.ssrc1)
+                src0_node = self.get_expression_node(self.ssrc0)
+                src1_node = self.get_expression_node(self.ssrc1)
                 expr_node = self.expression_manager.add_operation(
                     src0_node, src1_node, ExpressionOperationType.AND, OpenCLTypes.from_string(self.suffix)
                 )
@@ -63,11 +63,11 @@ class SAnd(BaseInstruction):
             expr_node = None
             if self.ssrc0 in self.node.state:
                 reg = self.node.state[self.ssrc0]
-                expr_node = self.node.get_expression_node(self.ssrc0)
+                expr_node = self.get_expression_node(self.ssrc0)
             else:
                 ssrc0 = check_and_split_regs(self.ssrc0)[0]
                 reg = self.node.state[ssrc0]
-                expr_node = self.node.get_expression_node(ssrc0)
+                expr_node = self.get_expression_node(ssrc0)
             return set_reg_value(
                 node=self.node,
                 new_value=reg.val,

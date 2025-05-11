@@ -24,9 +24,9 @@ class VMac(BaseInstruction):
             new_value = make_op(self.node, self.src0, self.src1, "*", "(float)", "(float)", suffix=self.suffix)
             new_value = make_op(self.node, new_value, self.vdst, "+", "", "(float)", suffix=self.suffix)
 
-            src0_node = self.node.get_expression_node(self.src0)
-            src1_node = self.node.get_expression_node(self.src1)
-            vdst_node = self.node.get_expression_node(self.vdst)
+            src0_node = self.get_expression_node(self.src0)
+            src1_node = self.get_expression_node(self.src1)
+            vdst_node = self.get_expression_node(self.vdst)
             expr_node = self.expression_manager.add_operation(
                 src0_node, src1_node, ExpressionOperationType.MUL, OpenCLTypes.FLOAT
             )

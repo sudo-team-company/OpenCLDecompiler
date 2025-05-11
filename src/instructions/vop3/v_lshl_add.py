@@ -32,8 +32,8 @@ class VLshlAdd(BaseInstruction):
             new_value = make_op(self.node, self.src0, str(int(pow(2, int(self.src1)))), "*", suffix=self.suffix)
             new_value = make_op(self.node, new_value, self.src2, "+", "(ulong)", "(ulong)", suffix=self.suffix)
 
-            src0_node = self.node.get_expression_node(self.src0)
-            src2_node = self.node.get_expression_node(self.src2)
+            src0_node = self.get_expression_node(self.src0)
+            src2_node = self.get_expression_node(self.src2)
             mul_node = self.expression_manager.add_operation(
                 src0_node,
                 self.expression_manager.add_const_node(pow(2, int(self.src1)), OpenCLTypes.from_string(self.suffix)),

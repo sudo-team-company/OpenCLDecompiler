@@ -122,8 +122,8 @@ class VAddNc(BaseInstruction):
 
             new_value = make_op(self.node, self.src0, self.src1, "+", "(ulong)", "(ulong)", suffix=self.suffix)
 
-            src0_node = self.node.get_expression_node(self.src0)
-            src1_node = self.node.get_expression_node(self.src1)
+            src0_node = self.get_expression_node(self.src0)
+            src1_node = self.get_expression_node(self.src1)
             expr_node = None
 
             reg_type = RegisterType.UNKNOWN

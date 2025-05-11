@@ -47,8 +47,8 @@ class VPerm(BaseInstruction):
                 reg_type = RegisterType.KERNEL_ARGUMENT_VALUE
 
                 expr_node = self.expression_manager.add_permute_node(
-                    self.node.get_expression_node(self.src0),
-                    self.node.get_expression_node(self.src1),
+                    self.get_expression_node(self.src0),
+                    self.get_expression_node(self.src1),
                 )
 
                 if is_vector_type(self.node.state[self.src0].data_type):

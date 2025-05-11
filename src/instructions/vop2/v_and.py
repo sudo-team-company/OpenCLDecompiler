@@ -26,7 +26,7 @@ class VAnd(BaseInstruction):
             def default_behaviour() -> tuple[object, RegisterType, ExpressionNode]:
                 new_value = self.node.state[self.src1].val
                 reg_type = RegisterType.UNKNOWN
-                expr_node = self.node.get_expression_node(self.src1)
+                expr_node = self.get_expression_node(self.src1)
 
                 return new_value, reg_type, expr_node
 
@@ -36,7 +36,7 @@ class VAnd(BaseInstruction):
             if self.node.state[self.src1].type == RegisterType.WORK_DIM and self.src0 == "0xffff":
                 new_value = self.node.state[self.src1].val
                 reg_type = self.node.state[self.src1].type
-                expr_node = self.node.get_expression_node(self.src1)
+                expr_node = self.get_expression_node(self.src1)
             elif self.node.state[self.src1].type == RegisterType.GLOBAL_SIZE_X and size_of_work_groups[0] == -int(
                 self.src0
             ):

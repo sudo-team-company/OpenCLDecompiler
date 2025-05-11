@@ -182,10 +182,11 @@ def compare_values(node: Node, to_reg: str, from_reg0: str, from_reg1: str, oper
     new_value = make_op(node, from_reg0, from_reg1, operation, datatype, datatype, suffix=suffix)
     from_regs = [from_reg0, from_reg1]
 
-    src0_node = node.get_expression_node(from_reg0)
-    src1_node = node.get_expression_node(from_reg1)
+    opencl_type = OpenCLTypes.from_string(suffix)
+    src0_node = node.get_or_add_expression_node(from_reg0, opencl_type)
+    src1_node = node.get_or_add_expression_node(from_reg1, opencl_type)
     expr_node = ExpressionManager().add_operation(
-        src0_node, src1_node, ExpressionOperationType.from_string(operation), OpenCLTypes.from_string(suffix)
+        src0_node, src1_node, ExpressionOperationType.from_string(operation), opencl_type
     )
 
     if is_range(to_reg):

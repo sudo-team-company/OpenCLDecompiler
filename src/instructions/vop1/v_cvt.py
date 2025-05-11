@@ -59,12 +59,12 @@ class VCvt(BaseInstruction):
                     [self.src0],
                     self.suffix,
                     reg_type=RegisterType.DIVISION_PT3,
-                    expression_node=self.node.get_expression_node(self.src0),
+                    expression_node=self.get_expression_node(self.src0),
                 )
 
             asm_type = self.suffix[4:]
 
-            var_node = self.node.get_expression_node(self.from_registers)
+            var_node = self.get_expression_node(self.from_registers)
             assert var_node.type == ExpressionType.VAR
             var_node = self.expression_manager.cast_node(var_node, OpenCLTypes.from_string(asm_type))
             self.decompiler_data.names_of_vars[self.node.state[self.from_registers].val] = asm_type

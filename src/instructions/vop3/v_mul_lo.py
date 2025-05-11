@@ -20,8 +20,8 @@ class VMulLo(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in {"u16", "u32", "i32"}:
-            src0_node = self.node.get_expression_node(self.src0)
-            src1_node = self.node.get_expression_node(self.src1)
+            src0_node = self.get_expression_node(self.src0)
+            src1_node = self.get_expression_node(self.src1)
             expr_node = None
 
             if self.src1 in self.node.state and self.node.state[self.src1].type == RegisterType.DIVISION_PT3:

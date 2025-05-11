@@ -45,8 +45,8 @@ class VSub(BaseInstruction):
         return super().to_print_unresolved()
 
     def to_fill_node(self):
-        src0_node = self.node.get_expression_node(self.src0)
-        src1_node = self.node.get_expression_node(self.src1)
+        src0_node = self.get_expression_node(self.src0)
+        src1_node = self.get_expression_node(self.src1)
         if self.suffix == "u32":
             new_val = make_op(self.node, self.src0, self.src1, "-", "(ulong)", suffix=self.suffix)
             expr_node = self.expression_manager.add_operation(

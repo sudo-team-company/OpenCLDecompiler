@@ -21,7 +21,7 @@ class SNot(BaseInstruction):
             data_type = self.suffix
             reg_type = self.node.state[self.ssrc0].type
 
-            ssrc0_node = self.node.get_expression_node(self.ssrc0)
+            ssrc0_node = self.get_expression_node(self.ssrc0)
             expr_node = self.expression_manager.add_logical_not_node(ssrc0_node)
             return set_reg_value(
                 self.node, new_value, self.sdst, [self.ssrc0], data_type, reg_type=reg_type, expression_node=expr_node

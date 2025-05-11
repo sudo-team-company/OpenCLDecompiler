@@ -20,8 +20,8 @@ class SXor(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix in {"b32", "b64"}:
-            src0_node = self.node.get_expression_node(self.ssrc0)
-            src1_node = self.node.get_expression_node(self.ssrc1)
+            src0_node = self.get_expression_node(self.ssrc0)
+            src1_node = self.get_expression_node(self.ssrc1)
             expr_node = self.expression_manager.add_operation(
                 src0_node, src1_node, ExpressionOperationType.XOR, OpenCLTypes.from_string(self.suffix)
             )

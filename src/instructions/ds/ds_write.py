@@ -32,7 +32,7 @@ class DsWrite(BaseInstruction):
         return self.expression_manager.expression_to_string(
             self.expression_manager.add_offset_div_data_size_node(
                 self.decompiler_data.lds_vars[self.offset],
-                self.node.get_expression_node(self.addr),
+                self.get_expression_node(self.addr),
                 4,
                 OpenCLTypes.from_string(self.suffix),
             )
@@ -50,7 +50,7 @@ class DsWrite(BaseInstruction):
                 [],
                 f"u{self.suffix[1:]}",
                 reg_type=reg_type,
-                expression_node=self.node.get_expression_node(self.vdata0),
+                expression_node=self.get_expression_node(self.vdata0),
             )
         return super().to_fill_node()
 
@@ -58,7 +58,7 @@ class DsWrite(BaseInstruction):
         if self.suffix == "b32":
             name = self.get_lds_var_name_with_offset()
             self.output_string = (
-                f"{name} = {self.expression_manager.expression_to_string(self.node.get_expression_node(name))}"
+                f"{name} = {self.expression_manager.expression_to_string(self.get_expression_node(name))}"
             )
             return self.output_string
         return super().to_print()

@@ -27,7 +27,7 @@ class SAddK(BaseInstruction):
             data_type = self.node.state[self.src0].data_type
             reg_type = self.node.state[self.src0].type
 
-            src0_node = self.node.get_expression_node(self.src0)
+            src0_node = self.get_expression_node(self.src0)
             simm16_node = self.expression_manager.add_const_node(self.simm16, OpenCLTypes.INT)
             expr_node = self.expression_manager.add_operation(
                 src0_node, simm16_node, ExpressionOperationType.PLUS, OpenCLTypes.INT

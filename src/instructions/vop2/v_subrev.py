@@ -30,8 +30,8 @@ class VSubrev(BaseInstruction):
         if self.suffix == "u32":
             new_value = make_op(self.node, self.src1, self.src0, "-", "(ulong)", "(ulong)", suffix=self.suffix)
 
-            src0_node = self.node.get_expression_node(self.src0)
-            src1_node = self.node.get_expression_node(self.src1)
+            src0_node = self.get_expression_node(self.src0)
+            src1_node = self.get_expression_node(self.src1)
             expr_node = self.expression_manager.add_operation(
                 src1_node, src0_node, ExpressionOperationType.MINUS, OpenCLTypes.from_string(self.suffix)
             )

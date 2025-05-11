@@ -23,7 +23,7 @@ class VLdexp(BaseInstruction):
             self.decompiler_data.names_of_vars[self.node.state[start_from_registers].val] = self.suffix
             reg_type = self.node.state[start_from_registers].type
             new_value = self.node.state[start_from_registers].val
-            var_node = self.node.get_expression_node(start_from_registers)
+            var_node = self.get_expression_node(start_from_registers)
             var_node = self.expression_manager.cast_node(var_node, OpenCLTypes.from_string(self.suffix))
         else:
             raise NotImplementedError

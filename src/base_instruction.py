@@ -1,4 +1,5 @@
 from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.types.opencl_types import OpenCLTypes
 
 from .decompiler_data import DecompilerData
 from .node import Node
@@ -38,3 +39,6 @@ class BaseInstruction:
 
     def to_print(self):
         return self.output_string
+
+    def get_expression_node(self, reg):
+        return self.node.get_or_add_expression_node(reg, OpenCLTypes.from_string(self.suffix))

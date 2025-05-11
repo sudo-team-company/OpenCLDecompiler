@@ -54,8 +54,8 @@ class VAdd(BaseInstruction):
                     new_value = make_op(self.node, self.src1, str(data_size), "/", suffix=self.suffix)
 
                     expr_node = self.expression_manager.add_offset_div_data_size_node(
-                        self.node.get_expression_node(self.src0),
-                        self.node.get_expression_node(self.src1),
+                        self.get_expression_node(self.src0),
+                        self.get_expression_node(self.src1),
                         data_size,
                         OpenCLTypes.from_string(self.suffix),
                     )
@@ -97,16 +97,16 @@ class VAdd(BaseInstruction):
             right_node = None
             expr_node = None
             if src0_reg and src1_reg:
-                left_node = self.node.get_expression_node(self.src0)
-                right_node = self.node.get_expression_node(self.src1)
+                left_node = self.get_expression_node(self.src0)
+                right_node = self.get_expression_node(self.src1)
             elif src0_reg:
                 assert self.src0 in self.node.state
-                left_node = self.node.get_expression_node(self.src0)
+                left_node = self.get_expression_node(self.src0)
                 right_node = self.expression_manager.add_const_node(self.src1, OpenCLTypes.UINT)
             elif src1_reg:
                 assert self.src1 in self.node.state
                 left_node = self.expression_manager.add_const_node(self.src0, OpenCLTypes.UINT)
-                right_node = self.node.get_expression_node(self.src1)
+                right_node = self.get_expression_node(self.src1)
             else:
                 left_node = self.expression_manager.add_const_node(self.src0, OpenCLTypes.UINT)
                 right_node = self.expression_manager.add_const_node(self.src1, OpenCLTypes.UINT)
@@ -171,8 +171,8 @@ class VAdd(BaseInstruction):
                     new_value1 = make_op(self.node, self.src1, str(data_size), "/", suffix=self.suffix)
                     new_value = make_op(self.node, argument, new_value1, "+", suffix=self.suffix)
 
-                    src0_node = self.node.get_expression_node(self.src0)
-                    src1_node = self.node.get_expression_node(self.src1)
+                    src0_node = self.get_expression_node(self.src0)
+                    src1_node = self.get_expression_node(self.src1)
                     expr_node = self.expression_manager.add_offset_div_data_size_node(
                         src0_node, src1_node, data_size, OpenCLTypes.from_string(self.suffix)
                     )
@@ -193,7 +193,7 @@ class VAdd(BaseInstruction):
                                 OpenCLTypes.from_string(self.suffix), TypeAddressSpaceQualifiers.CONST, is_pointer=True
                             ),
                         )
-                        src1_node = self.node.get_expression_node(self.src1)
+                        src1_node = self.get_expression_node(self.src1)
                         expr_node = self.expression_manager.add_offset_div_data_size_node(
                             src0_node, src1_node, value, OpenCLTypes.from_string(self.suffix)
                         )
@@ -266,8 +266,8 @@ class VAdd(BaseInstruction):
                         new_value = make_op(self.node, self.src1, str(data_size), "/", suffix=self.suffix)
                         new_value = make_op(self.node, self.src0, new_value, "+", suffix=self.suffix)
 
-                        src0_node = self.node.get_expression_node(self.src0)
-                        src1_node = self.node.get_expression_node(self.src1)
+                        src0_node = self.get_expression_node(self.src0)
+                        src1_node = self.get_expression_node(self.src1)
                         expr_node = self.expression_manager.add_offset_div_data_size_node(
                             src0_node, src1_node, data_size, OpenCLTypes.from_string(self.suffix)
                         )
@@ -294,8 +294,8 @@ class VAdd(BaseInstruction):
             )
             reg_type = self.node.state[start_from_src1].type
 
-            src0_node = self.node.get_expression_node(start_from_src0)
-            src1_node = self.node.get_expression_node(start_from_src1)
+            src0_node = self.get_expression_node(start_from_src0)
+            src1_node = self.get_expression_node(start_from_src1)
             expr_node = None
 
             if self.node.state[start_from_src1].val == self.node.state[start_from_src0].val:

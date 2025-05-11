@@ -25,7 +25,7 @@ class DsAdd(BaseInstruction):
         return self.expression_manager.expression_to_string(
             self.expression_manager.add_offset_div_data_size_node(
                 self.decompiler_data.lds_vars[self.offset],
-                self.node.get_expression_node(self.addr),
+                self.get_expression_node(self.addr),
                 4,
                 OpenCLTypes.from_string(self.suffix),
             )
@@ -35,8 +35,8 @@ class DsAdd(BaseInstruction):
         if self.suffix == "u32":
             new_value = f"{self.node.state[self.varname].val} + {self.node.state[self.vdata0].val}"
             expr_node = self.expression_manager.add_operation(
-                self.node.get_expression_node(self.varname),
-                self.node.get_expression_node(self.vdata0),
+                self.get_expression_node(self.varname),
+                self.get_expression_node(self.vdata0),
                 ExpressionOperationType.PLUS,
                 OpenCLTypes.UINT,
             )
@@ -46,7 +46,7 @@ class DsAdd(BaseInstruction):
     def to_print(self):
         if self.suffix == "u32":
             self.output_string = f"{self.varname} += {
-                self.expression_manager.expression_to_string(self.node.get_expression_node(self.vdata0))
+                self.expression_manager.expression_to_string(self.get_expression_node(self.vdata0))
             }"
             return self.output_string
         return super().to_print()

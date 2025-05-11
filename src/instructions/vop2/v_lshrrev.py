@@ -27,7 +27,7 @@ class VLshrrev(BaseInstruction):
                 new_value = make_op(self.node, self.src1, str(pow(2, int(self.src0))), "//", suffix=self.suffix)
                 reg_type = self.node.state[self.src1].type
 
-                src1_node = self.node.get_expression_node(self.src1)
+                src1_node = self.get_expression_node(self.src1)
                 const_node = self.expression_manager.add_const_node(pow(2, int(self.src0)), OpenCLTypes.UINT)
                 expr_node = self.expression_manager.add_operation(
                     src1_node, const_node, ExpressionOperationType.DIV, OpenCLTypes.UINT

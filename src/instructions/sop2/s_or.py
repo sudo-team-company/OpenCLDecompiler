@@ -22,8 +22,8 @@ class SOr(BaseInstruction):
         if self.decompiler_data.is_rdna3 and self.suffix.endswith("32"):
             new_val = make_op(self.node, self.ssrc0, self.ssrc1, "|", suffix=self.suffix)
             expr_node = self.expression_manager.add_operation(
-                self.node.get_expression_node(self.ssrc0),
-                self.node.get_expression_node(self.ssrc1),
+                self.get_expression_node(self.ssrc0),
+                self.get_expression_node(self.ssrc1),
                 ExpressionOperationType.BITWISE_OR,
                 OpenCLTypes.from_string(self.suffix),
             )
@@ -37,8 +37,8 @@ class SOr(BaseInstruction):
             )
 
         if self.suffix in {"b32", "b64"}:
-            src0_node = self.node.get_expression_node(self.ssrc0)
-            src1_node = self.node.get_expression_node(self.ssrc1)
+            src0_node = self.get_expression_node(self.ssrc0)
+            src1_node = self.get_expression_node(self.ssrc1)
             expr_node = self.expression_manager.add_operation(
                 src0_node, src1_node, ExpressionOperationType.OR, OpenCLTypes.from_string(self.suffix)
             )

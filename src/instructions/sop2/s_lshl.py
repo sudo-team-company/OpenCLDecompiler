@@ -29,7 +29,7 @@ class SLshl(BaseInstruction):
             new_value = make_op(self.node, self.ssrc0, str(pow(2, int(self.ssrc1))), "*", suffix=self.suffix)
 
             op_node = self.expression_manager.add_operation(
-                self.node.get_expression_node(self.ssrc0),
+                self.get_expression_node(self.ssrc0),
                 self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.from_string(self.suffix)),
                 ExpressionOperationType.MUL,
                 OpenCLTypes.from_string(self.suffix),
@@ -61,14 +61,14 @@ class SLshl(BaseInstruction):
             reg_type1 = self.node.state[end_from_register].type
 
             op_node0 = self.expression_manager.add_operation(
-                self.node.get_expression_node(start_from_register),
+                self.get_expression_node(start_from_register),
                 self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.from_string(self.suffix)),
                 ExpressionOperationType.MUL,
                 OpenCLTypes.from_string(self.suffix),
             )
 
             op_node1 = self.expression_manager.add_operation(
-                self.node.get_expression_node(end_from_register),
+                self.get_expression_node(end_from_register),
                 self.expression_manager.add_const_node(pow(2, int(self.ssrc1)), OpenCLTypes.from_string(self.suffix)),
                 ExpressionOperationType.MUL,
                 OpenCLTypes.from_string(self.suffix),
