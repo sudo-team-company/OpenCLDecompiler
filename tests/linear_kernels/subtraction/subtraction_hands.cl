@@ -365,9 +365,9 @@ void subtract_x_get_global_id(__global int *data, int x)
 __kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void subtract_get_global_offset_get_global_id(int x, __global int *data)
 {
-    data[get_global_id(0)] = get_global_offset(0) + get_global_id(0);
-    data[get_global_id(1)] = get_global_offset(1) + get_global_id(1);
-    data[get_global_id(2)] = get_global_offset(2) + get_global_id(2);
+    data[get_global_id(0)] = get_global_offset(0) - get_global_id(0);
+    data[get_global_id(1)] = get_global_offset(1) - get_global_id(1);
+    data[get_global_id(2)] = get_global_offset(2) - get_global_id(2);
 }
 
 __kernel __attribute__((reqd_work_group_size(8, 4, 2)))
@@ -1869,9 +1869,9 @@ void subtract_char_x_get_global_id(__global char *data, int x)
 __kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void subtract_char_get_global_offset_get_global_id(int x, __global char *data)
 {
-    data[get_global_id(0)] = get_global_offset(0) + get_global_id(0);
-    data[get_global_id(1)] = get_global_offset(1) + get_global_id(1);
-    data[get_global_id(2)] = get_global_offset(2) + get_global_id(2);
+    data[get_global_id(0)] = get_global_offset(0) - get_global_id(0);
+    data[get_global_id(1)] = get_global_offset(1) - get_global_id(1);
+    data[get_global_id(2)] = get_global_offset(2) - get_global_id(2);
 }
 
 __kernel __attribute__((reqd_work_group_size(8, 4, 2)))

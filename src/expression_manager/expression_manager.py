@@ -242,10 +242,11 @@ class ExpressionManager(metaclass=Singleton):
         assert s0 is not None
         assert s1 is not None
 
-        # "0 - (x - y)" case
+        # "0 - (x OP y)" case
         if const_zero_node(s0) and s1.type == ExpressionType.OP:
             if s1.value == ExpressionOperationType.MINUS:
-                return self._optimized_nodes_sum(s1.right, s1.left, value_type_hint)
+                # "0 - (x - y)" -> "y - x"
+                return self._optimized_nodes_sub(s1.right, s1.left, value_type_hint)
             if s1.value in [ExpressionOperationType.MUL, ExpressionOperationType.DIV]:
                 return self._optimized_nodes_mul(self.add_const_node(-1, OpenCLTypes.INT), s1, value_type_hint)
         if const_zero_node(s1):
