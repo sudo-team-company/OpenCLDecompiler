@@ -55,6 +55,5 @@ class SAndSaveexec(BaseInstruction):
         return super().to_fill_node()
 
     def to_print(self):
-        self.output_string = self.node.state["exec"].val
         self.output_string = ExpressionManager().expression_to_string(self.get_expression_node("exec"))
         return self.output_string

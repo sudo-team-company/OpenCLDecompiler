@@ -82,6 +82,5 @@ class SAnd(BaseInstruction):
 
     def to_print(self):
         if self.sdst == "exec":
-            self.output_string = self.node.state["exec"].val
-            self.output_string = ExpressionManager().expression_to_string(self.node.state["exec"].get_expression_node())
+            self.output_string = ExpressionManager().expression_to_string(self.get_expression_node("exec"))
         return self.output_string
