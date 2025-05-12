@@ -31,18 +31,16 @@ def update_reg_version(reg, curr_node, max_version, prev_versions_of_reg):
     curr_node.state[reg].add_version(reg, max_version)
     curr_node.state[reg].prev_version = list(prev_versions_of_reg)
     variable = "var" + str(decompiler_data.num_of_var)
+    prev_node_value_type_hints = []
     for prev in prev_versions_of_reg:
         if decompiler_data.checked_variables.get(prev):
             old_var = decompiler_data.checked_variables[prev]
+            old_var_node = ExpressionManager().get_variable_node(old_var)
+            if old_var_node is not None:
+                prev_node_value_type_hints.append(old_var_node.value_type_hint)
             decompiler_data.checked_variables[prev] = variable
             decompiler_data.variables = {k: v.replace(old_var, variable) for k, v in decompiler_data.variables.items()}
     curr_node.state[reg].register_content._value = variable  # noqa: SLF001
-
-    # Get all type hints from previous versions, because we need to find common type for variable
-    prev_node_value_type_hints = []
-    for parent in curr_node.parent:
-        if reg in parent.state and parent.state[reg].version is not None:
-            prev_node_value_type_hints.append(parent.state[reg].get_expression_node().value_type_hint)  # noqa: PERF401
 
     cur_expr_node: ExpressionNode = curr_node.state[reg].get_expression_node()
     value_type_hint = cur_expr_node.value_type_hint
