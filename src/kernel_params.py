@@ -1,9 +1,9 @@
 from src.decompiler_data import DecompilerData
+from src.expression_manager.expression_manager import ExpressionManager
+from src.model.config_data import KernelArgument
 from src.opencl_types import make_asm_type
 from src.register_content import RegisterContent
 from src.register_type import RegisterType
-
-from .model import KernelArgument
 
 
 def get_bfe_offset(name_of_param: str, offset: int, arg: KernelArgument):
@@ -13,6 +13,7 @@ def get_bfe_offset(name_of_param: str, offset: int, arg: KernelArgument):
     bfe_offset = param_size_bit + "".rjust(4 - len(offset_in_reg[2:]), "0") + offset_in_reg[2:]
     value = DecompilerData().config_data.offset_to_content[hex(load_offset)].get_value()
     DecompilerData().bfe_offsets[value, bfe_offset] = name_of_param
+    ExpressionManager().add_kernel_argument(arg, offset)
 
 
 def get_reg_type(value: str) -> RegisterType:
@@ -31,7 +32,11 @@ def process_arg(offset: int, arg: KernelArgument):
     value = arg.name.removeprefix("*") if not arg.is_vector() else arg.get_vector_element_by_offset(offset)
     if offset % 4 == 0:
         DecompilerData().config_data.offset_to_content[hex(offset)] = RegisterContent(
-            value=value, type_=get_reg_type(arg.name), size=arg.basic_size(), data_type=make_asm_type(arg.type_name)
+            value=value,
+            type_=get_reg_type(arg.name),
+            size=arg.basic_size(),
+            data_type=make_asm_type(arg.type_name),
+            expression_node=ExpressionManager().add_kernel_argument(arg, offset),
         )
     if "short" in arg.type_name or "char" in arg.type_name:
         get_bfe_offset(value, offset, arg)

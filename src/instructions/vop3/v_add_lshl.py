@@ -1,5 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
+from src.expression_manager.expression_node import ExpressionOperationType
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.operation_register_content import OperationRegisterContent
 from src.register import is_reg
 from src.register_type import RegisterType
@@ -42,25 +44,39 @@ class VAddLshl(BaseInstruction):
                     }
                 )
                 if src_types in _instruction_internal_mapping_by_types:
-                    new_value, _ = _instruction_internal_mapping_by_types[src_types]
+                    new_value, reg_type = _instruction_internal_mapping_by_types[src_types]
                     new_value = make_op(self.node, new_value, str(pow(2, int(self.src2))), "*", suffix=self.suffix)
+                    src0_node = self.expression_manager.add_register_node(reg_type, new_value)
+                    src1_node = self.expression_manager.add_const_node(pow(2, int(self.src2)), OpenCLTypes.UINT)
+                    expr_node = self.expression_manager.add_operation(
+                        src0_node, src1_node, ExpressionOperationType.MUL, OpenCLTypes.UINT
+                    )
                     return set_reg_value(
                         node=self.node,
                         new_value=new_value,
                         to_reg=self.vdst,
                         from_regs=[self.src0, self.src1, self.src2],
                         data_type=self.suffix,
+                        expression_node=expr_node,
                     )
             else:
                 new_reg = self.node.state[self.src0] + self.node.state[self.src1]
 
                 if not isinstance(new_reg.register_content, OperationRegisterContent):
                     new_value = make_op(self.node, new_reg.val, str(pow(2, int(self.src2))), "*", suffix=self.suffix)
+                    src1_node = self.expression_manager.add_const_node(pow(2, int(self.src2)), OpenCLTypes.UINT)
+                    expr_node = self.expression_manager.add_operation(
+                        new_reg.register_content.get_expression_node(),
+                        src1_node,
+                        ExpressionOperationType.MUL,
+                        OpenCLTypes.UINT,
+                    )
                     return set_reg_value(
                         node=self.node,
                         new_value=new_value,
                         to_reg=self.vdst,
                         from_regs=[self.src0, self.src1, self.src2],
                         data_type=self.suffix,
+                        expression_node=expr_node,
                     )
         return super().to_fill_node()

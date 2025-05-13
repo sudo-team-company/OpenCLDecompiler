@@ -3,6 +3,8 @@ import enum
 import itertools
 
 from src.constants import DEFAULT_REGISTER_SIZE
+from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.expression_node import ExpressionNode, ExpressionOperationType
 from src.register_content import RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 
@@ -99,15 +101,16 @@ _SUM_SIMPLIFY_COMBINATIONS = [
 
 
 class OperationRegisterContent(RegisterContent):
-    def __init__(self, operation: OperationType, register_contents: list[RegisterContent]):  # noqa: PLR0912
+    def __init__(  # noqa: PLR0912, PLR0915
+        self,
+        operation: OperationType,
+        register_contents: list[RegisterContent],
+        expression_node: ExpressionNode = None,
+    ):
         if len(register_contents) == 0:
             self._operation = operation
             super().__init__(
-                value=[],
-                type_=[],
-                size=DEFAULT_REGISTER_SIZE,
-                data_type=None,
-                sign=[],
+                value=[], type_=[], data_type=None, size=DEFAULT_REGISTER_SIZE, sign=[], expression_node=None
             )
 
             return
@@ -169,12 +172,14 @@ class OperationRegisterContent(RegisterContent):
         data_types = set(data_types)
         data_type = None if len(data_types) != 1 else data_types.pop()
 
+        if expression_node is None:
+            expression_node = ExpressionManager().apply_operation_to_nodes(
+                [content.get_expression_node() for content in register_contents],
+                ExpressionOperationType.from_string(operation.value),
+            )
+
         super().__init__(
-            value=values,
-            type_=types,
-            size=max(sizes),
-            data_type=data_type,
-            sign=signs,
+            value=values, type_=types, size=max(sizes), data_type=data_type, sign=signs, expression_node=expression_node
         )
         self._operation = operation
 
@@ -202,6 +207,9 @@ class OperationRegisterContent(RegisterContent):
 
     def get_sign(self) -> RegisterSignType:
         return None
+
+    def get_expression_node(self) -> ExpressionNode:
+        return self._expression_node
 
     def maybe_simplify(self) -> RegisterContent | None:  # noqa: C901, PLR0915
         def maybe_find_opposite_pos() -> tuple[int, int] | None:
@@ -239,6 +247,7 @@ class OperationRegisterContent(RegisterContent):
             new_size = []
             new_data_type = []
             new_sign = []
+            new_expression_node = self.get_expression_node()
 
             for i, (value, type_, sign) in enumerate(
                 zip(
@@ -266,6 +275,7 @@ class OperationRegisterContent(RegisterContent):
             new_operation_register_content._size = new_size
             new_operation_register_content._data_type = new_data_type
             new_operation_register_content._sign = new_sign
+            new_operation_register_content._expression_node = new_expression_node
 
             return new_operation_register_content
 
@@ -276,6 +286,7 @@ class OperationRegisterContent(RegisterContent):
                 size=self._size[0],
                 data_type=self._data_type[0],
                 sign=self._sign[0],
+                expression_node=self._expression_node,
             )
 
         maybe_pos = maybe_find_opposite_pos()

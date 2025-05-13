@@ -12,7 +12,7 @@ void if_else_1_label(int x, __global int *data, int y)
     else {
         var4 = get_global_id(1);
         var3 = 2;
-        var0 = (get_global_id(1) * x) - (uint)y;
+        var0 = (get_global_id(1) * x) - y;
     }
     data[var3] = var0;
     data[var4] = x;

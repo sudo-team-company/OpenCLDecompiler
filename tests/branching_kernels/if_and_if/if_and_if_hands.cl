@@ -3,7 +3,7 @@ void if_and_if(int x, __global int *data, int y)
 {
     uint var3;
     var3 = get_global_id(0);
-    if (0 == (int)var3) {
+    if (0 == var3) {
         var3 = get_global_id(1);
     }
     data[var3] = x;

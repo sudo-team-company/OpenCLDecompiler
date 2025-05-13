@@ -1,6 +1,7 @@
 import re
 
-from ..model import ConfigData, KernelArgument
+from src.model.config_data import ConfigData
+from src.model.kernel_argument import KernelArgument
 
 
 def get_dimensions(set_of_config: list[str]) -> str:
@@ -33,6 +34,7 @@ def get_params(set_of_config: list[str]) -> list[KernelArgument]:
         type_name = type_name[1:-1]
         if "global" in other:
             type_name = "__global " + type_name
+        const = row.find("const ") != -1
         if type_name.endswith("*"):
             type_name = type_name[:-1]
             name = "*" + name
@@ -47,13 +49,7 @@ def get_params(set_of_config: list[str]) -> list[KernelArgument]:
                 name = f"get_global_offset({i})"
                 type_name = "long"
         args.append(
-            KernelArgument(
-                type_name=type_name,
-                name=name,
-                offset=offset,
-                size=size,
-                hidden=hidden,
-            )
+            KernelArgument(type_name=type_name, name=name, offset=offset, size=size, hidden=hidden, const=const)
         )
         offset += size
     return args

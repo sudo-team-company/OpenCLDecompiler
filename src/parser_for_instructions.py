@@ -61,7 +61,6 @@ def create_parser():
     )
     parser.add_argument("--cfg", help="path to output control flow graph")
     parser.add_argument("--unrolling_limit", help="number of repeations to recognize unrolled loop", default=16)
-
     return parser
 
 

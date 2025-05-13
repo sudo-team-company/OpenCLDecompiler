@@ -1,6 +1,8 @@
 from src.base_instruction import BaseInstruction
 from src.combined_register_content import CombinedRegisterContent
 from src.decompiler_data import make_op, set_reg, set_reg_value
+from src.expression_manager.expression_node import ExpressionOperationType
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.register import Register, is_reg
 from src.register_type import RegisterType
 
@@ -25,6 +27,12 @@ class VLshrrev(BaseInstruction):
                 new_value = make_op(self.node, self.src1, str(pow(2, int(self.src0))), "//", suffix=self.suffix)
                 reg_type = self.node.state[self.src1].type
 
+                src1_node = self.get_expression_node(self.src1)
+                const_node = self.expression_manager.add_const_node(pow(2, int(self.src0)), OpenCLTypes.UINT)
+                expr_node = self.expression_manager.add_operation(
+                    src1_node, const_node, ExpressionOperationType.DIV, OpenCLTypes.UINT
+                )
+
                 return set_reg_value(
                     self.node,
                     new_value,
@@ -32,6 +40,7 @@ class VLshrrev(BaseInstruction):
                     [self.src0, self.src1],
                     self.suffix,
                     reg_type=reg_type,
+                    expression_node=expr_node,
                 )
 
             if isinstance(self.node.state[self.src1].register_content, CombinedRegisterContent):
@@ -48,6 +57,7 @@ class VLshrrev(BaseInstruction):
             if self.node.state[self.src1].val == "0":
                 new_value = "0"
                 reg_type = RegisterType.INT32
+                expr_node = self.expression_manager.add_const_node(0, OpenCLTypes.UINT)
             else:
                 return default_behaviour()
 
@@ -58,6 +68,7 @@ class VLshrrev(BaseInstruction):
                 [self.src0, self.src1],
                 self.suffix,
                 reg_type=reg_type,
+                expression_node=expr_node,
             )
 
         return super().to_fill_node()

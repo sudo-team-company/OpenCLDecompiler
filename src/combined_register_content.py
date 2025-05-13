@@ -1,17 +1,25 @@
 from collections.abc import Iterable
 
+from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.expression_node import ExpressionNode
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.register_content import EmptyRegisterContent, RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 
 
 class CombinedRegisterContent(RegisterContent):
-    def __init__(self, register_contents: Iterable[RegisterContent]):
+    def __init__(
+        self, register_contents: Iterable[RegisterContent], expression_node: Iterable[ExpressionNode] | None = None
+    ):
         super().__init__(
             value=[content.get_value() for content in register_contents],
             type_=[content.get_type() for content in register_contents],
             size=[content.get_size() for content in register_contents],
             data_type=[content.get_data_type() for content in register_contents],
             sign=[content.get_sign() for content in register_contents],
+            expression_node=expression_node
+            if expression_node is not None
+            else [content.get_expression_node() for content in register_contents],
         )
 
     def append_content(self, register_content: RegisterContent):
@@ -20,6 +28,7 @@ class CombinedRegisterContent(RegisterContent):
         self._size.append(register_content.get_size())
         self._data_type.append(register_content.get_data_type())
         self._sign.append(register_content.get_sign())
+        self._expression_node.append(register_content.get_expression_node())
 
     def maybe_get_by_idx(self, idx: int) -> RegisterContent | None:
         return RegisterContent(
@@ -28,6 +37,7 @@ class CombinedRegisterContent(RegisterContent):
             size=self._size[idx],
             data_type=self._data_type[idx],
             sign=self._sign[idx],
+            expression_node=self._expression_node[idx],
         )
 
     def get_count(self) -> int:
@@ -41,6 +51,7 @@ class CombinedRegisterContent(RegisterContent):
                 size=self._size[0],
                 data_type=self._data_type[0],
                 sign=self._sign[0],
+                expression_node=self._expression_node[0],
             )
 
         if len(self._value) == 2 and self._type[0] == RegisterType.EMPTY:  # noqa: PLR2004
@@ -50,33 +61,25 @@ class CombinedRegisterContent(RegisterContent):
                 size=self._size[1],
                 data_type=self._data_type[1],
                 sign=self._sign[1],
+                expression_node=self._expression_node[1],
             ) * (2 ** int(self._size[0]))
 
         return None
 
     def _maybe_acquire_content(self, begin: int, end: int) -> RegisterContent | None:
         curr_pos = 0
-        for (
-            value,
-            type_,
-            size,
-            data_type,
-            sign,
-        ) in zip(
+        for value, type_, size, data_type, sign, expression_node in zip(
             self._value,
             self._type,
             self._size,
             self._data_type,
             self._sign,
+            self._expression_node,
             strict=False,
         ):
             if curr_pos == begin and curr_pos + size - 1 >= end:
                 return RegisterContent(
-                    value=value,
-                    type_=type_,
-                    size=size,
-                    data_type=data_type,
-                    sign=sign,
+                    value=value, type_=type_, size=size, data_type=data_type, sign=sign, expression_node=expression_node
                 )
 
             curr_pos += size
@@ -98,6 +101,9 @@ class CombinedRegisterContent(RegisterContent):
     def get_sign(self) -> RegisterSignType:
         return self._sign[0]
 
+    def get_expression_node(self) -> ExpressionNode:
+        return self._expression_node[0]
+
     def __and__(self, other) -> RegisterContent | None:  # noqa: PLR0912
         if isinstance(other, int | str):
             if isinstance(other, str):
@@ -114,6 +120,7 @@ class CombinedRegisterContent(RegisterContent):
                     type_=RegisterType.UNKNOWN,
                     size=0,
                     data_type=None,
+                    expression_node=ExpressionManager().add_const_node(0, OpenCLTypes.UINT),
                 )
 
             begin = None
@@ -159,12 +166,13 @@ class CombinedRegisterContent(RegisterContent):
 
             add_to_new_combiner_flag = False
             cur_pos = 0
-            for value, type_, size, data_type, sign in zip(
+            for value, type_, size, data_type, sign, expression_node in zip(
                 self._value,
                 self._type,
                 self._size,
                 self._data_type,
                 self._sign,
+                self._expression_node,
                 strict=False,
             ):
                 if bits == cur_pos:
@@ -178,6 +186,7 @@ class CombinedRegisterContent(RegisterContent):
                             size=size,
                             data_type=data_type,
                             sign=sign,
+                            expression_node=expression_node,
                         )
                     )
                     continue
@@ -192,6 +201,7 @@ class CombinedRegisterContent(RegisterContent):
                                 size=size,
                                 data_type=data_type,
                                 sign=sign,
+                                expression_node=expression_node,
                             ),
                         )
                     )

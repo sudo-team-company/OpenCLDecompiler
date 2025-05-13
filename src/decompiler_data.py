@@ -6,9 +6,18 @@ import sympy
 
 from src import utils
 from src.combined_register_content import CombinedRegisterContent
+from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.expression_node import (
+    ExpressionNode,
+    ExpressionOperationType,
+    ExpressionValueTypeHint,
+    TypeAddressSpaceQualifiers,
+)
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.flag_type import FlagType
 from src.integrity import Integrity
 from src.logical_variable import ExecCondition
+from src.model.config_data import ConfigData
 from src.node import Node
 from src.opencl_types import evaluate_size, make_asm_type, make_opencl_type, vector_type_dict
 from src.operation_register_content import OperationRegisterContent, OperationType
@@ -17,8 +26,6 @@ from src.register_content import RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 from src.state import KernelState
 from src.utils import Singleton
-
-from .model import ConfigData
 
 
 def set_reg_value(  # noqa: PLR0913
@@ -34,16 +41,14 @@ def set_reg_value(  # noqa: PLR0913
     sign: RegisterSignType | list[RegisterSignType] = RegisterSignType.POSITIVE,
     operation: OperationType | None = None,
     size: list[int] | None = None,
+    expression_node: ExpressionNode = None,
 ):
     decompiler_data = DecompilerData()
     if register_content_type == RegisterContent:
         node.state[to_reg] = Register(
             integrity=integrity,
             register_content=RegisterContent(
-                value=new_value,
-                type_=reg_type,
-                sign=sign,
-                data_type=data_type,
+                value=new_value, type_=reg_type, sign=sign, data_type=data_type, expression_node=expression_node
             ),
         )
         node.state[to_reg].try_simplify()
@@ -62,7 +67,8 @@ def set_reg_value(  # noqa: PLR0913
                     for value, type_, sign_, data_type_, size_ in zip(
                         new_value, reg_type, sign, data_type, size, strict=False
                     )
-                ]
+                ],
+                expression_node=expression_node,
             ),
         )
     elif register_content_type == OperationRegisterContent:
@@ -79,6 +85,7 @@ def set_reg_value(  # noqa: PLR0913
                         )
                         for value, type_ in zip(new_value, reg_type, strict=False)
                     ],
+                    expression_node=expression_node,
                 ),
             )
         elif isinstance(data_type, list):
@@ -95,6 +102,7 @@ def set_reg_value(  # noqa: PLR0913
                         )
                         for value, type_, sign_, data_type_ in zip(new_value, reg_type, sign, data_type, strict=False)
                     ],
+                    expression_node=expression_node,
                 ),
             )
         else:
@@ -111,6 +119,7 @@ def set_reg_value(  # noqa: PLR0913
                         )
                         for value, type_, sign_ in zip(new_value, reg_type, sign, strict=False)
                     ],
+                    expression_node=expression_node,
                 ),
             )
     else:
@@ -147,6 +156,7 @@ def set_reg(
         )
         else None,
         size=reg.register_content._size,  # noqa: SLF001
+        expression_node=reg.register_content._expression_node,  # noqa: SLF001
     )
 
 
@@ -171,12 +181,22 @@ def compare_values(node: Node, to_reg: str, from_reg0: str, from_reg1: str, oper
     datatype = f"({datatype})" if datatype != "unknown type" else ""
     new_value = make_op(node, from_reg0, from_reg1, operation, datatype, datatype, suffix=suffix)
     from_regs = [from_reg0, from_reg1]
+
+    opencl_type = OpenCLTypes.from_string(suffix)
+    src0_node = node.get_or_add_expression_node(from_reg0, opencl_type)
+    src1_node = node.get_or_add_expression_node(from_reg1, opencl_type)
+    expr_node = ExpressionManager().add_operation(
+        src0_node, src1_node, ExpressionOperationType.from_string(operation), opencl_type
+    )
+
     if is_range(to_reg):
         low, high = split_range(to_reg)
-        set_reg_value(node, new_value, low, from_regs, suffix, integrity=Integrity.LOW_PART)
-        set_reg_value(node, new_value, high, from_regs, suffix, integrity=Integrity.HIGH_PART)
+        set_reg_value(node, new_value, low, from_regs, suffix, integrity=Integrity.LOW_PART, expression_node=expr_node)
+        set_reg_value(
+            node, new_value, high, from_regs, suffix, integrity=Integrity.HIGH_PART, expression_node=expr_node
+        )
     else:
-        set_reg_value(node, new_value, to_reg, from_regs, suffix)
+        set_reg_value(node, new_value, to_reg, from_regs, suffix, expression_node=expr_node)
     return node
 
 
@@ -564,6 +584,10 @@ class DecompilerData(metaclass=Singleton):
                     type_=[RegisterType.WORK_GROUP_ID_X, RegisterType.WORK_GROUP_ID_Y, RegisterType.WORK_GROUP_ID_Z][
                         dim
                     ],
+                    expression_node=ExpressionManager().add_register_node(
+                        [RegisterType.WORK_GROUP_ID_X, RegisterType.WORK_GROUP_ID_Y, RegisterType.WORK_GROUP_ID_Z][dim],
+                        f"get_group_id({dim})",
+                    ),
                 ),
             ),
         )
@@ -576,6 +600,7 @@ class DecompilerData(metaclass=Singleton):
                         value=f"get_local_id({i})",
                         type_=t,
                         size=10,
+                        expression_node=ExpressionManager().add_register_node(t, f"get_local_id({i})"),
                     )
                     for i, t in enumerate(
                         [RegisterType.WORK_ITEM_ID_X, RegisterType.WORK_ITEM_ID_Y, RegisterType.WORK_ITEM_ID_Z]
@@ -587,6 +612,10 @@ class DecompilerData(metaclass=Singleton):
             register_content = RegisterContent(
                 value=f"get_local_id({dim})",
                 type_=[RegisterType.WORK_ITEM_ID_X, RegisterType.WORK_ITEM_ID_Y, RegisterType.WORK_ITEM_ID_Z][dim],
+                expression_node=ExpressionManager().add_register_node(
+                    [RegisterType.WORK_ITEM_ID_X, RegisterType.WORK_ITEM_ID_Y, RegisterType.WORK_ITEM_ID_Z][dim],
+                    f"get_local_id({dim})",
+                ),
             )
 
         self.set_reg_make_version(
@@ -631,6 +660,7 @@ class DecompilerData(metaclass=Singleton):
                 register_content=RegisterContent(
                     value="0",
                     type_=RegisterType.ARGUMENTS_POINTER,
+                    expression_node=ExpressionManager().add_const_node(0, OpenCLTypes.USHORT),
                 ),
             ),
         )
@@ -642,6 +672,7 @@ class DecompilerData(metaclass=Singleton):
                 register_content=RegisterContent(
                     value="0",
                     type_=RegisterType.ARGUMENTS_POINTER,
+                    expression_node=ExpressionManager().add_const_node(0, OpenCLTypes.USHORT),
                 ),
             ),
         )
@@ -654,6 +685,7 @@ class DecompilerData(metaclass=Singleton):
                     register_content=RegisterContent(
                         value="0",
                         type_=RegisterType.DISPATCH_POINTER,
+                        expression_node=ExpressionManager().add_const_node(0, OpenCLTypes.USHORT),
                     ),
                 ),
             )
@@ -665,6 +697,7 @@ class DecompilerData(metaclass=Singleton):
                     register_content=RegisterContent(
                         value="0",
                         type_=RegisterType.DISPATCH_POINTER,
+                        expression_node=ExpressionManager().add_const_node(0, OpenCLTypes.USHORT),
                     ),
                 ),
             )
@@ -683,7 +716,13 @@ class DecompilerData(metaclass=Singleton):
             size_of_work_groups = ", ".join(map(str, self.config_data.size_of_work_groups))
             definition += f"__attribute__((reqd_work_group_size({size_of_work_groups})))\n"
 
-        params = ", ".join([f"{arg}" for arg in self.config_data.arguments if not arg.hidden])
+        params = ", ".join(
+            [
+                f"{ExpressionManager().kernel_arg_to_string(arg.name)}"
+                for arg in self.config_data.arguments
+                if not arg.hidden
+            ]
+        )
         definition += f"void {self.name_of_program}({params})\n"
 
         return definition
@@ -705,7 +744,10 @@ class DecompilerData(metaclass=Singleton):
 
     def check_lds_vars(self, offset, suffix):
         if self.lds_vars.get(offset) is None:
-            self.lds_vars[offset] = ["lds" + str(self.lds_var_number), "u" + suffix[1:]]
+            self.lds_vars[offset] = ExpressionManager().add_variable_node(
+                "*lds" + str(self.lds_var_number),
+                ExpressionValueTypeHint(OpenCLTypes.from_string("u" + suffix[1:]), TypeAddressSpaceQualifiers.LOCAL),
+            )
             self.lds_var_number += 1
 
     def make_var(self, register_version, variable, data_type):

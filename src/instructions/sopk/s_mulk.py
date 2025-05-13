@@ -1,5 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg, set_reg_value
+from src.expression_manager.expression_node import ExpressionOperationType
+from src.expression_manager.types.opencl_types import OpenCLTypes
 
 
 class SMulk(BaseInstruction):
@@ -41,5 +43,11 @@ class SMulk(BaseInstruction):
 
         if self.suffix == "i32":
             new_value = make_op(self.node, self.sdst, self.simm16, "*", suffix=self.suffix)
-            return set_reg_value(self.node, new_value, self.sdst, [self.sdst], self.suffix)
+            expr_node = self.expression_manager.add_operation(
+                self.get_expression_node(self.sdst),
+                self.get_expression_node(self.simm16),
+                ExpressionOperationType.MUL,
+                OpenCLTypes.INT,
+            )
+            return set_reg_value(self.node, new_value, self.sdst, [self.sdst], self.suffix, expression_node=expr_node)
         return super().to_fill_node()

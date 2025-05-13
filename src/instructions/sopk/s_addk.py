@@ -1,5 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
+from src.expression_manager.expression_node import ExpressionOperationType
+from src.expression_manager.types.opencl_types import OpenCLTypes
 
 
 class SAddK(BaseInstruction):
@@ -24,7 +26,20 @@ class SAddK(BaseInstruction):
             new_value = make_op(self.node, self.src0, self.simm16, "+", "(int)", "(int)", suffix=self.suffix)
             data_type = self.node.state[self.src0].data_type
             reg_type = self.node.state[self.src0].type
+
+            src0_node = self.get_expression_node(self.src0)
+            simm16_node = self.expression_manager.add_const_node(self.simm16, OpenCLTypes.INT)
+            expr_node = self.expression_manager.add_operation(
+                src0_node, simm16_node, ExpressionOperationType.PLUS, OpenCLTypes.INT
+            )
+
             return set_reg_value(
-                self.node, new_value, self.src0, [self.src0, self.simm16], data_type, reg_type=reg_type
+                self.node,
+                new_value,
+                self.src0,
+                [self.src0, self.simm16],
+                data_type,
+                reg_type=reg_type,
+                expression_node=expr_node,
             )
         return super().to_fill_node()

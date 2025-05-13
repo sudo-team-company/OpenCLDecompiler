@@ -245,9 +245,9 @@ void mul_get_group_id_get_group_id(int x, __global int *data)
 __kernel __attribute__((reqd_work_group_size(2, 2, 4)))
 void mul_get_local_size_get_group_id(int x, __global uint *data)
 {
-    data[get_global_id(0)] = get_group_id(0) * 2;
-    data[get_global_id(1)] = get_group_id(1) * 2;
-    data[get_global_id(2)] = get_group_id(2) * 4;
+    data[get_global_id(0)] = get_group_id(0) * get_local_size(0);
+    data[get_global_id(1)] = get_group_id(1) * get_local_size(1);
+    data[get_global_id(2)] = get_group_id(2) * get_local_size(2);
 }
 
 __kernel __attribute__((reqd_work_group_size(2, 2, 4)))
@@ -309,9 +309,9 @@ void mul_get_local_id_get_local_size(int x, __global int *data)
 __kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void mul_get_group_id_get_local_size(int x, __global int *data)
 {
-    data[get_global_id(0)] = get_group_id(0) * 2;
-    data[get_global_id(1)] = get_group_id(1) * 16;
-    data[get_global_id(2)] = get_group_id(2) * 2;
+    data[get_global_id(0)] = get_group_id(0) * get_local_size(0);
+    data[get_global_id(1)] = get_group_id(1) * get_local_size(1);
+    data[get_global_id(2)] = get_group_id(2) * get_local_size(2);
 }
 
 __kernel __attribute__((reqd_work_group_size(2, 2, 4)))
@@ -997,9 +997,9 @@ void mul_long_get_group_id_get_group_id(int x, __global long *data)
 __kernel __attribute__((reqd_work_group_size(2, 2, 4)))
 void mul_long_get_local_size_get_group_id(int x, __global ulong *data)
 {
-    data[get_global_id(0)] = get_group_id(0) * 2;
-    data[get_global_id(1)] = get_group_id(1) * 2;
-    data[get_global_id(2)] = get_group_id(2) * 4;
+    data[get_global_id(0)] = get_group_id(0) * get_local_size(0);
+    data[get_global_id(1)] = get_group_id(1) * get_local_size(1);
+    data[get_global_id(2)] = get_group_id(2) * get_local_size(2);
 }
 
 __kernel __attribute__((reqd_work_group_size(2, 2, 4)))
@@ -1061,9 +1061,9 @@ void mul_long_get_local_id_get_local_size(int x, __global long *data)
 __kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void mul_long_get_group_id_get_local_size(int x, __global long *data)
 {
-    data[get_global_id(0)] = get_group_id(0) * 2;
-    data[get_global_id(1)] = get_group_id(1) * 16;
-    data[get_global_id(2)] = get_group_id(2) * 2;
+    data[get_global_id(0)] = get_group_id(0) * get_local_size(0);
+    data[get_global_id(1)] = get_group_id(1) * get_local_size(1);
+    data[get_global_id(2)] = get_group_id(2) * get_local_size(2);
 }
 
 __kernel __attribute__((reqd_work_group_size(2, 2, 4)))
@@ -1749,9 +1749,9 @@ void mul_char_get_group_id_get_group_id(int x, __global char *data)
 __kernel __attribute__((reqd_work_group_size(2, 2, 4)))
 void mul_char_get_local_size_get_group_id(int x, __global uchar *data)
 {
-    data[get_global_id(0)] = get_group_id(0) * 2;
-    data[get_global_id(1)] = get_group_id(1) * 2;
-    data[get_global_id(2)] = get_group_id(2) * 4;
+    data[get_global_id(0)] = get_group_id(0) * get_local_size(0);
+    data[get_global_id(1)] = get_group_id(1) * get_local_size(1);
+    data[get_global_id(2)] = get_group_id(2) * get_local_size(2);
 }
 
 __kernel __attribute__((reqd_work_group_size(2, 2, 4)))
@@ -1813,9 +1813,9 @@ void mul_char_get_local_id_get_local_size(int x, __global char *data)
 __kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void mul_char_get_group_id_get_local_size(int x, __global char *data)
 {
-    data[get_global_id(0)] = get_group_id(0) * 2;
-    data[get_global_id(1)] = get_group_id(1) * 16;
-    data[get_global_id(2)] = get_group_id(2) * 2;
+    data[get_global_id(0)] = get_group_id(0) * get_local_size(0);
+    data[get_global_id(1)] = get_group_id(1) * get_local_size(1);
+    data[get_global_id(2)] = get_group_id(2) * get_local_size(2);
 }
 
 __kernel __attribute__((reqd_work_group_size(2, 2, 4)))

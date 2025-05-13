@@ -1,6 +1,13 @@
 from src.base_instruction import BaseInstruction
-from src.decompiler_data import make_elem_from_addr, make_new_type_without_modifier
-from src.opencl_types import make_opencl_type
+from src.decompiler_data import make_new_type_without_modifier
+from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.expression_node import (
+    ExpressionNode,
+    ExpressionOperationType,
+    ExpressionType,
+    ExpressionValueTypeHint,
+)
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.register import (
     check_and_split_regs,
     check_and_split_regs_range_to_full_list,
@@ -44,24 +51,6 @@ def is_right_order(src_registers):
     return True
 
 
-def prepare_vector_type_output(from_registers, vdata, to_registers, node):
-    new_vector = [node.state[reg].val for reg in check_and_split_regs_range_to_full_list(vdata)]
-    to_type = node.state[to_registers].data_type
-    from_type = node.state[from_registers].data_type
-    if is_same_name(new_vector) and (
-        (not is_vector_type(from_type) and to_type[:-1] == make_opencl_type(from_type))
-        or to_type[:-1] == from_type[:-1]
-    ):
-        output_string = get_vector_name(new_vector[0])
-        if not is_right_order(new_vector):
-            output_string += ".s"
-            for element in new_vector:
-                output_string += str(get_vector_element_number(element))
-    else:
-        output_string = f"({node.state[to_registers].data_type})(" + ", ".join(new_vector) + ")"
-    return output_string
-
-
 class FlatStore(BaseInstruction):
     def __init__(self, node, suffix):
         super().__init__(node, suffix)
@@ -103,16 +92,25 @@ class FlatStore(BaseInstruction):
                 if is_vgpr(self.vaddr):
                     self.node.state[self.to_registers].copy_version_from(self.node.parent[0].state[self.to_registers])
                     self.node.state[self.to_registers].cast_to(self.suffix)
+                    self.node.state[self.to_registers].set_expression_node(
+                        self.node.state[self.to_registers]
+                        .get_expression_node()
+                        .cast_to(OpenCLTypes.from_string(self.suffix))
+                    )
                 # TODO: Сделать присвоение в пары
                 elif self.node.state[from_reg].data_type is not None and "bytes" in self.node.state[from_reg].data_type:
                     self.node.state[from_reg].cast_to(self.node.state[self.to_registers].data_type)
-                    self.decompiler_data.names_of_vars[self.node.state[from_reg].val] = self.node.state[
-                        self.to_registers
-                    ].data_type
-                elif (
-                    str(self.node.state[from_reg].data_type) not in self.node.state[self.to_registers].data_type
-                    and not is_vector_type(self.node.state[from_reg].data_type)
-                    and not is_vector_type(self.node.state[self.to_registers].data_type)
+                    var_name = self.node.state[from_reg].val
+                    self.decompiler_data.names_of_vars[var_name] = self.node.state[self.to_registers].data_type
+
+                    expr_node: ExpressionNode = self.node.state[from_reg].get_expression_node()
+                    while expr_node.type == ExpressionType.OP:
+                        expr_node = expr_node.left
+                    self.expression_manager.update_variable_type(
+                        expr_node.value, self.get_expression_node(self.to_registers).value_type_hint
+                    )
+                elif not is_vector_type(self.node.state[from_reg].data_type) and not is_vector_type(
+                    self.node.state[self.to_registers].data_type
                 ):
                     val = self.node.state[from_reg].get_value()
                     if val[0] == "(":
@@ -122,41 +120,64 @@ class FlatStore(BaseInstruction):
                             make_new_type_without_modifier(self.node, self.to_registers),
                         )
                         self.decompiler_data.names_of_vars[val] = self.node.state[from_reg].data_type
+                        self.expression_manager.update_variable_type(
+                            val, self.get_expression_node(self.to_registers).value_type_hint
+                        )
                     else:
                         # init var - i32, gdata - i64. var = gdata -> var - i64
                         self.decompiler_data.names_of_vars[val] = self.node.state[from_reg].data_type
+                        self.expression_manager.update_variable_type(
+                            val, self.get_expression_node(from_reg).value_type_hint
+                        )
             return self.node
         return super().to_fill_node()
 
     def to_print(self):
         if self.suffix in {"dword", "dwordx2", "dwordx4", "byte", "short", "b32", "b64", "b8"}:
-            var = self.node.state[self.to_registers].get_value()
+            var_node = self.get_expression_node(self.to_registers)
             if is_sgpr_range(self.inst_offset):
                 offset_reg, _ = check_and_split_regs(self.inst_offset)
                 if self.node.state[offset_reg].get_type() == RegisterType.ADDRESS_KERNEL_ARGUMENT:
-                    var = f"{self.node.state[offset_reg].get_value()} + {var}"
-
+                    var_node = self.expression_manager.add_operation(
+                        self.get_expression_node(offset_reg),
+                        var_node,
+                        ExpressionOperationType.PLUS,
+                        OpenCLTypes.UNKNOWN,
+                    )
+            var = self.expression_manager.expression_to_string(var_node)
             if self.inst_offset == "inst_offset:4":
                 var = f"{var}[get_global_id(0)]"
-            elif " + " in var:
-                var = make_elem_from_addr(var)
+            elif "[" in var:
+                var_node.value_type_hint.is_address = False
+                var = ExpressionManager().expression_to_string(var_node)
             elif (
                 var in self.decompiler_data.names_of_vars
-                and self.decompiler_data.names_of_vars[var] != self.node.state[self.to_registers].data_type
+                and ExpressionValueTypeHint.from_string(self.decompiler_data.names_of_vars[var]).opencl_type
+                != var_node.value_type_hint.opencl_type
             ):
-                var = f"*({make_opencl_type(self.decompiler_data.names_of_vars[var])}*)({var})"
+                var = f"*({var_node.value_type_hint!s})({var})"
             else:
                 var = f"*{var}"
             if self.node.state.get(self.from_registers):
                 if self.node.state[self.from_registers].val == "0" and self.node.state.get(self.from_registers_1):
-                    self.output_string = self.node.state[self.from_registers_1].val
-                elif is_vector_type(self.node.state[self.to_registers].data_type):
-                    self.output_string = prepare_vector_type_output(
-                        self.from_registers, self.vdata, self.to_registers, self.node
+                    self.output_string = ExpressionManager().expression_to_string(
+                        self.node.state[self.from_registers_1].get_expression_node()
                     )
+                elif var_node.value_type_hint.is_vector_type():
+                    permute_node = ExpressionManager().add_permute_node_from_list(
+                        [
+                            self.node.state[reg].get_expression_node()
+                            for reg in check_and_split_regs_range_to_full_list(self.vdata)
+                        ]
+                    )
+                    to_type = self.node.state[self.to_registers].get_expression_node().value_type_hint
+                    self.output_string = ExpressionManager().expression_to_string(permute_node, to_type.opencl_type)
                 else:
-                    self.output_string = self.node.state[self.from_registers].get_value()
+                    self.output_string = ExpressionManager().expression_to_string(
+                        self.node.state[self.from_registers].get_expression_node()
+                    )
             else:
                 self.output_string = self.decompiler_data.initial_state[self.from_registers].val
             return f"{var} = {self.output_string}"
+
         return super().to_print()

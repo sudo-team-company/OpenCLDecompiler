@@ -23,17 +23,13 @@ class VMov(BaseInstruction):
         if self.suffix == "b32":
             if self.src0 in self.node.state:
                 new_reg = copy.deepcopy(self.node.state[self.src0])
-
-                return set_reg(
-                    node=self.node,
-                    to_reg=self.vdst,
-                    from_regs=[self.src0],
-                    reg=new_reg,
-                )
+                return set_reg(node=self.node, to_reg=self.vdst, from_regs=[self.src0], reg=new_reg)
 
             data_type = self.suffix
             new_value = self.src0
             reg_type = RegisterType.INT32
+
+            expr_node = self.expression_manager.add_register_node(reg_type, new_value)
 
             return set_reg_value(
                 self.node,
@@ -45,5 +41,6 @@ class VMov(BaseInstruction):
                 register_content_type=(
                     type(self.node.state[self.src0].register_content) if is_reg(self.src0) else RegisterContent
                 ),
+                expression_node=expr_node,
             )
         return super().to_fill_node()

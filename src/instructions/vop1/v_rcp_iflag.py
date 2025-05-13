@@ -20,6 +20,12 @@ class VRcpIflag(BaseInstruction):
             data_type = self.suffix
             new_value = self.node.state[self.src0].val
             return set_reg_value(
-                self.node, new_value, self.vdst, [self.src0], data_type, reg_type=RegisterType.DIVISION_RECIPROCAL
+                self.node,
+                new_value,
+                self.vdst,
+                [self.src0],
+                data_type,
+                reg_type=RegisterType.DIVISION_RECIPROCAL,
+                expression_node=self.get_expression_node(self.src0),
             )
         return super().to_fill_node()

@@ -1,9 +1,12 @@
 from src.base_instruction import BaseInstruction
 from src.combined_register_content import CombinedRegisterContent
 from src.decompiler_data import set_reg, set_reg_value
+from src.expression_manager.expression_node import ExpressionOperationType
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.integrity import Integrity
 from src.operation_register_content import OperationRegisterContent, OperationType
 from src.register import RegisterSignType, is_reg
+from src.register_content import CONSTANT_VALUES
 from src.register_type import RegisterType
 
 
@@ -27,6 +30,7 @@ class VLshlOr(BaseInstruction):
                 RegisterSignType.POSITIVE
                 if not self.decompiler_data.is_rdna3
                 else [RegisterSignType.POSITIVE, RegisterSignType.NEGATIVE],
+                [RegisterType[f"GLOBAL_ID_{dim}"], RegisterType[f"GLOBAL_OFFSET_{dim}"]],
             )
             for i, dim in enumerate("XYZ")
             if i < len(size_of_work_groups)
@@ -52,7 +56,14 @@ class VLshlOr(BaseInstruction):
                 src1_type,
             )
             if src_types in self._instruction_internal_mapping_by_types:
-                new_value, reg_type, reg_sign = self._instruction_internal_mapping_by_types[src_types]
+                new_value, reg_type, reg_sign, reg_types = self._instruction_internal_mapping_by_types[src_types]
+
+                left_node, right_node = (
+                    self.expression_manager.add_register_node(t, str(CONSTANT_VALUES[t][0])) for t in reg_types
+                )
+                expr_node = self.expression_manager.add_operation(
+                    left_node, right_node, ExpressionOperationType.MINUS, OpenCLTypes.UINT
+                )
 
                 if self.decompiler_data.is_rdna3:
                     return set_reg_value(
@@ -65,6 +76,7 @@ class VLshlOr(BaseInstruction):
                         register_content_type=OperationRegisterContent,
                         sign=reg_sign,
                         operation=OperationType.PLUS,
+                        expression_node=expr_node,
                     )
 
                 return set_reg_value(
@@ -75,6 +87,7 @@ class VLshlOr(BaseInstruction):
                     data_type=self.suffix,
                     reg_type=reg_type,
                     integrity=Integrity.ENTIRE,
+                    expression_node=expr_node,
                 )
 
         new_reg = self.node.state[self.src0] << int(self.src1)

@@ -1,3 +1,4 @@
+from src.expression_manager.expression_manager import ExpressionManager
 from src.instructions.sopp.s_cbranch import SCbranch
 
 
@@ -8,5 +9,5 @@ class SCbranchVccnz(SCbranch):
         return self.node
 
     def to_print(self):
-        self.output_string = self.node.state["vcc"].val
+        self.output_string = ExpressionManager().expression_to_string(self.get_expression_node("vcc"))
         return self.output_string

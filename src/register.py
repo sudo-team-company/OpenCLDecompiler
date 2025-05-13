@@ -3,6 +3,8 @@ import itertools
 import re
 
 from src.constants import DEFAULT_REGISTER_SIZE
+from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.expression_node import ExpressionNode
 from src.integrity import Integrity
 from src.opencl_types import vector_type_dict
 from src.register_content import RegisterContent, RegisterSignType
@@ -68,6 +70,12 @@ class Register:
 
     def get_data_type(self) -> str:
         return self.register_content.get_data_type()
+
+    def get_expression_node(self) -> ExpressionNode:
+        return self.register_content.get_expression_node()
+
+    def set_expression_node(self, node: ExpressionNode):
+        self.register_content.set_expression_node(node)
 
     def get_size(self) -> int:
         return self._size
@@ -212,6 +220,7 @@ class Register:
                                 size=self.get_size(),
                                 sign=simplified_sign,
                                 data_type=self.get_data_type(),
+                                expression_node=ExpressionManager().add_register_node(simplified_type),
                             ),
                             size=self.get_size(),
                         )

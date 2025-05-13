@@ -2,8 +2,11 @@ from itertools import starmap
 
 import yaml
 
+from src.expression_manager.expression_manager import ExpressionManager
+from src.model.config_data import ConfigData
+from src.model.kernel_argument import KernelArgument
+
 from ..decompiler_data import DecompilerData
-from ..model import ConfigData, KernelArgument
 from ..opencl_types import make_asm_type
 from ..register_content import RegisterContent
 from ..register_type import RegisterType
@@ -86,6 +89,8 @@ def _convert_args_to_offset_to_content(args: list) -> dict[str, RegisterContent]
 
         data_type = None
 
+        expr_node = None
+
         if type_name is not None:
             type_name = type_name.strip("'")
             value = f"arg{idx}"
@@ -94,11 +99,19 @@ def _convert_args_to_offset_to_content(args: list) -> dict[str, RegisterContent]
             if type_name.endswith("*"):
                 data_type = make_asm_type(type_name[:-1])
 
+            int_offset = int(offset, base=16)
+
+            expr_node = ExpressionManager().add_kernel_argument(_make_argument(idx, arg), int_offset, False)  # noqa: FBT003
+        elif _ARG_KIND_TO_REGISTER_TYPE.get(value_kind) is not None:
+            reg_type = _ARG_KIND_TO_REGISTER_TYPE[value_kind]
+            expr_node = ExpressionManager().add_register_node(reg_type, _ARG_KIND_TO_VALUE[value_kind])
+
         register_content = RegisterContent(
             value=value,
             type_=_ARG_KIND_TO_REGISTER_TYPE[value_kind],
             size=size,
             data_type=data_type,
+            expression_node=expr_node,
         )
 
         offset_to_content[offset] = register_content
@@ -111,6 +124,7 @@ def _parse_amdgpu_pal_metadata(amdgpu_pal_metadata: list[str]) -> dict[str, Conf
     DecompilerData().gpu = metadata["amdhsa.target"].split("-")[-1]
     result: dict[str, ConfigData] = {}
     for km in metadata["amdhsa.kernels"]:
+        ExpressionManager().set_name_of_program(km[".name"])
         result[km[".name"]] = ConfigData(
             dimensions="xyz"[: list(filter(lambda x: x[1] != 1, enumerate(km[".reqd_workgroup_size"])))[-1][0] + 1],
             usesetup=False,

@@ -1,5 +1,7 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg, set_reg_value
+from src.expression_manager.expression_node import ExpressionOperationType
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.register import is_reg
 from src.register_type import RegisterType
 
@@ -83,6 +85,7 @@ class VAddNc(BaseInstruction):
                     [self.src0, self.src1],
                     self.suffix,
                     reg_type=reg_type,
+                    expression_node=self.expression_manager.add_register_node(RegisterType.GLOBAL_SIZE_X, new_value),
                 )
             if (
                 is_reg(self.src0)
@@ -98,6 +101,7 @@ class VAddNc(BaseInstruction):
                     [self.src0, self.src1],
                     self.suffix,
                     reg_type=reg_type,
+                    expression_node=self.expression_manager.add_register_node(RegisterType.GLOBAL_SIZE_Y, new_value),
                 )
             if (
                 is_reg(self.src0)
@@ -113,9 +117,15 @@ class VAddNc(BaseInstruction):
                     [self.src0, self.src1],
                     self.suffix,
                     reg_type=reg_type,
+                    expression_node=self.expression_manager.add_register_node(RegisterType.GLOBAL_SIZE_Z, new_value),
                 )
 
             new_value = make_op(self.node, self.src0, self.src1, "+", "(ulong)", "(ulong)", suffix=self.suffix)
+
+            src0_node = self.get_expression_node(self.src0)
+            src1_node = self.get_expression_node(self.src1)
+            expr_node = None
+
             reg_type = RegisterType.UNKNOWN
             if is_reg(self.src0) and is_reg(self.src1):
                 src_types = frozenset(
@@ -126,9 +136,18 @@ class VAddNc(BaseInstruction):
                 )
                 if src_types in _instruction_internal_mapping_by_types:
                     new_value, reg_type = _instruction_internal_mapping_by_types[src_types]
+                    expr_node = self.expression_manager.add_register_node(reg_type, "")
                 if self.node.state[self.src1].val == "0":
                     new_value = self.node.state[self.src0].val
                     reg_type = self.node.state[self.src0].type
+
+                    expr_node = src0_node
+
+            if expr_node is None:
+                expr_node = self.expression_manager.add_operation(
+                    src0_node, src1_node, ExpressionOperationType.PLUS, OpenCLTypes.from_string(self.suffix)
+                )
+
             return set_reg_value(
                 node=self.node,
                 new_value=new_value,
@@ -136,5 +155,6 @@ class VAddNc(BaseInstruction):
                 from_regs=[self.src0, self.src1],
                 data_type=self.suffix,
                 reg_type=reg_type,
+                expression_node=expr_node,
             )
         return super().to_fill_node()

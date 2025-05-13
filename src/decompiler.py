@@ -3,19 +3,19 @@ import copy
 from src.cfg import make_cfg_node, make_unresolved_node
 from src.code_printer import create_opencl_body
 from src.decompiler_data import DecompilerData, optimize_names_of_vars
+from src.expression_manager.expression_manager import ExpressionManager
 from src.flag_type import FlagType
 from src.global_data import gdata_type_processing, process_global_data
 from src.graph.control_flow_graph import CONTROL_FLOW_GRAPH_ENABLED_CONTEXT_KEY, ControlFlowGraph
 from src.kernel_params import process_kernel_params
 from src.logical_variable import ExecCondition
+from src.model.config_data import ConfigData
 from src.node import Node
 from src.node_processor import check_realisation_for_node
 from src.regions.functions_for_regions import make_region_graph_from_cfg, process_region_graph
 from src.unrolled_loops_processing import process_unrolled_loops
 from src.utils import get_context
 from src.versions import change_values, check_for_use_new_version, find_max_and_prev_versions
-
-from .model import ConfigData
 
 CONTEXT = get_context()
 
@@ -49,9 +49,19 @@ def process_src(  # noqa: C901, PLR0912, PLR0915
     set_of_global_data_instruction: list[str],
 ):
     decompiler_data = DecompilerData()
+    expression_manager = ExpressionManager()
     decompiler_data.reset(name_of_program)
     if decompiler_data.gpu.startswith("gfx11"):
         decompiler_data.is_rdna3 = True
+    if decompiler_data.is_rdna3:
+        # We don't want to reset ExpressionManager between different RDNA3 programs,
+        # because in RDNA3 kernel arguments are parsed at the beggining.
+        # ExpressionManager already contains every kernel argument in _variables_for_program dict
+        # Only specifying name of program to obtain correct arguments here
+        expression_manager.set_name_of_program(name_of_program)
+    else:
+        expression_manager.reset(name_of_program)
+    expression_manager.set_size_of_workgroups(config_data.size_of_work_groups)
     set_of_instructions = [instr.replace("null", "0x0") for instr in set_of_instructions]
     new_set_of_instructions = []
     for instr in set_of_instructions:

@@ -1,5 +1,5 @@
 __kernel __attribute__((reqd_work_group_size(64, 1, 1)))
-void bellmanFordIter_ver1(uint nEdges, __global uint2 *edges, __global double *weights, __global double *d, __global uint *changed)
+void bellmanFordIter_ver1(uint nEdges, __global const uint2 *edges, __global const double *weights, __global double *d, __global uint *changed)
 {
     uint2 var0;
     double var1;

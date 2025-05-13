@@ -1,6 +1,8 @@
 import re
 
-from ..model import ConfigData, KernelArgument
+from src.model.config_data import ConfigData
+from src.model.kernel_argument import KernelArgument
+
 from ..opencl_types import evaluate_size, make_asm_type
 
 
@@ -24,6 +26,7 @@ def process_params(set_of_config: list[str]) -> list[KernelArgument]:
         name, _, type_name, *other = row.split(", ")
         if len(other) > 0:
             type_name = "__" + other[0] + " " + type_name
+        const = row.find("const ") != -1
         hidden = name.startswith("_.")
         if type_name[-1] == "*":
             type_name = type_name[:-1]
@@ -35,13 +38,7 @@ def process_params(set_of_config: list[str]) -> list[KernelArgument]:
             if name == f"_.global_offset_{i}":
                 name = f"get_global_offset({i})"
         args.append(
-            KernelArgument(
-                type_name=type_name,
-                name=name,
-                offset=offset,
-                size=size,
-                hidden=hidden,
-            )
+            KernelArgument(type_name=type_name, name=name, offset=offset, size=size, hidden=hidden, const=const)
         )
         offset += size
     return args
