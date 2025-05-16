@@ -4,20 +4,20 @@ version = "0.1.0"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
-    "graphviz~=0.20.1",
-    "pyparsing~=3.1.1",
-    "pyyaml~=6.0.2",
-    "sympy~=1.9",
+    "graphviz>=0.20.3",
+    "pyparsing>=3.2.3",
+    "pyyaml>=6.0.2",
+    "sympy>=1.14.0",
 ]
 
 [dependency-groups]
 dev = [
     "pre-commit>=4.2.0",
-    "pytest~=6.2.5",
-    "pytest-xdist>=3.5.0",
-    "ruff>=0.11.6",
+    "pytest>=8.3.5",
+    "pytest-xdist>=3.6.1",
+    "ruff>=0.11.10",
 ]
 
 [tool.ruff]
