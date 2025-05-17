@@ -3,224 +3,67 @@ import pytest
 from .conftest import template
 
 
-class TestLinearKernels:
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-            ("gfx1103", "amdgpu-dis"),
-        ],
+@pytest.mark.parametrize(
+    ("path_to_dir", "dir_name", "mcpu", "disasm"),
+    [
+        pytest.param("linear_kernels", "addition", "amd_gcn", "clrxdisasm"),
+        pytest.param("linear_kernels", "addition", "gfx1010", "clrxdisasm"),
+        pytest.param("linear_kernels", "addition", "gfx1030", "clrxdisasm"),
+        pytest.param("linear_kernels", "addition", "gfx1103", "amdgpu-dis"),
+        pytest.param("linear_kernels", "subtraction", "amd_gcn", "clrxdisasm"),
+        pytest.param("linear_kernels", "subtraction", "gfx1010", "clrxdisasm"),
+        pytest.param("linear_kernels", "subtraction", "gfx1030", "clrxdisasm"),
+        pytest.param("linear_kernels", "subtraction", "gfx1103", "amdgpu-dis"),
+        pytest.param("linear_kernels", "multiplication", "amd_gcn", "clrxdisasm"),
+        pytest.param("linear_kernels", "multiplication", "gfx1010", "clrxdisasm"),
+        pytest.param("linear_kernels", "multiplication", "gfx1030", "clrxdisasm"),
+        pytest.param("linear_kernels", "multiplication", "gfx1103", "amdgpu-dis"),
+        pytest.param("linear_kernels", "many_linears", "amd_gcn", "clrxdisasm"),
+        pytest.param("linear_kernels", "many_linears", "gfx1010", "clrxdisasm"),
+        pytest.param("linear_kernels", "many_linears", "gfx1030", "clrxdisasm"),
+        pytest.param("linear_kernels", "many_linears", "gfx1103", "amdgpu-dis"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_x", "amd_gcn", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_x", "gfx1010", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_x", "gfx1030", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_x", "gfx1103", "amdgpu-dis"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_global_offset", "amd_gcn", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_global_offset", "gfx1010", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_global_offset", "gfx1030", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_global_offset", "gfx1103", "amdgpu-dis"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_local_id", "amd_gcn", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_local_id", "gfx1010", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_local_id", "gfx1030", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_local_id", "gfx1103", "amdgpu-dis"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_group_id", "amd_gcn", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_group_id", "gfx1010", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_group_id", "gfx1030", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_group_id", "gfx1103", "amdgpu-dis"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_local_size", "amd_gcn", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_local_size", "gfx1010", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_local_size", "gfx1030", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_local_size", "gfx1103", "amdgpu-dis"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_global_id", "amd_gcn", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_global_id", "gfx1010", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_global_id", "gfx1030", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_global_id", "gfx1103", "amdgpu-dis"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_global_size", "amd_gcn", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_global_size", "gfx1010", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_global_size", "gfx1030", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_global_size", "gfx1103", "amdgpu-dis"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_num_groups", "amd_gcn", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_num_groups", "gfx1010", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_num_groups", "gfx1030", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_num_groups", "gfx1103", "amdgpu-dis"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_work_dim", "amd_gcn", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_work_dim", "gfx1010", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_work_dim", "gfx1030", "clrxdisasm"),
+        pytest.param("linear_kernels/work_item_built_in_functions", "copy_get_work_dim", "gfx1103", "amdgpu-dis"),
+    ],
+)
+def test(path_to_dir, dir_name, mcpu, disasm):
+    template(
+        path_to_dir=path_to_dir,
+        dir_name=dir_name,
+        mcpu=mcpu,
+        disasm=disasm,
     )
-    def test_addition(self, mcpu, disasm):
-        template(
-            path_to_dir="linear_kernels",
-            dir_name="addition",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-            ("gfx1103", "amdgpu-dis"),
-        ],
-    )
-    def test_subtraction(self, mcpu, disasm):
-        template(
-            path_to_dir="linear_kernels",
-            dir_name="subtraction",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-            ("gfx1103", "amdgpu-dis"),
-        ],
-    )
-    def test_multiplication(self, mcpu, disasm):
-        template(
-            path_to_dir="linear_kernels",
-            dir_name="multiplication",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-            ("gfx1103", "amdgpu-dis"),
-        ],
-    )
-    def test_many_linears(self, mcpu, disasm):
-        template(
-            path_to_dir="linear_kernels",
-            dir_name="many_linears",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-            ("gfx1103", "amdgpu-dis"),
-        ],
-    )
-    def test_copy_x(self, mcpu, disasm):
-        template(
-            path_to_dir="linear_kernels/work_item_built_in_functions",
-            dir_name="copy_x",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-            ("gfx1103", "amdgpu-dis"),
-        ],
-    )
-    def test_copy_get_global_offset(self, mcpu, disasm):
-        template(
-            path_to_dir="linear_kernels/work_item_built_in_functions",
-            dir_name="copy_get_global_offset",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-            ("gfx1103", "amdgpu-dis"),
-        ],
-    )
-    def test_copy_get_local_id(self, mcpu, disasm):
-        template(
-            path_to_dir="linear_kernels/work_item_built_in_functions",
-            dir_name="copy_get_local_id",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-            ("gfx1103", "amdgpu-dis"),
-        ],
-    )
-    def test_copy_get_group_id(self, mcpu, disasm):
-        template(
-            path_to_dir="linear_kernels/work_item_built_in_functions",
-            dir_name="copy_get_group_id",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-            ("gfx1103", "amdgpu-dis"),
-        ],
-    )
-    def test_copy_get_local_size(self, mcpu, disasm):
-        template(
-            path_to_dir="linear_kernels/work_item_built_in_functions",
-            dir_name="copy_get_local_size",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-            ("gfx1103", "amdgpu-dis"),
-        ],
-    )
-    def test_copy_get_global_id(self, mcpu, disasm):
-        template(
-            path_to_dir="linear_kernels/work_item_built_in_functions",
-            dir_name="copy_get_global_id",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-            ("gfx1103", "amdgpu-dis"),
-        ],
-    )
-    def test_copy_get_global_size(self, mcpu, disasm):
-        template(
-            path_to_dir="linear_kernels/work_item_built_in_functions",
-            dir_name="copy_get_global_size",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-            ("gfx1103", "amdgpu-dis"),
-        ],
-    )
-    def test_copy_get_num_groups(self, mcpu, disasm):
-        template(
-            path_to_dir="linear_kernels/work_item_built_in_functions",
-            dir_name="copy_get_num_groups",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-            ("gfx1103", "amdgpu-dis"),
-        ],
-    )
-    def test_copy_get_work_dim(self, mcpu, disasm):
-        template(
-            path_to_dir="linear_kernels/work_item_built_in_functions",
-            dir_name="copy_get_work_dim",
-            mcpu=mcpu,
-            disasm=disasm,
-        )

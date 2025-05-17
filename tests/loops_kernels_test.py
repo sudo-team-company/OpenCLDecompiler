@@ -3,123 +3,31 @@ import pytest
 from .conftest import template
 
 
-class TestLoopsKernels:
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-        ],
+@pytest.mark.parametrize(
+    ("path_to_dir", "dir_name", "mcpu", "disasm"),
+    [
+        pytest.param("loops_kernels", "simple_loop_kernels", "amd_gcn", "clrxdisasm"),
+        pytest.param("loops_kernels", "simple_loop_kernels", "gfx1010", "clrxdisasm"),
+        pytest.param("loops_kernels", "simple_loop_kernels", "gfx1030", "clrxdisasm"),
+        pytest.param("loops_kernels", "loop_with_break_kernels", "amd_gcn", "clrxdisasm"),
+        pytest.param("loops_kernels", "loop_general", "gfx1010", "clrxdisasm"),
+        pytest.param("loops_kernels", "loop_general", "gfx1030", "clrxdisasm"),
+        pytest.param("loops_kernels", "loop_general_dec", "gfx1010", "clrxdisasm"),
+        pytest.param("loops_kernels", "loop_general_dec", "gfx1030", "clrxdisasm"),
+        pytest.param("loops_kernels", "loop_with_unrolling_breaker", "gfx1010", "clrxdisasm"),
+        pytest.param("loops_kernels", "loop_with_unrolling_breaker", "gfx1030", "clrxdisasm"),
+        pytest.param("loops_kernels", "loop_block", "gfx1010", "clrxdisasm"),
+        pytest.param("loops_kernels", "loop_block", "gfx1030", "clrxdisasm"),
+        pytest.param("loops_kernels", "loop_unrolled", "gfx1010", "clrxdisasm"),
+        pytest.param("loops_kernels", "loop_unrolled", "gfx1030", "clrxdisasm"),
+        pytest.param("loops_kernels", "loop_unrolled_2", "gfx1010", "clrxdisasm"),
+        pytest.param("loops_kernels", "loop_unrolled_2", "gfx1030", "clrxdisasm"),
+    ],
+)
+def test_simple_loop_kernels(path_to_dir, dir_name, mcpu, disasm):
+    template(
+        path_to_dir=path_to_dir,
+        dir_name=dir_name,
+        mcpu=mcpu,
+        disasm=disasm,
     )
-    def test_simple_loop_kernels(self, mcpu, disasm):
-        template(
-            path_to_dir="loops_kernels",
-            dir_name="simple_loop_kernels",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-        ],
-    )
-    def test_loop_with_break_kernels(self, mcpu, disasm):
-        template(
-            path_to_dir="loops_kernels",
-            dir_name="loop_with_break_kernels",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-        ],
-    )
-    def test_loop_general(self, mcpu, disasm):
-        template(
-            path_to_dir="loops_kernels",
-            dir_name="loop_general",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-        ],
-    )
-    def test_loop_general_dec(self, mcpu, disasm):
-        template(
-            path_to_dir="loops_kernels",
-            dir_name="loop_general_dec",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-        ],
-    )
-    def test_loop_with_unrolling_breaker(self, mcpu, disasm):
-        template(
-            path_to_dir="loops_kernels",
-            dir_name="loop_with_unrolling_breaker",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-        ],
-    )
-    def test_loop_block(self, mcpu, disasm):
-        template(
-            path_to_dir="loops_kernels",
-            dir_name="loop_block",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-        ],
-    )
-    def test_loop_unrolled(self, mcpu, disasm):
-        template(
-            path_to_dir="loops_kernels",
-            dir_name="loop_unrolled",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("gfx1010", "clrxdisasm"),
-            ("gfx1030", "clrxdisasm"),
-        ],
-    )
-    def test_loop_unrolled_2(self, mcpu, disasm):
-        template(
-            path_to_dir="loops_kernels",
-            dir_name="loop_unrolled_2",
-            mcpu=mcpu,
-            disasm=disasm,
-        )

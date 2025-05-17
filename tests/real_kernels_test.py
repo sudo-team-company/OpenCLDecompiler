@@ -3,45 +3,18 @@ import pytest
 from .conftest import template
 
 
-class TestRealKernels:
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-        ],
+@pytest.mark.parametrize(
+    ("path_to_dir", "dir_name", "mcpu", "disasm"),
+    [
+        pytest.param("real_kernels", "mask_kernel", "amd_gcn", "clrxdisasm"),
+        pytest.param("real_kernels", "weighted_sum_kernel", "amd_gcn", "clrxdisasm"),
+        pytest.param("real_kernels", "bellmanFordInit_ver1", "amd_gcn", "clrxdisasm"),
+    ],
+)
+def test(path_to_dir, dir_name, mcpu, disasm):
+    template(
+        path_to_dir=path_to_dir,
+        dir_name=dir_name,
+        mcpu=mcpu,
+        disasm=disasm,
     )
-    def test_mask_kernel(self, mcpu, disasm):
-        template(
-            path_to_dir="real_kernels",
-            dir_name="mask_kernel",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-        ],
-    )
-    def test_weighted_sum_kernel(self, mcpu, disasm):
-        template(
-            path_to_dir="real_kernels",
-            dir_name="weighted_sum_kernel",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-        ],
-    )
-    def test_bellman_ford_init_ver1(self, mcpu, disasm):
-        template(
-            path_to_dir="real_kernels",
-            dir_name="bellmanFordInit_ver1",
-            mcpu=mcpu,
-            disasm=disasm,
-        )

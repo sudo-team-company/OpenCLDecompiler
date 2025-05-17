@@ -3,59 +3,19 @@ import pytest
 from .conftest import template
 
 
-class TestUnusedParams:
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-        ],
+@pytest.mark.parametrize(
+    ("path_to_dir", "dir_name", "mcpu", "disasm"),
+    [
+        pytest.param("unused_params", "one_unused_param", "amd_gcn", "clrxdisasm"),
+        pytest.param("unused_params", "two_unused_params", "amd_gcn", "clrxdisasm"),
+        pytest.param("unused_params", "three_unused_params", "amd_gcn", "clrxdisasm"),
+        pytest.param("unused_params", "four_unused_params", "amd_gcn", "clrxdisasm"),
+    ],
+)
+def test(path_to_dir, dir_name, mcpu, disasm):
+    template(
+        path_to_dir=path_to_dir,
+        dir_name=dir_name,
+        mcpu=mcpu,
+        disasm=disasm,
     )
-    def test_one_unused_param(self, mcpu, disasm):
-        template(
-            path_to_dir="unused_params",
-            dir_name="one_unused_param",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-        ],
-    )
-    def test_two_unused_params(self, mcpu, disasm):
-        template(
-            path_to_dir="unused_params",
-            dir_name="two_unused_params",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-        ],
-    )
-    def test_three_unused_params(self, mcpu, disasm):
-        template(
-            path_to_dir="unused_params",
-            dir_name="three_unused_params",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-        ],
-    )
-    def test_four_unused_params(self, mcpu, disasm):
-        template(
-            path_to_dir="unused_params",
-            dir_name="four_unused_params",
-            mcpu=mcpu,
-            disasm=disasm,
-        )

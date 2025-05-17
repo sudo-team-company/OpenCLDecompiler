@@ -3,47 +3,19 @@ import pytest
 from .conftest import template
 
 
-class TestDifferentFlags:
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-        ],
+@pytest.mark.parametrize(
+    ("path_to_dir", "dir_name", "flag", "mcpu", "disasm"),
+    [
+        ("different_flags", "flag_auto_decompilation", None, "amd_gcn", "clrxdisasm"),
+        ("different_flags", "flag_only_clrx", "ONLY_CLRX", "amd_gcn", "clrxdisasm"),
+        ("different_flags", "flag_only_opencl", "ONLY_OPENCL", "amd_gcn", "clrxdisasm"),
+    ],
+)
+def test(path_to_dir, dir_name, flag, mcpu, disasm):
+    template(
+        path_to_dir=path_to_dir,
+        dir_name=dir_name,
+        flag=flag,
+        mcpu=mcpu,
+        disasm=disasm,
     )
-    def test_flag_auto_decompilation(self, mcpu, disasm):
-        template(
-            path_to_dir="different_flags",
-            dir_name="flag_auto_decompilation",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-        ],
-    )
-    def test_flag_only_clrx(self, mcpu, disasm):
-        template(
-            path_to_dir="different_flags",
-            dir_name="flag_only_clrx",
-            flag="ONLY_CLRX",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
-
-    @pytest.mark.parametrize(
-        ("mcpu", "disasm"),
-        [
-            ("amd_gcn", "clrxdisasm"),
-        ],
-    )
-    def test_flag_only_opencl(self, mcpu, disasm):
-        template(
-            path_to_dir="different_flags",
-            dir_name="flag_only_opencl",
-            flag="ONLY_OPENCL",
-            mcpu=mcpu,
-            disasm=disasm,
-        )
