@@ -93,3 +93,7 @@ max-complexity = 15
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[tool.pytest.ini_options]
+addopts = "-v -n auto"
+testpaths = ["tests"]
