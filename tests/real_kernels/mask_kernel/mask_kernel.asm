@@ -1,4 +1,3 @@
-/* Disassembling 'real_kernels\mask_kernel\mask_kernel.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

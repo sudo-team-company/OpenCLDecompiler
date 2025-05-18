@@ -1,4 +1,3 @@
-/* Disassembling 'unused_params\three_unused_params\three_unused_params.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

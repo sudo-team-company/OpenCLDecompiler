@@ -1,4 +1,3 @@
-/* Disassembling 'global_data_usage\long_matrix\long_matrix.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

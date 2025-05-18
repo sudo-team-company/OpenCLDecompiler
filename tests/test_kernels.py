@@ -225,15 +225,11 @@ def get_disasm_path(name: str) -> str:
 
 
 def invoke_clrxdisasm(path_to_bin: str, path_to_asm: str):
+    result = subprocess.run(  # noqa: S603
+        [get_disasm_path("clrxdisasm"), path_to_bin, "-dCfs"], capture_output=True, text=True, check=True
+    )
     with Path(path_to_asm).open("w", encoding="utf-8") as file:
-        subprocess.run([get_disasm_path("clrxdisasm"), path_to_bin, "-dCfs"], stdout=file, check=True)  # noqa: S603
-    with Path(path_to_asm).open(encoding="utf-8") as file:
-        text: list[str] = file.readlines()
-    parts = text[0].split("'")
-    parts[1] = parts[1].replace("/", "\\")
-    text[0] = "'".join(parts)
-    with Path(path_to_asm).open("w", encoding="utf-8") as file:
-        file.writelines(text)
+        file.writelines(result.stdout.splitlines(keepends=True)[1:])
 
 
 def invoke_amdgpu_dis(path_to_bin: str, path_to_asm: str):

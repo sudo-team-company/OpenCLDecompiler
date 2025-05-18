@@ -1,4 +1,3 @@
-/* Disassembling 'linear_kernels\addition\addition-gfx1030.bin' */
 .rocm
 .gpu GFX1000
 .arch_minor 3

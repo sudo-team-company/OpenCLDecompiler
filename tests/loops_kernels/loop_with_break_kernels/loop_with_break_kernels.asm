@@ -1,4 +1,3 @@
-/* Disassembling 'loops_kernels\loop_with_break_kernels\loop_with_break_kernels.bin' */
 .amdcl2
 .gpu Iceland
 .64bit
