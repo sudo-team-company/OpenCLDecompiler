@@ -232,6 +232,9 @@ def test(path_to_dir: str, dir_name: str, mcpu: str, disasm: str, flag: str | No
     path_to_asm: Path = test_root / f"{dir_name}{mcpu}.asm"
     path_to_cl: Path = test_root / f"{dir_name}_dcmpl{mcpu}.cl"
 
+    path_to_asm.unlink(missing_ok=True)
+    path_to_cl.unlink(missing_ok=True)
+
     ext = ".exe" if platform.system() == "Windows" else ""
     disasm_path: Path = tests_path / "bin" / f"{disasm}" / f"{disasm}{ext}"
     if disasm == "clrxdisasm":
