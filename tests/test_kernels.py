@@ -222,7 +222,7 @@ def get_test_params():
     ("path_to_dir", "dir_name", "mcpu", "disasm", "flag"),
     get_test_params(),
 )
-def test(path_to_dir: str, dir_name: str, mcpu: str, disasm: str, flag: str | None, tests_path: Path):  # noqa: PLR0913
+def test(path_to_dir: str, dir_name: str, mcpu: str, disasm: str, flag: str | None, tests_path: Path, use_disasm: bool):  # noqa: PLR0913, FBT001
     if mcpu == "amd_gcn":
         mcpu = ""
     if mcpu:
@@ -232,20 +232,20 @@ def test(path_to_dir: str, dir_name: str, mcpu: str, disasm: str, flag: str | No
     path_to_asm: Path = test_root / f"{dir_name}{mcpu}.asm"
     path_to_cl: Path = test_root / f"{dir_name}_dcmpl{mcpu}.cl"
 
-    path_to_asm.unlink(missing_ok=True)
+    if use_disasm:
+        path_to_asm.unlink(missing_ok=True)
+        ext = ".exe" if platform.system() == "Windows" else ""
+        disasm_path: Path = tests_path / "bin" / f"{disasm}" / f"{disasm}{ext}"
+        if disasm == "clrxdisasm":
+            result = subprocess.run([disasm_path, path_to_bin, "-dCfs"], capture_output=True, text=True, check=True)  # noqa: S603
+            with path_to_asm.open("w", encoding="utf-8") as file:
+                file.writelines(result.stdout.splitlines(keepends=True)[1:])
+        elif disasm == "amdgpu-dis":
+            subprocess.run([disasm_path, path_to_bin, "-o", path_to_asm], check=True)  # noqa: S603
+        else:
+            raise NotImplementedError(f"Disassembler {disasm} is not supported.")
+
     path_to_cl.unlink(missing_ok=True)
-
-    ext = ".exe" if platform.system() == "Windows" else ""
-    disasm_path: Path = tests_path / "bin" / f"{disasm}" / f"{disasm}{ext}"
-    if disasm == "clrxdisasm":
-        result = subprocess.run([disasm_path, path_to_bin, "-dCfs"], capture_output=True, text=True, check=True)  # noqa: S603
-        with path_to_asm.open("w", encoding="utf-8") as file:
-            file.writelines(result.stdout.splitlines(keepends=True)[1:])
-    elif disasm == "amdgpu-dis":
-        subprocess.run([disasm_path, path_to_bin, "-o", path_to_asm], check=True)  # noqa: S603
-    else:
-        raise NotImplementedError(f"Disassembler {disasm} is not supported.")
-
     main(path_to_asm, path_to_cl, flag or "AUTO_DECOMPILATION", None)
 
     hands = test_root / f"{dir_name}_hands.cl"
