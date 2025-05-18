@@ -218,45 +218,30 @@ def get_test_params():
                 yield pytest.param(suit, name, mcpu, disasm, flag)
 
 
-def get_disasm_path(name: str) -> str:
-    ext = ".exe" if platform.system() == "Windows" else ""
-    path = Path() / "bin" / f"{name}" / f"{name}{ext}"
-    return str(path.absolute())
-
-
-def invoke_clrxdisasm(path_to_bin: str, path_to_asm: str):
-    result = subprocess.run(  # noqa: S603
-        [get_disasm_path("clrxdisasm"), path_to_bin, "-dCfs"], capture_output=True, text=True, check=True
-    )
-    with Path(path_to_asm).open("w", encoding="utf-8") as file:
-        file.writelines(result.stdout.splitlines(keepends=True)[1:])
-
-
-def invoke_amdgpu_dis(path_to_bin: str, path_to_asm: str):
-    subprocess.run([get_disasm_path("amdgpu-dis"), path_to_bin, "-o", path_to_asm], check=True)  # noqa: S603
-
-
-DISASMS = {
-    "clrxdisasm": invoke_clrxdisasm,
-    "amdgpu-dis": invoke_amdgpu_dis,
-}
-
-
 @pytest.mark.parametrize(
     ("path_to_dir", "dir_name", "mcpu", "disasm", "flag"),
     get_test_params(),
 )
-def test(path_to_dir: str, dir_name: str, mcpu: str, disasm: str, flag: str | None):
+def test(path_to_dir: str, dir_name: str, mcpu: str, disasm: str, flag: str | None, tests_path: Path):  # noqa: PLR0913
     if mcpu == "amd_gcn":
         mcpu = ""
     if mcpu:
         mcpu = f"-{mcpu}"
-    test_root = Path() / path_to_dir / dir_name
-    path_to_bin = str(test_root / f"{dir_name}{mcpu}.bin")
-    path_to_asm = str(test_root / f"{dir_name}{mcpu}.asm")
-    path_to_cl = str(test_root / f"{dir_name}_dcmpl{mcpu}.cl")
+    test_root: Path = tests_path / path_to_dir / dir_name
+    path_to_bin: Path = test_root / f"{dir_name}{mcpu}.bin"
+    path_to_asm: Path = test_root / f"{dir_name}{mcpu}.asm"
+    path_to_cl: Path = test_root / f"{dir_name}_dcmpl{mcpu}.cl"
 
-    DISASMS.get(disasm)(path_to_bin=path_to_bin, path_to_asm=path_to_asm)
+    ext = ".exe" if platform.system() == "Windows" else ""
+    disasm_path: Path = tests_path / "bin" / f"{disasm}" / f"{disasm}{ext}"
+    if disasm == "clrxdisasm":
+        result = subprocess.run([disasm_path, path_to_bin, "-dCfs"], capture_output=True, text=True, check=True)  # noqa: S603
+        with path_to_asm.open("w", encoding="utf-8") as file:
+            file.writelines(result.stdout.splitlines(keepends=True)[1:])
+    elif disasm == "amdgpu-dis":
+        subprocess.run([disasm_path, path_to_bin, "-o", path_to_asm], check=True)  # noqa: S603
+    else:
+        raise NotImplementedError(f"Disassembler {disasm} is not supported.")
 
     main(path_to_asm, path_to_cl, flag or "AUTO_DECOMPILATION", None)
 
@@ -265,4 +250,4 @@ def test(path_to_dir: str, dir_name: str, mcpu: str, disasm: str, flag: str | No
         hands = test_root / f"{dir_name}_hands{mcpu}.cl"
     elif "gfx" in mcpu and (test_root / f"{dir_name}_hands-gfx.cl").exists():
         hands = test_root / f"{dir_name}_hands-gfx.cl"
-    assert Path(path_to_cl).read_text(encoding="utf-8") == Path(hands).read_text(encoding="utf-8")
+    assert path_to_cl.read_text(encoding="utf-8") == hands.read_text(encoding="utf-8")
