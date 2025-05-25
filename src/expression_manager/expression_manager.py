@@ -230,6 +230,8 @@ class ExpressionManager(metaclass=Singleton):
             s1_abs_value_node = copy.deepcopy(s1)
             s1_abs_value_node.value = abs(s1_abs_value_node.value)
             return self._optimized_nodes_sub(s0, s1_abs_value_node, value_type_hint)
+        if s0.value_type_hint.is_pointer and s1.type == ExpressionType.CONST and s1.value != int(s1.value):
+            s1 = copy.deepcopy(self._optimized_nodes_to_original[s1])
 
         plus_node = self._parse_and_optimize_node_sum(s0, s1, value_type_hint)
         if plus_node is None:

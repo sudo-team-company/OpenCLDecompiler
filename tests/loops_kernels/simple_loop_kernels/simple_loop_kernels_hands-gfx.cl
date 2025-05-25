@@ -69,7 +69,7 @@ void loop_kernel_2(__global uint *data, uint x, uint y, uint unrollingBreaker)
             var8 = (uint)UNKNOWN VALUE + var8;
             var9 = data + var7 + -1;
             var11 = var8;
-            var10 = var10 + -0.25;
+            var10 = var10 + (-1 / 4);
             var8 = var8 * x;
             *var12 = var11;
         } while (!((var7 - 1) == 0));

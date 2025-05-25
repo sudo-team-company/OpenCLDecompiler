@@ -303,8 +303,12 @@ def op_expression_to_string(expression_node: ExpressionNode, cast_to: Expression
             return f"{left_node.value!s}[{expression_to_string(right_node, cast_to)}]"
         return f"{left_node.value!s}[{expression_to_string(right_node, cast_to)}"
 
-    left_value = expression_to_string(left_node, cast_to)
-    right_value = expression_to_string(right_node, cast_to)
+    left_value = expression_to_string(
+        left_node, cast_to if left_node.type != ExpressionType.CONST else ExpressionValueTypeHint()
+    )
+    right_value = expression_to_string(
+        right_node, cast_to if right_node.type != ExpressionType.CONST else ExpressionValueTypeHint()
+    )
 
     if operation == ExpressionOperationType.MIN:
         return f"min({left_value}, {right_value})"

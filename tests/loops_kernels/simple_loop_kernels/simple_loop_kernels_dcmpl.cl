@@ -70,7 +70,7 @@ void loop_kernel_2(__global uint *data, uint x, uint y, uint unrollingBreaker)
             var12 = var8;
             var0 = *var12;
             var8 = var8 + -1;
-            var9 = var9 + -0.25;
+            var9 = var9 + (-1 / 4);
             var10 = var10 + -1;
             var11 = var0 + var11;
             *var12 = var11;
