@@ -304,10 +304,10 @@ def op_expression_to_string(expression_node: ExpressionNode, cast_to: Expression
         return f"{left_node.value!s}[{expression_to_string(right_node, cast_to)}"
 
     left_value = expression_to_string(
-        left_node, cast_to if left_node.type != ExpressionType.CONST else ExpressionValueTypeHint()
+        left_node, cast_to if left_node.type != ExpressionType.CONST else ExpressionValueTypeHint(cast_to.opencl_type)
     )
     right_value = expression_to_string(
-        right_node, cast_to if right_node.type != ExpressionType.CONST else ExpressionValueTypeHint()
+        right_node, cast_to if right_node.type != ExpressionType.CONST else ExpressionValueTypeHint(cast_to.opencl_type)
     )
 
     if operation == ExpressionOperationType.MIN:

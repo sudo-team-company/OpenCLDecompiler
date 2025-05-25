@@ -19,8 +19,8 @@ void loop_with_unrolling_breaker(__global int *data, int x, int unrollingBreaker
             var7 = (int)var8 + var6;
             var8 = var8 + 1;
             var9 = var9;
-            var10 = var10 + (-1 / 4);
-            var11 = var11 + (-1 / 4);
+            var10 = var10 + ((int)-1 / 4);
+            var11 = var11 + ((int)-1 / 4);
             var12 = 1 != (0 - var0);
             var12 = 1 != (0 - var0);
         } while (1 != (0 - var0));
