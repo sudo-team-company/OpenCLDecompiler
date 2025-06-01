@@ -230,6 +230,8 @@ class ExpressionManager(metaclass=Singleton):
             s1_abs_value_node = copy.deepcopy(s1)
             s1_abs_value_node.value = abs(s1_abs_value_node.value)
             return self._optimized_nodes_sub(s0, s1_abs_value_node, value_type_hint)
+        if s0.value_type_hint.is_pointer and s1.type == ExpressionType.CONST and s1.value != int(s1.value):
+            s1 = copy.deepcopy(self._optimized_nodes_to_original[s1])
 
         plus_node = self._parse_and_optimize_node_sum(s0, s1, value_type_hint)
         if plus_node is None:
@@ -426,7 +428,7 @@ class ExpressionManager(metaclass=Singleton):
 
         return logical_not_node
 
-    def add_kernel_argument(self, arg: KernelArgument, offset: int, check_duplicate: bool = True) -> ExpressionNode:  # noqa: FBT001, FBT002
+    def add_kernel_argument(self, arg: KernelArgument, offset: int) -> ExpressionNode:
         if arg.hidden:
             for reg_type in CONSTANT_VALUES:
                 reg_type_name = CONSTANT_VALUES[reg_type][0]
@@ -440,7 +442,7 @@ class ExpressionManager(metaclass=Singleton):
         opencl_type, qualifiers = get_kernel_argument_type_and_qualifiers(arg)
         value_type_hint = ExpressionValueTypeHint(opencl_type, qualifiers, arg.const)
 
-        var_node = self.add_variable_node(name, value_type_hint, check_duplicate)
+        var_node = self.add_variable_node(name, value_type_hint)
 
         # For kernel argument node make a copy, because variable node can be changed during decompilation
         arg_name: str = var_node.value
@@ -630,12 +632,7 @@ class ExpressionManager(metaclass=Singleton):
             return True
         return False
 
-    def add_variable_node(
-        self,
-        name: str,
-        value_type_hint: ExpressionValueTypeHint,
-        check_duplicate: bool = True,  # noqa: FBT001, FBT002
-    ) -> ExpressionNode:
+    def add_variable_node(self, name: str, value_type_hint: ExpressionValueTypeHint) -> ExpressionNode:
         assert isinstance(value_type_hint, ExpressionValueTypeHint)
         # Sometimes variable name will be passed in *{var_name} format,
         # which indicates that it is a pointer
@@ -643,7 +640,7 @@ class ExpressionManager(metaclass=Singleton):
         value_type_hint.is_pointer |= is_pointer
 
         existing_var_info = self.get_variable_info(var_name)
-        if check_duplicate and existing_var_info is not None:
+        if existing_var_info is not None:
             # There are cases when we make VAR from one value,
             # but then it is reassigned to another value with another type
             # For those cases, we need to make all types fit into variable type
@@ -655,8 +652,8 @@ class ExpressionManager(metaclass=Singleton):
         if var_name.find(VECTOR_COMPONENT_DELIMITER) != -1:
             base_var_name, var_components = var_name.split(VECTOR_COMPONENT_DELIMITER)
             if var_components != "" and value_type_hint.number_of_components() != len(var_components):
-                if check_duplicate and self.get_variable_info(base_var_name) is None:
-                    self.add_variable_node(base_var_name, value_type_hint, check_duplicate)
+                if self.get_variable_info(base_var_name) is None:
+                    self.add_variable_node(base_var_name, value_type_hint)
                 value_type_hint = value_type_hint.set_number_of_components(1)
 
         var_node = create_var_node(var_name, value_type_hint)

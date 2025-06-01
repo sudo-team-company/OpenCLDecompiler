@@ -15,10 +15,12 @@ def get_output_for_different_vector_types(
         close_square_bracket_position = output.find("]")
         element_number = output[open_square_bracket_position + 1 : close_square_bracket_position]
         second_term_separator = element_number.find(" + ")
-        vector_offset_value = float(element_number[second_term_separator + 3 :])
+        vector_offset_numerator, vector_offset_denominator = map(
+            int, element_number[second_term_separator + 4 : -1].split("/")
+        )
         vector_size = output_type_hint.size_bytes()
         one_element_size = variable_type_hint.set_number_of_components(1).size_bytes()
-        curr_element = int(vector_offset_value * vector_size / one_element_size)
+        curr_element = int(vector_offset_numerator / vector_offset_denominator * vector_size / one_element_size)
         output = output[: output.find(" + ")] + "]"
     else:
         curr_element = 0
