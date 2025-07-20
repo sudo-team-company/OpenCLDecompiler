@@ -1,4 +1,3 @@
-/* Disassembling 'different_flags\flag_only_clrx\flag_only_clrx.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

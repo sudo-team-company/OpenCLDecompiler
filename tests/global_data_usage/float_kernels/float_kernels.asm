@@ -1,4 +1,3 @@
-/* Disassembling 'global_data_usage\float_kernels\float_kernels.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

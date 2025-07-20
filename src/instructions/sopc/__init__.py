@@ -6,10 +6,10 @@ from .s_cmp_lg import SCmpLg
 from .s_cmp_lt import SCmpLt
 
 __all__ = [
-    'SCmpEq',
-    'SCmpGe',
-    'SCmpGt',
-    'SCmpLe',
-    'SCmpLg',
-    'SCmpLt',
+    "SCmpEq",
+    "SCmpGe",
+    "SCmpGt",
+    "SCmpLe",
+    "SCmpLg",
+    "SCmpLt",
 ]

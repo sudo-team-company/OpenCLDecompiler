@@ -1,4 +1,3 @@
-/* Disassembling 'global_data_usage\int4\int4.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

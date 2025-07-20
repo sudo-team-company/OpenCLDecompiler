@@ -1,4 +1,3 @@
-/* Disassembling 'real_kernels\weighted_sum_kernel\weighted_sum_kernel.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

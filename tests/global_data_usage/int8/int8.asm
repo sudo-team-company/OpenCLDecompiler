@@ -1,4 +1,3 @@
-/* Disassembling 'global_data_usage\int8\int8.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

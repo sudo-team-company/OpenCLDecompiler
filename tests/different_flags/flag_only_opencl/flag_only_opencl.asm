@@ -1,4 +1,3 @@
-/* Disassembling 'different_flags\flag_only_opencl\flag_only_opencl.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

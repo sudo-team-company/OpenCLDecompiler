@@ -3,10 +3,11 @@
 ![CPU](https://img.shields.io/badge/GPU-AMD_GCN-red)
 ![CPU](https://img.shields.io/badge/GPU-AMD_RDNA-red)
 ![Python](https://img.shields.io/badge/python-v3.12-blue)
-![GitHub repo size](https://img.shields.io/github/repo-size/sudo-team-company/OpenCLDecompiler)
-![GitHub last commit](https://img.shields.io/github/last-commit/sudo-team-company/OpenCLDecompiler/develop)
-![Test](https://github.com/sudo-team-company/OpenCLDecompiler/workflows/Test/badge.svg?branch=develop)
-![Lint](https://github.com/sudo-team-company/OpenCLDecompiler/workflows/Lint/badge.svg?branch=develop)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+![GitHub last commit](https://img.shields.io/github/last-commit/sudo-team-company/OpenCLDecompiler/master)
+![Test](https://github.com/sudo-team-company/OpenCLDecompiler/workflows/test/badge.svg?branch=master)
+![Lint](https://github.com/sudo-team-company/OpenCLDecompiler/workflows/lint/badge.svg?branch=master)
 
 ## Introduction
 *OpenCLDecompiler* is a decompiler OpenCL for GPU AMD with GCN architecture. For disassembly used the GCN disassembler - clrxdisasm from [CLRadeonExtender project](https://clrx.nativeboinc.org/).
@@ -21,7 +22,7 @@
 
 ## Requirements
 
-- Python 3+
+- [uv](https://github.com/astral-sh/uv)
 - CLRX Disassembler ([Github](https://github.com/CLRX/CLRX-mirror))
 - Compiled OpenCL file
 
@@ -40,8 +41,8 @@ Next - decompiler work.
 **Sample usages**
 
 ```
-python3 parser_for_instructions.py --input <input_file.asm> --output <output_file.cl> --flag <flag_for_decompilation>
-python3 parser_for_instructions.py -i <input_file.asm> -o <output_file.cl> -f <flag_for_decompilation>
+uv run python -m src.parser_for_instructions --input <input_file.asm> --output <output_file.cl> --flag <flag_for_decompilation>
+uv run python -m src.parser_for_instructions -i <input_file.asm> -o <output_file.cl> -f <flag_for_decompilation>
 ```
 Where _input_file.asm_ - an AMD GCN assembler file; _output_file.cl_ - decompiled OpenCL.  
 To get _input_file.asm_ you need to use CLRX disassembler.  

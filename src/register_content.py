@@ -1,42 +1,40 @@
-# pylint: disable=R1705
-
 import copy
-import enum
-from typing import Optional, Union
+from typing import Optional
 
 from src.constants import DEFAULT_REGISTER_SIZE
-from src.register_type import RegisterType
-
-
-class RegisterSignType(enum.Enum):
-    POSITIVE = 0
-    NEGATIVE = 1
-
-    def __invert__(self):
-        if self.value == 0:
-            return RegisterSignType.NEGATIVE
-        elif self.value == 1:
-            return RegisterSignType.POSITIVE
-        else:
-            raise Exception()
+from src.expression_manager.expression_manager import ExpressionManager, ExpressionNode
+from src.expression_manager.types.opencl_types import OpenCLTypes
+from src.register_type import CONSTANT_VALUES, RegisterSignType, RegisterType
 
 
 class RegisterContent:
-    def __init__(
-            self,
-            value: Union[list[any], any],
-            type_: Union[list, RegisterType],
-            size: Union[list, int] = DEFAULT_REGISTER_SIZE,
-            data_type: Union[list, Optional[str]] = None,
-            sign: Union[list, RegisterSignType] = RegisterSignType.POSITIVE,
+    def __init__(  # noqa: PLR0913
+        self,
+        value: list[object] | object,
+        type_: list | RegisterType,
+        size: list | int = DEFAULT_REGISTER_SIZE,
+        data_type: list | str | None = None,
+        sign: list | RegisterSignType = RegisterSignType.POSITIVE,
+        expression_node: list[ExpressionNode] | ExpressionNode = None,
     ):
+        if type_ is RegisterType and type_ in CONSTANT_VALUES:
+            self._type = type_
+            self._value, self._size, self._data_type, self._sign = CONSTANT_VALUES[type_]
+            # TODO: remove deviation check
+            assert self._value == value or value is None
+            assert self._type == type_ or type_ is None
+            assert self._size == size or size is None
+            assert self._data_type == data_type or data_type is None
+            assert self._sign == sign or sign is None
+            return
         self._value = value
         self._type = type_
         self._size = size
         self._data_type = data_type
         self._sign = sign
+        self._expression_node = expression_node
 
-    def get_value(self) -> any:
+    def get_value(self) -> object:
         return self._value
 
     def get_type(self) -> RegisterType:
@@ -45,11 +43,17 @@ class RegisterContent:
     def get_size(self) -> int:
         return self._size
 
-    def get_data_type(self) -> Optional[str]:
+    def get_data_type(self) -> str | None:
         return self._data_type
 
     def get_sign(self) -> RegisterSignType:
         return self._sign
+
+    def get_expression_node(self) -> ExpressionNode:
+        return self._expression_node
+
+    def set_expression_node(self, node: ExpressionNode):
+        self._expression_node = node
 
     def maybe_simplify(self) -> Optional["RegisterContent"]:
         return None
@@ -59,55 +63,54 @@ class RegisterContent:
 
     def __and__(self, other):
         if isinstance(other, RegisterContent):
-            from src.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
+            from src.operation_register_content import OperationRegisterContent, OperationType  # noqa: PLC0415
 
             return OperationRegisterContent(
                 operation=OperationType.BITWISE_AND,
                 register_contents=[
                     copy.deepcopy(self),
                     copy.deepcopy(other),
-                ]
+                ],
             )
 
-        if isinstance(other, str):
-            if other.startswith("0x"):
-                bit_str = "{:b}".format(int(other, 16))  # pylint: disable=C0209
-                if bit_str.count("0") == 0 and len(bit_str) == self.get_size():
-                    return copy.deepcopy(self)
+        if isinstance(other, str) and other.startswith("0x"):
+            bit_str = f"{int(other, 16):b}"
+            if bit_str.count("0") == 0 and len(bit_str) == self.get_size():
+                return copy.deepcopy(self)
 
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __or__(self, other):
         if isinstance(other, RegisterContent):
-            from src.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
+            from src.operation_register_content import OperationRegisterContent, OperationType  # noqa: PLC0415
 
             return OperationRegisterContent(
                 operation=OperationType.BITWISE_OR,
                 register_contents=[
                     copy.deepcopy(self),
                     copy.deepcopy(other),
-                ]
+                ],
             )
 
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __rshift__(self, other):
         if isinstance(other, RegisterContent):
-            from src.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
+            from src.operation_register_content import OperationRegisterContent, OperationType  # noqa: PLC0415
 
             return OperationRegisterContent(
                 operation=OperationType.R_SHIFT,
                 register_contents=[
                     copy.deepcopy(self),
                     copy.deepcopy(other),
-                ]
+                ],
             )
 
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __lshift__(self, other):
         if isinstance(other, int):
-            from src.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
+            from src.operation_register_content import OperationRegisterContent, OperationType  # noqa: PLC0415
 
             return OperationRegisterContent(
                 operation=OperationType.L_SHIFT,
@@ -118,42 +121,43 @@ class RegisterContent:
                         type_=RegisterType.UNKNOWN,
                         size=0,
                         data_type=None,
+                        expression_node=ExpressionManager().add_const_node(other, OpenCLTypes.UINT),
                     ),
-                ]
+                ],
             )
 
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __add__(self, other):
         if isinstance(other, RegisterContent):
-            from src.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
+            from src.operation_register_content import OperationRegisterContent, OperationType  # noqa: PLC0415
 
             return OperationRegisterContent(
                 operation=OperationType.PLUS,
                 register_contents=[
                     copy.deepcopy(self),
                     copy.deepcopy(other),
-                ]
+                ],
             )
 
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __sub__(self, other):
         if isinstance(other, RegisterContent):
-            from src.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
+            from src.operation_register_content import OperationRegisterContent, OperationType  # noqa: PLC0415
 
             return OperationRegisterContent(
                 operation=OperationType.MINUS,
                 register_contents=[
                     copy.deepcopy(self),
                     copy.deepcopy(other),
-                ]
+                ],
             )
 
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __mul__(self, other):
-        from src.operation_register_content import OperationRegisterContent, OperationType  # pylint: disable=C0415
+        from src.operation_register_content import OperationRegisterContent, OperationType  # noqa: PLC0415
 
         if isinstance(other, RegisterContent):
             return OperationRegisterContent(
@@ -161,9 +165,9 @@ class RegisterContent:
                 register_contents=[
                     copy.deepcopy(self),
                     copy.deepcopy(other),
-                ]
+                ],
             )
-        elif isinstance(other, int):
+        if isinstance(other, int):
             return OperationRegisterContent(
                 operation=OperationType.PRODUCT,
                 register_contents=[
@@ -173,11 +177,11 @@ class RegisterContent:
                         type_=RegisterType.INT32,
                         size=0,
                         data_type=None,
+                        expression_node=ExpressionManager().add_const_node(other, OpenCLTypes.INT),
                     ),
-                ]
+                ],
             )
-        else:
-            raise NotImplementedError()
+        raise NotImplementedError
 
 
 class EmptyRegisterContent(RegisterContent):

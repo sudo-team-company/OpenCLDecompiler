@@ -1,4 +1,3 @@
-/* Disassembling 'branching_kernels\if_with_long_expr\if_with_long_expr-gfx1030.bin' */
 .rocm
 .gpu GFX1000
 .arch_minor 3

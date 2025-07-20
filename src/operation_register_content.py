@@ -1,11 +1,10 @@
-# pylint: disable=R0401
-
 import copy
 import enum
 import itertools
-from typing import Optional
 
 from src.constants import DEFAULT_REGISTER_SIZE
+from src.expression_manager.expression_manager import ExpressionManager
+from src.expression_manager.expression_node import ExpressionNode, ExpressionOperationType
 from src.register_content import RegisterContent, RegisterSignType
 from src.register_type import RegisterType
 
@@ -35,58 +34,66 @@ OPERATION_TO_PRIORITY = {
 _SUM_SIMPLIFY_COMBINATIONS = [
     *[
         (
-            frozenset({
-                RegisterType[f"GLOBAL_OFFSET_{dim}"],
-                RegisterType[f"WORK_ITEM_ID_{dim}"],
-                RegisterType[f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"],
-            }),
+            frozenset(
+                {
+                    RegisterType[f"GLOBAL_OFFSET_{dim}"],
+                    RegisterType[f"WORK_ITEM_ID_{dim}"],
+                    RegisterType[f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"],
+                }
+            ),
             (
                 f"get_global_id({i})",
                 RegisterType[f"GLOBAL_ID_{dim}"],
                 RegisterSignType.POSITIVE,
-            )
+            ),
         )
         for i, dim in enumerate("XYZ")
     ],
     *[
         (
-            frozenset({
-                RegisterType[f"GLOBAL_OFFSET_{dim}"],
-                RegisterType[f"WORK_GROUP_ID_{dim}_WORK_ITEM_ID"],
-            }),
+            frozenset(
+                {
+                    RegisterType[f"GLOBAL_OFFSET_{dim}"],
+                    RegisterType[f"WORK_GROUP_ID_{dim}_WORK_ITEM_ID"],
+                }
+            ),
             (
                 f"get_global_id({i})",
                 RegisterType[f"GLOBAL_ID_{dim}"],
                 RegisterSignType.POSITIVE,
-            )
+            ),
         )
         for i, dim in enumerate("XYZ")
     ],
     *[
         (
-            frozenset({
-                RegisterType[f"WORK_ITEM_ID_{dim}"],
-                RegisterType[f"WORK_GROUP_ID_{dim}_LOCAL_SIZE_OFFSET"],
-            }),
+            frozenset(
+                {
+                    RegisterType[f"WORK_ITEM_ID_{dim}"],
+                    RegisterType[f"WORK_GROUP_ID_{dim}_LOCAL_SIZE_OFFSET"],
+                }
+            ),
             (
                 f"get_global_id({i})",
                 RegisterType[f"GLOBAL_ID_{dim}"],
                 RegisterSignType.POSITIVE,
-            )
+            ),
         )
         for i, dim in enumerate("XYZ")
     ],
     *[
         (
-            frozenset({
-                RegisterType[f"NUM_GROUPS_{dim}"],
-                RegisterType[f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"],
-            }),
+            frozenset(
+                {
+                    RegisterType[f"NUM_GROUPS_{dim}"],
+                    RegisterType[f"WORK_GROUP_ID_{dim}_LOCAL_SIZE"],
+                }
+            ),
             (
                 f"get_global_size({i})",
                 RegisterType[f"GLOBAL_SIZE_{dim}"],
                 RegisterSignType.POSITIVE,
-            )
+            ),
         )
         for i, dim in enumerate("XYZ")
     ],
@@ -94,21 +101,22 @@ _SUM_SIMPLIFY_COMBINATIONS = [
 
 
 class OperationRegisterContent(RegisterContent):
-    def __init__(self, operation: OperationType, register_contents: list[RegisterContent]):
+    def __init__(  # noqa: PLR0912, PLR0915
+        self,
+        operation: OperationType,
+        register_contents: list[RegisterContent],
+        expression_node: ExpressionNode = None,
+    ):
         if len(register_contents) == 0:
             self._operation = operation
             super().__init__(
-                value=[],
-                type_=[],
-                size=DEFAULT_REGISTER_SIZE,
-                data_type=None,
-                sign=[],
+                value=[], type_=[], data_type=None, size=DEFAULT_REGISTER_SIZE, sign=[], expression_node=None
             )
 
             return
 
         if operation == OperationType.MINUS:
-            for idx, _ in enumerate(register_contents):
+            for idx in range(len(register_contents)):
                 if idx == 0:
                     continue
 
@@ -148,45 +156,43 @@ class OperationRegisterContent(RegisterContent):
                     sizes.append(register_content.get_size())
                     data_types.append(register_content.get_data_type())
                     signs.append(register_content.get_sign())
+                elif is_same_operation:
+                    values.extend(register_content._value)  # noqa: SLF001
+                    types.extend(register_content._type)  # noqa: SLF001
+                    sizes.extend(itertools.repeat(register_content._size, len(register_content._value)))  # noqa: SLF001
+                    data_types.extend(itertools.repeat(register_content._data_type, len(register_content._value)))  # noqa: SLF001
+                    signs.extend(register_content._sign)  # noqa: SLF001
                 else:
-                    if is_same_operation:
-                        values.extend(register_content._value)
-                        types.extend(register_content._type)
-                        sizes.extend(itertools.repeat(register_content._size, len(register_content._value)))
-                        data_types.extend(itertools.repeat(register_content._data_type, len(register_content._value)))
-                        signs.extend(register_content._sign)
-                    else:
-                        values.append(f"({register_content.get_value()})")
-                        types.append(register_content.get_type())
-                        sizes.append(register_content.get_size())
-                        data_types.append(register_content.get_data_type())
-                        signs.append(register_content.get_sign())
+                    values.append(f"({register_content.get_value()})")
+                    types.append(register_content.get_type())
+                    sizes.append(register_content.get_size())
+                    data_types.append(register_content.get_data_type())
+                    signs.append(register_content.get_sign())
 
         data_types = set(data_types)
-        if len(data_types) != 1:
-            data_type = None
-            # raise Exception(f"{OperationRegisterContent.__class__} must consists of elements with same data type")
-        else:
-            data_type = data_types.pop()
+        data_type = None if len(data_types) != 1 else data_types.pop()
+
+        if expression_node is None:
+            expression_node = ExpressionManager().apply_operation_to_nodes(
+                [content.get_expression_node() for content in register_contents],
+                ExpressionOperationType.from_string(operation.value),
+            )
 
         super().__init__(
-            value=values,
-            type_=types,
-            size=max(sizes),
-            data_type=data_type,
-            sign=signs,
+            value=values, type_=types, size=max(sizes), data_type=data_type, sign=signs, expression_node=expression_node
         )
         self._operation = operation
 
     def get_operation(self) -> OperationType:
         return self._operation
 
-    def get_value(self) -> any:
-        joined_string = f" {self._operation.value} ".join([
-            f"{'-' if sign == RegisterSignType.NEGATIVE else ''}{value}"
-            for value, sign
-            in zip(self._value, self._sign)
-        ])
+    def get_value(self) -> object:
+        joined_string = f" {self._operation.value} ".join(
+            [
+                f"{'-' if sign == RegisterSignType.NEGATIVE else ''}{value}"
+                for value, sign in zip(self._value, self._sign, strict=False)
+            ]
+        )
 
         return f"{joined_string}"
 
@@ -196,16 +202,19 @@ class OperationRegisterContent(RegisterContent):
     def get_size(self) -> int:
         return self._size
 
-    def get_data_type(self) -> Optional[str]:
+    def get_data_type(self) -> str | None:
         return self._data_type
 
     def get_sign(self) -> RegisterSignType:
         return None
 
-    def maybe_simplify(self) -> Optional[RegisterContent]:
-        def maybe_find_opposite_pos() -> Optional[tuple[int, int]]:
-            for i, (val_i, type_i, sign_i) in enumerate(zip(self._value, self._type, self._sign)):
-                for j, (val_j, type_j, sign_j) in enumerate(zip(self._value, self._type, self._sign)):
+    def get_expression_node(self) -> ExpressionNode:
+        return self._expression_node
+
+    def maybe_simplify(self) -> RegisterContent | None:  # noqa: C901, PLR0915
+        def maybe_find_opposite_pos() -> tuple[int, int] | None:
+            for i, (val_i, type_i, sign_i) in enumerate(zip(self._value, self._type, self._sign, strict=False)):
+                for j, (val_j, type_j, sign_j) in enumerate(zip(self._value, self._type, self._sign, strict=False)):
                     if i >= j:
                         continue
 
@@ -213,7 +222,7 @@ class OperationRegisterContent(RegisterContent):
                         return i, j
             return None
 
-        def maybe_find_types_pos(types: tuple[RegisterType]) -> Optional[list[int]]:
+        def maybe_find_types_pos(types: tuple[RegisterType]) -> list[int] | None:
             if len(types) == 0:
                 return []
 
@@ -238,12 +247,16 @@ class OperationRegisterContent(RegisterContent):
             new_size = []
             new_data_type = []
             new_sign = []
+            new_expression_node = self.get_expression_node()
 
-            for i, (value, type_, sign) in enumerate(zip(
+            for i, (value, type_, sign) in enumerate(
+                zip(
                     self._value,
                     self._type,
                     self._sign,
-            )):
+                    strict=False,
+                )
+            ):
                 if i in pos_list:
                     continue
 
@@ -257,11 +270,12 @@ class OperationRegisterContent(RegisterContent):
                 operation=copy.deepcopy(self._operation),
                 register_contents=[],
             )
-            new_operation_register_content._value = new_value  # pylint: disable=W0212
-            new_operation_register_content._type = new_type  # pylint: disable=W0212
-            new_operation_register_content._size = new_size  # pylint: disable=W0212
-            new_operation_register_content._data_type = new_data_type  # pylint: disable=W0212
-            new_operation_register_content._sign = new_sign  # pylint: disable=W0212
+            new_operation_register_content._value = new_value
+            new_operation_register_content._type = new_type
+            new_operation_register_content._size = new_size
+            new_operation_register_content._data_type = new_data_type
+            new_operation_register_content._sign = new_sign
+            new_operation_register_content._expression_node = new_expression_node
 
             return new_operation_register_content
 
@@ -272,6 +286,7 @@ class OperationRegisterContent(RegisterContent):
                 size=self._size[0],
                 data_type=self._data_type[0],
                 sign=self._sign[0],
+                expression_node=self._expression_node,
             )
 
         maybe_pos = maybe_find_opposite_pos()
@@ -297,11 +312,11 @@ class OperationRegisterContent(RegisterContent):
                     if maybe_pos_list is not None:
                         new_register_content = create_content_without_specified_pos(maybe_pos_list)
                         simplified_value, simplified_type, simplified_sign = simplification
-                        new_register_content._value.append(simplified_value)  # pylint: disable=W0212
-                        new_register_content._type.append(simplified_type)  # pylint: disable=W0212
-                        new_register_content._sign.append(simplified_sign)  # pylint: disable=W0212
-                        new_register_content._size.append(DEFAULT_REGISTER_SIZE)  # pylint: disable=W0212
-                        new_register_content._data_type.append(None)  # pylint: disable=W0212
+                        new_register_content._value.append(simplified_value)  # noqa: SLF001
+                        new_register_content._type.append(simplified_type)  # noqa: SLF001
+                        new_register_content._sign.append(simplified_sign)  # noqa: SLF001
+                        new_register_content._size.append(DEFAULT_REGISTER_SIZE)  # noqa: SLF001
+                        new_register_content._data_type.append(None)  # noqa: SLF001
 
                         recursive_new_register_content = new_register_content.maybe_simplify()
 

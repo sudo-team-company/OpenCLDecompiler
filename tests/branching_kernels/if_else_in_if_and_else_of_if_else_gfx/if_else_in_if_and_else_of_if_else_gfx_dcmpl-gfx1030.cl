@@ -2,18 +2,18 @@ __kernel __attribute__((reqd_work_group_size(4, 4, 4)))
 void if_else_in_if_and_else_of_if_else_1(int x, __global int *data, int y)
 {
     int var5;
-    if ((uint)1 != (uint)get_global_id(0)) {
+    if (1 != get_global_id(0)) {
         data[get_global_id(0)] = get_global_id(0) * y;
-        if ((int)x >= (int)y) {
-            var5 = (ulong)y + (ulong)get_global_id(1);
+        if (x >= y) {
+            var5 = y + get_global_id(1);
         }
         else {
-            var5 = (ulong)x + (ulong)get_global_id(2);
+            var5 = x + get_global_id(2);
         }
     }
     else {
-        data[get_global_id(0)] = (uint)(get_global_id(1) * x) - (uint)y;
-        if ((int)x >= (int)y) {
+        data[get_global_id(0)] = (get_global_id(1) * x) - y;
+        if (x >= y) {
             var5 = get_global_id(1) * y;
         }
         else {
@@ -28,18 +28,18 @@ __kernel __attribute__((reqd_work_group_size(4, 4, 4)))
 void if_else_in_if_and_else_of_if_else_2(int x, __global int *data, int y)
 {
     int var5;
-    if ((uint)1 != (uint)get_global_id(0)) {
+    if (1 != get_global_id(0)) {
         data[get_global_id(0)] = get_global_id(0) * y;
-        if ((uint)get_global_id(1) != (uint)get_global_id(2)) {
-            var5 = (ulong)y + (ulong)get_global_id(1);
+        if (get_global_id(1) != get_global_id(2)) {
+            var5 = y + get_global_id(1);
         }
         else {
-            var5 = (ulong)x + (ulong)get_global_id(1);
+            var5 = x + get_global_id(1);
         }
     }
     else {
-        data[get_global_id(0)] = (uint)(get_global_id(1) * x) - (uint)y;
-        if ((uint)get_global_id(1) >= (uint)get_global_id(2)) {
+        data[get_global_id(0)] = (get_global_id(1) * x) - y;
+        if (get_global_id(1) >= get_global_id(2)) {
             var5 = get_global_id(1) * y;
         }
         else {

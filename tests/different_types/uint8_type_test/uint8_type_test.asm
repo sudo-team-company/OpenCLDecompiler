@@ -1,4 +1,3 @@
-/* Disassembling 'different_types\uint8_type_test\uint8_type_test.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

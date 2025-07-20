@@ -1,4 +1,3 @@
-/* Disassembling 'local_memory_kernels\barrier_1\barrier_1.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

@@ -1,4 +1,3 @@
-/* Disassembling 'global_data_usage\int2_array\int2_array.bin' */
 .amdcl2
 .gpu Iceland
 .64bit
