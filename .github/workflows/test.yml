@@ -17,5 +17,4 @@ jobs:
         run: uv sync --locked --all-extras --dev
       - name: Run tests
         run: |
-          cd tests
-          uv run pytest -v -n 8
+          uv run pytest --cov=src --cov-report=term

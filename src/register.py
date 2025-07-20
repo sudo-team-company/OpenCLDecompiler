@@ -183,7 +183,7 @@ class Register:
                 size=self.get_size(),
             )
         elif isinstance(other, int):
-            from src.decompiler_data import DecompilerData
+            from src.decompiler_data import DecompilerData  # noqa: PLC0415
 
             _mul_simplify_combinations = [
                 *[

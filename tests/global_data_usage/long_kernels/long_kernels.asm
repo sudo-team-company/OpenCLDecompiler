@@ -1,4 +1,3 @@
-/* Disassembling 'global_data_usage\long_kernels\long_kernels.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

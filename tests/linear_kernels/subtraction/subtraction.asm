@@ -1,4 +1,3 @@
-/* Disassembling 'linear_kernels\subtraction\subtraction.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

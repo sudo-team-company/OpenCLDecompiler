@@ -29,7 +29,7 @@ class ExecCondition:
     def xor(self, other: "ExecCondition") -> "ExecCondition":
         assert other.and_chain == self.and_chain[:-1]
         assert len(other.and_chain) == len(self.and_chain) - 1
-        new_and_chain = self.and_chain[:-1:] + [self.make_not(self.top())]
+        new_and_chain = [*self.and_chain[:-1], self.make_not(self.top())]
         return ExecCondition(new_and_chain)
 
     @staticmethod

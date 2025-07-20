@@ -16,6 +16,7 @@ dependencies = [
 dev = [
     "pre-commit>=4.2.0",
     "pytest>=8.3.5",
+    "pytest-cov>=6.1.1",
     "pytest-xdist>=3.6.1",
     "ruff>=0.11.10",
 ]
@@ -93,3 +94,35 @@ max-complexity = 15
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[tool.pytest.ini_options]
+addopts = "-v -n auto"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+
+[tool.coverage.report]
+exclude_also = [
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self\\.debug",
+
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+
+    # Don't complain if non-runnable code isn't run:
+    "if 0:",
+    "if __name__ == .__main__.:",
+
+    # Don't complain about abstract methods, they aren't run:
+    "@(abc\\.)?abstractmethod",
+]
+fail_under = 50
+format = "markdown"
+skip_covered = true
+
+[tool.coverage.html]
+skip_covered = false

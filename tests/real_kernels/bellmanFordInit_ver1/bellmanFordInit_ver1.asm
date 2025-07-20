@@ -1,4 +1,3 @@
-/* Disassembling 'real_kernels\bellmanFordInit_ver1\bellmanFordInit_ver1.bin' */
 .amdcl2
 .gpu Iceland
 .64bit
