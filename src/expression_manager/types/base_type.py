@@ -19,3 +19,6 @@ class BaseType:
             and self.is_integer == other.is_integer
             and self.number_of_components == other.number_of_components
         )
+
+    def __hash__(self):
+        return hash((self.size_bytes, self.is_signed, self.is_integer, self.number_of_components))

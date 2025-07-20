@@ -40,6 +40,9 @@ class ASMTypes(Enum):
     def __eq__(self, other):
         return self.value == other.value
 
+    def __hash__(self):
+        return hash(self.value)
+
     @staticmethod
     def from_string(s):
         for e in ASMTypes:

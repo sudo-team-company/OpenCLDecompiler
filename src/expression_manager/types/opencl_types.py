@@ -55,6 +55,9 @@ class OpenCLTypes(Enum):
     def __eq__(self, other):
         return self.value == other.value
 
+    def __hash__(self):
+        return hash(self.value)
+
     @staticmethod
     def from_string(type_hint) -> "OpenCLTypes":
         if isinstance(type_hint, OpenCLTypes):
