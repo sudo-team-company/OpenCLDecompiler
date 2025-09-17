@@ -357,7 +357,7 @@ void mul_get_work_dim_get_local_size(int arg0, __global uint *arg1)
 __kernel __attribute__((reqd_work_group_size(16, 2, 2)))
 void mul_x_get_global_id(__global int *arg0, int arg1)
 {
-    arg0[get_global_offset(0)] = (get_global_offset(0) + 0) * arg1;
+    arg0[get_global_offset(0)] = get_global_offset(0) * arg1;
     arg0[get_global_id(1)] = get_global_id(1) * arg1;
     arg0[get_global_id(2)] = get_global_id(2) * arg1;
 }
@@ -365,7 +365,7 @@ void mul_x_get_global_id(__global int *arg0, int arg1)
 __kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void mul_get_global_offset_get_global_id(int arg0, __global int *arg1)
 {
-    arg1[get_global_offset(0)] = get_global_offset(0) * (get_global_offset(0) + 0);
+    arg1[get_global_offset(0)] = get_global_offset(0) * get_global_offset(0);
     arg1[get_global_id(1)] = get_global_offset(1) * get_global_id(1);
     arg1[get_global_id(2)] = get_global_offset(2) * get_global_id(2);
 }
@@ -381,7 +381,7 @@ void mul_get_local_id_get_global_id(int arg0, __global int *arg1)
 __kernel __attribute__((reqd_work_group_size(2, 16, 2)))
 void mul_get_group_id_get_global_id(int arg0, __global int *arg1)
 {
-    arg1[get_global_offset(0)] = get_group_id(0) * (get_global_offset(0) + 0);
+    arg1[get_global_offset(0)] = get_group_id(0) * get_global_offset(0);
     arg1[get_global_id(1)] = get_group_id(1) * get_global_id(1);
     arg1[get_global_id(2)] = get_group_id(2) * get_global_id(2);
 }

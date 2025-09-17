@@ -1,4 +1,3 @@
-/* Disassembling 'global_data_usage\cvt_i32_f64\cvt_i32_f64.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

@@ -1,4 +1,3 @@
-/* Disassembling 'vector_type_params\uint4_float4\uint4_float4.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

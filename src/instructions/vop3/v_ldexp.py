@@ -1,5 +1,6 @@
 from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
+from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.register import check_and_split_regs
 
 
@@ -13,15 +14,19 @@ class VLdexp(BaseInstruction):
     def to_fill_node(self):
         start_to_registers, _ = check_and_split_regs(self.vdst)
         start_from_registers, _ = check_and_split_regs(self.src0)
-        if self.offset == '32':
+        if self.offset == "32":
             data_type = self.node.state[start_from_registers].data_type
-            if data_type == 'u32':
-                data_type = 'u64'
-            elif data_type == 'i32':
-                data_type = 'i64'
+            if data_type == "u32":
+                data_type = "u64"
+            elif data_type == "i32":
+                data_type = "i64"
             self.decompiler_data.names_of_vars[self.node.state[start_from_registers].val] = self.suffix
             reg_type = self.node.state[start_from_registers].type
             new_value = self.node.state[start_from_registers].val
+            var_node = self.get_expression_node(start_from_registers)
+            var_node = self.expression_manager.cast_node(var_node, OpenCLTypes.from_string(self.suffix))
         else:
             raise NotImplementedError
-        return set_reg_value(self.node, new_value, start_to_registers, [], data_type, reg_type=reg_type)
+        return set_reg_value(
+            self.node, new_value, start_to_registers, [], data_type, reg_type=reg_type, expression_node=var_node
+        )

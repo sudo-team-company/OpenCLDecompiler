@@ -1,4 +1,3 @@
-/* Disassembling 'different_types\char_char_short_test\char_char_short_test.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

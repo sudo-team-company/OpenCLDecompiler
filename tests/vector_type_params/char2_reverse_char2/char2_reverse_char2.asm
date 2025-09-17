@@ -1,4 +1,3 @@
-/* Disassembling 'vector_type_params\char2_reverse_char2\char2_reverse_char2.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

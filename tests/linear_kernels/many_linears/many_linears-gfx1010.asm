@@ -1,4 +1,3 @@
-/* Disassembling 'linear_kernels\many_linears\many_linears-gfx1010.bin' */
 .rocm
 .gpu GFX1010
 .arch_minor 1

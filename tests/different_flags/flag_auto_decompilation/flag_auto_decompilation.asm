@@ -1,4 +1,3 @@
-/* Disassembling 'different_flags\flag_auto_decompilation\flag_auto_decompilation.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

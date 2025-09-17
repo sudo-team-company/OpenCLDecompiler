@@ -1,4 +1,3 @@
-/* Disassembling 'branching_kernels\if_else_1_label\if_else_1_label-gfx1010.bin' */
 .rocm
 .gpu GFX1010
 .arch_minor 1

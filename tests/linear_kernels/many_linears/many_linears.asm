@@ -1,4 +1,3 @@
-/* Disassembling 'linear_kernels\many_linears\many_linears.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

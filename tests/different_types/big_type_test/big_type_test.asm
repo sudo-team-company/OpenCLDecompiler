@@ -1,4 +1,3 @@
-/* Disassembling 'different_types\big_type_test\big_type_test.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

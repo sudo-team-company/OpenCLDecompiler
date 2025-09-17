@@ -12,5 +12,15 @@ ENV/
 env.bak/
 venv.bak/
 
+# Coverage reports
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
 # PyCharm
 .idea/
+﻿tests/.idea
+
+# VSCode
+.vscode/

@@ -1,4 +1,3 @@
-/* Disassembling 'vector_type_params\uint2_reverse_first_half_uint4\uint2_reverse_first_half_uint4.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

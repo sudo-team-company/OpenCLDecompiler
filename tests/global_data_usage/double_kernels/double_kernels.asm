@@ -1,4 +1,3 @@
-/* Disassembling 'global_data_usage\double_kernels\double_kernels.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

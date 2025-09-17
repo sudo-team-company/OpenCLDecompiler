@@ -1,4 +1,3 @@
-/* Disassembling 'loops_kernels\loop_with_unrolling_breaker\loop_with_unrolling_breaker-gfx1030.bin' */
 .rocm
 .gpu GFX1000
 .arch_minor 3

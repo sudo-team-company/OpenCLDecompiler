@@ -3,23 +3,25 @@ import copy
 from src.cfg import make_cfg_node, make_unresolved_node
 from src.code_printer import create_opencl_body
 from src.decompiler_data import DecompilerData, optimize_names_of_vars
+from src.expression_manager.expression_manager import ExpressionManager
 from src.flag_type import FlagType
-from src.global_data import process_global_data, gdata_type_processing
-from src.graph.control_flow_graph import ControlFlowGraph, CONTROL_FLOW_GRAPH_ENABLED_CONTEXT_KEY
+from src.global_data import gdata_type_processing, process_global_data
+from src.graph.control_flow_graph import CONTROL_FLOW_GRAPH_ENABLED_CONTEXT_KEY, ControlFlowGraph
 from src.kernel_params import process_kernel_params
 from src.logical_variable import ExecCondition
+from src.model.config_data import ConfigData
 from src.node import Node
 from src.node_processor import check_realisation_for_node
 from src.regions.functions_for_regions import make_region_graph_from_cfg, process_region_graph
 from src.unrolled_loops_processing import process_unrolled_loops
-from src.utils import get_context, ConfigData
-from src.versions import find_max_and_prev_versions, change_values, check_for_use_new_version
+from src.utils import get_context
+from src.versions import change_values, check_for_use_new_version, find_max_and_prev_versions
 
 CONTEXT = get_context()
 
 
 def process_single_instruction(row, state, parents):
-    instruction = row.strip().replace(',', ' ').split()
+    instruction = row.strip().replace(",", " ").split()
     curr_node = make_cfg_node(instruction, state, parents)
     if not check_realisation_for_node(curr_node, row):
         return None
@@ -32,32 +34,38 @@ def process_src_with_unresolved_instruction(set_of_instructions):
     num = 0
     while num < len(set_of_instructions):
         row = set_of_instructions[num]
-        instruction = row.strip().replace(',', ' ').split()
+        instruction = row.strip().replace(",", " ").split()
         num += 1
         curr_node = make_unresolved_node(instruction, last_node_state)
         if curr_node is None:
             decompiler_data.write(row + "\n")
 
 
-def process_src(  # pylint: disable=R0914
-        name_of_program: str,
-        config_data: ConfigData,
-        set_of_instructions: list[str],
-        set_of_global_data_bytes: list[str],
-        set_of_global_data_instruction: list[str],
+def process_src(  # noqa: C901, PLR0912, PLR0915
+    name_of_program: str,
+    config_data: ConfigData,
+    set_of_instructions: list[str],
+    set_of_global_data_bytes: list[str],
+    set_of_global_data_instruction: list[str],
 ):
     decompiler_data = DecompilerData()
+    expression_manager = ExpressionManager()
     decompiler_data.reset(name_of_program)
-    if decompiler_data.gpu.startswith('gfx11'):
+    if decompiler_data.gpu.startswith("gfx11"):
         decompiler_data.is_rdna3 = True
+    if decompiler_data.is_rdna3:
+        # We don't want to reset ExpressionManager between different RDNA3 programs,
+        # because in RDNA3 kernel arguments are parsed at the beggining.
+        # ExpressionManager already contains every kernel argument in _variables_for_program dict
+        # Only specifying name of program to obtain correct arguments here
+        expression_manager.set_name_of_program(name_of_program)
+    else:
+        expression_manager.reset(name_of_program)
+    expression_manager.set_size_of_workgroups(config_data.size_of_work_groups)
     set_of_instructions = [instr.replace("null", "0x0") for instr in set_of_instructions]
     new_set_of_instructions = []
     for instr in set_of_instructions:
-        new_set_of_instructions.extend([
-            new_instr.strip()
-            for new_instr
-            in instr.split("::")
-        ])
+        new_set_of_instructions.extend([new_instr.strip() for new_instr in instr.split("::")])
     set_of_instructions = new_set_of_instructions
     initial_set_of_instructions = copy.deepcopy(set_of_instructions)
     process_global_data(set_of_global_data_instruction, set_of_global_data_bytes)
@@ -78,25 +86,21 @@ def process_src(  # pylint: disable=R0914
         row = set_of_instructions[num]
         row = row.replace("_e32", "")
         row = row.replace("_e64", "")
-        instruction = row.strip().replace(',', ' ').split()
+        instruction = row.strip().replace(",", " ").split()
         state = last_node.state
         parents = [last_node]
 
-        if 's_or_saveexec' in instruction[0]:
+        if "s_or_saveexec" in instruction[0]:
             common_if_else_part_start_index[-1] = num + 1
-        if ('s_andn2' in instruction[0] or 's_xor' in instruction[0]) \
-                and 'exec' in instruction[1]:
+        if ("s_andn2" in instruction[0] or "s_xor" in instruction[0]) and "exec" in instruction[1]:
             if_node = if_and_last_in_if_body_nodes[-1][0]
             state = if_node.state
             parents = [if_node]
             if common_if_else_part_start_index[-1] is not None:
-                common_part = set_of_instructions[
-                              common_if_else_part_start_index[-1]:num]
-                set_of_instructions = set_of_instructions[:num + 1] \
-                                      + common_part \
-                                      + set_of_instructions[num + 1:]
+                common_part = set_of_instructions[common_if_else_part_start_index[-1] : num]
+                set_of_instructions = set_of_instructions[: num + 1] + common_part + set_of_instructions[num + 1 :]
             if_and_last_in_if_body_nodes[-1].append(last_node)
-        if last_node.instruction[0] == 's_branch':
+        if last_node.instruction[0] == "s_branch":
             parents = []
 
         last_node = process_single_instruction(row, state, parents)
@@ -107,22 +111,18 @@ def process_src(  # pylint: disable=R0914
             process_src_with_unresolved_instruction(initial_set_of_instructions)
             return
 
-        if 's_and_saveexec' in instruction[0] or \
-                ('s_and_b' in instruction[0] and 'exec' in instruction[1]):
+        if "s_and_saveexec" in instruction[0] or ("s_and_b" in instruction[0] and "exec" in instruction[1]):
             if_and_last_in_if_body_nodes.append([last_node])
             common_if_else_part_start_index.append(None)
-        if ('s_or' in instruction[0] or 's_mov' in instruction[0]) and \
-                'exec' in instruction[1] or 's_endpgm' in instruction[0]:
-            end_exec_condition = last_node.state["exec"] \
-                .exec_condition
-            while if_and_last_in_if_body_nodes and \
-                    ExecCondition.is_closing_for(
-                        end_exec_condition,
-                        if_and_last_in_if_body_nodes[-1][0].state["exec"].exec_condition):
+        if (
+            ("s_or" in instruction[0] or "s_mov" in instruction[0]) and "exec" in instruction[1]
+        ) or "s_endpgm" in instruction[0]:
+            end_exec_condition = last_node.state["exec"].exec_condition
+            while if_and_last_in_if_body_nodes and ExecCondition.is_closing_for(
+                end_exec_condition, if_and_last_in_if_body_nodes[-1][0].state["exec"].exec_condition
+            ):
                 if_and_last_in_if_nodes = if_and_last_in_if_body_nodes[-1]
-                parent = if_and_last_in_if_nodes[0] \
-                    if len(if_and_last_in_if_nodes) == 1 else \
-                    if_and_last_in_if_nodes[1]
+                parent = if_and_last_in_if_nodes[0] if len(if_and_last_in_if_nodes) == 1 else if_and_last_in_if_nodes[1]
                 parent.add_child(last_node)
                 last_node.add_parent(parent)
                 if_and_last_in_if_body_nodes.pop()

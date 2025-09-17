@@ -13,10 +13,10 @@ class GraphType(enum.Enum):
 
 class Graph(metaclass=Singleton):
     def __init__(
-            self,
-            graph_type: GraphType,
-            render_path: str,
-            kwargs: dict[str, any],
+        self,
+        graph_type: GraphType,
+        render_path: str,
+        kwargs: dict[str, object],
     ):
         self._graph_type = type
         self._render_path = render_path
@@ -26,7 +26,7 @@ class Graph(metaclass=Singleton):
         elif graph_type == GraphType.NOT_DIRECTED:
             self._dot = graphviz.Graph(**kwargs)
         else:
-            raise LogicalError(f"Unknown graph type '{graph_type}'")
+            raise LogicalError(f"Unknown graph type '{graph_type}'")  # noqa: TRY003
 
     # ---------------------
     # [SECTION] Build graph

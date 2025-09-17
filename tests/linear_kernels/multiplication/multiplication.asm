@@ -1,4 +1,3 @@
-/* Disassembling 'linear_kernels\multiplication\multiplication.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

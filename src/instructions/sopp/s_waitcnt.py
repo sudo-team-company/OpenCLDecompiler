@@ -6,6 +6,6 @@ class SWaitcnt(BaseInstruction):
         return self.node
 
     def to_print(self):
-        if 'ds' in self.node.parent[0].instruction[0]:
+        if "ds" in self.node.parent[0].instruction[0]:
             self.output_string = "barrier(CLK_LOCAL_MEM_FENCE)"
         return self.output_string

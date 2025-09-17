@@ -1,4 +1,3 @@
-/* Disassembling 'loops_kernels\loop_block\loop_block-gfx1030.bin' */
 .rocm
 .gpu GFX1000
 .arch_minor 3

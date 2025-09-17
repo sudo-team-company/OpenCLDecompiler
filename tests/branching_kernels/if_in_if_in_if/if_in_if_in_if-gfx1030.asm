@@ -1,4 +1,3 @@
-/* Disassembling 'branching_kernels\if_in_if_in_if\if_in_if_in_if-gfx1030.bin' */
 .rocm
 .gpu GFX1000
 .arch_minor 3

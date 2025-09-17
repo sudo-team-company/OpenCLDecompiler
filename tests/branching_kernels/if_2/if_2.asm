@@ -1,4 +1,3 @@
-/* Disassembling 'branching_kernels\if_2\if_2.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

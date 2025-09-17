@@ -1,4 +1,3 @@
-/* Disassembling 'linear_kernels\work_item_built_in_functions\copy_get_local_size\copy_get_local_size.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

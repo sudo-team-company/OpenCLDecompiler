@@ -1,4 +1,3 @@
-/* Disassembling 'global_data_usage\mix_vectors\mix_vectors.bin' */
 .amdcl2
 .gpu Iceland
 .64bit

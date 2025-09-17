@@ -1,4 +1,3 @@
-/* Disassembling 'vector_type_params\char2_first_and_first_char4\char2_first_and_first_char4.bin' */
 .amdcl2
 .gpu Iceland
 .64bit
