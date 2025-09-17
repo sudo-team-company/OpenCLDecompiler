@@ -69,21 +69,101 @@ TEST_CASES = {
         "char_char_short_test": [("amd_gcn", "clrxdisasm", None)],
     },
     "global_data_usage": {
-        "int_kernels": [("amd_gcn", "clrxdisasm", None)],
-        "long_kernels": [("amd_gcn", "clrxdisasm", None)],
-        "mixed_kernels": [("amd_gcn", "clrxdisasm", None)],
-        "float_kernels": [("amd_gcn", "clrxdisasm", None)],
-        "double_kernels": [("amd_gcn", "clrxdisasm", None)],
-        "cvt_i32_f32": [("amd_gcn", "clrxdisasm", None)],
-        "cvt_f32_i32": [("amd_gcn", "clrxdisasm", None)],
-        "cvt_i32_f64": [("amd_gcn", "clrxdisasm", None)],
-        "cvt_f64_i32": [("amd_gcn", "clrxdisasm", None)],
-        "int4": [("amd_gcn", "clrxdisasm", None)],
-        "int8": [("amd_gcn", "clrxdisasm", None)],
-        "mix_vectors": [("amd_gcn", "clrxdisasm", None)],
-        "int_matrix": [("amd_gcn", "clrxdisasm", None)],
-        "long_matrix": [("amd_gcn", "clrxdisasm", None)],
-        "int2_array": [("amd_gcn", "clrxdisasm", None)],
+        "int_kernels": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
+        "long_kernels": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
+        "mixed_kernels": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
+        "float_kernels": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
+        "double_kernels": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
+        "cvt_i32_f32": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
+        "cvt_f32_i32": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
+        "cvt_i32_f64": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
+        "cvt_f64_i32": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
+        "cvt_f64_i64": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
+        "int4": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
+        "int8": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
+        "mix_vectors": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
+        "int_matrix": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
+        "long_matrix": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
+        "int2_array": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
+        "int2_to_int2": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
+        "int4_to_int4": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
+        "int8_to_int8": [
+            ("amd_gcn", "clrxdisasm", None),
+            ("gfx1010", "amdgpu-dis", None),
+            ("gfx1030", "amdgpu-dis", None),
+        ],
     },
     "linear_kernels": {
         "addition": [
