@@ -47,6 +47,7 @@ def process_src(  # noqa: C901, PLR0912, PLR0915
     set_of_instructions: list[str],
     set_of_global_data_bytes: list[str],
     set_of_global_data_instruction: list[str],
+    *args, **kwargs
 ):
     decompiler_data = DecompilerData()
     expression_manager = ExpressionManager()

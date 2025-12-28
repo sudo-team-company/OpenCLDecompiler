@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from src.model.kernel_argument import KernelArgument
 from src.register_content import RegisterContent
-
+from src.model.preloaded_registers import PreloadedRegs
 
 @dataclass
 class ConfigData:
@@ -12,3 +12,4 @@ class ConfigData:
     local_size: int | None
     arguments: list[KernelArgument]
     offset_to_content: dict[str, RegisterContent] = field(default_factory=dict)
+    preloaded_reg: PreloadedRegs = None
