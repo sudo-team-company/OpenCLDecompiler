@@ -429,14 +429,11 @@ class ExpressionManager(metaclass=Singleton):
         return logical_not_node
 
     def add_kernel_argument(self, arg: KernelArgument, offset: int) -> ExpressionNode:
-        if arg.hidden:
-            for reg_type in CONSTANT_VALUES:
-                reg_type_name = CONSTANT_VALUES[reg_type][0]
-                if arg.name == reg_type_name:
-                    return self.add_register_node(reg_type, arg.name)
+        for reg_type in CONSTANT_VALUES:
+            reg_type_name = CONSTANT_VALUES[reg_type][0]
+            if arg.name == reg_type_name:
+                return self.add_register_node(reg_type, arg.name)
 
-            # don't add other hidden data like _.printf_buffer, _.vqueue_pointer, _.aqlwrap_pointer and so on
-            return None
 
         name = arg.name if not arg.is_vector() else arg.get_vector_element_by_offset(offset)
         opencl_type, qualifiers = get_kernel_argument_type_and_qualifiers(arg)

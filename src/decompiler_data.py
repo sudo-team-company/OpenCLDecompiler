@@ -28,6 +28,9 @@ from src.state import KernelState
 from src.utils import Singleton
 
 
+from src.ir.kernel import Kernel
+
+
 def set_reg_value(  # noqa: PLR0913
     node,
     new_value,
@@ -573,6 +576,23 @@ class DecompilerData(metaclass=Singleton):
         state[reg] = value
         self.make_version(state, reg)
 
+    def init_entry_reg(self, state, reg_name, value, reg_type: RegisterType):
+        self.set_reg_make_version(
+            state,
+            reg_name,
+            Register(
+                integrity=Integrity.ENTIRE,
+                register_content=RegisterContent(
+                    value=value,
+                    type_=reg_type,
+                    expression_node=ExpressionManager().add_register_node(
+                        reg_type,
+                        value,
+                    ),
+                ),
+            ),
+        )
+
     def init_work_group(self, dim, g_id_dim):
         self.set_reg_make_version(
             self.initial_state,
@@ -648,6 +668,32 @@ class DecompilerData(metaclass=Singleton):
             self.init_work_group(dim, f"s{g_id_shift + dim}")
         self.init_exec()
 
+    def init_ptr(self, state, lp, hp):
+        self.set_reg_make_version(
+            state,
+            lp,
+            Register(
+                integrity=Integrity.LOW_PART,
+                register_content=RegisterContent(
+                    value="0",
+                    type_=RegisterType.ARGUMENTS_POINTER,
+                    expression_node=ExpressionManager().add_const_node(0, OpenCLTypes.USHORT),
+                ),
+            ),
+        )
+        self.set_reg_make_version(
+            state,
+            hp,
+            Register(
+                integrity=Integrity.HIGH_PART,
+                register_content=RegisterContent(
+                    value="0",
+                    type_=RegisterType.ARGUMENTS_POINTER,
+                    expression_node=ExpressionManager().add_const_node(0, OpenCLTypes.USHORT),
+                ),
+            ),
+        )
+
     def process_initial_state(self):
         lp, hp = ("s6", "s7") if self.config_data.usesetup else ("s4", "s5")
         if self.is_rdna3:
@@ -702,12 +748,20 @@ class DecompilerData(metaclass=Singleton):
                 ),
             )
 
-    def set_config_data(self, config_data: ConfigData):
-        self.config_data = config_data
-        self.init_state()
-        self.process_initial_state()
-        for arg in self.config_data.arguments:
-            self.type_params[arg.name] = arg.type_name
+    def set_config_data(self, kernel: Kernel):
+        self.config_data = ConfigData(
+            dimensions="XYZ", 
+            usesetup=False,
+            size_of_work_groups=kernel.work_group_size,
+            local_size=None, # TODO
+            arguments=kernel.arguments, # TODO
+        )
+        self.init_exec()
+
+        #self.init_state()
+        # self.process_initial_state()
+        # for arg in self.config_data.arguments:
+        #     self.type_params[arg.name] = arg.type_name
 
     def get_function_definition(self) -> str:
         definition: str = "__kernel "

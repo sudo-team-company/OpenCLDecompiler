@@ -102,7 +102,15 @@ from src.instructions.vopd.v_dual_add_nc import VDualAddNc
 from src.instructions.vopd.v_dual_and import VDualAnd
 from src.instructions.vopd.v_dual_mov import VDualMov
 
+from src.instructions.IRspecial.InitReg import InitReg
+from src.instructions.IRspecial.memory import MemoryAllocation, StoreInMem
+
 instruction_dict = {
+    #IRspecial
+    "s_alloc": MemoryAllocation,
+    "s_store": StoreInMem,
+    "s_init": InitReg,
+
     "ds_add": DsAdd,
     "ds_bpermute": DsBpermute,
     "ds_read": DsRead,

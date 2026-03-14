@@ -17,14 +17,17 @@ from src.unrolled_loops_processing import process_unrolled_loops
 from src.utils import get_context
 from src.versions import change_values, check_for_use_new_version, find_max_and_prev_versions
 
+
+from src.ir.kernel import Kernel
+
 CONTEXT = get_context()
 
 
-def process_single_instruction(row, state, parents):
-    instruction = row.strip().replace(",", " ").split()
+def process_single_instruction(instruction, state, parents):
     curr_node = make_cfg_node(instruction, state, parents)
-    if not check_realisation_for_node(curr_node, row):
-        return None
+    # TODO
+    # if not check_realisation_for_node(curr_node, instruction):
+    #     return None
     return curr_node
 
 
@@ -42,37 +45,46 @@ def process_src_with_unresolved_instruction(set_of_instructions):
 
 
 def process_src(  # noqa: C901, PLR0912, PLR0915
-    name_of_program: str,
-    config_data: ConfigData,
-    set_of_instructions: list[str],
-    set_of_global_data_bytes: list[str],
-    set_of_global_data_instruction: list[str],
-    *args, **kwargs
+    kernel: Kernel
+    #name_of_program: str,
+    #config_data: ConfigData,
+    #set_of_instructions: list[str],
+    #set_of_global_data_bytes: list[str],
+    #set_of_global_data_instruction: list[str],
+    #*args, **kwargs
 ):
     decompiler_data = DecompilerData()
     expression_manager = ExpressionManager()
-    decompiler_data.reset(name_of_program)
-    if decompiler_data.gpu.startswith("gfx11"):
-        decompiler_data.is_rdna3 = True
-    if decompiler_data.is_rdna3:
-        # We don't want to reset ExpressionManager between different RDNA3 programs,
-        # because in RDNA3 kernel arguments are parsed at the beggining.
-        # ExpressionManager already contains every kernel argument in _variables_for_program dict
-        # Only specifying name of program to obtain correct arguments here
-        expression_manager.set_name_of_program(name_of_program)
-    else:
-        expression_manager.reset(name_of_program)
-    expression_manager.set_size_of_workgroups(config_data.size_of_work_groups)
-    set_of_instructions = [instr.replace("null", "0x0") for instr in set_of_instructions]
-    new_set_of_instructions = []
-    for instr in set_of_instructions:
-        new_set_of_instructions.extend([new_instr.strip() for new_instr in instr.split("::")])
-    set_of_instructions = new_set_of_instructions
-    initial_set_of_instructions = copy.deepcopy(set_of_instructions)
-    process_global_data(set_of_global_data_instruction, set_of_global_data_bytes)
-    decompiler_data.set_config_data(config_data)
-    if not decompiler_data.is_rdna3:
-        process_kernel_params()
+    decompiler_data.reset(kernel.name)
+    
+    # TODO
+    # if decompiler_data.gpu.startswith("gfx11"): 
+    #     decompiler_data.is_rdna3 = True
+    # if decompiler_data.is_rdna3:
+    #     # We don't want to reset ExpressionManager between different RDNA3 programs,
+    #     # because in RDNA3 kernel arguments are parsed at the beggining.
+    #     # ExpressionManager already contains every kernel argument in _variables_for_program dict
+    #     # Only specifying name of program to obtain correct arguments here
+    #     expression_manager.set_name_of_program(name_of_program)
+    # else:
+    #     expression_manager.reset(name_of_program)
+    expression_manager.reset(kernel.name)
+
+    expression_manager.set_size_of_workgroups(kernel.work_group_size)
+    set_of_instructions = [instr.get_parts() for instr in kernel.instructions]
+
+
+    #process_global_data(set_of_global_data_instruction, set_of_global_data_bytes) TODO
+
+    # реализация унесена в инструкции
+    # decompiler_data.set_config_data(config_data)
+    # if not decompiler_data.is_rdna3:
+    #     process_kernel_params()
+    # -----------------------
+    # decompiler_data.set_config_data(config_data)
+    # process_kernel_params()
+    decompiler_data.set_config_data(kernel)
+    
     last_node = Node([""], decompiler_data.initial_state)
     decompiler_data.set_cfg(last_node)
 
@@ -80,19 +92,20 @@ def process_src(  # noqa: C901, PLR0912, PLR0915
     common_if_else_part_start_index = []
     num = 0
 
-    if decompiler_data.flag_for_decompilation == FlagType.ONLY_CLRX:
-        process_src_with_unresolved_instruction(initial_set_of_instructions)
-        return
+    # TODO
+    # if decompiler_data.flag_for_decompilation == FlagType.ONLY_CLRX:
+    #     process_src_with_unresolved_instruction(initial_set_of_instructions)
+    #     return
+    
     while num < len(set_of_instructions):
-        row = set_of_instructions[num]
-        row = row.replace("_e32", "")
-        row = row.replace("_e64", "")
-        instruction = row.strip().replace(",", " ").split()
+        instruction = set_of_instructions[num]
         state = last_node.state
         parents = [last_node]
 
-        if "s_or_saveexec" in instruction[0]:
-            common_if_else_part_start_index[-1] = num + 1
+
+        # обработка ветвления
+        if "s_or_saveexec" in instruction[0]: ## выходим из if-else базового блока 
+            common_if_else_part_start_index[-1] = num + 1 # запомнили конец if-else
         if ("s_andn2" in instruction[0] or "s_xor" in instruction[0]) and "exec" in instruction[1]:
             if_node = if_and_last_in_if_body_nodes[-1][0]
             state = if_node.state
@@ -104,17 +117,19 @@ def process_src(  # noqa: C901, PLR0912, PLR0915
         if last_node.instruction[0] == "s_branch":
             parents = []
 
-        last_node = process_single_instruction(row, state, parents)
-        if last_node is None:
-            if decompiler_data.flag_for_decompilation == FlagType.ONLY_OPENCL:
-                break
-            decompiler_data.flag_for_decompilation = FlagType.ONLY_CLRX
-            process_src_with_unresolved_instruction(initial_set_of_instructions)
-            return
+        last_node = process_single_instruction(instruction, state, parents)
+
+        # TODO
+        # if last_node is None:
+        #     if decompiler_data.flag_for_decompilation == FlagType.ONLY_OPENCL:
+        #         break
+        #     decompiler_data.flag_for_decompilation = FlagType.ONLY_CLRX
+        #     process_src_with_unresolved_instruction(initial_set_of_instructions)
+        #     return
 
         if "s_and_saveexec" in instruction[0] or ("s_and_b" in instruction[0] and "exec" in instruction[1]):
-            if_and_last_in_if_body_nodes.append([last_node])
-            common_if_else_part_start_index.append(None)
+            if_and_last_in_if_body_nodes.append([last_node]) ## запоминаем последнюю ноду в (по факту) базовом блоке
+            common_if_else_part_start_index.append(None)## открываем базовый блок
         if (
             ("s_or" in instruction[0] or "s_mov" in instruction[0]) and "exec" in instruction[1]
         ) or "s_endpgm" in instruction[0]:

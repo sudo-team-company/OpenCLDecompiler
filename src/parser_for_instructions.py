@@ -10,6 +10,9 @@ from src.graph.control_flow_graph import CONTROL_FLOW_GRAPH_ENABLED_CONTEXT_KEY,
 from src.kernel_parser import parse_kernel
 from src.utils import get_context
 
+from src.ir.asm_to_ir import textToIR
+
+
 CONTEXT = get_context()
 
 
@@ -37,7 +40,20 @@ def main(input_par, output_par, flag_for_decompilation, cfg_path, unrolling_limi
         decompiler_data.flag_for_decompilation = FlagType(flag_for_decompilation)
         decompiler_data.unrolling_limit = unrolling_limit
 
+
         functions_data, decompiler_data.gpu = parse_kernel(body_of_file.splitlines())
+        # kernels = 
+
+        for function_data in functions_data:
+            # function_data[0] = kernel_name
+            # function_data[1] = config
+            # function_data[2] = instructions
+            function_data[1].kernel_name = function_data[0]
+            kernel = textToIR(function_data[2], function_data[1])
+            output_file.write("\n")
+            process_src(kernel)
+
+
 
         flag_newline = False
         for function_data in functions_data:
