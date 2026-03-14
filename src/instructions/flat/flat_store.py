@@ -13,7 +13,7 @@ from src.register import (
     check_and_split_regs_range_to_full_list,
     is_sgpr_range,
     is_vector_type,
-    is_vgpr,
+    is_reg,
 )
 from src.register_type import RegisterType
 
@@ -89,7 +89,7 @@ class FlatStore(BaseInstruction):
             elif self.suffix[-1].isdigit():
                 suffix_size = int(self.suffix[-1])
             for from_reg in check_and_split_regs_range_to_full_list(self.vdata)[:suffix_size]:
-                if is_vgpr(self.vaddr):
+                if is_reg(self.vaddr):
                     self.node.state[self.to_registers].copy_version_from(self.node.parent[0].state[self.to_registers])
                     self.node.state[self.to_registers].cast_to(self.suffix)
                     self.node.state[self.to_registers].set_expression_node(

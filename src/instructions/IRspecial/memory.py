@@ -26,13 +26,21 @@ class StoreInMem(BaseInstruction):
         type_name = self.node.instruction[2]
         # TODO тут надо определять что мы загружаем, но так как у нас есть только загрузка аргументов то пофиг 
         self.decompiler_data.type_params[arg_name] = type_name
+        arguments = self.decompiler_data.config_data.arguments
+        found_arg = next((arg for arg in arguments if arg.name == arg_name), None)
         ka = KernelArgument(
             type_name,
             arg_name,
-            self.node.instruction[4],
+            int(self.node.instruction[4]),
             8 if arg_name.startswith("*") else evaluate_size(make_asm_type(type_name))[0],
             False,
-            False #TODO тут по факту надо определять конст не конст
+            found_arg.const if found_arg else False #TODO тут по факту надо определять конст не конст
             )
-        process_arg(int(self.node.instruction[4]), ka)
+            
+
+        if not ka.is_vector():
+            process_arg(ka.offset, ka)
+        else:
+            for shift in range(0, ka.size, ka.basic_size()):
+                process_arg(ka.offset + shift, ka)
         return self.node

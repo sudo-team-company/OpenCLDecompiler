@@ -17,7 +17,7 @@ class Kernel:
                 type_name=type_name,
                 name=name,
                 offset=0,
-                size=evaluate_size(make_asm_type(type_name))[0],
+                size=8 if name.startswith("*") else evaluate_size(make_asm_type(type_name))[0],
                 hidden=False,
                 const=const,
             )

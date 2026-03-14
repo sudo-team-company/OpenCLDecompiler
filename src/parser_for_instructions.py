@@ -44,23 +44,27 @@ def main(input_par, output_par, flag_for_decompilation, cfg_path, unrolling_limi
         functions_data, decompiler_data.gpu = parse_kernel(body_of_file.splitlines())
         # kernels = 
 
+        flag_newline = False
         for function_data in functions_data:
             # function_data[0] = kernel_name
             # function_data[1] = config
             # function_data[2] = instructions
             function_data[1].kernel_name = function_data[0]
             kernel = textToIR(function_data[2], function_data[1])
-            output_file.write("\n")
+
+            if flag_newline:
+                output_file.write("\n")
+            flag_newline = True
             process_src(kernel)
 
 
 
-        flag_newline = False
-        for function_data in functions_data:
-            if flag_newline:
-                output_file.write("\n")
-            flag_newline = True
-            process_src(*function_data)
+        # flag_newline = False
+        # for function_data in functions_data:
+        #     if flag_newline:
+        #         output_file.write("\n")
+        #     flag_newline = True
+        #     process_src(*function_data)
 
 
 def create_parser():
