@@ -1,12 +1,6 @@
-from src.ir.instructions.IRInstruction import IRInstruction
+from src.ir.instructions.special.generic import GenericInstruction
+from src.ir.registers.reg import Reg_ty, Val
 
-class InitReg(IRInstruction):
-    def __init__(self, destination: str, value: str):
-        self.destination = destination
-        self.value = value
-    
-    def to_text(self) -> str:
-        return f"s_init {self.destination}, {self.value}"
-    
-    def get_parts(self) -> list[str]:
-        return ["s_init", self.destination, self.value]
+class InitReg(GenericInstruction):
+    def __init__(self, destination: Reg_ty, value: Val):
+        super().__init__("s_init", destination, value)

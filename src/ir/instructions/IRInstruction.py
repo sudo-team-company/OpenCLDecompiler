@@ -4,3 +4,6 @@ class IRInstruction:
     
     def get_parts(self) -> list[str]:
         raise NotImplementedError
+    
+    def get_operands(self):
+        raise NotImplementedError

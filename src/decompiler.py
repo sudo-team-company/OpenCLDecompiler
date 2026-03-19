@@ -71,7 +71,7 @@ def process_src(  # noqa: C901, PLR0912, PLR0915
     expression_manager.reset(kernel.name)
 
     expression_manager.set_size_of_workgroups(kernel.work_group_size)
-    set_of_instructions = [instr.get_parts() for instr in kernel.instructions]
+    set_of_instructions = kernel.get_normalize_instructions_parts()
 
 
     #process_global_data(set_of_global_data_instruction, set_of_global_data_bytes) TODO

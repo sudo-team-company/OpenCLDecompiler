@@ -1,7 +1,8 @@
-from typing import Any
+from typing import Any, Optional
 from src.ir.instructions.IRInstruction import IRInstruction
 from src.model.config_data import KernelArgument
 from src.opencl_types import evaluate_size, make_asm_type
+from src.ir.registers.register_manager import RegisterManager
 
 class Kernel:
     def __init__(self, name: str, work_group_size: list[int]):
@@ -9,9 +10,9 @@ class Kernel:
         self.work_group_size = work_group_size
         self.arguments: list[KernelArgument] = []
         self.instructions: list[IRInstruction] = []
-    
+        self._register_manager: Optional[RegisterManager] = None
+
     def add_argument(self, name: str, type_name: str, const: bool = False):
-        """Добавление аргумента ядра"""
         self.arguments.append(
             KernelArgument(
                 type_name=type_name,
@@ -24,40 +25,56 @@ class Kernel:
         )
         return self
     
-    
-    
+
     def create_instruction(self, instruction_class: type, *args: Any) -> 'Kernel':
-        """Создание и добавление инструкции"""
-        instruction = instruction_class(*args)
-        self.instructions.append(instruction)
+        self._register_manager = None
+        self.instructions.append(instruction_class(*args))
         return self
+    
+
+    def get_instructions_parts(self) -> list[list[str]]:
+        return [instr.get_parts() for instr in self.instructions]
+    
+    def get_normalize_instructions_parts(self) -> list[list[str]]:
+        self._normalize_registers()
+        return [instr.get_parts(self._register_manager) for instr in self.instructions]
     
     def get_instructions(self) -> list[str]:
         return [instr.to_text() for instr in self.instructions]
 
     def to_text(self) -> str:
-        """Генерация текстового представления IR"""
-        lines = []
-        
-        wg_str = ', '.join(map(str, self.work_group_size))
-        lines.append(f"; Kernel: {self.name}")
-        lines.append(f"; Work group size: [{wg_str}]")
-        
-        # Секция аргументов
-        lines.append(f"define kernel {self.name} (")
-        if self.arguments:
-            for i, arg in enumerate(self.arguments):
-                const_str = "const " if arg.const else ""
-                arg_line = f"    {const_str}{arg.type_name} {arg['name']}"
-                if i < len(self.arguments) - 1:
-                    arg_line += ","
-                lines.append(arg_line)
-        lines.append(") {")
+        lines = [
+            f"; Kernel: {self.name}",
+            f"; Work group size: [{', '.join(map(str, self.work_group_size))}]",
+            f"define kernel {self.name} (",
+        ]
 
-        # Секция инструкций
+        for i, arg in enumerate(self.arguments):
+            const_str = "const " if arg.const else ""
+            suffix = "," if i < len(self.arguments) - 1 else ""
+            lines.append(f"    {const_str}{arg.type_name} {arg.name}{suffix}")
+
+        lines.append(")")
+        lines.append("{")
+
         for instr in self.instructions:
             lines.append(f"  {instr.to_text()}")
 
         lines.append("}")
-        
+
         return '\n'.join(lines)
+    
+    def _normalize_registers(self) -> None:
+        if self._register_manager is not None:
+            return
+
+        self._register_manager = RegisterManager()
+        operands = [
+            operand
+            for instr in self.instructions
+            for operand in instr.get_operands()
+        ]
+        self._register_manager.build_mapping(operands)
+
+    def get_register_manager(self) -> Optional[RegisterManager]:
+        return self._register_manager

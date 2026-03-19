@@ -51,7 +51,20 @@ def main(input_par, output_par, flag_for_decompilation, cfg_path, unrolling_limi
             # function_data[2] = instructions
             function_data[1].kernel_name = function_data[0]
             kernel = textToIR(function_data[2], function_data[1])
-
+            print(kernel.to_text())
+            print()
+            print("=========================")
+            print()
+            parts = kernel.get_instructions_parts()
+            for line in parts:
+                print(f"  {line}")
+            print()
+            print("=========================")
+            print()
+            n_parts = kernel.get_normalize_instructions_parts()
+            for line in n_parts:
+                print(f"  {line}")
+            print()
             if flag_newline:
                 output_file.write("\n")
             flag_newline = True
