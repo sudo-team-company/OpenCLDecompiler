@@ -135,7 +135,8 @@ def _parse_amdgpu_pal_metadata(amdgpu_pal_metadata: list[str]) -> dict[str, Conf
             size_of_work_groups=km[".reqd_workgroup_size"],
             local_size=None,
             arguments=list(starmap(_make_argument, enumerate(list(km[".args"])))),
-            offset_to_content=_convert_args_to_offset_to_content(km[".args"]),
+            #TODO(GFV) пока убрал, так как это парсер неподдерживаемого формата, а так же offset_to_content работает по другому 
+            #offset_to_content=_convert_args_to_offset_to_content(km[".args"]),
         )
     return result
 

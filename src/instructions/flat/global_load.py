@@ -43,6 +43,7 @@ class GlobalLoad(FlatLoad):
         if (
             self.suffix in {"ushort", "ubyte"}
             and self.from_registers in self.node.state
+            # TODO(GFV) DISPATCH_POINTER уже рудимент
             and self.node.state[self.from_registers].type == RegisterType.DISPATCH_POINTER
             and self.inst_offset == "inst_offset:2"
         ):
@@ -68,6 +69,7 @@ class GlobalLoad(FlatLoad):
                     offset = "0x1e"
                 if "16 : 22" in self.node.state[self.extra_registers].get_value():
                     offset = "0x20"
-            upload_by_offset(self.node.state, self.vdst, offset, bits=int(self.suffix[1:]))
+            #TODO(GFV) убрал так как сейчас нужно знать от куда читаю
+            #upload_by_offset(self.node.state, self.vdst, offset, bits=int(self.suffix[1:]))
             return self.node
         return super().to_fill_node()

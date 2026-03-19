@@ -13,7 +13,7 @@ class ConfigData:
     # используется для локальных массивов, хранит сколько всего занято локальной памяти. нужно для восстановления размеров массивов
     
     arguments: list[KernelArgument] # много где используется -- НУЖНО
-    offset_to_content: dict[str, RegisterContent] = field(default_factory=dict) # заполняется автоматически
+    offset_to_content: dict[str, dict[str, RegisterContent]] = field(default_factory=dict) # заполняется автоматически
     preloaded_reg: PreloadedRegs = None # пофиг это мое, нигде не используется 
     kernel_name: str = ""
 

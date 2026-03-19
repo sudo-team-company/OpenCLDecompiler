@@ -668,7 +668,7 @@ class DecompilerData(metaclass=Singleton):
             self.init_work_group(dim, f"s{g_id_shift + dim}")
         self.init_exec()
 
-    def init_ptr(self, state, lp, hp):
+    def init_ptr(self, state, lp, hp, pt=RegisterType.ARGUMENTS_POINTER):
         self.set_reg_make_version(
             state,
             lp,
@@ -676,7 +676,7 @@ class DecompilerData(metaclass=Singleton):
                 integrity=Integrity.LOW_PART,
                 register_content=RegisterContent(
                     value="0",
-                    type_=RegisterType.ARGUMENTS_POINTER,
+                    type_=pt,
                     expression_node=ExpressionManager().add_const_node(0, OpenCLTypes.USHORT),
                 ),
             ),
@@ -688,7 +688,7 @@ class DecompilerData(metaclass=Singleton):
                 integrity=Integrity.HIGH_PART,
                 register_content=RegisterContent(
                     value="0",
-                    type_=RegisterType.ARGUMENTS_POINTER,
+                    type_=pt,
                     expression_node=ExpressionManager().add_const_node(0, OpenCLTypes.USHORT),
                 ),
             ),

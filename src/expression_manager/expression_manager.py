@@ -429,6 +429,9 @@ class ExpressionManager(metaclass=Singleton):
         return logical_not_node
 
     def add_kernel_argument(self, arg: KernelArgument, offset: int) -> ExpressionNode:
+        if arg.name == "UNKNOWN":
+            return self.get_empty_node()
+        
         for reg_type in CONSTANT_VALUES:
             reg_type_name = CONSTANT_VALUES[reg_type][0]
             if arg.name == reg_type_name:

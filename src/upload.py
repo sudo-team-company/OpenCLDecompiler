@@ -75,12 +75,12 @@ def upload_usesetup(state, to_registers, offset):
         curr_to_register = get_next_reg(curr_to_register)
 
 
-def upload_kernel_param(state, offset, to_registers):
+def upload_kernel_param(state, offset, to_registers, base):
     decompiler_data = DecompilerData()
     start, end = check_and_split_regs(to_registers)
     start, end = int(start[1:]), int(end[1:])
     while start <= end:
-        content = decompiler_data.config_data.offset_to_content.get(hex(offset))
+        content = decompiler_data.config_data.offset_to_content[base].get(hex(offset))
         if not content:
             # Motivation example:
             #   1. We have three args of size and align 4 and then arg with size and align 8

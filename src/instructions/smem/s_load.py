@@ -45,7 +45,7 @@ class SLoad(BaseInstruction):
                         bits=bits,
                     )
                 elif sbase.type == RegisterType.ARGUMENTS_POINTER:
-                    upload_kernel_param(self.node.state, int(self.offset, 16), self.sdata)
+                    upload_kernel_param(self.node.state, int(self.offset, 16), self.sdata, self.from_registers)
                 elif sbase.type == RegisterType.GLOBAL_DATA_POINTER:
                     upload_global_data_pointer(self.node.state, self.sdata, self.sbase)
             else:

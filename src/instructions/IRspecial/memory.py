@@ -2,6 +2,7 @@ from src.base_instruction import BaseInstruction
 from src.kernel_params import process_arg
 from src.model.config_data import KernelArgument
 from src.opencl_types import evaluate_size, make_asm_type
+from src.register import check_and_split_regs
 import src.register 
 
 class MemoryAllocation(BaseInstruction):
@@ -9,8 +10,6 @@ class MemoryAllocation(BaseInstruction):
         dest = self.node.instruction[1]
         lp, hp = src.register.split_range(dest)
 
-        # TODO на данный момент работаем только с указателем на ARGUMENTS_POINTER
-        # нужен еще RegisterType.DISPATCH_POINTER
         self.decompiler_data.init_ptr(self.node.state, lp, hp)
         return self.node
     
@@ -22,6 +21,7 @@ class StoreInMem(BaseInstruction):
         # self.node.instruction[2] arg_type
         # self.node.instruction[3] arg_name
         # self.node.instruction[4] offset
+        from_registers, _ = check_and_split_regs(self.node.instruction[1])
         arg_name = self.node.instruction[3]
         type_name = self.node.instruction[2]
         # TODO тут надо определять что мы загружаем, но так как у нас есть только загрузка аргументов то пофиг 
@@ -34,13 +34,13 @@ class StoreInMem(BaseInstruction):
             int(self.node.instruction[4]),
             8 if arg_name.startswith("*") else evaluate_size(make_asm_type(type_name))[0],
             False,
-            found_arg.const if found_arg else False #TODO тут по факту надо определять конст не конст
+            found_arg.const if found_arg else False #TODO(GFV) тут по факту надо определять конст не конст
             )
             
 
         if not ka.is_vector():
-            process_arg(ka.offset, ka)
+            process_arg(ka.offset, ka, from_registers)
         else:
             for shift in range(0, ka.size, ka.basic_size()):
-                process_arg(ka.offset + shift, ka)
+                process_arg(ka.offset + shift, ka, from_registers)
         return self.node
