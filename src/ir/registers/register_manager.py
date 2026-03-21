@@ -47,3 +47,11 @@ class RegisterManager:
 
     def reset(self):
         self._mapping.clear()
+
+class IdentityRegisterManager:
+    def map(self, reg: RegOrVal_ty) -> str:
+        if isinstance(reg, Val):
+            return reg.value
+        return reg.name
+    
+IDENTITY_MANAGER = IdentityRegisterManager()

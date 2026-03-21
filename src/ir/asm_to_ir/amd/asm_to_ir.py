@@ -5,10 +5,12 @@ from src.ir.instructions.special.memory import MemoryAllocation
 from src.ir.instructions.special.memory import Store
 from src.ir.instructions.special.InitReg import InitReg
 from src.ir.instructions.special.generic import GenericInstruction
-from src.ir.registers.reg import Val, Reg_ty
+from src.ir.registers.reg import Val, Reg_ty, RegOrVal_ty
 
 from src.ir.asm_to_ir.amd.register_factory import RegFactory
 
+from src.ir.instructions.common.add import Add, AddC
+from src.ir.asm_to_ir.amd.instruction_dict import instruction_dict
 
 def init_dispatch_reg(dispatch_reg: Reg_ty, kernel: Kernel):
     kernel.create_instruction(MemoryAllocation, dispatch_reg)
@@ -20,7 +22,34 @@ def init_dispatch_reg(dispatch_reg: Reg_ty, kernel: Kernel):
     kernel.create_instruction(Store, dispatch_reg, Val("get_global_size(2)"), Val("uint"), Val("20"))
     kernel.create_instruction(Store, dispatch_reg, Val("UNKNOWN"), Val("uint"), Val("24"))
 
-# TODO на данный момент работает только с .amdcl2
+def create_instruction_from_opcode(kernel: Kernel, rf: RegFactory, opcode: str, operands: list[RegOrVal_ty]):
+    def is_scalar(opcode: str):
+        return opcode[0] == 's'
+    
+    if  instruction_dict.get(opcode):
+        instr_class = instruction_dict[opcode]
+    else:
+        raise NotImplementedError
+
+    if instr_class == Add or instr_class == AddC:
+            if len(operands) >= 4 and operands[1].name == 'vcc':
+                kernel.create_instruction(
+                    instr_class, 
+                    operands[0], 
+                    operands[2], 
+                    operands[3],
+                    is_scalar=is_scalar(opcode)
+                )
+                return
+            
+    kernel.create_instruction(
+        instr_class, 
+        *operands,
+        is_scalar=is_scalar(opcode)
+    )
+
+
+# TODO(GFV) на данный момент работает только с .amdcl2
 def textToIR(text: list[str], cf: ConfigData) -> Kernel:
     rf = RegFactory()
 
@@ -74,6 +103,6 @@ def textToIR(text: list[str], cf: ConfigData) -> Kernel:
             parsed_operand = rf.parse_operand(operand.rstrip(','))
             operands.append(parsed_operand)
         
-        kernel.create_instruction(GenericInstruction, opcode, *operands)
+        create_instruction_from_opcode(kernel, rf, opcode, operands)
     
     return kernel

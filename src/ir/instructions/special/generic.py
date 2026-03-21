@@ -1,11 +1,10 @@
 from src.ir.instructions.IRInstruction import IRInstruction
-from src.ir.registers.register_manager import RegisterManager
-
+from src.ir.registers.register_manager import RegisterManager, IDENTITY_MANAGER
 class GenericInstruction(IRInstruction):
-    def __init__(self, opcode: str, *operands):
+    def __init__(self, opcode: str, *operands, is_scalar: bool = False):
         self.opcode = opcode
         self.operands = tuple(operands)
-
+        self._is_scalar = is_scalar
 
     def to_text(self) -> str:
         if self.operands:
@@ -13,11 +12,12 @@ class GenericInstruction(IRInstruction):
             return f"{self.opcode} {', '.join(operand_strings)}"
         return self.opcode
     
-    def get_parts(self, manager: RegisterManager = None) -> list[str]:
-        if manager:
-            normalized = [manager.map(op) for op in self.operands]
-            return [self.opcode] + normalized
-        return [self.opcode, *[op.name for op in self.operands]]
+    def get_parts(self, manager: RegisterManager = IDENTITY_MANAGER) -> list[list[str]]:
+        normalized = [manager.map(op) for op in self.operands]
+        return [[self._get_normalize_opcode()] + normalized]
     
     def get_operands(self):
         return self.operands
+    
+    def is_scalar(self):
+        return self._is_scalar
