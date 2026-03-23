@@ -7,10 +7,12 @@ from src.decompiler_data import DecompilerData
 from src.flag_type import FlagType
 from src.graph import GraphType
 from src.graph.control_flow_graph import CONTROL_FLOW_GRAPH_ENABLED_CONTEXT_KEY, ControlFlowGraph
-from src.kernel_parser import parse_kernel
+from src.kernel_parser import parse_kernel as parse_kernel_amd
+from src.kernel_parser.ptx_parser import parse_kernel as parse_kernel_ptx
 from src.utils import get_context
 
-from src.ir.asm_to_ir.amd.asm_to_ir import textToIR
+from src.ir.asm_to_ir.amd.asm_to_ir import textToIR as textToIR_amd
+from src.ir.asm_to_ir.ptx.asm_to_ir import textToIR as textToIR_ptx
 
 
 CONTEXT = get_context()
@@ -40,30 +42,29 @@ def main(input_par, output_par, flag_for_decompilation, cfg_path, unrolling_limi
         decompiler_data.flag_for_decompilation = FlagType(flag_for_decompilation)
         decompiler_data.unrolling_limit = unrolling_limit
 
-
-        functions_data, decompiler_data.gpu = parse_kernel(body_of_file.splitlines())
-        # kernels = 
-
         flag_newline = False
-        for function_data in functions_data:
-            # function_data[0] = kernel_name
-            # function_data[1] = config
-            # function_data[2] = instructions
-            function_data[1].kernel_name = function_data[0]
-            kernel = textToIR(function_data[2], function_data[1])
-            if flag_newline:
-                output_file.write("\n")
-            flag_newline = True
-            process_src(kernel)
-
-
-
-        # flag_newline = False
-        # for function_data in functions_data:
-        #     if flag_newline:
-        #         output_file.write("\n")
-        #     flag_newline = True
-        #     process_src(*function_data)
+        if Path(input_par).suffix == '.ptx':
+            ptxKernel = parse_kernel_ptx(body_of_file.splitlines())
+            for func in ptxKernel:
+                kernel = textToIR_ptx(func)
+                #print(kernel.to_text())
+                if flag_newline:
+                    output_file.write("\n")
+                flag_newline = True
+                process_src(kernel)
+        else:
+            functions_data, decompiler_data.gpu = parse_kernel_amd(body_of_file.splitlines())
+            for function_data in functions_data:
+                # function_data[0] = kernel_name
+                # function_data[1] = config
+                # function_data[2] = instructions
+                function_data[1].kernel_name = function_data[0]
+                kernel = textToIR_amd(function_data[2], function_data[1])
+                #print(kernel.to_text())
+                if flag_newline:
+                    output_file.write("\n")
+                flag_newline = True
+                process_src(kernel)
 
 
 def create_parser():

@@ -1,9 +1,9 @@
-from src.ir.instructions.IRInstruction import IRInstruction
+from src.ir.instructions.generic import GenericInstruction
 from src.ir.registers.register_manager import RegisterManager, IDENTITY_MANAGER
 
-class Ignore(IRInstruction):
+class Ignore(GenericInstruction):
     def __init__(self, *operands, is_scalar):
-        super().__init__()
+        super().__init__("", is_scalar)
 
     def to_text(self) -> str:
         return ""

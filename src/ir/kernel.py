@@ -1,5 +1,5 @@
 from typing import Any, Optional
-from src.ir.instructions.IRInstruction import IRInstruction
+from src.ir.instructions.generic import GenericInstruction
 from src.model.config_data import KernelArgument
 from src.opencl_types import evaluate_size, make_asm_type
 from src.ir.registers.register_manager import RegisterManager
@@ -9,7 +9,7 @@ class Kernel:
         self.name = name
         self.work_group_size = work_group_size
         self.arguments: list[KernelArgument] = []
-        self.instructions: list[IRInstruction] = []
+        self.instructions: list[GenericInstruction] = []
         self._register_manager: Optional[RegisterManager] = None
 
     def add_argument(self, name: str, type_name: str, const: bool = False):
@@ -26,26 +26,31 @@ class Kernel:
         return self
     
 
-    def create_instruction(self, instruction_class: type, *args: Any) -> 'Kernel':
+    def create_instruction(self, instruction_class: type, *args: Any, is_scalar: bool = False) -> 'Kernel':
         self._register_manager = None
-        self.instructions.append(instruction_class(*args))
+        self.instructions.append(instruction_class(*args, is_scalar=is_scalar))
         return self
     
 
     def get_instructions_parts(self) -> list[list[str]]:
-        return [instr.get_parts() for instr in self.instructions]
+        result = []
+        for instr in self.instructions:
+            result.extend(instr.get_parts())
+        return result
     
     def get_normalize_instructions_parts(self) -> list[list[str]]:
         self._normalize_registers()
-        return [instr.get_parts(self._register_manager) for instr in self.instructions]
+        result = []
+        for instr in self.instructions:
+            result.extend(instr.get_parts(self._register_manager))
+        return result
     
     def get_instructions(self) -> list[str]:
         return [instr.to_text() for instr in self.instructions]
 
     def to_text(self) -> str:
         lines = [
-            f"; Kernel: {self.name}",
-            f"; Work group size: [{', '.join(map(str, self.work_group_size))}]",
+            f".WGS [{', '.join(map(str, self.work_group_size))}]",
             f"define kernel {self.name} (",
         ]
 

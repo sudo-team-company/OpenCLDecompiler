@@ -1,5 +1,5 @@
 from src.ir.registers.reg import Reg_ty, RegOrVal_ty, Reg32, CompositeReg
-from src.ir.instructions.special.generic import GenericInstruction
+from src.ir.instructions.generic import GenericInstruction
 from src.ir.registers.register_manager import RegisterManager, IDENTITY_MANAGER
 from src.ir.TemporaryVariableAllocator import tva
 

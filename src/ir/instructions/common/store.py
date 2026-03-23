@@ -1,5 +1,5 @@
 from src.ir.registers.reg import Reg64, RegOrVal_ty
-from src.ir.instructions.special.generic import GenericInstruction
+from src.ir.instructions.generic import GenericInstruction
 
 class Store(GenericInstruction):
     def __init__(self, address: Reg64, value: RegOrVal_ty, is_scalar, size):

@@ -3,7 +3,7 @@ from src.ir.instructions.common.mul import MulHi, MulLo, MulHi_s, MulLo_s
 from src.ir.instructions.common.mad import Mad
 from src.ir.instructions.common.lshl import LShl, LShl_Rev, LShr, LShr_Rev, AShr, AShr_Rev
 from src.ir.instructions.common.mov import Mov
-from src.ir.instructions.common.load import Load
+from src.ir.instructions.common.load import Load32, Load64, Load128
 from src.ir.instructions.common.store import Store8, Store32, Store64, Store128
 from src.ir.instructions.common.bfe import bfe, bfe_s
 from src.ir.instructions.common.endpgm import EndPgm
@@ -46,12 +46,12 @@ instruction_dict = {
         's_mov_b64': Mov,
         's_movk_i32': Mov,
 
-        's_load_dword': Load,
-        's_load_dwordx2': Load,
-        's_load_dwordx4': Load,
-        'flat_load_dword': Load,
-        'flat_load_dwordx2': Load,
-        'flat_load_dwordx4': Load,
+        's_load_dword': Load32,
+        's_load_dwordx2': Load64,
+        's_load_dwordx4': Load128,
+        'flat_load_dword': Load32,
+        'flat_load_dwordx2': Load64,
+        'flat_load_dwordx4': Load128,
         
         'flat_store_byte': Store8,
         'flat_store_dword': Store32,

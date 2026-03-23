@@ -4,7 +4,7 @@ from src.model.config_data import ConfigData
 from src.ir.instructions.special.memory import MemoryAllocation
 from src.ir.instructions.special.memory import Store
 from src.ir.instructions.special.InitReg import InitReg
-from src.ir.instructions.special.generic import GenericInstruction
+from src.ir.instructions.generic import GenericInstruction
 from src.ir.registers.reg import Val, Reg_ty, RegOrVal_ty
 
 from src.ir.asm_to_ir.amd.register_factory import RegFactory
@@ -22,7 +22,7 @@ def init_dispatch_reg(dispatch_reg: Reg_ty, kernel: Kernel):
     kernel.create_instruction(Store, dispatch_reg, Val("get_global_size(2)"), Val("uint"), Val("20"))
     kernel.create_instruction(Store, dispatch_reg, Val("UNKNOWN"), Val("uint"), Val("24"))
 
-def create_instruction_from_opcode(kernel: Kernel, rf: RegFactory, opcode: str, operands: list[RegOrVal_ty]):
+def create_instruction_from_opcode(kernel: Kernel, opcode: str, operands: list[RegOrVal_ty]):
     def is_scalar(opcode: str):
         return opcode[0] == 's'
     
@@ -103,6 +103,6 @@ def textToIR(text: list[str], cf: ConfigData) -> Kernel:
             parsed_operand = rf.parse_operand(operand.rstrip(','))
             operands.append(parsed_operand)
         
-        create_instruction_from_opcode(kernel, rf, opcode, operands)
+        create_instruction_from_opcode(kernel, opcode, operands)
     
     return kernel

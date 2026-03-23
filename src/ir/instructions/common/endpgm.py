@@ -1,4 +1,4 @@
-from src.ir.instructions.special.generic import GenericInstruction
+from src.ir.instructions.generic import GenericInstruction
 
 class EndPgm(GenericInstruction):
     def __init__(self, is_scalar: bool):

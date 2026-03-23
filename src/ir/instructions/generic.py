@@ -1,6 +1,6 @@
-from src.ir.instructions.IRInstruction import IRInstruction
 from src.ir.registers.register_manager import RegisterManager, IDENTITY_MANAGER
-class GenericInstruction(IRInstruction):
+
+class GenericInstruction:
     def __init__(self, opcode: str, *operands, is_scalar: bool = False):
         self.opcode = opcode
         self.operands = tuple(operands)

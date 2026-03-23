@@ -1,4 +1,4 @@
-from src.ir.instructions.special.generic import GenericInstruction
+from src.ir.instructions.generic import GenericInstruction
 from src.ir.registers.reg import Reg_ty, Val
 
 class InitReg(GenericInstruction):
