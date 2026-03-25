@@ -15,7 +15,6 @@ class Mad(GenericInstruction):
             tmp_reg_name = tva.generate("mad")
             self.operand3_tmp_reg = Reg64(tmp_reg_name)
             self.operand3_val = operand3
-            operand3 = self.operand3_tmp_reg
 
         if destination.bit_width == 32:
             dest_name = tva.generate("mad_dest")
@@ -34,9 +33,21 @@ class Mad(GenericInstruction):
 
     def _get_normalize_opcode(self) -> str:
         return "v_mad_i64_i32"  if self.signed else "v_mad_u64_u32" 
+    
+    def get_operands(self):
+        if self.operand3_tmp_reg is not None:
+            return super().get_operands() + (self.operand3_tmp_reg,)
+        return super().get_operands()
+    
 
     def get_parts(self, manager: RegisterManager = IDENTITY_MANAGER) -> list[list[str]]:
         result = []
+
+        opcode = self._get_normalize_opcode()
+        dest_str = manager.map(self.destination)
+        op1_str = manager.map(self.operand1)
+        op2_str = manager.map(self.operand2)
+        op3_str = manager.map(self.operand3)
 
         if self.operand3_val is not None:
             tmp_reg_str = manager.map(self.operand3_tmp_reg)
@@ -44,12 +55,8 @@ class Mad(GenericInstruction):
             tmp_lo, tmp_hi = split_range(tmp_reg_str)
             result.append(["v_mov_b32", tmp_lo, val_str])
             result.append(["s_mov_b32", tmp_hi, '0'])
-
-        opcode = self._get_normalize_opcode()
-        dest_str = manager.map(self.destination)
-        op1_str = manager.map(self.operand1)
-        op2_str = manager.map(self.operand2)
-        op3_str = manager.map(self.operand3)
+            result.append([opcode, dest_str, '0', op1_str, op2_str, tmp_reg_str])   
+            return result
 
         result.append([opcode, dest_str, '0', op1_str, op2_str, op3_str])   
 
