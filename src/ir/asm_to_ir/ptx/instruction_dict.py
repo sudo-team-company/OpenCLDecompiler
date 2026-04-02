@@ -1,6 +1,7 @@
 from src.ir.instructions.common.add import Add
+from src.ir.instructions.common.logical import And
 from src.ir.instructions.common.sub import Sub
-from src.ir.instructions.common.mul import MulHi, MulLo, MulHi_s, MulLo_s, MulWide
+from src.ir.instructions.common.mul import MulHi, MulLo, MulHi_s, MulLo_s, MulWide, MulWide_s
 from src.ir.instructions.common.mad import Mad
 from src.ir.instructions.common.lshl import LShl
 from src.ir.instructions.common.mov import Mov
@@ -14,16 +15,19 @@ instruction_dict = {
         'add.s32': Add,
         'add.s64': Add,
         'add.s16': Add,
-        
+
         'sub.s32': Sub,
         'sub.s64': Sub,
+        'sub.s16': Sub,
+
 
         'mul.lo.s16': MulLo_s,
         'mul.lo.s32': MulLo_s,
         'mul.hi.s32': MulHi_s,
         'mul.lo.u32': MulLo,
         'mul.hi.u32': MulHi,
-        'mul.wide.s32': MulWide,
+        'mul.wide.s32': MulWide_s,
+        'mul.wide.u32': MulWide, 
 
         'mad.lo.s32': Mad,
 
@@ -40,6 +44,9 @@ instruction_dict = {
         'shl.b16': LShl,
         'shl.b32': LShl,
         'shl.b64': LShl,
+
+        'and.b64': And,
+
 
         'ld.param.u8': Load32,
         'ld.param.s32': Load32,

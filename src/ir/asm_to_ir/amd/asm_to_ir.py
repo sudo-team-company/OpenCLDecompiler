@@ -10,6 +10,7 @@ from src.ir.registers.reg import Val, Reg_ty, RegOrVal_ty
 from src.ir.asm_to_ir.amd.register_factory import RegFactory
 
 from src.ir.instructions.common.add import Add, AddC
+from src.ir.instructions.common.sub import Sub, SubRev
 from src.ir.asm_to_ir.amd.instruction_dict import instruction_dict
 
 def init_dispatch_reg(dispatch_reg: Reg_ty, kernel: Kernel):
@@ -32,6 +33,16 @@ def create_instruction_from_opcode(kernel: Kernel, opcode: str, operands: list[R
         raise NotImplementedError
 
     if instr_class == Add or instr_class == AddC:
+            if len(operands) >= 4 and operands[1].name == 'vcc':
+                kernel.create_instruction(
+                    instr_class, 
+                    operands[0], 
+                    operands[2], 
+                    operands[3],
+                    is_scalar=is_scalar(opcode)
+                )
+                return
+    if instr_class == Sub or instr_class == SubRev:
             if len(operands) >= 4 and operands[1].name == 'vcc':
                 kernel.create_instruction(
                     instr_class, 

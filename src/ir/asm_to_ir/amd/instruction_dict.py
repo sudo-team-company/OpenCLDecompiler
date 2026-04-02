@@ -1,4 +1,5 @@
 from src.ir.instructions.common.add import Add, AddC
+from src.ir.instructions.common.sub import Sub, SubRev
 from src.ir.instructions.common.mul import MulHi, MulLo, MulHi_s, MulLo_s
 from src.ir.instructions.common.mad import Mad
 from src.ir.instructions.common.lshl import LShl, LShl_Rev, LShr, LShr_Rev, AShr, AShr_Rev
@@ -14,6 +15,12 @@ instruction_dict = {
         's_add_u32': Add,
         'v_addc_u32': AddC,
         's_addc_u32': AddC,
+        
+        's_sub_u32': Sub,
+        'v_subrev_u32': SubRev,
+        'v_sub_u32': Sub, 
+        's_subb_u32': Sub,
+        'v_subb_u32': Sub,
         
         'v_mul_u32': MulLo,
         's_mul_u32': MulLo,

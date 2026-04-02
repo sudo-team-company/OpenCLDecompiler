@@ -49,3 +49,8 @@ class Sub(GenericInstruction):
             result.extend([line1, line2])
 
         return result
+    
+
+class SubRev(Sub):
+    def __init__(self, destination: Reg_ty, operand1: RegOrVal_ty, operand2: RegOrVal_ty, is_scalar):
+        super().__init__(destination, operand2, operand1, is_scalar=is_scalar)

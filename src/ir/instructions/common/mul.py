@@ -42,7 +42,7 @@ class MulHi_s(MulHi):
 
 
 class MulWide(GenericInstruction):
-    def __init__(self, destination: Reg_ty, operand1: RegOrVal_ty, operand2: RegOrVal_ty, signed=True,  is_scalar=False):
+    def __init__(self, destination: Reg_ty, operand1: RegOrVal_ty, operand2: RegOrVal_ty, signed=False,  is_scalar=False):
         name =  "mul64_s" if signed else "mul64_u"   
         super().__init__(name, destination, operand1, operand2, is_scalar=is_scalar)
         self.destination = destination
@@ -63,3 +63,8 @@ class MulWide(GenericInstruction):
         op2_str = manager.map(self.operand2)
 
         return [[opcode, dest_str, '0', op1_str, op2_str, '0']]
+    
+class MulWide_s(MulWide):
+    def __init__(self, destination: Reg32, operand1: RegOrVal_ty, operand2: RegOrVal_ty, is_scalar=False):
+        super().__init__(destination, operand1, operand2, signed=True, is_scalar=is_scalar)    
+

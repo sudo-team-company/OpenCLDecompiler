@@ -82,7 +82,6 @@ class PredReg(BaseReg):
 
 
 class CompositeReg(BaseReg):
-
     def __init__(self, name: str, regs: List[Reg32]):
         self._regs: Tuple[Reg32, ...] = tuple(regs)
         self._name: str = name
