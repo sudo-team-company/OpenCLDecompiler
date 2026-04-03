@@ -21,3 +21,6 @@ class GenericInstruction:
     
     def is_scalar(self):
         return self._is_scalar
+    
+    def _get_normalize_opcode(self):
+        return self.opcode

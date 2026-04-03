@@ -28,7 +28,8 @@ instruction_dict = {
         'mul.hi.u32': MulHi,
         'mul.wide.s32': MulWide_s,
         'mul.wide.u32': MulWide, 
-
+        'mul.lo.s64': MulLo,
+        
         'mad.lo.s32': Mad,
 
         'mov.u16': Mov,

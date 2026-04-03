@@ -1,6 +1,7 @@
 from src.ir.instructions.common.add import Add, AddC
+from src.ir.instructions.common.logical import And
 from src.ir.instructions.common.sub import Sub, SubRev
-from src.ir.instructions.common.mul import MulHi, MulLo, MulHi_s, MulLo_s
+from src.ir.instructions.common.mul import MulHi, MulLo, MulHi_s, MulLo_s, Mul24
 from src.ir.instructions.common.mad import Mad
 from src.ir.instructions.common.lshl import LShl, LShl_Rev, LShr, LShr_Rev, AShr, AShr_Rev
 from src.ir.instructions.common.mov import Mov
@@ -26,11 +27,13 @@ instruction_dict = {
         's_mul_u32': MulLo,
         'v_mul_hi_u32': MulHi,
         's_mul_hi_u32': MulHi,
+        'v_mul_lo_u32': MulLo,
+        's_mul_lo_u32': MulLo,
         'v_mul_i32': MulLo_s,
         's_mul_i32': MulLo_s,
         'v_mul_hi_i32': MulHi_s,
         's_mul_hi_i32': MulHi_s,
-
+        'v_mul_i32_i24': Mul24,
         
         'v_mad_u32': Mad,
         's_mad_u32': Mad,
@@ -47,7 +50,10 @@ instruction_dict = {
         's_lshrrev_b32': LShr_Rev,
         'v_lshrrev_b64': LShr_Rev,
         's_ashr_i32': AShr,
-
+        
+        's_and_b32': And,
+        'v_and_b32': And,
+        
         'v_mov_b32': Mov,
         's_mov_b32': Mov,
         's_mov_b64': Mov,
