@@ -10,6 +10,7 @@ from src.ir.instructions.special.memory import Store
 from src.ir.asm_to_ir.ptx.instruction_dict import instruction_dict
 
 from src.ir.asm_to_ir.ptx.ptx_kernel import PTXKernel, PTXArgument
+from src.ir.instructions.special.local_memory import LocalAdd
 
 
 def _create_instruction_from_opcode(kernel: Kernel, opcode: str, operands: list[RegOrVal_ty], args_offset):
@@ -25,6 +26,15 @@ def _create_instruction_from_opcode(kernel: Kernel, opcode: str, operands: list[
             Reg64("argptr"),
             args_offset[operands[1].name],
             is_scalar=False
+        )
+        return
+
+    if instr_class == LocalAdd:
+        kernel.create_instruction(
+                    instr_class, 
+                    operands[1], 
+                    operands[2],
+                    is_scalar=False
         )
         return
 
@@ -92,12 +102,17 @@ def _init_special_registers(kernel: Kernel, rf: RegFactory, special_registers: l
             value = f"get_local_size({dim})"
 
         if value is not None:
-            kernel.create_instruction(InitReg, rf.get_or_create(reg_name), Val(value))
+            kernel.create_instruction(InitReg, rf.get_or_create_auto(reg_name), Val(value))
 
 def textToIR(kernel_info: PTXKernel) -> Kernel:
     rf = RegFactory()
 
     kernel = Kernel(kernel_info.name, kernel_info.work_group_size)
+    
+    for name, size in kernel_info.locals.items():
+        kernel.set_local_memory(name, size)
+        parsed_operand = rf.get_or_create(name, "64")
+
     args_offset = {}
     offset = 0
     for arg in kernel_info.arguments:
@@ -133,9 +148,9 @@ def textToIR(kernel_info: PTXKernel) -> Kernel:
         operands = []
         
         for operand in parts[1:]:
-            parsed_operand = rf.get_or_create(operand.rstrip(','))
+            parsed_operand = rf.get_or_create_auto(operand.rstrip(','))
             operands.append(parsed_operand)
         
         _create_instruction_from_opcode(kernel, opcode, operands, args_offset)
-    
+    kernel.close()
     return kernel

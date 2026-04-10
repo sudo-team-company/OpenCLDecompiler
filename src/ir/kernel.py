@@ -3,6 +3,9 @@ from src.ir.instructions.generic import GenericInstruction
 from src.model.config_data import KernelArgument
 from src.opencl_types import evaluate_size, make_asm_type
 from src.ir.registers.register_manager import RegisterManager
+from src.ir.instructions.special.local_memory import LocalMemory
+from src.ir.registers.reg import Reg64, Val
+
 
 class Kernel:
     def __init__(self, name: str, work_group_size: list[int]):
@@ -11,6 +14,7 @@ class Kernel:
         self.arguments: list[KernelArgument] = []
         self.instructions: list[GenericInstruction] = []
         self._register_manager: Optional[RegisterManager] = None
+        self._local_mem: dict[str, int] = {}
 
     def add_argument(self, name: str, type_name: str, const: bool = False):
         self.arguments.append(
@@ -25,6 +29,17 @@ class Kernel:
         )
         return self
     
+    def close(self) -> 'Kernel':
+        local_memories = [
+            LocalMemory(destination=Reg64(name), size=Val(str(size)), is_scalar=True)
+            for name, size in self._local_mem.items()
+        ]
+        self.instructions = local_memories + self.instructions
+
+        return self
+
+    def set_local_memory(self, name: str, size: int):
+        self._local_mem[name] = size
 
     def create_instruction(self, instruction_class: type, *args: Any, is_scalar: bool = False) -> 'Kernel':
         self._register_manager = None

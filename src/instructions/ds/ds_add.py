@@ -9,8 +9,8 @@ class DsAdd(BaseInstruction):
         super().__init__(node, suffix)
         self.addr = self.instruction[1]
         self.vdata0 = self.instruction[2]
-        self.offset = int(self.instruction[3][7:]) if len(self.instruction) == 4 else 0  # noqa: PLR2004
-        self.varname = self.get_lds_var_name_with_offset()
+        # self.offset = int(self.instruction[3][7:]) if len(self.instruction) == 4 else 0  # noqa: PLR2004
+        self.varname = self.expression_manager.expression_to_string(self.get_expression_node(self.addr))
 
     def to_print_unresolved(self):
         if self.suffix == "u32":

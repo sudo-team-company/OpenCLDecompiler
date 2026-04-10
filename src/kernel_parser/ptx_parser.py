@@ -57,6 +57,23 @@ def _parse_reg(func: PTXKernel, line: str):
         for n in range(1, int(count) + 1):
             func.registers.append(PTXRegister(name=f"%{prefix}{n}", reg_type=rtype))
 
+def _parse_locals(func: PTXKernel, line: str):
+    m = re.match(r'\.shared\s+(?:\.align\s+\d+\s+)?\.(\w+)\s+([^\s\[]+)\[(\d+)\]', line)
+    if m:
+        rtype, name, count = m.groups()
+        
+        type_size = {
+            'b8': 1, 'b16': 2, 'b32': 4, 'b64': 8,
+            'u8': 1, 's8': 1, 'u16': 2, 's16': 2,
+            'u32': 4, 's32': 4, 'u64': 8, 's64': 8,
+            'f16': 2, 'f32': 4, 'f64': 8,
+        }
+        
+        element_size = type_size.get(rtype)
+        
+        total_size = element_size * int(count)
+        func.locals[name] = total_size
+
 def parse_kernel(lines: list[str]):
     func = None
     state = 'start'
@@ -89,7 +106,8 @@ def parse_kernel(lines: list[str]):
 
             elif line.startswith('.reg'):
                 _parse_reg(func, line)
-
+            elif line.startswith('.shared'):
+                _parse_locals(func, line)
             elif line == '{':
                 continue
 

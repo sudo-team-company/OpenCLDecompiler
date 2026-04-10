@@ -10,6 +10,8 @@ from src.ir.instructions.common.store import Store8, Store32, Store64
 from src.ir.instructions.common.bfe import bfe, bfe_s
 from src.ir.instructions.common.endpgm import EndPgm
 from src.ir.instructions.common.cvt import Cvt64_32, Cvt32_16, Cvt64_32_s
+from src.ir.instructions.common.barrier import Barrier
+from src.ir.instructions.special.local_memory import LocalAdd, LocalStore, LocalLoad
 
 instruction_dict = {
         'add.s32': Add,
@@ -59,11 +61,16 @@ instruction_dict = {
         'st.global.u32': Store32,
         'st.global.u64': Store64,
 
+        'st.shared.u32': LocalStore,
+        'atom.shared.add.u32': LocalAdd,
+        'ld.shared.u32': LocalLoad,
+        
         's_bfe_u32': bfe,
         'v_bfe_u32': bfe,
         's_bfe_i32': bfe_s,
         'v_bfe_i32': bfe_s,
         
+        'bar.sync': Barrier,
 
         'ret': EndPgm,
 }

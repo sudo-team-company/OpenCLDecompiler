@@ -5,13 +5,18 @@ from src.ir.instructions.special.memory import MemoryAllocation
 from src.ir.instructions.special.memory import Store
 from src.ir.instructions.special.InitReg import InitReg
 from src.ir.instructions.generic import GenericInstruction
-from src.ir.registers.reg import Val, Reg_ty, RegOrVal_ty
+from src.ir.registers.reg import Val, Reg_ty, RegOrVal_ty, Reg64, CompositeReg, Reg32
 
 from src.ir.asm_to_ir.amd.register_factory import RegFactory
 
 from src.ir.instructions.common.add import Add, AddC
+from src.ir.instructions.common.cvt import Cvt64_32
+
 from src.ir.instructions.common.sub import Sub, SubRev
 from src.ir.asm_to_ir.amd.instruction_dict import instruction_dict
+from src.ir.instructions.special.local_memory import LocalAdd, LocalStore, LocalLoad
+from src.ir.instructions.common.mov import Mov
+
 
 def init_dispatch_reg(dispatch_reg: Reg_ty, kernel: Kernel):
     kernel.create_instruction(MemoryAllocation, dispatch_reg)
@@ -52,7 +57,73 @@ def create_instruction_from_opcode(kernel: Kernel, opcode: str, operands: list[R
                     is_scalar=is_scalar(opcode)
                 )
                 return
-            
+      
+    if instr_class == LocalAdd or instr_class == LocalStore:
+            local_tmp_reg = Reg64("lm")
+            local_tmp_it = Reg64("it64")
+            local_tmp_offset_reg = Reg64("lm_offset")
+            #ds_write_b32    v4, v5 offset:256
+            #ds_add_u32      v4, v5 offset:256
+            kernel.create_instruction(
+                Mov, 
+                local_tmp_reg,
+                operands[2], 
+                is_scalar=is_scalar(opcode)
+            )
+            kernel.create_instruction(
+                Cvt64_32, 
+                local_tmp_it,
+                operands[0],
+                is_scalar=is_scalar(opcode)
+            )
+            kernel.create_instruction(
+                Add, 
+                local_tmp_offset_reg,
+                local_tmp_reg,
+                local_tmp_it, 
+                is_scalar=is_scalar(opcode)
+            )
+            kernel.create_instruction(
+                instr_class, 
+                local_tmp_offset_reg, 
+                operands[1],
+                is_scalar=is_scalar(opcode)
+            )
+            return
+    
+    if instr_class == LocalLoad:
+            local_tmp_reg = Reg64("lm")
+            local_tmp_it = Reg64("it64")
+            local_tmp_offset_reg = Reg64("lm_offset")
+            #ds_read_b32     v3, v4 offset:256
+            kernel.create_instruction(
+                Mov, 
+                local_tmp_reg,
+                operands[2], 
+                is_scalar=is_scalar(opcode)
+            )
+            kernel.create_instruction(
+                Cvt64_32, 
+                local_tmp_it,
+                operands[1],
+                is_scalar=is_scalar(opcode)
+            )
+            kernel.create_instruction(
+                Add, 
+                local_tmp_offset_reg,
+                local_tmp_reg,
+                local_tmp_it, 
+                is_scalar=is_scalar(opcode)
+            )
+            kernel.create_instruction(
+                instr_class, 
+                operands[0],
+                local_tmp_offset_reg, 
+                is_scalar=is_scalar(opcode)
+            )
+            return
+    
+
     kernel.create_instruction(
         instr_class, 
         *operands,
@@ -87,7 +158,6 @@ def textToIR(text: list[str], cf: ConfigData) -> Kernel:
     if cf.usesetup:
         init_dispatch_reg(rf.parse_operand("s[4:5]"), kernel)
 
-    # особенность .amdcl2
     if cf.usesetup:
         g_id_shift = 8
     else:
@@ -97,7 +167,7 @@ def textToIR(text: list[str], cf: ConfigData) -> Kernel:
         kernel.create_instruction(InitReg, rf.parse_operand(f"s{g_id_shift + dim}"), Val(f"get_group_id({dim})"))
         kernel.create_instruction(InitReg, rf.parse_operand(f"v{dim}"), Val(f"get_local_id({dim})"))
 
-    # Обработка инструкций
+    offset_map: dict[int, str] = {}
     for line in text:
         line = line.strip()
         if not line:
@@ -109,11 +179,31 @@ def textToIR(text: list[str], cf: ConfigData) -> Kernel:
         
         opcode = parts[0]
         operands = []
+        if 'ds' in opcode and 'offset' not in parts[-1]:
+            parts.append('offset:0')
         
+        if len(parts) > 1 and parts[1] == 'm0,':
+            continue
+
         for operand in parts[1:]:
-            parsed_operand = rf.parse_operand(operand.rstrip(','))
+                 
+            operand = operand.rstrip(',')
+            parsed_operand = rf.parse_operand(operand)
+            if 'offset' in operand:
+                offset = int(operand[7:])
+                offset_map[offset] = "lc" + str(offset)
+                operand = offset_map[offset]
+                parsed_operand = rf.get_or_create(operand, "64")
             operands.append(parsed_operand)
         
         create_instruction_from_opcode(kernel, opcode, operands)
     
-    return kernel
+    offsets = list(offset_map.keys())
+    offsets.append(cf.local_size)
+    offsets.sort()
+    for key in range(len(offsets) - 1):
+        lc_name = offset_map[offsets[key]]
+        lc_size = int((offsets[key + 1] - offsets[key]))
+        kernel.set_local_memory(lc_name, lc_size)
+
+    return kernel.close()

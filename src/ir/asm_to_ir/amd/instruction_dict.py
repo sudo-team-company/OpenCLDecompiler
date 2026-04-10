@@ -9,7 +9,8 @@ from src.ir.instructions.common.load import Load32, Load64, Load128
 from src.ir.instructions.common.store import Store8, Store32, Store64, Store128
 from src.ir.instructions.common.bfe import bfe, bfe_s
 from src.ir.instructions.common.endpgm import EndPgm
-from src.ir.instructions.ignore import Ignore
+from src.ir.instructions.common.barrier import Barrier
+from src.ir.instructions.special.local_memory import LocalAdd, LocalStore, LocalLoad
 
 instruction_dict = {
         'v_add_u32': Add,
@@ -50,7 +51,8 @@ instruction_dict = {
         's_lshrrev_b32': LShr_Rev,
         'v_lshrrev_b64': LShr_Rev,
         's_ashr_i32': AShr,
-        
+        'v_ashrrev_i64': AShr_Rev,
+
         's_and_b32': And,
         'v_and_b32': And,
         
@@ -73,6 +75,10 @@ instruction_dict = {
         's_store_dword': Store32,
         's_store_dwordx2': Store64,
 
+        'ds_write_b32': LocalStore,
+        'ds_read_b32': LocalLoad,
+        'ds_add_u32': LocalAdd,
+
         's_bfe_u32': bfe,
         'v_bfe_u32': bfe,
         's_bfe_i32': bfe_s,
@@ -80,5 +86,5 @@ instruction_dict = {
 
         's_endpgm': EndPgm,
 
-        's_waitcnt': Ignore,
+        's_waitcnt': Barrier,
 }

@@ -6,10 +6,10 @@ from src.expression_manager.types.opencl_types import OpenCLTypes
 class DsWrite(BaseInstruction):
     def __init__(self, node, suffix):
         super().__init__(node, suffix)
+        #self.base_ptr = self.instruction[1]
         self.addr = self.instruction[1]
         self.vdata0 = self.instruction[2]
-        self.offset = int(self.instruction[3][7:]) if len(self.instruction) == 4 else 0  # noqa: PLR2004
-        self.decompiler_data.check_lds_vars(self.offset, suffix)
+        #self.decompiler_data.check_lds_vars(self.offset, suffix)
 
     def to_print_unresolved(self):
         if self.suffix == "b32":
@@ -30,17 +30,22 @@ class DsWrite(BaseInstruction):
 
     def get_lds_var_name_with_offset(self):
         return self.expression_manager.expression_to_string(
-            self.expression_manager.add_offset_div_data_size_node(
-                self.decompiler_data.lds_vars[self.offset],
+            self.get_expression_node(self.addr)
+        )
+    
+    def get_lds_var_node_with_offset(self):
+        return self.expression_manager.add_offset_div_data_size_node(
+                self.get_expression_node(self.base_ptr),
                 self.get_expression_node(self.addr),
                 4,
                 OpenCLTypes.from_string(self.suffix),
             )
-        )
+        
 
     def to_fill_node(self):
         if self.suffix == "b32":
-            name = self.get_lds_var_name_with_offset()
+            var_node_with_offset = self.get_expression_node(self.addr)
+            name = self.expression_manager.expression_to_string(var_node_with_offset)
             new_value = self.node.state[self.vdata0].val
             reg_type = self.node.state[self.vdata0].type
             return set_reg_value(

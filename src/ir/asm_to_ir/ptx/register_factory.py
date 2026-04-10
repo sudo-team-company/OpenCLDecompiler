@@ -21,7 +21,7 @@ class RegFactory:
 
         return Val(reg_name)
 
-    def get_or_create(self, reg_name: str) -> Reg32 | Reg64:
+    def get_or_create_auto(self, reg_name: str) -> Reg32 | Reg64:
         if reg_name in self._registry:
             return self._registry[reg_name]
 
@@ -29,5 +29,17 @@ class RegFactory:
         self._registry[reg_name] = reg
 
         return reg
+    
+    def get_or_create(self, reg_name: str, reg_type: str) -> Reg32 | Reg64:
+        if reg_name in self._registry:
+            return self._registry[reg_name]
 
+        if reg_type == "32":
+            new_reg = Reg32(reg_name)
+        elif reg_type == "64":
+            new_reg = Reg64(reg_name)
+
+        self._registry[reg_name] = new_reg
+
+        return new_reg
 

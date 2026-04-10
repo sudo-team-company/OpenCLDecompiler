@@ -35,7 +35,7 @@ class DsRead(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == "b32":
-            var_node_with_offset = self.get_lds_var_node_with_offset()
+            var_node_with_offset = self.get_expression_node(self.addr)
             name = self.expression_manager.expression_to_string(var_node_with_offset)
             reg_type = self.node.state[name].type if name in self.node.state else RegisterType.UNKNOWN
             return set_reg_value(
@@ -48,7 +48,7 @@ class DsRead(BaseInstruction):
                 expression_node=var_node_with_offset,
             )
         if self.suffix == "b64":
-            var_node_with_offset = self.get_lds_var_node_with_offset()
+            var_node_with_offset = self.get_expression_node(self.addr)
             name = self.expression_manager.expression_to_string(var_node_with_offset)
             reg_type = self.node.state[name].type
             return set_reg_value(

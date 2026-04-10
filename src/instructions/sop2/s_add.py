@@ -94,6 +94,16 @@ class SAdd(BaseInstruction):
                         expr_node = self.expression_manager.add_offset_div_data_size_node(
                             src0_node, src1_node, 4, OpenCLTypes.from_string(self.suffix)
                         )
+                elif ssrc0_type == RegisterType.LOCAL_DATA_POINTER:
+                    name = self.node.state[self.ssrc0].val
+                    reg_type = RegisterType.LOCAL_DATA_POINTER
+                    if self.node.state[self.ssrc0].data_type in {"u32", "i32", "gi32", "gu32"}:
+                        new_value = make_op(self.node, self.ssrc1, "4", "/", suffix=self.suffix)
+                        new_value = make_op(self.node, name, new_value, "+", suffix=self.suffix)
+
+                        expr_node = self.expression_manager.add_offset_div_data_size_node(
+                            src0_node, src1_node, 4, OpenCLTypes.from_string(self.suffix)
+                        )
                 elif RegisterType.KERNEL_ARGUMENT_VALUE in src_types:
                     reg_type = RegisterType.KERNEL_ARGUMENT_VALUE
                 else:

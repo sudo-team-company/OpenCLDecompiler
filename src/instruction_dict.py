@@ -104,6 +104,7 @@ from src.instructions.vopd.v_dual_mov import VDualMov
 
 from src.instructions.IRspecial.InitReg import InitReg
 from src.instructions.IRspecial.memory import MemoryAllocation, StoreInMem
+from src.instructions.IRspecial.LocalMem import LocalMemory
 
 instruction_dict = {
     #IRspecial
@@ -117,6 +118,8 @@ instruction_dict = {
     "ds_read2": DsRead2,
     "ds_write": DsWrite,
     "ds_write2": DsWrite2,
+    's_local': LocalMemory,
+    
     "flat_atomic_add": FlatAtomicAdd,
     "flat_load": FlatLoad,
     "flat_store": FlatStore,

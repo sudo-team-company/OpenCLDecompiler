@@ -176,6 +176,26 @@ class VAdd(BaseInstruction):
                     expr_node = self.expression_manager.add_offset_div_data_size_node(
                         src0_node, src1_node, data_size, OpenCLTypes.from_string(self.suffix)
                     )
+                elif self.node.state[self.src0].type == RegisterType.LOCAL_DATA_POINTER:
+                    data_type = 'u32'#self.node.state[self.src1].data_type
+                    reg_type = RegisterType.LOCAL_DATA_POINTER
+                    name = self.node.state[self.src0].val
+                    reg_entire = Integrity.ENTIRE
+
+                    data_size, _ = evaluate_size(data_type, only_size=True)
+                    new_value = make_op(self.node, self.src1, str(data_size), "/", suffix=self.suffix)
+                    new_value = make_op(self.node, name, new_value, "+", suffix=self.suffix)
+
+                    src0_node = self.expression_manager.add_variable_node(
+                            name,
+                            ExpressionValueTypeHint(
+                                OpenCLTypes.from_string(self.suffix), TypeAddressSpaceQualifiers.LOCAL, is_pointer=True
+                            ),
+                        )
+                    src1_node = self.get_expression_node(self.src1)
+                    expr_node = self.expression_manager.add_offset_div_data_size_node(
+                        src0_node, src1_node, data_size, OpenCLTypes.from_string(self.suffix)
+                    )
                 elif self.node.state[self.src0].type == RegisterType.GLOBAL_DATA_POINTER:
                     data_type = self.node.state[self.src1].data_type
                     name = self.node.state[self.src0].val
