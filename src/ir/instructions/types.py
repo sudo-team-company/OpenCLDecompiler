@@ -85,14 +85,24 @@ def bit_type_for_bits(bits: int) -> IRType:
     try:
         return _BIT_TYPES_BY_BITS[bits]
     except KeyError as exc:
-        raise ValueError(f"Unsupported bit operation width: {bits}") from exc
+        raise UnsupportedBitWidthError(bits) from exc
 
 
 def memory_suffix_for_bits(bits: int) -> str:
     try:
         return _MEMORY_SUFFIX_BY_BITS[bits]
     except KeyError as exc:
-        raise ValueError(f"Unsupported memory operation width: {bits}") from exc
+        raise UnsupportedMemoryWidthError(bits) from exc
+
+
+class UnsupportedBitWidthError(ValueError):
+    def __init__(self, bits: int) -> None:
+        super().__init__(f"Unsupported bit operation width: {bits}")
+
+
+class UnsupportedMemoryWidthError(ValueError):
+    def __init__(self, bits: int) -> None:
+        super().__init__(f"Unsupported memory operation width: {bits}")
 
 
 BIT_TYPES = tuple(_BIT_TYPES_BY_BITS.values())

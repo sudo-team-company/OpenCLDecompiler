@@ -5,19 +5,12 @@ from typing import Any
 from src.node import Node
 
 
-
 class NodeLoweringContext:
     def __init__(self, state: Any, parents: list[Node]):
         self.state = state
         self.parents = list(parents)
 
-    def emit_backend(
-        self,
-        backend_cls: type,
-        opcode: str,
-        operands: Sequence[Any],
-        suffix: str = ""
-    ) -> Node:
+    def emit_backend(self, backend_cls: type, opcode: str, operands: Sequence[Any], suffix: str = "") -> Node:
         node = Node(
             opcode,
             list(operands),

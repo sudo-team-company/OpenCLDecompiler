@@ -1,8 +1,7 @@
-from src.ir.instructions.generic import GenericInstruction
-from src.ir.registers.reg import Reg_ty, Val
-
-from src.ir.instructions.lowering import NodeLoweringContext
 from src.instructions.IRspecial.InitReg import InitReg as decInitReg
+from src.ir.instructions.generic import GenericInstruction
+from src.ir.instructions.lowering import NodeLoweringContext
+from src.ir.registers.reg import Reg_ty, Val
 
 
 class InitReg(GenericInstruction):
@@ -11,7 +10,7 @@ class InitReg(GenericInstruction):
 
     def _get_normalize_opcode(self) -> str:
         return "s_init"
-    
+
     def to_fill_node(self, state, parents):
         return NodeLoweringContext(state, parents).emit_backend(
             decInitReg,

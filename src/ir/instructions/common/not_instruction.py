@@ -1,8 +1,8 @@
+from src.instructions.sop1.s_not import SNot
 from src.ir.instructions.generic import GenericInstruction
 from src.ir.instructions.lowering import NodeLoweringContext
 from src.ir.instructions.types import IRType
 from src.ir.registers.reg import PredReg
-from src.instructions.sop1.s_not import SNot
 
 
 class Not(GenericInstruction):

@@ -1,7 +1,8 @@
 from typing import ClassVar
 
 from src.ir.instructions.types import IRType
-from src.ir.registers.reg import PredReg, Reg_ty, BaseReg, CompositeReg, expand_register_names, is_range, Reg64
+from src.ir.registers.reg import BaseReg, PredReg, Reg64, Reg_ty, expand_register_names, is_range
+
 
 class GenericInstruction:
     allowed_types: ClassVar[tuple[IRType, ...] | None] = (IRType.NONE,)
@@ -28,8 +29,7 @@ class GenericInstruction:
             operand_strings = [op.to_text() for op in self.operands]
             return f"{opcode} {', '.join(operand_strings)}"
         return opcode
-    
-    
+
     def get_operands(self):
         return self.operands
 
@@ -38,27 +38,27 @@ class GenericInstruction:
 
     def update_operands(self, *operands):
         self.operands = tuple(operands)
-    
+
     def writes_first_operand(self) -> bool:
         return bool(self.operands)
 
     def get_predicate(self) -> PredReg | None:
         return self._predicate
-    
-    def set_predicate(self, predicate: PredReg | None, predicate_negated: bool = False) -> "GenericInstruction":
+
+    def set_predicate(self, predicate: PredReg | None, *, predicate_negated: bool = False) -> "GenericInstruction":
         self._predicate = predicate
         self._predicate_negated = predicate is not None and predicate_negated
         return self
-    
+
     def has_predicate(self) -> bool:
         return self._predicate is not None
 
     def is_predicate_negated(self) -> bool:
         return self._predicate_negated
-    
+
     def is_control_flow(self) -> bool:
         return False
-    
+
     def is_label(self) -> bool:
         return False
 
@@ -72,36 +72,27 @@ class GenericInstruction:
                 return destination.regs
             return (destination,)
         return ()
-    
+
     def get_read_registers(self) -> tuple[Reg_ty, ...]:
         start_idx = 0
         if self.writes_first_operand():
             start_idx = 1
 
-        registers: list[Reg_ty] = [
-            operand
-            for operand in self.operands[start_idx:]
-            if isinstance(operand, BaseReg)
-        ]
+        registers: list[Reg_ty] = [operand for operand in self.operands[start_idx:] if isinstance(operand, BaseReg)]
         return tuple(registers)
-    
+
     def get_written_register_names(self) -> set[str]:
         return self._expand_registers(self.get_written_registers())
 
     def get_read_register_names(self) -> set[str]:
         return self._expand_registers(self.get_read_registers())
-    
+
     def get_written_predicate_names(self) -> set[str]:
-        return {
-            register.name
-            for register in self.get_written_registers()
-            if isinstance(register, PredReg)
-        }
+        return {register.name for register in self.get_written_registers() if isinstance(register, PredReg)}
 
     def to_fill_node(self, state, parents):
-        raise NotImplementedError()
+        raise NotImplementedError
 
-    
     @staticmethod
     def _expand_registers(registers: tuple[Reg_ty, ...]) -> set[str]:
         expanded: set[str] = set()
@@ -115,13 +106,22 @@ class GenericInstruction:
         elif isinstance(op_type, IRType):
             resolved_type = op_type
         else:
-            raise TypeError("op_type must be an IRType")
+            raise InvalidOperationTypeError
 
         allowed_types = self.allowed_types
         if allowed_types is not None and resolved_type not in allowed_types:
             allowed = ", ".join(ir_type.value for ir_type in allowed_types)
-            raise ValueError(
-                f"{self.__class__.__name__} does not support operation type "
-                f"{resolved_type.value}; allowed types: {allowed}"
-            )
+            raise UnsupportedOperationTypeError(self.__class__.__name__, resolved_type, allowed)
         return resolved_type
+
+
+class InvalidOperationTypeError(TypeError):
+    def __init__(self) -> None:
+        super().__init__("op_type must be an IRType")
+
+
+class UnsupportedOperationTypeError(ValueError):
+    def __init__(self, instruction_name: str, resolved_type: IRType, allowed: str) -> None:
+        super().__init__(
+            f"{instruction_name} does not support operation type {resolved_type.value}; allowed types: {allowed}"
+        )

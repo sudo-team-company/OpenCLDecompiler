@@ -1,12 +1,11 @@
-from src.ir.registers.reg import RegOrVal_ty, Reg32
+from src.instructions.sop2.s_bfe import SBfe
 from src.ir.instructions.generic import GenericInstruction
-
 from src.ir.instructions.lowering import NodeLoweringContext
 from src.ir.instructions.types import IRType
-from src.instructions.sop2.s_bfe import SBfe
+from src.ir.registers.reg import Reg32, RegOrVal_ty
 
 
-class bfe(GenericInstruction):
+class Bfe(GenericInstruction):
     allowed_types = (IRType.U32, IRType.I32)
 
     def __init__(
@@ -29,7 +28,7 @@ class bfe(GenericInstruction):
         if self.op_type == IRType.I32:
             return "s_bfe_i32"
         return "s_bfe_u32"
-    
+
     def get_suffix(self) -> str:
         if self.op_type == IRType.I32:
             return "i32"

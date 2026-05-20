@@ -1,8 +1,8 @@
+from src.instructions.vop3.v_perm import VPerm
 from src.ir.instructions.generic import GenericInstruction
-from src.ir.registers.reg import RegOrVal_ty, Reg_ty
 from src.ir.instructions.lowering import NodeLoweringContext
 from src.ir.instructions.types import IRType
-from src.instructions.vop3.v_perm import VPerm
+from src.ir.registers.reg import Reg_ty, RegOrVal_ty
 
 
 class Permute32(GenericInstruction):
@@ -20,7 +20,7 @@ class Permute32(GenericInstruction):
 
     def _get_normalize_opcode(self) -> str:
         return "v_perm_b32"
-    
+
     def to_fill_node(self, state, parents):
         ctx = NodeLoweringContext(state, parents)
         return ctx.emit_backend(VPerm, "v_perm_b32", self.operands, "b32")

@@ -1,12 +1,13 @@
-from src.ir.instructions.generic import GenericInstruction
-from src.ir.instructions.lowering import NodeLoweringContext
-from src.ir.instructions.types import IRType
-from src.ir.registers.reg import Reg32, RegOrVal_ty, Reg_ty, Val, get_reg_rang
 from src.instructions.vop2.v_add import VAdd
 from src.instructions.vop2.v_mac import VMac
 from src.instructions.vop2.v_mul_f32 import VMulF32
 from src.instructions.vop3.v_mad import VMad
 from src.instructions.vop3.v_mul_lo import VMulHi, VMulLo
+from src.ir.instructions.generic import GenericInstruction
+from src.ir.instructions.lowering import NodeLoweringContext
+from src.ir.instructions.types import IRType
+from src.ir.registers.reg import Reg32, Reg_ty, RegOrVal_ty, Val, get_reg_rang
+
 
 class Mul24(GenericInstruction):
     allowed_types = (IRType.U32, IRType.I32)
@@ -32,7 +33,7 @@ class Mul24(GenericInstruction):
         )
 
 
-class Mul_f(GenericInstruction):
+class MulF(GenericInstruction):
     allowed_types = (IRType.F32,)
 
     def __init__(
@@ -56,7 +57,7 @@ class Mul_f(GenericInstruction):
         )
 
 
-class Mac_f32(GenericInstruction):
+class MacF32(GenericInstruction):
     allowed_types = (IRType.F32,)
 
     def __init__(

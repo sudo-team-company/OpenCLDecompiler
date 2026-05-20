@@ -1,9 +1,9 @@
+from src.instructions.vop2.v_sub import VSub
 from src.ir.instructions.generic import GenericInstruction
-from src.ir.registers.reg import Reg_ty, RegOrVal_ty, get_reg_rang
-
 from src.ir.instructions.lowering import NodeLoweringContext
 from src.ir.instructions.types import IRType
-from src.instructions.vop2.v_sub import VSub
+from src.ir.registers.reg import Reg_ty, RegOrVal_ty, get_reg_rang
+
 
 class Sub(GenericInstruction):
     allowed_types = (IRType.U16, IRType.I16, IRType.U32, IRType.I32, IRType.U64, IRType.I64, IRType.F32)
@@ -19,16 +19,15 @@ class Sub(GenericInstruction):
         self.destination = destination
         self.operand1 = operand1
         self.operand2 = operand2
-        
+
     def _is_64bit(self) -> bool:
         return self.op_type in (IRType.U64, IRType.I64)
-    
+
     def _get_normalize_opcode(self) -> str:
         if self.op_type == IRType.F32:
             return "v_sub_f32"
         return "v_sub_u32"
 
-    
     def to_fill_node(self, state, parents):
         ctx = NodeLoweringContext(state, parents)
         if self.op_type == IRType.F32:
@@ -63,6 +62,7 @@ class Sub(GenericInstruction):
             [dest_hi, op1_hi, op2_hi],
             "u32",
         )
+
 
 class SubRev(Sub):
     def __init__(

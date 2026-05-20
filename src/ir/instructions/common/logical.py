@@ -1,10 +1,12 @@
-from src.ir.registers.reg import Reg_ty, RegOrVal_ty
-from src.ir.instructions.generic import GenericInstruction
-from src.ir.instructions.types import IRType
 from src.instructions.sop2.s_and import SAnd
-from src.instructions.sop2.s_xor import SXor
 from src.instructions.sop2.s_or import SOr
+from src.instructions.sop2.s_xor import SXor
+from src.ir.instructions.generic import GenericInstruction
 from src.ir.instructions.lowering import NodeLoweringContext
+from src.ir.instructions.types import IRType
+from src.ir.registers.reg import Reg_ty, RegOrVal_ty
+
+QWORD_BITS = 64
 
 
 class LogicalInstruction(GenericInstruction):
@@ -24,16 +26,15 @@ class LogicalInstruction(GenericInstruction):
         self.destination = destination
         self.operand1 = operand1
         self.operand2 = operand2
-        
 
     def _is_64bit(self) -> bool:
-        return self.destination.bit_width == 64
+        return self.destination.bit_width == QWORD_BITS
 
     def _get_normalize_opcode(self) -> str:
         if self._is_64bit():
-            return f's_{self.operation}_b64'
-        return f's_{self.operation}_b32'
-    
+            return f"s_{self.operation}_b64"
+        return f"s_{self.operation}_b32"
+
     def get_suffix(self):
         return "b64" if self._is_64bit() else "b32"
 

@@ -1,14 +1,14 @@
-from src.ir.instructions.generic import GenericInstruction
-from src.ir.registers.reg import PredReg
-from src.ir.instructions.lowering import NodeLoweringContext
 from src.instructions.IRspecial.InitPred import InitPred
+from src.ir.instructions.generic import GenericInstruction
+from src.ir.instructions.lowering import NodeLoweringContext
+from src.ir.registers.reg import PredReg
 
 
 class InitPredicate(GenericInstruction):
     def __init__(self, predicate: PredReg):
         super().__init__("init_pred", predicate)
         self.predicate = predicate
-    
+
     def _get_normalize_opcode(self):
         return "s_ipred"
 

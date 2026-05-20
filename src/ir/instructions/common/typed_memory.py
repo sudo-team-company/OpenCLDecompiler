@@ -1,11 +1,5 @@
 from dataclasses import dataclass
 
-from src.ir.TemporaryVariableAllocator import tva
-from src.ir.instructions.common.load import GenericLoad
-from src.ir.instructions.common.store import GenericStore
-from src.ir.instructions.lowering import NodeLoweringContext
-from src.ir.instructions.types import MEMORY_VALUE_TYPES, IRType
-from src.ir.registers.reg import CompositeReg, Reg32, Reg64, RegOrVal_ty, Reg_ty, Val
 from src.instructions.flat.flat_load import FlatLoad
 from src.instructions.flat.flat_store import FlatStore
 from src.instructions.smem.s_load import SLoad
@@ -13,6 +7,16 @@ from src.instructions.sop1.s_mov import SMov
 from src.instructions.sop2.s_and import SAnd
 from src.instructions.sop2.s_bfe import SBfe
 from src.instructions.vop3.v_perm import VPerm
+from src.ir.instructions.common.load import GenericLoad
+from src.ir.instructions.common.store import GenericStore
+from src.ir.instructions.lowering import NodeLoweringContext
+from src.ir.instructions.types import MEMORY_VALUE_TYPES, IRType
+from src.ir.registers.reg import CompositeReg, Reg32, Reg64, Reg_ty, RegOrVal_ty, Val
+from src.ir.temporary_variable_allocator import TemporaryVariableAllocator
+
+DWORD_BITS = 32
+PAIR_VECTOR_WIDTH = 2
+DWORD_VECTOR_TOTAL_BITS = {64, 128}
 
 _IR_TYPE_BY_MEMORY_BASE_TYPE = {
     "b8": IRType.B8,
@@ -31,6 +35,11 @@ _IR_TYPE_BY_MEMORY_BASE_TYPE = {
     "f32": IRType.F32,
     "f64": IRType.F64,
 }
+
+
+class TypedMemoryStoreRegisterCountError(ValueError):
+    def __init__(self, access_type: "MemoryAccessType") -> None:
+        super().__init__(f"{access_type.to_value_type()} store expects {access_type.vector_width} source registers")
 
 
 @dataclass(frozen=True)
@@ -133,15 +142,15 @@ class TypedMemoryLoadBase(GenericLoad):
 
     def _make_internal_reg(self, prefix: str) -> Reg32 | None:
         if self._needs_small_vector_unpack():
-            return Reg32(tva.generate(prefix))
+            return Reg32(TemporaryVariableAllocator.generate(prefix))
         return None
 
     def _needs_small_vector_unpack(self) -> bool:
         return (
             isinstance(self.destination, CompositeReg)
             and self.access_type.vector_width > 1
-            and self.access_type.element_bits < 32
-            and self.access_type.total_bits <= 32
+            and self.access_type.element_bits < DWORD_BITS
+            and self.access_type.total_bits <= DWORD_BITS
         )
 
     def _low_mask(self) -> Val:
@@ -156,8 +165,8 @@ class TypedMemoryLoadBase(GenericLoad):
         return (
             isinstance(self.destination, CompositeReg)
             and self.access_type.vector_width > 1
-            and self.access_type.element_bits == 32
-            and self.access_type.total_bits in {64, 128}
+            and self.access_type.element_bits == DWORD_BITS
+            and self.access_type.total_bits in DWORD_VECTOR_TOTAL_BITS
         )
 
 
@@ -212,7 +221,7 @@ class TypedMemoryStoreBase(GenericStore):
         first_value = self.value.get_element(0)
         second_value = self.value.get_element(1)
         ctx.emit_backend(SMov, "s_mov_b32", [self.selector, self.PACK_SELECTOR], "b32")
-        if self.access_type.vector_width == 2:
+        if self.access_type.vector_width == PAIR_VECTOR_WIDTH:
             ctx.emit_backend(
                 VPerm,
                 "v_perm_b32",
@@ -232,21 +241,21 @@ class TypedMemoryStoreBase(GenericStore):
         return (
             isinstance(self.value, CompositeReg)
             and self.access_type.vector_width in {2, 4}
-            and self.access_type.element_bits < 32
-            and self.access_type.total_bits <= 32
+            and self.access_type.element_bits < DWORD_BITS
+            and self.access_type.total_bits <= DWORD_BITS
         )
 
     def _make_internal_reg(self, prefix: str) -> Reg32 | None:
         if self._needs_small_vector_pack():
-            return Reg32(tva.generate(prefix))
+            return Reg32(TemporaryVariableAllocator.generate(prefix))
         return None
 
     def _needs_dword_vector_store(self) -> bool:
         return (
             isinstance(self.value, CompositeReg)
             and self.access_type.vector_width > 1
-            and self.access_type.element_bits == 32
-            and self.access_type.total_bits in {64, 128}
+            and self.access_type.element_bits == DWORD_BITS
+            and self.access_type.total_bits in DWORD_VECTOR_TOTAL_BITS
         )
 
     def _to_fill_dword_vector_store_parts(self, state, parents):
@@ -270,14 +279,11 @@ class TypedMemoryStoreBase(GenericStore):
 
         assert isinstance(self.value, CompositeReg)
         if len(self.value) != self.access_type.vector_width:
-            raise ValueError(
-                f"{self.access_type.to_value_type()} store expects "
-                f"{self.access_type.vector_width} source registers"
-            )
+            raise TypedMemoryStoreRegisterCountError(self.access_type)
 
-        name = tva.generate("typed_st_vec")
+        name = TemporaryVariableAllocator.generate("typed_st_vec")
         regs = [
-            Reg32(tva.generate("typed_st_vec_part"))
+            Reg32(TemporaryVariableAllocator.generate("typed_st_vec_part"))
             for _ in range(self.access_type.vector_width)
         ]
         return CompositeReg(name, regs)

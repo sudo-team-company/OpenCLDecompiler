@@ -1,8 +1,8 @@
+from src.instructions.flat.flat_store import FlatStore
 from src.ir.instructions.generic import GenericInstruction
 from src.ir.instructions.lowering import NodeLoweringContext
-from src.ir.registers.reg import Reg64, RegOrVal_ty
 from src.ir.instructions.types import BIT_TYPES, IRType, memory_suffix_for_bits
-from src.instructions.flat.flat_store import FlatStore
+from src.ir.registers.reg import Reg64, RegOrVal_ty
 
 
 class GenericStore(GenericInstruction):
@@ -42,6 +42,7 @@ class GenericStore(GenericInstruction):
             self.operands,
             self.get_suffix(),
         )
+
 
 class Store(GenericStore):
     operation: str = "flat_store"

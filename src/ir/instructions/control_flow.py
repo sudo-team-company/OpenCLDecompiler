@@ -1,10 +1,11 @@
-from src.ir.instructions.generic import GenericInstruction
-from src.ir.registers.reg import PredReg, Val
-from src.ir.instructions.lowering import NodeLoweringContext
+from src.instructions.label import Label as backend_Label
+from src.instructions.sopp.s_branch import SBranch
 from src.instructions.sopp.s_cbranch_vccnz import SCbranchVccnz
 from src.instructions.sopp.s_cbranch_vccz import SCbranchVccz
-from src.instructions.sopp.s_branch import SBranch
-from src.instructions.label import Label as backend_Label
+from src.ir.instructions.generic import GenericInstruction
+from src.ir.instructions.lowering import NodeLoweringContext
+from src.ir.registers.reg import PredReg, Val
+
 
 class Label(GenericInstruction):
     def __init__(self, label: Val):
@@ -24,6 +25,7 @@ class Label(GenericInstruction):
             [],
         )
 
+
 class Branch(GenericInstruction):
     def __init__(self, predicate: PredReg, target: Val):
         super().__init__("bra", predicate, target)
@@ -34,14 +36,14 @@ class Branch(GenericInstruction):
 
     def is_control_flow(self) -> bool:
         return True
-    
+
     def to_fill_node(self, state, parents):
         return NodeLoweringContext(state, parents).emit_backend(
             SCbranchVccnz,
             "s_br",
             self.operands,
         )
-    
+
 
 class BranchNot(GenericInstruction):
     def __init__(self, predicate: PredReg, target: Val):
@@ -53,14 +55,14 @@ class BranchNot(GenericInstruction):
 
     def is_control_flow(self) -> bool:
         return True
-    
+
     def to_fill_node(self, state, parents):
         return NodeLoweringContext(state, parents).emit_backend(
             SCbranchVccz,
             "s_nbr",
             self.operands,
         )
-    
+
 
 class Jump(GenericInstruction):
     def __init__(self, target: Val):
@@ -72,7 +74,7 @@ class Jump(GenericInstruction):
 
     def is_control_flow(self) -> bool:
         return True
-    
+
     def to_fill_node(self, state, parents):
         return NodeLoweringContext(state, parents).emit_backend(
             SBranch,

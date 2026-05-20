@@ -1,10 +1,9 @@
-from src.ir.instructions.generic import GenericInstruction
-from src.ir.registers.reg import Reg_ty, RegOrVal_ty
-
-from src.ir.instructions.lowering import NodeLoweringContext
-from src.ir.instructions.types import IRType
 from src.instructions.vop2.v_add import VAdd
 from src.instructions.vop2.v_addc import VAddc
+from src.ir.instructions.generic import GenericInstruction
+from src.ir.instructions.lowering import NodeLoweringContext
+from src.ir.instructions.types import IRType
+from src.ir.registers.reg import Reg_ty, RegOrVal_ty
 
 
 class Add(GenericInstruction):
@@ -21,15 +20,14 @@ class Add(GenericInstruction):
         self.destination = destination
         self.operand1 = operand1
         self.operand2 = operand2
-        
+
     def _is_64bit(self) -> bool:
         return self.op_type in (IRType.U64, IRType.I64)
-    
+
     def _get_normalize_opcode(self) -> str:
         if self.op_type == IRType.F64:
             return "v_add_f64"
         return "v_add_u32"
-    
 
     def to_fill_node(self, state, parents):
         ctx = NodeLoweringContext(state, parents)
@@ -57,7 +55,6 @@ class Add(GenericInstruction):
         )
 
 
-
 class AddC(GenericInstruction):
     allowed_types = (IRType.U32,)
 
@@ -72,11 +69,10 @@ class AddC(GenericInstruction):
         self.destination = destination
         self.operand1 = operand1
         self.operand2 = operand2
-        
 
     def _get_normalize_opcode(self) -> str:
         return "v_addc_u32"
-    
+
     def to_fill_node(self, state, parents):
         return NodeLoweringContext(state, parents).emit_backend(
             VAddc,

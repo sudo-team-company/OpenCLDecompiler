@@ -1,14 +1,14 @@
+from src.instructions.IRspecial.memory import MemoryAllocation as DecMA
+from src.instructions.IRspecial.memory import StoreInMem
 from src.ir.instructions.generic import GenericInstruction
+from src.ir.instructions.lowering import NodeLoweringContext
 from src.ir.registers.reg import Reg64, Reg_ty, Val
 
-
-from src.ir.instructions.lowering import NodeLoweringContext
-from src.instructions.IRspecial.memory import MemoryAllocation as DecMA, StoreInMem
 
 class MemoryAllocation(GenericInstruction):
     def __init__(self, destination: Reg64):
         super().__init__("alloc", destination)
-        
+
     def _get_normalize_opcode(self) -> str:
         return "s_alloc"
 
@@ -30,11 +30,10 @@ class Store(GenericInstruction):
 
     def _get_normalize_opcode(self) -> str:
         return "s_store"
-    
+
     def set_arg_type(self, type_name: str) -> None:
         self.arg_type = Val(type_name)
         self.operands = (self.destination, self.arg_type, self.arg_name, self.offset)
-
 
     def to_fill_node(self, state, parents):
         return NodeLoweringContext(state, parents).emit_backend(

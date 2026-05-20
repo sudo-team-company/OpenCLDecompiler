@@ -1,7 +1,8 @@
+from src.instructions.IRspecial.ChangeMask import Unmask as be_Unmask
+from src.instructions.IRspecial.ChangeMask import UseMask
 from src.ir.instructions.generic import GenericInstruction
-from src.ir.registers.reg import PredReg
 from src.ir.instructions.lowering import NodeLoweringContext
-from src.instructions.IRspecial.ChangeMask import UseMask, Unmask as be_Unmask
+from src.ir.registers.reg import PredReg
 
 
 class ChangeMask(GenericInstruction):
@@ -18,7 +19,7 @@ class ChangeMask(GenericInstruction):
             self._get_normalize_opcode(),
             self.operands,
         )
-    
+
     def writes_first_operand(self) -> bool:
         return False
 

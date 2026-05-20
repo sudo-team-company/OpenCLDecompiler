@@ -1,10 +1,12 @@
-from src.ir.registers.reg import Reg_ty, RegOrVal_ty
+from src.instructions.vop2.v_ashrrev import VAshrrev
+from src.instructions.vop2.v_lshlrev import VLshlrev
+from src.instructions.vop2.v_lshrrev import VLshrrev
 from src.ir.instructions.generic import GenericInstruction
 from src.ir.instructions.lowering import NodeLoweringContext
 from src.ir.instructions.types import IRType
-from src.instructions.vop2.v_lshlrev import VLshlrev
-from src.instructions.vop2.v_lshrrev import VLshrrev
-from src.instructions.vop2.v_ashrrev import VAshrrev
+from src.ir.registers.reg import Reg_ty, RegOrVal_ty
+
+QWORD_BITS = 64
 
 
 class ShiftInstruction(GenericInstruction):
@@ -24,15 +26,15 @@ class ShiftInstruction(GenericInstruction):
         self.operand2 = operand2
 
     def _is_64bit(self) -> bool:
-        return self.destination.bit_width == 64
-    
+        return self.destination.bit_width == QWORD_BITS
+
     def get_suffix(self):
         if self._is_64bit():
             return "b64"
         return "b32"
 
 
-class LShl_Rev(ShiftInstruction):
+class LShlRev(ShiftInstruction):
     def __init__(
         self,
         destination: Reg_ty,
@@ -46,8 +48,7 @@ class LShl_Rev(ShiftInstruction):
         if self._is_64bit():
             return "v_lshlrev_b64"
         return "v_lshlrev_b32"
-    
-    
+
     def to_fill_node(self, state, parents):
         return NodeLoweringContext(state, parents).emit_backend(
             VLshlrev,
@@ -57,7 +58,7 @@ class LShl_Rev(ShiftInstruction):
         )
 
 
-class LShr_Rev(ShiftInstruction):
+class LShrRev(ShiftInstruction):
     def __init__(
         self,
         destination: Reg_ty,
@@ -67,12 +68,11 @@ class LShr_Rev(ShiftInstruction):
     ):
         super().__init__("rshl", destination, operand1, operand2, op_type=op_type)
 
-
     def _get_normalize_opcode(self) -> str:
         if self._is_64bit():
             return "v_lshrrev_b64"
         return "v_lshrrev_b32"
-        
+
     def to_fill_node(self, state, parents):
         return NodeLoweringContext(state, parents).emit_backend(
             VLshrrev,
@@ -81,7 +81,8 @@ class LShr_Rev(ShiftInstruction):
             self.get_suffix(),
         )
 
-class AShr_Rev(ShiftInstruction):
+
+class AShrRev(ShiftInstruction):
     allowed_types = (IRType.I32, IRType.I64)
 
     def __init__(
@@ -97,12 +98,12 @@ class AShr_Rev(ShiftInstruction):
         if self._is_64bit():
             return "v_ashrrev_i64"
         return "v_ashrrev_i32"
- 
+
     def get_suffix(self):
         if self._is_64bit():
             return "i64"
         return "i32"
-    
+
     def to_fill_node(self, state, parents):
         return NodeLoweringContext(state, parents).emit_backend(
             VAshrrev,
@@ -110,8 +111,9 @@ class AShr_Rev(ShiftInstruction):
             self.operands,
             self.get_suffix(),
         )
-    
-class LShl(LShl_Rev):
+
+
+class LShl(LShlRev):
     def __init__(
         self,
         destination: Reg_ty,
@@ -121,7 +123,8 @@ class LShl(LShl_Rev):
     ):
         super().__init__(destination, operand2, operand1, op_type=op_type)
 
-class LShr(LShr_Rev):
+
+class LShr(LShrRev):
     def __init__(
         self,
         destination: Reg_ty,
@@ -131,7 +134,8 @@ class LShr(LShr_Rev):
     ):
         super().__init__(destination, operand2, operand1, op_type=op_type)
 
-class AShr(AShr_Rev):
+
+class AShr(AShrRev):
     def __init__(
         self,
         destination: Reg_ty,
