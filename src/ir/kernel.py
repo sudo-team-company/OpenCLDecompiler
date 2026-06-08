@@ -3,6 +3,7 @@ from typing import Any
 from src.ir.instructions.types import IRType
 from src.ir.kernel_components import (
     KernelArguments,
+    KernelGlobalMemory,
     KernelInstructions,
     KernelLocalMemory,
     KernelPredicates,
@@ -26,6 +27,7 @@ class Kernel:
         self._instructions = KernelInstructions()
         self._arguments = KernelArguments()
         self._local_memory = KernelLocalMemory()
+        self._global_memory = KernelGlobalMemory()
         self._predicates = KernelPredicates()
 
     @property
@@ -39,6 +41,10 @@ class Kernel:
     @property
     def local_memory(self) -> KernelLocalMemory:
         return self._local_memory
+
+    @property
+    def global_memory(self) -> KernelGlobalMemory:
+        return self._global_memory
 
     @property
     def predicates(self) -> KernelPredicates:

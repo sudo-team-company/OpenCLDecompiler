@@ -101,6 +101,24 @@ class KernelLocalMemory:
         self._materialized = True
 
 
+class KernelGlobalMemory:
+    def __init__(self) -> None:
+        self._global_memories: dict[str, list[str]] = {}
+        self._materialized = False
+
+    def set(self, name: str, values: list[str]) -> None:
+        self._global_memories[name] = list(values)
+
+    def all(self) -> dict[str, list[str]]:
+        return {name: list(values) for name, values in self._global_memories.items()}
+
+    def is_materialized(self) -> bool:
+        return self._materialized
+
+    def mark_materialized(self) -> None:
+        self._materialized = True
+
+
 class KernelPredicates:
     def __init__(self) -> None:
         self._predicates: list[PredReg] = []

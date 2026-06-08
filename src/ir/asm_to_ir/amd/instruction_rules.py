@@ -13,7 +13,7 @@ from src.ir.instructions.common.barrier import Barrier
 from src.ir.instructions.common.bfe import Bfe
 from src.ir.instructions.common.compare import get_compare_class
 from src.ir.instructions.common.cselect import CSelect
-from src.ir.instructions.common.cvt import Cvt64To32, CvtF64U32, CvtI32F32
+from src.ir.instructions.common.cvt import Cvt32To64, CvtF32ToI32, CvtF64ToI32, CvtI32ToF32, CvtI32ToF64, CvtU32ToF64
 from src.ir.instructions.common.endpgm import EndPgm
 from src.ir.instructions.common.load import FLoad, Load
 from src.ir.instructions.common.logical import And, Or, Xor
@@ -201,7 +201,7 @@ def _scalar_cselect_b64() -> Rule:
 _local_store_like = Rule(
     [
         Emit(Mov, tmp64("base"), op(2), op_type=IRType.B64),
-        Emit(Cvt64To32, tmp64("index"), op(0), op_type=IRType.U64_U32),
+        Emit(Cvt32To64, tmp64("index"), op(0), op_type=IRType.U64_U32),
         Emit(Add, tmp64("address"), tmp64("base"), tmp64("index"), op_type=IRType.U64),
         Emit(LocalStore, tmp64("address"), op(1), op_type=IRType.B32),
     ]
@@ -210,7 +210,7 @@ _local_store_like = Rule(
 _local_add_like = Rule(
     [
         Emit(Mov, tmp64("base"), op(2), op_type=IRType.B64),
-        Emit(Cvt64To32, tmp64("index"), op(0), op_type=IRType.U64_U32),
+        Emit(Cvt32To64, tmp64("index"), op(0), op_type=IRType.U64_U32),
         Emit(Add, tmp64("address"), tmp64("base"), tmp64("index"), op_type=IRType.U64),
         Emit(LocalAdd, tmp64("address"), op(1), op_type=IRType.U32),
     ]
@@ -219,7 +219,7 @@ _local_add_like = Rule(
 _local_load = Rule(
     [
         Emit(Mov, tmp64("base"), op(2), op_type=IRType.B64),
-        Emit(Cvt64To32, tmp64("index"), op(1), op_type=IRType.U64_U32),
+        Emit(Cvt32To64, tmp64("index"), op(1), op_type=IRType.U64_U32),
         Emit(Add, tmp64("address"), tmp64("base"), tmp64("index"), op_type=IRType.U64),
         Emit(LocalLoad, op(0), tmp64("address"), op_type=IRType.B32),
     ]
@@ -261,7 +261,7 @@ instruction_rules = {
     "s_mul_hi_i32": same(MulHi, IRType.I32),
     "v_mul_i32_i24": same(Mul24, IRType.I32),
     "v_mul_f32": same(MulF, IRType.F32),
-    "v_mac_f32": same(MacF32, IRType.F32),
+    "v_mac_f32": Rule([Emit(MacF32, op(0), op(1), op(2), op(0), op_type=IRType.F32)]),
     "v_mad_u32": same(Mad, IRType.U64_U32),
     "s_mad_u32": same(Mad, IRType.U64_U32),
     "v_lshl_b32": same(LShl, IRType.B32),
@@ -313,8 +313,11 @@ instruction_rules = {
     "s_bfe_i32": same(Bfe, IRType.I32),
     "v_bfe_i32": same(Bfe, IRType.I32),
     "v_perm_b32": same(Permute32, IRType.B32),
-    "v_cvt_i32_f32": same(CvtI32F32, IRType.I32_F32),
-    "v_cvt_f64_u32": same(CvtF64U32, IRType.F64_U32),
+    "v_cvt_i32_f32": same(CvtF32ToI32, IRType.I32_F32),
+    "v_cvt_f64_u32": same(CvtU32ToF64, IRType.F64_U32),
+    "v_cvt_f32_i32": same(CvtI32ToF32, IRType.F32_I32),
+    "v_cvt_f64_i32": same(CvtI32ToF64, IRType.F64_I32),
+    "v_cvt_i32_f64": same(CvtF64ToI32, IRType.I32_F64),
     "s_endpgm": same(EndPgm),
     "s_waitcnt": Rule([Emit(Barrier)]),
     "s_nop": Rule([Emit(Ignore)]),
