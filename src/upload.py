@@ -2,9 +2,19 @@ from src.combined_register_content import CombinedRegisterContent
 from src.decompiler_data import DecompilerData, make_elem_from_addr
 from src.expression_manager.expression_manager import ExpressionManager
 from src.integrity import Integrity
+from src.ir.registers.reg import expand_register_names
 from src.register import Register, check_and_split_regs, get_next_reg
 from src.register_content import RegisterContent
 from src.register_type import RegisterType
+
+zero = Register(
+    integrity=Integrity.ENTIRE,
+    register_content=RegisterContent(
+        value="0",
+        type_=RegisterType.INT32,
+        expression_node=ExpressionManager().get_empty_node(),
+    ),
+)
 
 usesetup_dict = {
     "0x0": Register(
@@ -63,6 +73,7 @@ usesetup_dict = {
 }
 
 
+# (GFV) не используется
 def upload_usesetup(state, to_registers, offset):
     decompiler_data = DecompilerData()
     start_to_register, end_to_register = check_and_split_regs(to_registers)
@@ -75,12 +86,13 @@ def upload_usesetup(state, to_registers, offset):
         curr_to_register = get_next_reg(curr_to_register)
 
 
-def upload_kernel_param(state, offset, to_registers):
+def upload_kernel_param(state, offset, to_registers, base):
     decompiler_data = DecompilerData()
-    start, end = check_and_split_regs(to_registers)
-    start, end = int(start[1:]), int(end[1:])
+    dest_regs_name = expand_register_names(to_registers)
+    start, end = 0, len(dest_regs_name) - 1
+    content = None
     while start <= end:
-        content = decompiler_data.config_data.offset_to_content.get(hex(offset))
+        content = decompiler_data.config_data.offset_to_content[base.name].get(hex(offset), content)
         if not content:
             # Motivation example:
             #   1. We have three args of size and align 4 and then arg with size and align 8
@@ -89,49 +101,90 @@ def upload_kernel_param(state, offset, to_registers):
             break
         if content.get_size() <= 4:  # noqa: PLR2004
             decompiler_data.set_reg_make_version(
-                state, f"s{start}", Register(integrity=Integrity.ENTIRE, register_content=content)
+                state, dest_regs_name[start], Register(integrity=Integrity.ENTIRE, register_content=content)
             )
             start += 1
             offset += 4
         elif content.get_size() == 8:  # noqa: PLR2004
             if start + 1 > end:
                 decompiler_data.set_reg_make_version(
-                    state, f"s{start}", Register(integrity=Integrity.ENTIRE, register_content=content)
+                    state, dest_regs_name[start], Register(integrity=Integrity.ENTIRE, register_content=content)
                 )
                 break
             decompiler_data.set_reg_make_version(
-                state, f"s{start}", Register(integrity=Integrity.LOW_PART, register_content=content)
+                state, dest_regs_name[start], Register(integrity=Integrity.LOW_PART, register_content=content)
             )
             decompiler_data.set_reg_make_version(
-                state, f"s{start + 1}", Register(integrity=Integrity.HIGH_PART, register_content=content)
+                state, dest_regs_name[start + 1], Register(integrity=Integrity.HIGH_PART, register_content=content)
             )
+            if "|lo" in dest_regs_name[start]:
+                decompiler_data.set_reg_make_version(
+                    state,
+                    dest_regs_name[start].replace("|lo", ""),
+                    Register(integrity=Integrity.ENTIRE, register_content=content),
+                )
             start += 2
             offset += 8
         else:
             break
 
 
+def _get_global_data_element(address: str) -> str:
+    if " + " not in address:
+        return f"{address}[0]"
+    return make_elem_from_addr(address)
+
+
+def _loaded_global_data_integrity(index: int, count: int) -> Integrity:
+    if count == 1:
+        return Integrity.ENTIRE
+    if index == 0:
+        return Integrity.LOW_PART
+    if index == count - 1:
+        return Integrity.HIGH_PART
+    return Integrity.ENTIRE
+
+
 def upload_global_data_pointer(state, to_registers, from_registers):
     decompiler_data = DecompilerData()
-    start_to_register, _ = check_and_split_regs(to_registers)
-    start_from_register, _ = check_and_split_regs(from_registers)
-    data_type = state[start_from_register].data_type
-    new_val = make_elem_from_addr(state[start_from_register].val)
-    decompiler_data.set_reg_make_version(
-        state,
-        start_to_register,
-        Register(
-            integrity=Integrity.ENTIRE,
-            register_content=RegisterContent(
-                value=new_val,
-                type_=RegisterType.GLOBAL_DATA_POINTER,
-                data_type=data_type,
-                expression_node=state[start_from_register].get_expression_node(),
+    dest_regs_name = expand_register_names(to_registers)
+    start_from_register = expand_register_names(from_registers)[0]
+    src_content = state[start_from_register]
+    data_type = src_content.data_type
+    new_val = _get_global_data_element(src_content.val)
+
+    for index, dest_reg_name in enumerate(dest_regs_name):
+        decompiler_data.set_reg_make_version(
+            state,
+            dest_reg_name,
+            Register(
+                integrity=_loaded_global_data_integrity(index, len(dest_regs_name)),
+                register_content=RegisterContent(
+                    value=new_val,
+                    type_=RegisterType.GLOBAL_DATA_POINTER,
+                    data_type=data_type,
+                    expression_node=src_content.get_expression_node(),
+                ),
             ),
-        ),
-    )
+        )
+
+    if len(dest_regs_name) > 1:
+        decompiler_data.set_reg_make_version(
+            state,
+            to_registers.name,
+            Register(
+                integrity=Integrity.ENTIRE,
+                register_content=RegisterContent(
+                    value=new_val,
+                    type_=RegisterType.GLOBAL_DATA_POINTER,
+                    data_type=data_type,
+                    expression_node=src_content.get_expression_node(),
+                ),
+            ),
+        )
 
 
+# (GFV) не используется
 def upload_by_offset(
     state,
     to_registers: str,
