@@ -1,5 +1,5 @@
-from src.instructions.IRspecial.memory import MemoryAllocation as DecMA
-from src.instructions.IRspecial.memory import StoreInMem
+from src.instructions.ir_special.memory import MemoryAllocation as DecMA
+from src.instructions.ir_special.memory import StoreInMem
 from src.ir.instructions.generic import GenericInstruction
 from src.ir.instructions.lowering import NodeLoweringContext
 from src.ir.registers.reg import Reg64, Reg_ty, Val

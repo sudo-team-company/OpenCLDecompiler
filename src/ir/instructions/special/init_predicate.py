@@ -1,4 +1,4 @@
-from src.instructions.IRspecial.InitPred import InitPred
+from src.instructions.ir_special.init_pred import InitPred
 from src.ir.instructions.generic import GenericInstruction
 from src.ir.instructions.lowering import NodeLoweringContext
 from src.ir.registers.reg import PredReg

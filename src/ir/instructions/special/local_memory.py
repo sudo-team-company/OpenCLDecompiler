@@ -1,7 +1,7 @@
 from src.instructions.ds.ds_add import DsAdd
 from src.instructions.ds.ds_read import DsRead
 from src.instructions.ds.ds_write import DsWrite
-from src.instructions.IRspecial.LocalMem import LocalMemory as DecLocalMemory
+from src.instructions.ir_special.local_mem import LocalMemory as DecLocalMemory
 from src.instructions.sop1.s_mov import SMov
 from src.ir.instructions.generic import GenericInstruction
 from src.ir.instructions.lowering import NodeLoweringContext

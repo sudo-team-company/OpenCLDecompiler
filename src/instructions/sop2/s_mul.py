@@ -2,7 +2,7 @@ from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg_value
 from src.expression_manager.expression_node import ExpressionOperationType
 from src.expression_manager.types.opencl_types import OpenCLTypes
-from src.register import is_sgpr
+from src.register import is_reg
 from src.register_type import RegisterType
 
 
@@ -13,12 +13,6 @@ class SMul(BaseInstruction):
         self.ssrc0 = self.instruction[2]
         self.ssrc1 = self.instruction[3]
 
-    def to_print_unresolved(self):
-        if self.suffix == "i32":
-            self.decompiler_data.write(f"{self.sdst} = {self.ssrc0} * {self.ssrc1} // {self.name}\n")
-            return self.node
-        return super().to_print_unresolved()
-
     def to_fill_node(self):
         if self.suffix == "i32":
             src0_node = self.get_expression_node(self.ssrc0)
@@ -28,8 +22,8 @@ class SMul(BaseInstruction):
             )
 
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, "*", suffix=self.suffix)
-            ssrc0_reg = is_sgpr(self.ssrc0)
-            ssrc1_reg = is_sgpr(self.ssrc1)
+            ssrc0_reg = is_reg(self.ssrc0)
+            ssrc1_reg = is_reg(self.ssrc1)
             reg_type = RegisterType.UNKNOWN
             if ssrc0_reg and ssrc1_reg:
                 if (

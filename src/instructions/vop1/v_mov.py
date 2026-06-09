@@ -10,14 +10,8 @@ from src.register_type import RegisterType
 class VMov(BaseInstruction):
     def __init__(self, node, suffix):
         super().__init__(node, suffix)
-        self.vdst = self.instruction[1]
-        self.src0 = self.instruction[2]
-
-    def to_print_unresolved(self):
-        if self.suffix == "b32":
-            self.decompiler_data.write(f"{self.vdst} = {self.src0} // {self.name}\n")
-            return self.node
-        return super().to_print_unresolved()
+        self.vdst = self.operand[0]
+        self.src0 = self.operand[2]
 
     def to_fill_node(self):
         if self.suffix == "b32":

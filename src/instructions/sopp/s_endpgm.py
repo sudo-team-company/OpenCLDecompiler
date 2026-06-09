@@ -4,8 +4,5 @@ from src.logical_variable import ExecCondition
 
 class SEndpgm(BaseInstruction):
     def to_fill_node(self):
-        self.node.state["exec"].exec_condition = ExecCondition.default()
+        self.node.state["$MASK"].exec_condition = ExecCondition.default()
         return self.node
-
-    def to_print_unresolved(self):
-        return ""

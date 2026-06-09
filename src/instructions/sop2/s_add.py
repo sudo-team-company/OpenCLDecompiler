@@ -2,7 +2,7 @@ from src.base_instruction import BaseInstruction
 from src.decompiler_data import make_op, set_reg, set_reg_value
 from src.expression_manager.expression_node import ExpressionOperationType
 from src.expression_manager.types.opencl_types import OpenCLTypes
-from src.register import is_sgpr
+from src.register import is_reg
 from src.register_type import RegisterType
 
 _instruction_special_cases = {
@@ -23,16 +23,6 @@ class SAdd(BaseInstruction):
         self.ssrc0 = self.instruction[2]
         self.ssrc1 = self.instruction[3]
 
-    def to_print_unresolved(self):
-        if self.suffix in {"u32", "i32"}:
-            temp = f"temp{self.decompiler_data.number_of_temp}"
-            self.decompiler_data.write(f"ulong {temp} = (ulong){self.ssrc0} + (ulong){self.ssrc1} // {self.name}\n")
-            self.decompiler_data.write(f"{self.sdst} = {temp}\n")
-            self.decompiler_data.write(f"scc = {temp} >> 32\n")
-            self.decompiler_data.number_of_temp += 1
-            return self.node
-        return super().to_print_unresolved()
-
     def to_fill_node(self):  # noqa: C901, PLR0912, PLR0915
         if self.suffix in {"u32", "i32"}:
             if self.decompiler_data.is_rdna3 and self.ssrc0 in self.node.state and self.ssrc1 in self.node.state:
@@ -47,8 +37,8 @@ class SAdd(BaseInstruction):
 
             new_value = make_op(self.node, self.ssrc0, self.ssrc1, "+", "(ulong)", "(ulong)", suffix=self.suffix)
 
-            ssrc0_reg = is_sgpr(self.ssrc0)
-            ssrc1_reg = is_sgpr(self.ssrc1)
+            ssrc0_reg = is_reg(self.ssrc0)
+            ssrc1_reg = is_reg(self.ssrc1)
             data_type = self.suffix
 
             expr_node = None
@@ -90,6 +80,16 @@ class SAdd(BaseInstruction):
                     if self.node.state[self.ssrc0].data_type in {"u32", "i32", "gi32", "gu32"}:
                         new_value = make_op(self.node, self.ssrc1, "4", "/", suffix=self.suffix)
                         new_value = make_op(self.node, self.ssrc0, new_value, "+", suffix=self.suffix)
+
+                        expr_node = self.expression_manager.add_offset_div_data_size_node(
+                            src0_node, src1_node, 4, OpenCLTypes.from_string(self.suffix)
+                        )
+                elif ssrc0_type == RegisterType.LOCAL_DATA_POINTER:
+                    name = self.node.state[self.ssrc0].val
+                    reg_type = RegisterType.LOCAL_DATA_POINTER
+                    if self.node.state[self.ssrc0].data_type in {"u32", "i32", "gi32", "gu32"}:
+                        new_value = make_op(self.node, self.ssrc1, "4", "/", suffix=self.suffix)
+                        new_value = make_op(self.node, name, new_value, "+", suffix=self.suffix)
 
                         expr_node = self.expression_manager.add_offset_div_data_size_node(
                             src0_node, src1_node, 4, OpenCLTypes.from_string(self.suffix)
