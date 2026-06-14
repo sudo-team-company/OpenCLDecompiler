@@ -2,24 +2,15 @@ from src.base_instruction import BaseInstruction
 from src.decompiler_data import set_reg_value
 from src.expression_manager.expression_node import ExpressionOperationType
 from src.expression_manager.types.opencl_types import OpenCLTypes
+from src.ir.registers.reg import Val
 
 
 class DsAdd(BaseInstruction):
     def __init__(self, node, suffix):
         super().__init__(node, suffix)
-        self.addr = self.instruction[1]
-        self.vdata0 = self.instruction[2]
-        self.offset = int(self.instruction[3][7:]) if len(self.instruction) == 4 else 0  # noqa: PLR2004
-        self.varname = self.get_lds_var_name_with_offset()
-
-    def to_print_unresolved(self):
-        if self.suffix == "u32":
-            v = f"V{self.decompiler_data.number_of_v}"
-            self.decompiler_data.write(f"uint* {v} = (uint*)(DS + (({self.addr} + {self.offset})&~3)) // {self.name}\n")
-            self.decompiler_data.write(f"*{v} = *{v} + {self.vdata0}  // atomic operation\n")
-            self.decompiler_data.number_of_v += 1
-            return self.node
-        return super().to_print_unresolved()
+        self.addr = self.operand[0]
+        self.vdata0 = self.operand[1]
+        self.varname = self.expression_manager.expression_to_string(self.get_expression_node(self.addr))
 
     def get_lds_var_name_with_offset(self):
         return self.expression_manager.expression_to_string(
@@ -33,9 +24,9 @@ class DsAdd(BaseInstruction):
 
     def to_fill_node(self):
         if self.suffix == "u32":
-            new_value = f"{self.node.state[self.varname].val} + {self.node.state[self.vdata0].val}"
+            new_value = f"{self.node.state[self.varname].val} + {self.node.get_from_state(self.vdata0).val}"
             expr_node = self.expression_manager.add_operation(
-                self.get_expression_node(self.varname),
+                self.get_expression_node(Val(self.varname)),
                 self.get_expression_node(self.vdata0),
                 ExpressionOperationType.PLUS,
                 OpenCLTypes.UINT,

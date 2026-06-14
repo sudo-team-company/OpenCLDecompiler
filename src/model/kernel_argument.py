@@ -9,6 +9,7 @@ class KernelArgument:
     size: int
     hidden: bool = False
     const: bool = False
+    declared_size: int | None = None
 
     def __str__(self):
         return f"{self.type_name} {self.name}"

@@ -1,4 +1,4 @@
-from src.instructions.IRspecial.InitReg import InitReg as decInitReg
+from src.instructions.ir_special.init_reg import InitReg as decInitReg
 from src.ir.instructions.generic import GenericInstruction
 from src.ir.instructions.lowering import NodeLoweringContext
 from src.ir.registers.reg import Reg_ty, Val

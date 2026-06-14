@@ -22,6 +22,7 @@ class RegisterType(Enum):
     GLOBAL_OFFSET_Z = auto()
 
     GLOBAL_DATA_POINTER = auto()
+    LOCAL_DATA_POINTER = auto()
 
     ARGUMENTS_POINTER = auto()
     DISPATCH_POINTER = auto()

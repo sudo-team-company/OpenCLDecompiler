@@ -314,7 +314,7 @@ class ExpressionManager(metaclass=Singleton):
 
         return create_op_node(ExpressionOperationType.DIV, s0, s1, value_type_hint)
 
-    def _optimized_nodes_logical_operation(
+    def _optimized_nodes_logical_operation(  # noqa: PLR0911
         self,
         op: ExpressionOperationType,
         s0: ExpressionNode,
@@ -330,6 +330,12 @@ class ExpressionManager(metaclass=Singleton):
                 return self.add_logical_not_node(s1)
             if s1.type == ExpressionType.UNKNOWN:
                 return self.add_logical_not_node(s0)
+
+        # TODO(GFV) тут надо как-то по умному делать
+        if s0.type == ExpressionType.UNKNOWN:
+            return s1
+        if s1.type == ExpressionType.UNKNOWN:
+            return s0
 
         if ExpressionType.CONST in (s0.type, s1.type):
             const_node = s0 if s0.type == ExpressionType.CONST else s1
@@ -429,14 +435,13 @@ class ExpressionManager(metaclass=Singleton):
         return logical_not_node
 
     def add_kernel_argument(self, arg: KernelArgument, offset: int) -> ExpressionNode:
-        if arg.hidden:
-            for reg_type in CONSTANT_VALUES:
-                reg_type_name = CONSTANT_VALUES[reg_type][0]
-                if arg.name == reg_type_name:
-                    return self.add_register_node(reg_type, arg.name)
+        if arg.name == "UNKNOWN":
+            return self.get_empty_node()
 
-            # don't add other hidden data like _.printf_buffer, _.vqueue_pointer, _.aqlwrap_pointer and so on
-            return None
+        for reg_type in CONSTANT_VALUES:
+            reg_type_name = CONSTANT_VALUES[reg_type][0]
+            if arg.name == reg_type_name:
+                return self.add_register_node(reg_type, arg.name)
 
         name = arg.name if not arg.is_vector() else arg.get_vector_element_by_offset(offset)
         opencl_type, qualifiers = get_kernel_argument_type_and_qualifiers(arg)
@@ -699,9 +704,16 @@ class ExpressionManager(metaclass=Singleton):
         # That's why we try to use unoptimized node here
         if node in self._optimized_nodes_to_original:
             node = copy.deepcopy(self._optimized_nodes_to_original[node])
-
         original_node = copy.deepcopy(node)
-        node = node.replace(from_node, to_node)
+        # TODO(GFV) я не уверен что так правильно но только так и работает
+        if from_node in self._optimized_nodes_to_original:
+            tmp = copy.deepcopy(self._optimized_nodes_to_original[from_node])
+            node = node.replace(tmp, to_node)
+            if original_node.contents_equal(node):
+                node = node.replace(from_node, to_node)
+        else:
+            node = node.replace(from_node, to_node)
+
         if not original_node.contents_equal(node):
             return self.apply_optimizations(node)
 

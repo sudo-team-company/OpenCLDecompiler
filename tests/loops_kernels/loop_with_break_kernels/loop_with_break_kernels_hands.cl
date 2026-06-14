@@ -7,7 +7,7 @@ void loop_break_kernel(__global uint *data, uint x, uint y, uint unrollingBreake
     __global uint *var7;
     __global uint *var8;
     int var9;
-    if (unrollingBreaker == 0) {
+    if (unrollingBreaker != 0) {
         var7 = data;
         var8 = data;
         var6 = y;

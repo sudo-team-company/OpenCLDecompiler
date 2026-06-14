@@ -1,5 +1,5 @@
-from src.instructions.IRspecial.ChangeMask import Unmask as be_Unmask
-from src.instructions.IRspecial.ChangeMask import UseMask
+from src.instructions.ir_special.change_mask import Unmask as be_Unmask
+from src.instructions.ir_special.change_mask import UseMask
 from src.ir.instructions.generic import GenericInstruction
 from src.ir.instructions.lowering import NodeLoweringContext
 from src.ir.registers.reg import PredReg

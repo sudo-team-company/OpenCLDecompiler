@@ -9,6 +9,8 @@ class ConfigData:
     dimensions: str
     usesetup: bool
     size_of_work_groups: list[int] | None
-    local_size: int | None
+
     arguments: list[KernelArgument]
-    offset_to_content: dict[str, RegisterContent] = field(default_factory=dict)
+    local_size: int = 0
+    offset_to_content: dict[str, dict[str, RegisterContent]] = field(default_factory=dict)
+    kernel_name: str = ""

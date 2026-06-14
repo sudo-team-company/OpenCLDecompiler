@@ -1,4 +1,4 @@
-from src.instructions.IRspecial.GlobalMem import GlobalMemory as DecGlobalMemory
+from src.instructions.ir_special.global_mem import GlobalMemory as DecGlobalMemory
 from src.ir.instructions.generic import GenericInstruction
 from src.ir.instructions.lowering import NodeLoweringContext
 from src.ir.registers.reg import Reg64, Val
