@@ -4,6 +4,7 @@ from src.decompiler_data import DecompilerData
 from src.expression_manager.expression_manager import ExpressionManager
 from src.expression_manager.expression_node import ExpressionValueTypeHint
 from src.expression_manager.types.opencl_types import OpenCLTypes
+from src.ir.registers.reg import is_reg
 from src.node import Node
 from src.region_type import RegionType
 from src.regions.region import Region
@@ -21,11 +22,11 @@ class Vertex:
 
     @property
     def instruction(self) -> str:
-        return self.node.instruction[0]
+        return self.node.instruction
 
     @property
     def src_args(self) -> list[str]:
-        return self.node.instruction[2:]
+        return self.node.operands[1:]
 
     def reset(self):
         self.used = False
@@ -64,16 +65,16 @@ def process_unrolled_loops():  # noqa: C901, PLR0912, PLR0915
             cur = cur.children[0]
             vertices.append(Vertex(len(vertices), cur))
             idx = len(vertices) - 1
-            if len(cur.instruction) > 2:  # noqa: PLR2004
-                for arg in cur.instruction[2:]:
-                    if arg[0] not in "sv":
+            if len(cur.operands) > 1:
+                for arg in cur.operands[1:]:
+                    if not is_reg(arg):
                         continue
-                    fromm = edge_ends.get(arg)
+                    fromm = edge_ends.get(arg.name)
                     if fromm:
                         vertices[fromm].child.add(idx)
                         vertices[idx].parent.add(fromm)
-            if len(cur.instruction) > 1:
-                reg = cur.instruction[1]
+            if len(cur.operands) > 0:
+                reg = cur.operands[0].name
                 edge_ends[reg] = idx
 
         counters: dict[str, int] = {}
@@ -136,7 +137,7 @@ def process_unrolled_loops():  # noqa: C901, PLR0912, PLR0915
                 for v in map(vertices.__getitem__, [i, *vertices[i].merged_vertices]):
                     v.node.exclude_unrolled = True
                     for arg in v.src_args:
-                        progressions[idx].append(arg)
+                        progressions[idx].append(arg.name)
                         idx += 1
 
             progressions = filter(lambda es: not all(e == es[0] for e in es), progressions)
@@ -157,7 +158,7 @@ def process_unrolled_loops():  # noqa: C901, PLR0912, PLR0915
                 diff = constants[1] - constants[0]
                 diff = f"i = i - {-diff}" if diff < 0 else f"i = i + {diff}"
 
-            dst = vertices[vertices[chosen[-1]].merged_vertices[-1]].node.instruction[1]
+            dst = vertices[vertices[chosen[-1]].merged_vertices[-1]].node.operands[0]
 
             cur = decompiler_data.improve_cfg.start
             end = decompiler_data.improve_cfg.end

@@ -1,5 +1,6 @@
 from src.expression_manager.expression_manager import ExpressionManager
 from src.expression_manager.types.opencl_types import OpenCLTypes
+from src.ir.registers.reg import RegOrVal_ty
 
 from .decompiler_data import DecompilerData
 from .node import Node
@@ -15,12 +16,12 @@ class BaseInstruction:
         self.expression_manager = ExpressionManager()
 
     @property
-    def instruction(self) -> list[str]:
-        return self.node.instruction
+    def operand(self) -> list[RegOrVal_ty]:
+        return self.node.operands
 
     @property
     def name(self) -> str:
-        return self.instruction[0]
+        return self.node.instruction
 
     def execute(self, flag_of_status):
         if flag_of_status == OperationStatus.TO_PRINT_UNRESOLVED:

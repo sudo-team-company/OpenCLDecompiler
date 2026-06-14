@@ -4,6 +4,7 @@ from collections import deque
 from src.decompiler_data import DecompilerData
 from src.expression_manager.expression_manager import ExpressionManager
 from src.expression_manager.types.opencl_types import OpenCLTypes
+from src.ir.registers.reg import BaseReg, get_reg_rang
 from src.region_type import RegionType
 from src.regions.region import Region
 from src.register_type import RegisterType
@@ -212,6 +213,8 @@ def process_if_else_statement_region(curr_region):
 
 
 def make_var_for_loop(curr_node, register, version, prev_version):
+    assert isinstance(register, str)
+
     decompiler_data = DecompilerData()
     if decompiler_data.loops_variables.get(prev_version):
         variable = decompiler_data.loops_variables[prev_version]
@@ -233,19 +236,21 @@ def make_var_for_loop(curr_node, register, version, prev_version):
 
 
 def check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_version_node):
-    register_version = curr_node.state[register].version
-    instruction = curr_node.instruction[0]
+    assert isinstance(register, BaseReg)
+
+    register_version = curr_node.get_from_state(register).version
+    instruction = curr_node.instruction
     if reg_versions_in_instruction.get(register_version):
         change_node = reg_version_node[register_version]
         instruction_version_list = reg_versions_in_instruction[register_version]
         for version in instruction_version_list:
-            instruction_register = version[: version.find("_")]
+            instruction_register = version[: version.find("#")]
             instruction_register_version = curr_node.state[instruction_register].version
             if version != instruction_register_version:
                 if re.match(r"(flat|global)_store", instruction) or "cmp" in instruction:
                     prev_register_version = register_version
                 else:
-                    prev_register_version = curr_node.parent[0].state[register].version
+                    prev_register_version = curr_node.parent[0].get_from_state(register).version
                 make_var_for_loop(change_node, instruction_register, register_version, prev_register_version)
 
 
@@ -262,59 +267,53 @@ def process_loop(region_start, region_end):  # noqa: PLR0912
     first_reg = None
     first_reg_version = None
     while curr_node != region_end.start:
-        list_of_reg_nums = list(range(1, len(curr_node.instruction))[1:])
-        list_of_reg_nums = list_of_reg_nums if len(curr_node.instruction) == 1 else [*list_of_reg_nums, 1]
+        list_of_reg_nums = list(range(1, len(curr_node.operands)))
+        list_of_reg_nums = list_of_reg_nums if len(curr_node.operands) == 0 else [*list_of_reg_nums, 0]
         if len(list_of_reg_nums) > 0:
-            first_reg = curr_node.instruction[1]
-            if len(first_reg) > 1 and first_reg[1] == "[":
-                first_reg = first_reg[0] + first_reg[2 : first_reg.find(":")]
+            first_reg = get_reg_rang(curr_node.operands[0])[0]
             if (
-                "cmp" not in curr_node.instruction[0]
-                and not re.match(r"(flat|global)_store", curr_node.instruction[0])
-                and first_reg in curr_node.state
+                "cmp" not in curr_node.instruction
+                and not re.match(r"(flat|global)_store", curr_node.instruction)
+                and first_reg.name in curr_node.state
             ):
-                first_reg_version = curr_node.state[first_reg].version
+                first_reg_version = curr_node.get_from_state(first_reg).version
                 reg_versions_in_instruction[first_reg_version] = []
                 reg_version_node[first_reg_version] = curr_node
         for num_of_register in list_of_reg_nums:
-            register = curr_node.instruction[num_of_register]
-            if len(register) > 1 and register[1] == "[":
-                register = register[0] + register[2 : register.find(":")]
+            register = get_reg_rang(curr_node.operands[num_of_register])[0]
             if (
-                "cmp" in curr_node.instruction[0]
-                or re.match(r"(flat|global)_store", curr_node.instruction[0])
-                or num_of_register > 1
-            ) and register in curr_node.state:
+                "cmp" in curr_node.instruction
+                or re.match(r"(flat|global)_store", curr_node.instruction)
+                or num_of_register > 0
+            ) and register.name in curr_node.state:
                 if (
-                    register == first_reg
-                    and "cmp" not in curr_node.instruction[0]
-                    and not re.match(r"(flat|global)_store", curr_node.instruction[0])
+                    register.name == first_reg.name
+                    and "cmp" not in curr_node.instruction
+                    and not re.match(r"(flat|global)_store", curr_node.instruction)
                 ):
-                    register_version = curr_node.parent[0].state[register].version
+                    register_version = curr_node.parent[0].get_from_state(register).version
                 else:
-                    register_version = curr_node.state[register].version
+                    register_version = curr_node.get_from_state(register).version
                 used_versions_of_registers.add(register_version)
-            if register in curr_node.state:
-                if "cmp" not in curr_node.instruction[0] and not re.match(
-                    r"(flat|global)_store", curr_node.instruction[0]
-                ):
-                    if num_of_register > 1 and register != first_reg:
+            if register.name in curr_node.state:
+                if "cmp" not in curr_node.instruction and not re.match(r"(flat|global)_store", curr_node.instruction):
+                    if num_of_register > 0 and register.name != first_reg.name:
                         reg_versions_in_instruction[first_reg_version].append(register_version)
                         check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_version_node)
                 else:
                     check_changes_in_reg(register, reg_versions_in_instruction, curr_node, reg_version_node)
             if (
-                "cmp" not in curr_node.instruction[0]
-                and not re.match(r"(flat|global)_store", curr_node.instruction[0])
-                and num_of_register == 1
-                and register in curr_node.state
+                "cmp" not in curr_node.instruction
+                and not re.match(r"(flat|global)_store", curr_node.instruction)
+                and num_of_register == 0
+                and register.name in curr_node.state
             ):
-                separation = first_reg_version.find("_")
+                separation = first_reg_version.find("#")
                 first_reg_prev_version = first_reg_version[: separation + 1] + str(
                     int(first_reg_version[separation + 1 :]) - 1
                 )
                 if first_reg_prev_version in used_versions_of_registers:
-                    make_var_for_loop(curr_node, register, first_reg_version, first_reg_prev_version)
+                    make_var_for_loop(curr_node, register.name, first_reg_version, first_reg_prev_version)
         curr_node = curr_node.children[0]
 
 
@@ -366,7 +365,7 @@ def get_one_loop_region(q_loops, curr_region, start_region, region_start, region
         if loop_region.type == RegionType.BACK_EDGE:
             loop_region.type = RegionType.CONTINUE_REGION
             join_regions(loop_region.parent[0], loop_region, loop_region.children[0])  # not good enough
-        elif curr_region.start.instruction[1] == loop_region.start.instruction[0][:-1]:
+        elif curr_region.start.operands[1].name == loop_region.start.instruction:
             region_start = loop_region
             curr_loop = None
         else:
@@ -395,7 +394,7 @@ def find_loops():
         if curr_region not in visited:
             visited.append(curr_region)
             if curr_region.type == RegionType.BACK_EDGE:
-                if curr_region.start.instruction[1] == curr_loop.start.instruction[0][:-1]:
+                if curr_region.start.operands[1] == curr_loop.start.instruction:
                     q_loops.append(curr_region)
                 else:
                     region_end = curr_region  # вероятно это не так

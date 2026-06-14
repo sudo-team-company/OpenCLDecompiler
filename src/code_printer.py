@@ -4,12 +4,12 @@ from src.decompiler_data import DecompilerData, evaluate_from_hex
 from src.expression_manager.expression_manager import ExpressionManager
 from src.expression_manager.expression_node import ExpressionNode
 from src.expression_manager.types.opencl_types import OpenCLTypes
+from src.ir.registers.reg import get_reg_rang, is_range, is_reg
 from src.node import Node
 from src.node_processor import to_opencl
 from src.operation_status import OperationStatus
 from src.region_type import RegionType
 from src.regions.region import Region
-from src.register import is_reg
 
 
 def create_opencl_body():
@@ -83,7 +83,7 @@ def make_output_for_loop_vars(curr_node, indent):
     decompiler_data = DecompilerData()
     expression_manager = ExpressionManager()
     key = decompiler_data.loops_nodes_for_variables[curr_node]
-    reg = key[: key.find("_")]
+    reg = key[: key.find("#")]
     loop_variable = decompiler_data.loops_variables[key]
     loop_variable_node = expression_manager.get_variable_node(loop_variable)
     decompiler_data.write(
@@ -97,11 +97,13 @@ def make_output_for_loop_vars(curr_node, indent):
     )
 
 
-def make_output_for_linear_region(region, indent):
+def make_output_for_linear_region(region, indent):  # noqa: PLR0912
     decompiler_data = DecompilerData()
     expression_manager = ExpressionManager()
     if isinstance(region.start, Node):
         curr_node = decompiler_data.cfg.children[0] if region.start == decompiler_data.cfg else region.start
+        if curr_node.instruction == "change_mask":
+            curr_node = curr_node.children[0]
         while True:
             new_output = to_opencl(curr_node, OperationStatus.TO_PRINT)
             if decompiler_data.loops_nodes_for_variables.get(curr_node):
@@ -109,34 +111,38 @@ def make_output_for_linear_region(region, indent):
             elif new_output:
                 decompiler_data.write(indent + new_output + ";\n")
             if (
-                len(curr_node.instruction) > 1
-                and is_reg(curr_node.instruction[1])
+                len(curr_node.operands) > 0
+                and (is_reg(curr_node.operands[0]) or is_range(curr_node.operands[0]))
                 and not decompiler_data.loops_nodes_for_variables.get(curr_node)
             ):
-                reg = curr_node.instruction[1]
-
-                version = curr_node.state[reg].version
-                var = decompiler_data.variables.get(version)
-                if (
-                    var is not None
-                    and var != curr_node.state[reg].val
-                    and curr_node.state[reg].val.strip()
-                    and (
-                        "cmp" not in curr_node.instruction[0]
-                        or (decompiler_data.gpu and decompiler_data.gpu.startswith("gfx"))
-                    )
-                ):  # версия поменялась по сравнению с предком
-                    value_type_hint = copy.deepcopy(expression_manager.get_variable_node(var).value_type_hint)
-                    value_type_hint.opencl_type = OpenCLTypes.UNKNOWN
-                    decompiler_data.write(
-                        indent
-                        + var
-                        + " = "
-                        + expression_manager.expression_to_string(
-                            curr_node.state[reg].get_expression_node(), value_type_hint
+                regs = get_reg_rang(curr_node.operands[0])
+                if is_range(regs):
+                    regs += (curr_node.operands[0],)
+                for reg in regs:
+                    if reg.name not in curr_node.state:
+                        continue
+                    version = curr_node.get_from_state(reg).version
+                    var = decompiler_data.variables.get(version)
+                    if (
+                        var is not None
+                        and var != curr_node.get_from_state(reg).val
+                        and curr_node.get_from_state(reg).val.strip()
+                        and (
+                            "cmp" not in curr_node.instruction
+                            or (decompiler_data.gpu and decompiler_data.gpu.startswith("gfx"))
                         )
-                        + ";\n"
-                    )
+                    ):  # версия поменялась по сравнению с предком
+                        value_type_hint = copy.deepcopy(expression_manager.get_variable_node(var).value_type_hint)
+                        value_type_hint.opencl_type = OpenCLTypes.UNKNOWN
+                        decompiler_data.write(
+                            indent
+                            + var
+                            + " = "
+                            + expression_manager.expression_to_string(
+                                curr_node.get_from_state(reg).get_expression_node(), value_type_hint
+                            )
+                            + ";\n"
+                        )
             if curr_node == region.end:
                 break
             child = curr_node.children[0]
@@ -186,8 +192,7 @@ def make_output_from_loop_region(region, indent):
     make_output_from_region(region.start.children[0], indent + "    ")
     decompiler_data.write(indent + "} while (")
     statement = to_opencl(region.end.start, OperationStatus.TO_PRINT)
-    if "scc0" in region.end.start.instruction[0]:
-        statement = "!(" + statement + ")"
+    statement = "!(" + statement + ")"
     decompiler_data.write(statement)
     decompiler_data.write(");\n")
 
@@ -197,8 +202,7 @@ def make_output_from_break_region(region, indent):
     break_node = region.start
     decompiler_data.write(indent + "if (")
     statement = to_opencl(break_node, OperationStatus.TO_PRINT)
-    if break_node.instruction[0][-4:] in {"scc0", "vccz"}:
-        statement = "!(" + statement + ")"
+    statement = "!(" + statement + ")"
     decompiler_data.write(statement)
     decompiler_data.write(") {\n")
     decompiler_data.write(indent + "    break;\n")

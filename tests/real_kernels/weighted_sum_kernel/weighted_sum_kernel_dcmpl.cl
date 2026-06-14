@@ -4,12 +4,12 @@ __kernel void weighted_sum_kernel(int n, __global float *a, __global float *b, _
     float var3;
     float var4;
     float var5;
-    if (b == 0) {
-        var3 = 0;
-    }
-    else {
+    if (b != 0) {
         var0 = b[(get_global_id(1) + get_global_id(2)*get_global_size(1))*get_global_size(0) + get_global_id(0)];
         var3 = var0;
+    }
+    else {
+        var3 = 0;
     }
     if (n > ((((get_global_size(1) * get_global_id(2)) + get_global_id(1)) * get_global_size(0)) + get_global_id(0))) {
         var4 = a[(get_global_id(1) + get_global_id(2)*get_global_size(1))*get_global_size(0) + get_global_id(0)];
