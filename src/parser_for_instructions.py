@@ -77,7 +77,9 @@ def create_parser():
         default="AUTO_DECOMPILATION",
     )
     parser.add_argument("--cfg", help="path to output control flow graph")
-    parser.add_argument("--unrolling_limit", help="number of repeations to recognize unrolled loop", default=16)
+    parser.add_argument(
+        "--unrolling_limit", help="number of repeations to recognize unrolled loop", type=int, default=16
+    )
     parser.add_argument(
         "--emit",
         choices=["opencl", "ir"],

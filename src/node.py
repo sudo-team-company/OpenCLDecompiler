@@ -13,7 +13,6 @@ class Node:
         self.children = []
         self.parent = []
         self.state = state
-        self.exclude_unrolled: bool = False
 
     def add_child(self, child):
         self.children.append(child)

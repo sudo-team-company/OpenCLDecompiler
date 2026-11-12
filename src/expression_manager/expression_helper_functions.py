@@ -1,4 +1,7 @@
+import copy
 import re
+import uuid
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from src.expression_manager.expression_node import (
@@ -103,6 +106,44 @@ def create_logical_not_node(node: ExpressionNode) -> ExpressionNode:
     logical_not_node.left = node
     node.parent = logical_not_node
     return logical_not_node
+
+
+RewriteRule = Callable[[ExpressionNode], ExpressionNode | None]
+
+
+def rewrite(node: ExpressionNode, rule: RewriteRule) -> ExpressionNode:
+    """Apply ``rule`` top-down without mutating ``node``.
+
+    A replaced node is not visited further. Unchanged subtrees are shared with the original,
+    only the nodes on the path to a replacement are copied; if nothing is replaced,
+    ``node`` itself is returned.
+    """
+    replacement = rule(node)
+    if replacement is not None:
+        return replacement
+    if node.type not in {ExpressionType.OP, ExpressionType.IF_TERNARY, ExpressionType.PERMUTE}:
+        return node
+
+    children = {
+        attr: rewrite(child, rule)
+        for attr in ("value", "left", "right")
+        if isinstance(child := getattr(node, attr), ExpressionNode)
+    }
+    if all(children[attr] is getattr(node, attr) for attr in children):
+        return node
+    result = copy.copy(node)
+    result.id = uuid.uuid4()
+    for attr, child in children.items():
+        setattr(result, attr, child)
+    return result
+
+
+def replace_subtree(target: ExpressionNode, replacement: ExpressionNode) -> RewriteRule:
+    def rule(node: ExpressionNode) -> ExpressionNode | None:
+        same = node.type == target.type and node.value == target.value and node.contents_equal(target)
+        return replacement if same else None
+
+    return rule
 
 
 def evaluate_operation(  # noqa: C901, PLR0912

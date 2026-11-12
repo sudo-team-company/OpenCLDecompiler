@@ -10,6 +10,7 @@ from src.node_processor import to_opencl
 from src.operation_status import OperationStatus
 from src.region_type import RegionType
 from src.regions.region import Region
+from src.unrolled_loops import UnrolledLoopData
 
 
 def create_opencl_body():
@@ -147,12 +148,9 @@ def make_output_for_linear_region(region, indent):  # noqa: PLR0912
                 break
             child = curr_node.children[0]
             if isinstance(child, Region) and child.type == RegionType.UNROLLED_LOOP:
-                before, first, last, diff, inside = child.start
-                decompiler_data.write(f"    int acc = {before};\n")
-                sign = "<=" if first < last else ">="
-                decompiler_data.write(f"    for (int i = {first}; i {sign} {last}; {diff}) {{\n")
-                decompiler_data.write(f"        acc = {inside};\n")
-                decompiler_data.write("    }\n")
+                loop: UnrolledLoopData = child.start
+                for line in loop.to_lines():
+                    decompiler_data.write(f"{indent}{line}\n")
                 curr_node = curr_node.children[1]
                 continue
             curr_node = child
