@@ -10,8 +10,11 @@ class EndPgm(GenericInstruction):
     def _get_normalize_opcode(self) -> str:
         return "s_endpgm"
 
+    def has_side_effects(self) -> bool:
+        return True
+
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             SEndpgm,
             self._get_normalize_opcode(),
             self.operands,

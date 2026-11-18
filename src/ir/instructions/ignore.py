@@ -20,7 +20,7 @@ class Ignore(GenericInstruction):
         return "s_nop"
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             SNop,
             self._get_normalize_opcode(),
             self.operands,

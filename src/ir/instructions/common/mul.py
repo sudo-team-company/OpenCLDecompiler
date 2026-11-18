@@ -25,7 +25,7 @@ class Mul24(GenericInstruction):
         return "v_mul_i32_i24"
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             VMulF32,
             "v_mul_i32_i24",
             self.operands,
@@ -49,7 +49,7 @@ class MulF(GenericInstruction):
         return "v_mul_f32"
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             VMulF32,
             self._get_normalize_opcode(),
             self.operands,
@@ -74,7 +74,7 @@ class MacF32(GenericInstruction):
         return "v_mac_f32"
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             VMac,
             self._get_normalize_opcode(),
             self.operands,
@@ -104,7 +104,7 @@ class MulLo(GenericInstruction):
         return "v_mul_lo_i32"
 
     def to_fill_node(self, state, parents):
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         if not self._is_64bit():
             return ctx.emit_backend(
                 VMulLo,
@@ -147,7 +147,7 @@ class MulHi(GenericInstruction):
         return "u32"
 
     def to_fill_node(self, state, parents):
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         return ctx.emit_backend(
             VMulHi,
             self._get_normalize_opcode(),
@@ -185,7 +185,7 @@ class MulWide(GenericInstruction):
         return "u64_u32"
 
     def to_fill_node(self, state, parents):
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         return ctx.emit_backend(
             VMad,
             self._get_normalize_opcode(),

@@ -11,8 +11,8 @@ from src.expression_manager.expression_helper_functions import (
 from src.expression_manager.expression_manager import ExpressionManager
 from src.expression_manager.expression_node import ExpressionNode, ExpressionType, ExpressionValueTypeHint
 from src.expression_manager.types.opencl_types import OpenCLTypes
-from src.ir.registers.reg import is_reg
 from src.node import Node
+from src.node_effects import NodeEffects
 from src.region_type import RegionType
 from src.regions.region import Region
 from src.unrolled_loops import UnrolledLoopData
@@ -68,6 +68,10 @@ def is_node_chain(region: Region) -> bool:
     return True
 
 
+def effects_of(node: Node) -> NodeEffects:
+    return node.effects if node.effects is not None else NodeEffects.from_operands(node.operands)
+
+
 def build_def_use_graph(region: Region) -> list[Vertex]:
     vertices: list[Vertex] = []
     last_writer: dict[str, int] = {}
@@ -78,15 +82,14 @@ def build_def_use_graph(region: Region) -> list[Vertex]:
         cur = cur.children[0]
         idx = len(vertices)
         vertices.append(Vertex(idx, cur))
-        for arg in cur.operands[1:]:
-            if not is_reg(arg):
-                continue
-            writer = last_writer.get(arg.name)
+        effects = effects_of(cur)
+        for reg in effects.reads:
+            writer = last_writer.get(reg)
             if writer is not None:
                 vertices[writer].child.add(idx)
                 vertices[idx].parent.add(writer)
-        if len(cur.operands) > 0:
-            last_writer[cur.operands[0].name] = idx
+        for reg in effects.writes:
+            last_writer[reg] = idx
 
     return vertices
 
@@ -172,18 +175,28 @@ def trim_peeled_iterations(vertices: list[Vertex], iterations: list[Iteration]) 
     return iterations
 
 
-def dst_of(vertices: list[Vertex], iteration: Iteration) -> str:
-    return vertices[iteration[-1]].node.operands[0].name
+def dst_of(vertices: list[Vertex], iteration: Iteration) -> str | None:
+    writes = effects_of(vertices[iteration[-1]].node).writes
+    return next(iter(writes)) if len(writes) == 1 else None
+
+
+def is_simple_instruction(node: Node) -> bool:
+    effects = effects_of(node)
+    return not effects.has_side_effects and not effects.is_control_flow
 
 
 def is_well_formed(vertices: list[Vertex], iterations: list[Iteration]) -> bool:
-    if len({dst_of(vertices, iteration) for iteration in iterations}) != 1:
+    dsts = {dst_of(vertices, iteration) for iteration in iterations}
+    if len(dsts) != 1 or None in dsts:
         return False
     nums = {num for iteration in iterations for num in iteration}
     first, last = min(nums), max(nums)
     if last == len(vertices) - 1:
         return False
-    return all(num in nums or vertices[num].instruction == "s_nop" for num in range(first, last + 1))
+    removed = range(first, last + 1)
+    if not all(num in nums or vertices[num].instruction == "s_nop" for num in removed):
+        return False
+    return all(is_simple_instruction(vertices[num].node) for num in removed)
 
 
 def find_iterations(vertices: list[Vertex], unrolling_limit: int) -> list[Iteration] | None:

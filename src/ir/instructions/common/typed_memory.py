@@ -113,7 +113,7 @@ class TypedMemoryLoadBase(GenericLoad):
     def to_fill_node(self, state, parents):
         if self.packed_value is None:
             if self._needs_dword_vector_load():
-                return NodeLoweringContext(state, parents).emit_backend(
+                return NodeLoweringContext(state, parents, self).emit_backend(
                     self._get_opcode(),
                     self._get_normalize_opcode(),
                     [self.destination, self.address, self.offset],
@@ -121,7 +121,7 @@ class TypedMemoryLoadBase(GenericLoad):
                 )
             return super().to_fill_node(state, parents)
 
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         ctx.emit_backend(
             self._get_opcode(),
             self._get_normalize_opcode(),
@@ -216,7 +216,7 @@ class TypedMemoryStoreBase(GenericStore):
 
     def _to_fill_small_vector_store_parts(self, state, parents):
         assert isinstance(self.value, CompositeReg)
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         opcode = self._get_opcode()
         first_value = self.value.get_element(0)
         second_value = self.value.get_element(1)
@@ -262,7 +262,7 @@ class TypedMemoryStoreBase(GenericStore):
         assert isinstance(self.value, CompositeReg)
         assert self.store_value is not None
 
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         for index, source in enumerate(self.value.regs):
             ctx.emit_backend(SMov, "s_mov_b32", [self.store_value.get_element(index), source], "b32")
 

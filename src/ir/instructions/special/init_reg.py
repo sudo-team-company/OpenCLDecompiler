@@ -12,7 +12,7 @@ class InitReg(GenericInstruction):
         return "s_init"
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             decInitReg,
             self._get_normalize_opcode(),
             self.operands,

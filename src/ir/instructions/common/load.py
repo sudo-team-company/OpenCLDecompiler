@@ -38,7 +38,7 @@ class GenericLoad(GenericInstruction):
         return memory_suffix_for_bits(self.size)
 
     def to_fill_node(self, state, parents):
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         return ctx.emit_backend(
             self._get_opcode(),
             self._get_normalize_opcode(),

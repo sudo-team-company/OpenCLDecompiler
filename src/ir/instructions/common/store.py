@@ -32,11 +32,14 @@ class GenericStore(GenericInstruction):
     def writes_first_operand(self) -> bool:
         return False
 
+    def has_side_effects(self) -> bool:
+        return True
+
     def get_suffix(self):
         return memory_suffix_for_bits(self.op_type.bits)
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             self._get_opcode(),
             self._get_normalize_opcode(),
             self.operands,

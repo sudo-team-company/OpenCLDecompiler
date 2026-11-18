@@ -22,7 +22,7 @@ class InitPredicate(GenericInstruction):
         return True
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             InitPred,
             self._get_normalize_opcode(),
             self.operands,

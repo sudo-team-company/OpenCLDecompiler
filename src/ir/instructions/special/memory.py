@@ -13,7 +13,7 @@ class MemoryAllocation(GenericInstruction):
         return "s_alloc"
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             DecMA,
             self._get_normalize_opcode(),
             self.operands,
@@ -31,12 +31,18 @@ class Store(GenericInstruction):
     def _get_normalize_opcode(self) -> str:
         return "s_store"
 
+    def writes_first_operand(self) -> bool:
+        return False  # the first operand is the pointer to the arguments buffer
+
+    def has_side_effects(self) -> bool:
+        return True  # fills the kernel arguments buffer
+
     def set_arg_type(self, type_name: str) -> None:
         self.arg_type = Val(type_name)
         self.operands = (self.destination, self.arg_type, self.arg_name, self.offset)
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             StoreInMem,
             self._get_normalize_opcode(),
             self.operands,

@@ -20,7 +20,7 @@ class InitGlobalMemory(GenericInstruction):
         return f"{self.opcode} {self.destination.to_text()}, [{values}]"
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             DecGlobalMemory,
             self._get_normalize_opcode(),
             self.operands,

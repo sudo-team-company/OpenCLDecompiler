@@ -39,7 +39,7 @@ class LogicalInstruction(GenericInstruction):
         return "b64" if self._is_64bit() else "b32"
 
     def to_fill_node(self, state, parents):
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         return ctx.emit_backend(
             self.backend_instruction,
             self._get_normalize_opcode(),

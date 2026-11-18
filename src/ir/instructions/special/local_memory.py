@@ -8,6 +8,7 @@ from src.ir.instructions.lowering import NodeLoweringContext
 from src.ir.instructions.types import IRType
 from src.ir.registers.reg import Reg32, Reg64, Reg_ty, RegOrVal_ty, Val
 from src.ir.temporary_variable_allocator import TemporaryVariableAllocator
+from src.node_effects import NodeEffects
 
 
 class LocalMemory(GenericInstruction):
@@ -18,7 +19,7 @@ class LocalMemory(GenericInstruction):
         return "s_local"
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             DecLocalMemory,
             self._get_normalize_opcode(),
             self.operands,
@@ -34,8 +35,14 @@ class LocalStore(GenericInstruction):
     def _get_normalize_opcode(self) -> str:
         return "ds_write_b32"
 
+    def writes_first_operand(self) -> bool:
+        return False  # the first operand is the address
+
+    def has_side_effects(self) -> bool:
+        return True
+
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(DsWrite, "ds_write_b32", self.operands, "b32")
+        return NodeLoweringContext(state, parents, self).emit_backend(DsWrite, "ds_write_b32", self.operands, "b32")
 
 
 class LocalLoad(GenericInstruction):
@@ -48,7 +55,7 @@ class LocalLoad(GenericInstruction):
         return "ds_read_b32"
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             DsRead, self._get_normalize_opcode(), self.operands, "b32"
         )
 
@@ -72,10 +79,23 @@ class LocalAdd(GenericInstruction):
     def _get_normalize_opcode(self) -> str:
         return "ds_add_u32"
 
+    def writes_first_operand(self) -> bool:
+        return False  # the first operand is the address, the result is not returned
+
+    def has_side_effects(self) -> bool:
+        return True
+
     def to_fill_node(self, state, parents):
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         if self.operand1_val is not None:
             ctx.emit_backend(SMov, "s_mov_b32", [self.operand1_tmp_reg, self.operand1_val], "b32")
-            return ctx.emit_backend(DsAdd, "ds_add_u32", [self.destination, self.operand1_tmp_reg], "u32")
+            add_operands = [self.destination, self.operand1_tmp_reg]
+            return ctx.emit_backend(
+                DsAdd,
+                "ds_add_u32",
+                add_operands,
+                "u32",
+                effects=NodeEffects.from_operands(add_operands, writes_first_operand=False, has_side_effects=True),
+            )
 
         return ctx.emit_backend(DsAdd, "ds_add_u32", [self.destination, self.operand1], "u32")

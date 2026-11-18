@@ -48,7 +48,7 @@ class Mad(GenericInstruction):
         return "i64_i32" if self.op_type == IRType.I64_I32 else "u64_u32"
 
     def to_fill_node(self, state, parents):
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         if self.operand3_val is not None:
             tmp_lo, tmp_hi = get_reg_rang(self.operand3_tmp_reg)
             ctx.emit_backend(SMov, "s_mov_b32", [tmp_lo, self.operand3_val], "b32")

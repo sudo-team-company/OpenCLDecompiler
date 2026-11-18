@@ -2,6 +2,7 @@ from src import utils
 from src.expression_manager.expression_manager import ExpressionManager
 from src.expression_manager.types.opencl_types import OpenCLTypes
 from src.ir.registers.reg import BaseReg, RegOrVal_ty, Val, expand_register_names, is_range
+from src.node_effects import NodeEffects
 from src.register_type import RegisterType
 
 
@@ -13,6 +14,7 @@ class Node:
         self.children = []
         self.parent = []
         self.state = state
+        self.effects: NodeEffects | None = None
 
     def add_child(self, child):
         self.children.append(child)

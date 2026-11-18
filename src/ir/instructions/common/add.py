@@ -30,7 +30,7 @@ class Add(GenericInstruction):
         return "v_add_u32"
 
     def to_fill_node(self, state, parents):
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         if self.op_type == IRType.F64:
             return ctx.emit_backend(
                 VAdd,
@@ -74,7 +74,7 @@ class AddC(GenericInstruction):
         return "v_addc_u32"
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             VAddc,
             self._get_normalize_opcode(),
             self.operands,
