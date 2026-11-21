@@ -1,5 +1,7 @@
 import copy
 import operator
+from collections import Counter
+from dataclasses import dataclass
 
 from src.decompiler_data import DecompilerData
 from src.expression_manager.expression_helper_functions import (
@@ -11,6 +13,7 @@ from src.expression_manager.expression_helper_functions import (
 from src.expression_manager.expression_manager import ExpressionManager
 from src.expression_manager.expression_node import ExpressionNode, ExpressionType, ExpressionValueTypeHint
 from src.expression_manager.types.opencl_types import OpenCLTypes
+from src.ir.registers.reg import BaseReg, expand_register_names
 from src.node import Node
 from src.node_effects import NodeEffects
 from src.region_type import RegionType
@@ -24,19 +27,16 @@ class Vertex:
     def __init__(self, num: int, node: Node):
         self.num: int = num
         self.node: Node = node
-        self.parent: set[int] = set()
         self.child: set[int] = set()
         self.used: bool = False
         self.merged_vertices: list[int] = [num]
         self.merged_child: list[int] = []
+        # register read by the node -> vertex that last wrote it (None: written before the region or never)
+        self.sources: dict[str, int | None] = {}
 
     @property
     def instruction(self) -> str:
         return self.node.instruction
-
-    @property
-    def src_args(self) -> list[str]:
-        return self.node.operands[1:]
 
     def reset(self):
         self.used = False
@@ -85,9 +85,9 @@ def build_def_use_graph(region: Region) -> list[Vertex]:
         effects = effects_of(cur)
         for reg in effects.reads:
             writer = last_writer.get(reg)
+            vertices[idx].sources[reg] = writer
             if writer is not None:
                 vertices[writer].child.add(idx)
-                vertices[idx].parent.add(writer)
         for reg in effects.writes:
             last_writer[reg] = idx
 
@@ -151,11 +151,91 @@ def extend_loop_body(vertices: list[Vertex], chosen: list[int], unrolling_limit:
             parent.merged_child.extend(child.merged_child)
 
 
-Iteration = list[int] # vertex indices
+Iteration = list[int]  # vertex indices, in template order: iteration[j] is the j-th template instruction
+
+INTERNAL = "internal"  # written earlier in the same iteration
+CARRIED = "carried"  # written by the previous iteration
+OUTSIDE = "outside"  # written before the loop, or not in the region at all
+DISTANT = "distant"  # written by an iteration before the previous one
+
+DATAFLOW = "*"  # a register operand matched by data flow, not by name
+
+
+@dataclass(frozen=True, order=True)
+class Source:
+    """Where a register read by a template instruction comes from."""
+
+    kind: str
+    position: int = -1  # template position of the writer (INTERNAL, CARRIED, DISTANT)
+    register: str = ""  # register name (OUTSIDE)
+
+
+Owners = dict[int, tuple[int, int]]  # vertex index -> (iteration, template position)
+
+
+def owners_of(iterations: list[Iteration]) -> Owners:
+    return {num: (k, j) for k, iteration in enumerate(iterations) for j, num in enumerate(iteration)}
+
+
+def source_of(owners: Owners, reader: int, register: str, writer: int | None) -> Source:
+    """Where ``register`` read by the loop vertex ``reader`` comes from."""
+    where = owners.get(writer) if writer is not None else None
+    if where is None:
+        return Source(OUTSIDE, register=register)
+    reader_iteration = owners[reader][0]
+    writer_iteration, position = where
+    if writer_iteration == reader_iteration:
+        return Source(INTERNAL, position)
+    if writer_iteration == reader_iteration - 1:
+        return Source(CARRIED, position)
+    return Source(DISTANT, position)
+
+
+def node_sources(vertices: list[Vertex], owners: Owners, vertex_num: int) -> tuple[Source, ...]:
+    """Sources of all registers read by a loop vertex, as a sorted multiset."""
+    sources = vertices[vertex_num].sources.items()
+    return tuple(sorted(source_of(owners, vertex_num, reg, writer) for reg, writer in sources))
+
+
+def is_inner_dataflow_operand(vertex: Vertex, owners: Owners, operand: BaseReg) -> bool:
+    return any(
+        source_of(owners, vertex.num, part, vertex.sources.get(part)).kind != OUTSIDE
+        for part in expand_register_names(operand)
+    )
+
+
+def read_operand_positions(vertex: Vertex, owners: Owners) -> list[tuple[int, bool]]:
+    """``(operand index, is inner data flow)`` for the constants and the registers the node reads, in order."""
+    reads = effects_of(vertex.node).reads
+    positions = []
+    for index, operand in enumerate(vertex.node.operands):
+        # constant
+        if not isinstance(operand, BaseReg):
+            positions.append((index, False))
+        elif reads.intersection(expand_register_names(operand)):
+            positions.append((index, is_inner_dataflow_operand(vertex, owners, operand)))
+    return positions
 
 
 def build_register_usages_table(vertices: list[Vertex], iterations: list[Iteration]) -> list[list[str]]:
-    rows = [[arg.name for num in iteration for arg in vertices[num].src_args] for iteration in iterations]
+    """One column per read operand of the template, one row per iteration.
+
+    A constant gives its value and a register read from outside the loop gives its name. A register written inside
+    the loop (a temporary or the loop-carried value) gives ``DATAFLOW``, so different register names in different
+    iterations do not matter. Which operands are data flow is decided by the middle iteration: the first and the last
+    ones may be peeled.
+    """
+    owners = owners_of(iterations)
+    middle = iterations[len(iterations) // 2]
+    positions = [read_operand_positions(vertices[num], owners) for num in middle]
+    rows = [
+        [
+            DATAFLOW if flow else vertices[num].node.operands[index].name
+            for j, num in enumerate(iteration)
+            for index, flow in positions[j]
+        ]
+        for iteration in iterations
+    ]
     return [list(column) for column in zip(*rows, strict=True)]
 
 
@@ -175,9 +255,85 @@ def trim_peeled_iterations(vertices: list[Vertex], iterations: list[Iteration]) 
     return iterations
 
 
-def dst_of(vertices: list[Vertex], iteration: Iteration) -> str | None:
-    writes = effects_of(vertices[iteration[-1]].node).writes
-    return next(iter(writes)) if len(writes) == 1 else None
+@dataclass(frozen=True)
+class LoopShape:
+    carried_position: int  # template position of the instruction that writes the loop-carried value
+    carried: list[str]  # registers holding the loop-carried value after each iteration
+    initial: str  # register holding its value before the loop
+
+
+def _by_kind(sources: tuple[Source, ...], kind: str) -> Counter[Source]:
+    return Counter(source for source in sources if source.kind == kind)
+
+
+def initial_register(first: list[tuple[Source, ...]], reference: list[tuple[Source, ...]]) -> str | None:
+    """Find accumulator initial value register from iteration's intruction's read operand source."""
+    initial: set[str] = set()
+    for got, expected in zip(first, reference, strict=True):
+        # same number of registers read from same position in this iter
+        if _by_kind(got, INTERNAL) != _by_kind(expected, INTERNAL):
+            return None
+        got_outside, expected_outside = _by_kind(got, OUTSIDE), _by_kind(expected, OUTSIDE)
+        if expected_outside - got_outside:
+            return None
+        extra = got_outside - expected_outside
+        if extra.total() != _by_kind(expected, CARRIED).total():
+            return None
+        initial.update(source.register for source in extra)
+    return next(iter(initial)) if len(initial) == 1 else None
+
+
+def is_used_after_loop_only_as_carried(
+    vertices: list[Vertex], iterations: list[Iteration], owners: Owners, shape: LoopShape
+) -> bool:
+    """After the loop, only the final loop-carried value may be read: other values of the iterations are lost."""
+    last_num = max(num for iteration in iterations for num in iteration)
+    final = (len(iterations) - 1, shape.carried_position)
+    for vertex in vertices[last_num + 1 :]:
+        for writer in vertex.sources.values():
+            where = owners.get(writer) if writer is not None else None
+            if where is not None and where != final:
+                return False
+    return True
+
+
+def analyse_loop(vertices: list[Vertex], iterations: list[Iteration]) -> LoopShape | None:
+    if len(iterations) < 2:  # noqa: PLR2004
+        return None
+    owners = owners_of(iterations)
+    sources = [[node_sources(vertices, owners, num) for num in iteration] for iteration in iterations]
+    reference = sources[1]
+    if any(sources[k] != reference for k in range(2, len(iterations))):
+        return None
+    initial = initial_register(sources[0], reference)
+    if initial is None:
+        return None
+
+    # template idx from prev iteration that is read by the current iteration
+    positions = {source.position for node in reference for source in node if source.kind == CARRIED}
+
+    # assume only accumulator is carried for now
+    if len(positions) != 1:
+        return None
+
+    (position,) = positions
+    carried = carried_registers(vertices, iterations, position)
+    if carried is None:
+        return None
+
+    shape = LoopShape(position, carried, initial)
+    return shape if is_used_after_loop_only_as_carried(vertices, iterations, owners, shape) else None
+
+
+def carried_registers(vertices: list[Vertex], iterations: list[Iteration], position: int) -> list[str] | None:
+    """List of registers for each iteration that are read by the next iteration, in template order."""
+    carried = []
+    for iteration in iterations:
+        writes = effects_of(vertices[iteration[position]].node).writes
+        if len(writes) != 1:
+            return None
+        carried.append(next(iter(writes)))
+    return carried
 
 
 def is_simple_instruction(node: Node) -> bool:
@@ -186,9 +342,6 @@ def is_simple_instruction(node: Node) -> bool:
 
 
 def is_well_formed(vertices: list[Vertex], iterations: list[Iteration]) -> bool:
-    dsts = {dst_of(vertices, iteration) for iteration in iterations}
-    if len(dsts) != 1 or None in dsts:
-        return False
     nums = {num for iteration in iterations for num in iteration}
     first, last = min(nums), max(nums)
     if last == len(vertices) - 1:
@@ -196,7 +349,9 @@ def is_well_formed(vertices: list[Vertex], iterations: list[Iteration]) -> bool:
     removed = range(first, last + 1)
     if not all(num in nums or vertices[num].instruction == "s_nop" for num in removed):
         return False
-    return all(is_simple_instruction(vertices[num].node) for num in removed)
+    if not all(is_simple_instruction(vertices[num].node) for num in removed):
+        return False
+    return analyse_loop(vertices, iterations) is not None
 
 
 def find_iterations(vertices: list[Vertex], unrolling_limit: int) -> list[Iteration] | None:
@@ -300,25 +455,33 @@ def fold_loop(region: Region, vertices: list[Vertex], iterations: list[Iteration
         return
     iterator, constants = detected
 
-    dst = dst_of(vertices, iterations[0])
+    shape = analyse_loop(vertices, iterations)
+    if shape is None:
+        return
+
+    dst = shape.carried[-1]
     nums = [num for iteration in iterations for num in iteration]
     before_loop: Node = vertices[min(nums) - 1].node if min(nums) > 0 else region.start
     after_loop: Node = vertices[max(nums) + 1].node
-    if dst not in before_loop.state or dst not in after_loop.state:
+    if shape.initial not in before_loop.state or dst not in after_loop.state:
         return
-    results = [vertices[iteration[-1]].node.state[dst].get_expression_node() for iteration in iterations]
-    prev_values = [before_loop.state[dst].get_expression_node(), *results[:-1]]
+
+    acc_expressions = [
+        vertices[iteration[shape.carried_position]].node.state[reg].get_expression_node()
+        for iteration, reg in zip(iterations, shape.carried, strict=True)
+    ]
+    prev_values = [before_loop.state[shape.initial].get_expression_node(), *acc_expressions[:-1]]
 
     expression_manager = ExpressionManager()
     acc_node = expression_manager.add_variable_node(ACCUMULATOR, ExpressionValueTypeHint(OpenCLTypes.UINT))
-    body = build_body(prev_values, results, constants, iterator, acc_node)
+    body = build_body(prev_values, acc_expressions, constants, iterator, acc_node)
     if body is None:
         return
     acc_init = expression_manager.expression_to_string(prev_values[0])
 
     before_loop.children = [after_loop]
     after_loop.state[dst].register_content._value = ACCUMULATOR  # noqa: SLF001
-    replace_after_loop(after_loop, region.end, results[-1], acc_node)
+    replace_after_loop(after_loop, region.end, acc_expressions[-1], acc_node)
     before_loop.add_first_child(Region(RegionType.UNROLLED_LOOP, UnrolledLoopData(acc_init, iterator, body)))
 
 

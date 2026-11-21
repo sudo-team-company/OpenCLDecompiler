@@ -4,7 +4,13 @@ from src.node import Node
 from src.node_effects import NodeEffects
 from src.region_type import RegionType
 from src.regions.region import Region
-from src.unrolled_loops_processing import build_def_use_graph, dst_of, is_well_formed
+from src.unrolled_loops_processing import (
+    LoopShape,
+    analyse_loop,
+    build_def_use_graph,
+    build_register_usages_table,
+    is_well_formed,
+)
 
 
 def chain(*nodes: Node) -> Region:
@@ -80,30 +86,77 @@ def test_first_instruction_is_a_writer_too():
     assert edges(region) == {(0, 1)}
 
 
-def test_dst_is_the_only_written_register():
-    region = chain(
-        node("v_mul_lo_u32", "v2", "v2", "s0"),
-        node("v_lshlrev_b64", "v[0:1]", "2", "v[0:1]"),
-        store("v[0:1]", "v2"),
-    )
-    vertices = build_def_use_graph(region)
-
-    assert dst_of(vertices, [0]) == "v2"
-    assert dst_of(vertices, [1]) is None  # writes v0 and v1
-    assert dst_of(vertices, [2]) is None  # writes nothing
+def iterations_of(body, count: int = 3, after: str = "v2") -> tuple[list, list[list[int]]]:
+    """``count`` copies of ``body(k)`` followed by a node reading ``after``; returns the vertices and the iterations."""
+    copies = [body(k) for k in range(count)]
+    region = chain(*(n for copy in copies for n in copy), node("v_mov_b32", "v9", after))
+    size = len(copies[0])
+    return build_def_use_graph(region), [list(range(k * size, (k + 1) * size)) for k in range(count)]
 
 
-def iterations_of(body) -> tuple[list, list[list[int]]]:
-    """Three copies of ``body()`` followed by one more node; returns the vertices and the iterations."""
-    nodes = [n for _ in range(3) for n in body()]
-    region = chain(*nodes, node("v_mov_b32", "v9", "v2"))
-    size = len(nodes) // 3
-    return build_def_use_graph(region), [list(range(k * size, (k + 1) * size)) for k in range(3)]
+def acc_times_x_plus_k(k: int, temporary: str = "v3", acc: str = "v2", next_acc: str = "v2") -> list[Node]:
+    """``tmp = acc * x; acc' = tmp + k``."""
+    return [node("v_mul_lo_u32", temporary, acc, "s0"), node("v_add_u32", next_acc, str(k), temporary)]
+
+
+def test_loop_carried_value_is_found_by_data_flow():
+    vertices, iterations = iterations_of(acc_times_x_plus_k)
+
+    assert analyse_loop(vertices, iterations) == LoopShape(carried_position=1, carried=["v2"] * 3, initial="v2")
+
+
+def test_temporaries_may_have_different_names():
+    vertices, iterations = iterations_of(lambda k: acc_times_x_plus_k(k, temporary=f"v{3 + k % 2}"), count=4)
+
+    assert analyse_loop(vertices, iterations) == LoopShape(carried_position=1, carried=["v2"] * 4, initial="v2")
+    # the temporary is matched by data flow, only the constant changes between iterations
+    table = build_register_usages_table(vertices, iterations)
+    assert [column for column in table if len(set(column)) > 1] == [["0", "1", "2", "3"]]
+    assert is_well_formed(vertices, iterations)
+
+
+def test_loop_carried_value_may_rotate_between_registers():
+    accs = ["v2", "v5", "v2", "v5"]
+    vertices, iterations = iterations_of(lambda k: acc_times_x_plus_k(k, acc=accs[k], next_acc=accs[k + 1]), after="v5")
+
+    assert analyse_loop(vertices, iterations) == LoopShape(carried_position=1, carried=["v5", "v2", "v5"], initial="v2")
+
+
+def test_value_of_a_middle_iteration_used_after_the_loop_is_not_folded():
+    accs = ["v2", "v5", "v2", "v5"]
+    # v2 after the loop is the value of the second iteration, not the final one
+    vertices, iterations = iterations_of(lambda k: acc_times_x_plus_k(k, acc=accs[k], next_acc=accs[k + 1]), after="v2")
+
+    assert analyse_loop(vertices, iterations) is None
+
+
+def test_different_invariants_are_not_folded():
+    def body(k: int) -> list[Node]:
+        return [node("v_mul_lo_u32", "v3", "v2", f"s{k % 2}"), node("v_add_u32", "v2", "1", "v3")]
+
+    vertices, iterations = iterations_of(body, count=4)
+
+    assert analyse_loop(vertices, iterations) is None
+
+
+def test_two_loop_carried_values_are_not_folded_yet():
+    def body(_: int) -> list[Node]:
+        return [node("v_mul_lo_u32", "v2", "v2", "s0"), node("v_add_u32", "v3", "1", "v3")]
+
+    vertices, iterations = iterations_of(body)
+
+    assert analyse_loop(vertices, iterations) is None
+
+
+def test_temporary_used_after_the_loop_is_not_folded():
+    vertices, iterations = iterations_of(acc_times_x_plus_k, after="v3")
+
+    assert analyse_loop(vertices, iterations) is None
 
 
 def test_iterations_without_side_effects_can_be_folded():
     vertices, iterations = iterations_of(
-        lambda: [node("v_mul_lo_u32", "v2", "v2", "s0"), node("v_add_u32", "v2", "1", "v2")]
+        lambda _: [node("v_mul_lo_u32", "v2", "v2", "s0"), node("v_add_u32", "v2", "1", "v2")]
     )
 
     assert is_well_formed(vertices, iterations)
@@ -111,16 +164,16 @@ def test_iterations_without_side_effects_can_be_folded():
 
 def test_iterations_with_a_store_are_not_folded():
     vertices, iterations = iterations_of(
-        lambda: [node("v_mul_lo_u32", "v2", "v2", "s0"), store("v[0:1]", "v2"), node("v_add_u32", "v2", "1", "v2")]
+        lambda _: [node("v_mul_lo_u32", "v2", "v2", "s0"), store("v[0:1]", "v2"), node("v_add_u32", "v2", "1", "v2")]
     )
 
-    # the store is in the middle, so the iterations still end with a write to v2
-    assert dst_of(vertices, iterations[0]) == "v2"
+    # the data flow is fine, only the side effect prevents folding
+    assert analyse_loop(vertices, iterations) is not None
     assert not is_well_formed(vertices, iterations)
 
 
 def test_iterations_with_control_flow_are_not_folded():
     label = NodeEffects(is_control_flow=True)
-    vertices, iterations = iterations_of(lambda: [node(".L1", effects=label), node("v_mul_lo_u32", "v2", "v2", "s0")])
+    vertices, iterations = iterations_of(lambda _: [node(".L1", effects=label), node("v_mul_lo_u32", "v2", "v2", "s0")])
 
     assert not is_well_formed(vertices, iterations)
