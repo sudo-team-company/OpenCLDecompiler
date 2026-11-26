@@ -244,14 +244,10 @@ def _first_is_peeled(column: list[str]) -> bool:
 
 
 def trim_peeled_iterations(vertices: list[Vertex], iterations: list[Iteration]) -> list[Iteration]:
-    while len(iterations) > 2:  # noqa: PLR2004
-        table = build_register_usages_table(vertices, iterations)
-        if any(_first_is_peeled(column) for column in table):
-            iterations = iterations[1:]
-        elif any(_first_is_peeled(column[::-1]) for column in table):
-            iterations = iterations[:-1]
-        else:
-            return iterations
+    while len(iterations) > 2 and any(  # noqa: PLR2004
+        _first_is_peeled(column) for column in build_register_usages_table(vertices, iterations)
+    ):
+        iterations = iterations[1:]
     return iterations
 
 
