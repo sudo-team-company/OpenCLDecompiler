@@ -14,7 +14,7 @@ class ChangeMask(GenericInstruction):
         return "change_mask"
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             UseMask,
             self._get_normalize_opcode(),
             self.operands,
@@ -35,7 +35,7 @@ class Unmask(GenericInstruction):
         return "unmask"
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             be_Unmask,
             self._get_normalize_opcode(),
             [],

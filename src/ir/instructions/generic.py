@@ -59,6 +59,10 @@ class GenericInstruction:
     def is_control_flow(self) -> bool:
         return False
 
+    def has_side_effects(self) -> bool:
+        """The instruction does more than write its destination registers (memory, masks, ordering)."""
+        return False
+
     def is_label(self) -> bool:
         return False
 

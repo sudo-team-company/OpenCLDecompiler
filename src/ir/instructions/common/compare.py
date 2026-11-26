@@ -32,7 +32,7 @@ class BaseCompare(GenericInstruction):
         return f"v_cmp_{self.operation}_i32"
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             self.backend_instruction, self._get_normalize_opcode(), self.operands, "i32"
         )
 

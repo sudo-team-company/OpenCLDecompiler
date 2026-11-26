@@ -35,7 +35,7 @@ class Bfe(GenericInstruction):
         return "u32"
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             SBfe,
             self._get_normalize_opcode(),
             self.operands,

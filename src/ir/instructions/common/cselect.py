@@ -14,7 +14,7 @@ class CSelect(GenericInstruction):
         return "v_cndmask_b32"
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             VCndmask,
             self._get_normalize_opcode(),
             self.operands,

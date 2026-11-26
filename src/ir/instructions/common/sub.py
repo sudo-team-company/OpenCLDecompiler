@@ -29,7 +29,7 @@ class Sub(GenericInstruction):
         return "v_sub_u32"
 
     def to_fill_node(self, state, parents):
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         if self.op_type == IRType.F32:
             return ctx.emit_backend(
                 VSub,

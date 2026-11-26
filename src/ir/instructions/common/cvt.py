@@ -17,7 +17,7 @@ class Cvt32To64(GenericInstruction):
         self.operand1 = operand1
 
     def to_fill_node(self, state, parents):
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         dest_lo, dest_hi = get_reg_rang(self.destination)
         ctx.emit_backend(
             SMov,
@@ -51,7 +51,7 @@ class Cvt16To32(GenericInstruction):
         self.operand1 = operand1
 
     def to_fill_node(self, state, parents):
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         return ctx.emit_backend(
             SAnd,
             "s_and_b32",
@@ -69,7 +69,7 @@ class Cvt64To32(GenericInstruction):
         self.operand1 = operand1
 
     def to_fill_node(self, state, parents):
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         return ctx.emit_backend(
             SMov,
             "s_mov_b32",
@@ -90,7 +90,7 @@ class CvtF32ToI32(GenericInstruction):
         return "v_cvt_i32_f32"
 
     def to_fill_node(self, state, parents):
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         return ctx.emit_backend(
             VCvt,
             self._get_normalize_opcode(),
@@ -111,7 +111,7 @@ class CvtF64ToI32(GenericInstruction):
         return "v_cvt_i32_f64"
 
     def to_fill_node(self, state, parents):
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         return ctx.emit_backend(
             VCvt,
             self._get_normalize_opcode(),
@@ -132,7 +132,7 @@ class CvtI32ToF32(GenericInstruction):
         return "v_cvt_f32_i32"
 
     def to_fill_node(self, state, parents):
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         return ctx.emit_backend(
             VCvt,
             self._get_normalize_opcode(),
@@ -153,7 +153,7 @@ class CvtU32ToF64(GenericInstruction):
         return "v_cvt_f64_u32"
 
     def to_fill_node(self, state, parents):
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         return ctx.emit_backend(
             VCvt,
             self._get_normalize_opcode(),
@@ -174,7 +174,7 @@ class CvtI32ToF64(GenericInstruction):
         return "v_cvt_f64_i32"
 
     def to_fill_node(self, state, parents):
-        ctx = NodeLoweringContext(state, parents)
+        ctx = NodeLoweringContext(state, parents, self)
         return ctx.emit_backend(
             VCvt,
             self._get_normalize_opcode(),

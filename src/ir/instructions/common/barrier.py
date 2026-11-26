@@ -10,8 +10,11 @@ class Barrier(GenericInstruction):
     def _get_normalize_opcode(self) -> str:
         return "s_waitcnt"
 
+    def has_side_effects(self) -> bool:
+        return True
+
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             SWaitcnt,
             self._get_normalize_opcode(),
             self.operands,

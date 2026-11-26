@@ -19,7 +19,7 @@ class Label(GenericInstruction):
         return True
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             backend_Label,
             self.label.name,
             [],
@@ -38,7 +38,7 @@ class Branch(GenericInstruction):
         return True
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             SCbranchVccnz,
             "s_br",
             self.operands,
@@ -57,7 +57,7 @@ class BranchNot(GenericInstruction):
         return True
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             SCbranchVccz,
             "s_nbr",
             self.operands,
@@ -76,7 +76,7 @@ class Jump(GenericInstruction):
         return True
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             SBranch,
             "s_branch",
             self.operands,

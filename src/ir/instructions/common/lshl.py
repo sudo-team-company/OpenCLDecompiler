@@ -50,7 +50,7 @@ class LShlRev(ShiftInstruction):
         return "v_lshlrev_b32"
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             VLshlrev,
             self._get_normalize_opcode(),
             self.operands,
@@ -74,7 +74,7 @@ class LShrRev(ShiftInstruction):
         return "v_lshrrev_b32"
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             VLshrrev,
             self._get_normalize_opcode(),
             self.operands,
@@ -105,7 +105,7 @@ class AShrRev(ShiftInstruction):
         return "i32"
 
     def to_fill_node(self, state, parents):
-        return NodeLoweringContext(state, parents).emit_backend(
+        return NodeLoweringContext(state, parents, self).emit_backend(
             VAshrrev,
             self._get_normalize_opcode(),
             self.operands,
